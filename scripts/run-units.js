@@ -10,7 +10,7 @@
  *   node scripts/run-units.js            human-readable summary
  *   node scripts/run-units.js --json     { total, passed, failures: {name: reason} }
  *
- * builder/test/upstream-units.test.js diffs this report against
+ * test/upstream-units.test.js diffs this report against
  * test/upstream-units.known-failures.json; regenerate that baseline after a
  * transpiler/port improvement by copying the --json failures.
  */

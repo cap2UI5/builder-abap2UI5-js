@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * mirror-input — snapshots an upstream repository into builder/run/input/<dir>/ so the
+ * mirror-input — snapshots an upstream repository into run/input/<dir>/ so the
  * transpile/copy steps work on a versioned, reviewable copy.
  *
- *   node builder/scripts/mirror-input.js abap2UI5   → builder/run/input/abap2UI5/src    (backend)
- *   node builder/scripts/mirror-input.js app        → builder/run/input/app/webapp      (frontend)
- *   node builder/scripts/mirror-input.js samples    → builder/run/input/samples/        (whole cloud branch)
+ *   node scripts/mirror-input.js abap2UI5   → run/input/abap2UI5/src    (backend)
+ *   node scripts/mirror-input.js app        → run/input/app/webapp      (frontend)
+ *   node scripts/mirror-input.js samples    → run/input/samples/        (whole cloud branch)
  *
- * Each stream owns exactly one top-level folder under builder/run/input/ and
+ * Each stream owns exactly one top-level folder under run/input/ and
  * rewrites it from scratch on every run, so upstream deletions propagate and the
  * three streams never clobber each other (backend and frontend both come from
  * the abap2UI5 repo but land in separate folders). samples comes from the cloud
@@ -15,11 +15,11 @@
  * already excludes the on-premise-only apps under src/00, which cannot run in
  * the CAP/Node environment anyway.
  *
- * Wipe policy: builder/run/input/<dir>/ is always wiped first, then repopulated —
+ * Wipe policy: run/input/<dir>/ is always wiped first, then repopulated —
  *   - A source WITH `paths` copies each configured subtree (from → to).
  *   - A source WITHOUT `paths` mirrors its ENTIRE checkout (everything except .git).
  *
- * The upstream commit is recorded in builder/run/input/<dir>/UPSTREAM_COMMIT.
+ * The upstream commit is recorded in run/input/<dir>/UPSTREAM_COMMIT.
  * Set MIRROR_SOURCE=/path/to/checkout to use a local copy instead of cloning
  * (the checkout is used as-is; the branch config is not applied then).
  */

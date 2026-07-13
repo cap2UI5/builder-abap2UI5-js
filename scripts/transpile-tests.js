@@ -8,16 +8,16 @@
  * against the transpiled/ported code turns every failure into a concrete
  * transpiler-or-port bug on a worklist:
  *
- *   input:  builder/run/input/abap2UI5/src/** /*.clas.testclasses.abap  (no /99/)
- *   output: builder/run/output/tests/<main_class>.units.js   one module per file
- *           builder/run/output/tests/units-report.json
+ *   input:  run/input/abap2UI5/src/** /*.clas.testclasses.abap  (no /99/)
+ *   output: run/output/tests/<main_class>.units.js   one module per file
+ *           run/output/tests/units-report.json
  *
  * Each output module exports { __main, __classes: {name: Class}, __tests:
  * {ltclName: [methodNames]} }. All local classes of one include are emitted
  * into ONE module (they may reference each other); requires of sibling
  * locals are dropped in favor of the in-module definitions.
  *
- * The runner half is builder/test/upstream-units.test.js: it executes every
+ * The runner half is test/upstream-units.test.js: it executes every
  * test method (fresh instance + setup/teardown, ABAP AUnit semantics) and
  * diffs the outcome against test/upstream-units.known-failures.json — the
  * ratchet that makes the loop self-healing: a new failure is a REGRESSION

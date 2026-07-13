@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * transpile-tree — transpiles ABAP classes from builder/run/input/<name>/src into
- * builder/run/output/<name>/ (folder structure mirrored 1:1) and writes a
+ * transpile-tree — transpiles ABAP classes from run/input/<name>/src into
+ * run/output/<name>/ (folder structure mirrored 1:1) and writes a
  * transpile-report.json with the TODO count per class. The assemble step
  * (assemble-cap.js) uses that report as its safety gate.
  *
- *   node builder/scripts/transpile-tree.js abap2UI5   → every class under src/
- *   node builder/scripts/transpile-tree.js samples    → every class under src/
+ *   node scripts/transpile-tree.js abap2UI5   → every class under src/
+ *   node scripts/transpile-tree.js samples    → every class under src/
  */
 "use strict";
 
@@ -74,7 +74,7 @@ fs.writeFileSync(path.join(outBase, "transpile-report.json"), JSON.stringify(rep
 
 const clean = report.filter((r) => r.todos === 0).length;
 const unparseable = report.filter((r) => r.parseError);
-console.log(`builder/run/output/${name}: ${report.length} classes transpiled (${clean} clean, ${report.length - clean} with TODOs, ${unparseable.length} with parse errors), ${failed.length} failed`);
+console.log(`run/output/${name}: ${report.length} classes transpiled (${clean} clean, ${report.length - clean} with TODOs, ${unparseable.length} with parse errors), ${failed.length} failed`);
 for (const r of unparseable) console.error(`  PARSE ERROR: ${r.path}: ${r.parseError}`);
 for (const f of failed) console.error(`  FAILED: ${f}`);
 if (failed.length) process.exit(1);
