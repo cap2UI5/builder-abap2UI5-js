@@ -1,0 +1,54 @@
+name: trigger cap
+
+# Kick the downstream CAP build in builder-cap2UI5. Writes the sha of the
+# last commit touching core/ into builder-cap2UI5:UPSTREAM_HEAD and pushes
+# it via a deploy key registered on builder-cap2UI5 with write access
+# (private half: secret ACTION_KEY_CAP here) — that push starts
+# builder-cap2UI5's "update cap" workflow, which mirrors the published
+# core/ from this repo and rebuilds + republishes the CAP app.
+# Same pattern as this repo's monorepo-era trigger_web. Manual only
+# (workflow_dispatch): run it whenever core/ changed — e.g. after a nightly
+# sync pipeline committed a new core build. If core/ is unchanged since the
+# last trigger, nothing is pushed and builder-cap2UI5 does not rebuild.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: trigger-cap
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0 # full history: the trigger sha is the last commit touching core/
+      - name: push trigger commit to builder-cap2UI5
+        env:
+          ACTION_KEY_CAP: ${{ secrets.ACTION_KEY_CAP }}
+        run: |
+          if [ -z "$ACTION_KEY_CAP" ]; then
+            echo "::warning::secret ACTION_KEY_CAP not set — skipping cap trigger"
+            exit 0
+          fi
+          key_file="$(mktemp)"
+          printf '%s\n' "$ACTION_KEY_CAP" > "$key_file"
+          export GIT_SSH_COMMAND="ssh -i $key_file -o StrictHostKeyChecking=accept-new"
+          sha="$(git rev-list -1 HEAD -- core)"
+          git clone --depth 1 git@github.com:cap2UI5/builder-cap2UI5.git /tmp/cap
+          echo "$sha" > /tmp/cap/UPSTREAM_HEAD
+          cd /tmp/cap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add UPSTREAM_HEAD
+          if git diff --cached --quiet; then
+            echo "builder-cap2UI5 already at ${sha} — nothing to trigger"
+          else
+            git commit -m "trigger: rebuild for cap2UI5/builder-abap2UI5-js@${sha:0:12}"
+            git push origin HEAD:main
+          fi

@@ -1,0 +1,45 @@
+name: test
+
+# Runs the Jest test suite on every pull request (and on pushes to main).
+# Make this check "Required" in the branch protection rules of `main` so a PR
+# can only be merged once the tests pass — see README / repo Settings > Branches.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            core/package-lock.json
+            adapters/cap/package-lock.json
+            adapters/node/package-lock.json
+            adapters/express/package-lock.json
+            adapters/web/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: core
+      # platform adapters — armed as smoke gates in the jest suite
+      # (test/adapters.test.js skips them when not installed)
+      - run: npm ci
+        working-directory: adapters/cap
+      - run: npm ci
+        working-directory: adapters/node
+      - run: npm ci
+        working-directory: adapters/express
+      - run: npm ci
+        working-directory: adapters/web
+      - run: npm test

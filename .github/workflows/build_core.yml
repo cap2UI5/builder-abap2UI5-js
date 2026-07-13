@@ -1,0 +1,62 @@
+name: build core
+
+# Rebuild the core package (src/ + the generated run/output trees) —
+# assemble → publish → jest — and commit the refreshed core/.
+# Step 3 of every update pipeline (backend / frontend / samples); replaces
+# the monorepo-era "* to CAP" workflows: the CAP app itself is now built
+# downstream in cap2UI5/builder-cap2UI5 (kick it via "trigger cap" after
+# core/ changed).
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            core/package-lock.json
+            adapters/cap/package-lock.json
+            adapters/node/package-lock.json
+            adapters/express/package-lock.json
+            adapters/web/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: core
+      # platform adapters — armed as smoke gates in the jest suite
+      # (test/adapters.test.js skips them when not installed); the cap
+      # adapter's node_modules also backs the assemble load-gate (@sap/cds)
+      - run: npm ci
+        working-directory: adapters/cap
+      - run: npm ci
+        working-directory: adapters/node
+      - run: npm ci
+        working-directory: adapters/express
+      - run: npm ci
+        working-directory: adapters/web
+      - run: npm run build_core
+      - run: npm test
+      - name: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add core
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+          else
+            git commit -m "build: regenerate core"
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi

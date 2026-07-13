@@ -1,0 +1,6 @@
+node_modules/
+.mirror_tmp/
+.DS_Store
+run/output/core/
+adapters/web/dist/
+adapters/web/register-all.generated.js
