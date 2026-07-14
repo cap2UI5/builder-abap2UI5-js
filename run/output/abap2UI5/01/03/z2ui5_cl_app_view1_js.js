@@ -132,6 +132,8 @@ class z2ui5_cl_app_view1_js {
 ` + `` + `
 ` + `        if (S_POPUP?.CHECK_DESTROY) this.destroyPopup();` + `
 ` + `        if (S_POPOVER?.CHECK_DESTROY) this.destroyPopover();` + `
+` + `        if (S_VIEW_NEST?.CHECK_DESTROY) this.destroyNestView();` + `
+` + `        if (S_VIEW_NEST2?.CHECK_DESTROY) this.destroyNestView2();` + `
 ` + `` + `
 ` + `        if (S_POPUP?.XML) {` + `
 ` + `          this.destroyPopup();` + `
@@ -400,10 +402,10 @@ class z2ui5_cl_app_view1_js {
 ` + `` + `
 ` + `        // Decide which view's model holds the data we need to send back. The` + `
 ` + `        // mapping is: main app controller -> main view, popup controller ->` + `
-` + `        // popup view, etc.` + `
-` + `        const oModel = this._pickModelForRoundtrip(useMainModel, oBody);` + `
 `;
-    result = result + `` + `
+    result = result + `        // popup view, etc.` + `
+` + `        const oModel = this._pickModelForRoundtrip(useMainModel, oBody);` + `
+` + `` + `
 ` + `        Lib.runCallbacks(AppState.state.onBeforeRoundtrip);` + `
 ` + `` + `
 ` + `        // If the user edited /XX/ paths, send only the delta to keep the` + `

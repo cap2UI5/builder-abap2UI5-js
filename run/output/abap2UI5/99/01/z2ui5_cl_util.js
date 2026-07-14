@@ -1693,7 +1693,7 @@ class z2ui5_cl_util {
       }
       result.details = `<ul>` + /* TODO(abap2js) */ concat_lines_of(lt_detail_items) + `</ul>`;
       result.title = z2ui5_cl_util.ui5_get_msg_type({ val: lt_msg[(1) - 1].type });
-      result.type = z2ui5_cl_util.ui5_get_msg_type({ val: lt_msg[(1) - 1].type });
+      result.type = z2ui5_cl_util.ui5_get_msg_type({ val: lt_msg[(1) - 1].type }).toLowerCase();
     } else {
       result.skip = true;
     }

@@ -600,7 +600,7 @@ class z2ui5_cl_xml_view {
 
   end_column_pages() {
     let result = null;
-    result = z2ui5_cl_util.abap_copy(this);
+    result = this._generic({ name: `endColumnPages`, ns: `f` });
     return result;
   }
 
@@ -1053,7 +1053,7 @@ class z2ui5_cl_xml_view {
 
   info_label({ id, text, rendermode, colorscheme, icon, displayonly, textdirection, width, visible, class: class_ } = {}) {
     let result = null;
-    result = this._generic({ name: `InfoLabel`, ns: `tnt`, t_prop: [{ n: `id`, v: id }, { n: `class`, v: class_ }, { n: `text`, v: text }, { n: `renderMode `, v: rendermode }, { n: `colorScheme`, v: colorscheme }, { n: `displayOnly`, v: z2ui5_cl_a2ui5_context.boolean_abap_2_json(displayonly) }, { n: `icon`, v: icon }, { n: `textDirection`, v: textdirection }, { n: `visible`, v: z2ui5_cl_a2ui5_context.boolean_abap_2_json(visible) }, { n: `width`, v: width }] });
+    result = this._generic({ name: `InfoLabel`, ns: `tnt`, t_prop: [{ n: `id`, v: id }, { n: `class`, v: class_ }, { n: `text`, v: text }, { n: `renderMode`, v: rendermode }, { n: `colorScheme`, v: colorscheme }, { n: `displayOnly`, v: z2ui5_cl_a2ui5_context.boolean_abap_2_json(displayonly) }, { n: `icon`, v: icon }, { n: `textDirection`, v: textdirection }, { n: `visible`, v: z2ui5_cl_a2ui5_context.boolean_abap_2_json(visible) }, { n: `width`, v: width }] });
     return result;
   }
 

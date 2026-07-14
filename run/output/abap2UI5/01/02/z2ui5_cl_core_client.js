@@ -145,7 +145,7 @@ class z2ui5_cl_core_client {
   }
 
   nest2_view_destroy() {
-    this.mo_action.ms_next.s_set.s_view_nest2.check_update_model = true;
+    this.mo_action.ms_next.s_set.s_view_nest2.check_destroy = true;
   }
 
   nest2_view_display() {
@@ -160,7 +160,7 @@ class z2ui5_cl_core_client {
   }
 
   nest_view_destroy() {
-    this.mo_action.ms_next.s_set.s_view_nest.check_update_model = true;
+    this.mo_action.ms_next.s_set.s_view_nest.check_destroy = true;
   }
 
   nest_view_display() {

@@ -43,17 +43,15 @@ class z2ui5_cl_app_smartmultiinpu_js {
 ` + `      init() {` + `
 ` + `        this._setControlBound = this.setControl.bind(this);` + `
 ` + `        this._oInput = null;` + `
-` + `        this._oPendingInnerControlsCreated = null;` + `
+` + `        this._aPendingInnerControlsCreated = [];` + `
 ` + `        this._bInnerControlsCreated = false;` + `
 ` + `        Lib.registerCallback("onAfterRendering", this._setControlBound);` + `
 ` + `      },` + `
 ` + `      exit() {` + `
 ` + `        Lib.unregisterCallback("onAfterRendering", this._setControlBound);` + `
-` + `        // Resolve any still-pending promise so awaiters don't hang.` + `
-` + `        if (this._oPendingInnerControlsCreated) {` + `
-` + `          this._oPendingInnerControlsCreated(null);` + `
-` + `        }` + `
-` + `        this._oPendingInnerControlsCreated = null;` + `
+` + `        // Resolve any still-pending promises so awaiters don't hang.` + `
+` + `        this._aPendingInnerControlsCreated.forEach((resolve) => resolve(null));` + `
+` + `        this._aPendingInnerControlsCreated = [];` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      onTokenUpdate(oEvent) {` + `
@@ -129,17 +127,17 @@ class z2ui5_cl_app_smartmultiinpu_js {
 ` + `          if (this._bInnerControlsCreated) {` + `
 ` + `            resolve(this._oInput);` + `
 ` + `          } else {` + `
-` + `            this._oPendingInnerControlsCreated = resolve;` + `
+` + `            this._aPendingInnerControlsCreated.push(resolve);` + `
 ` + `          }` + `
 ` + `        });` + `
 ` + `      },` + `
 ` + `      onInnerControlsCreated(oEvent) {` + `
 ` + `        this._oInput = oEvent.getSource();` + `
-` + `        if (this._oPendingInnerControlsCreated) {` + `
-` + `          this._oPendingInnerControlsCreated(this._oInput);` + `
-` + `        }` + `
-` + `        this._oPendingInnerControlsCreated = null;` + `
 ` + `        this._bInnerControlsCreated = true;` + `
+` + `        this._aPendingInnerControlsCreated.forEach((resolve) =>` + `
+` + `          resolve(this._oInput),` + `
+` + `        );` + `
+` + `        this._aPendingInnerControlsCreated = [];` + `
 ` + `      },` + `
 ` + `    });` + `
 ` + `  },` + `

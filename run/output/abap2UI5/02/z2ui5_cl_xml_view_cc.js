@@ -199,7 +199,8 @@ class z2ui5_cl_xml_view_cc {
 
   uitableext({ tableid } = {}) {
     let result = null;
-    result = this.mo_view._generic({ name: `UITableExt`, ns: `z2ui5`, t_prop: [{ n: `tableId`, v: tableid }] });
+    result = z2ui5_cl_util.abap_copy(this.mo_view);
+    this.mo_view._generic({ name: `UITableExt`, ns: `z2ui5`, t_prop: [{ n: `tableId`, v: tableid }] });
     return result;
   }
 
