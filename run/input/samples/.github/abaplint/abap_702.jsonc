@@ -9,10 +9,10 @@
       "files": "/src/**/*.*"
     },
     {
-        "url": "https://github.com/abap2UI5/abap2UI5",
-        "folder": "/abap2UI5",
-        "branch": "702",
-        "files": "/src/**/*.*"
+      "url": "https://github.com/abap2UI5/abap2UI5",
+      "folder": "/abap2UI5",
+      "branch": "702",
+      "files": "/src/**/*.*"
     }
   ],
   "syntax": {
@@ -21,6 +21,7 @@
   },
   "rules": {
     "downport": true,
+    "definitions_top": true,
     "begin_end_names": true,
     "check_ddic": true,
     "check_include": true,

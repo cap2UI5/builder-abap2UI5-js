@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /*
- * Generates the two launchpad apps' catalogs from the folder tree.
+ * Generates the two overview apps' catalogs from the folder tree.
+ * (These are the sample_app_000/001 index pages, not the Fiori Launchpad
+ * samples in src/00/03.)
  *
  * Job (see AGENTS.md §4):
  *   1. Scan every demo app class under src/ and read its abapGit <DESCRIPT>
@@ -12,7 +14,7 @@
  *      Apps whose header is "ZZZ" are helper apps (called only by other apps)
  *      and are skipped.
  *   3. Rewrite the result = VALUE #( ... ) block of get_catalog( ) in the
- *      launchpad app of each area (src/01 -> sample_app_001, src/00 -> sample_app_000):
+ *      overview app of each area (src/01 -> sample_app_001, src/00 -> sample_app_000):
  *        - groups in folder-number order
  *        - tiles within a group sorted by header, then sub, then app
  *
@@ -25,7 +27,7 @@ const path = require('path');
 
 const SRC = path.join(__dirname, '..', 'src');
 
-// area (top-level package under src) -> launchpad app file
+// area (top-level package under src) -> overview app file
 const TARGETS = {
   '01': path.join(SRC, '01', 'z2ui5_cl_sample_app_001.clas.abap'),
   '00': path.join(SRC, '00', 'z2ui5_cl_sample_app_000.clas.abap'),
@@ -79,13 +81,32 @@ for (const abap of walk(SRC)) {
   const cls = path.basename(abap, '.clas.abap');
   if (!cls.startsWith('z2ui5_cl_demo_app')) continue;
 
-  const rel = path.relative(SRC, abap).split(path.sep); // [ area, subnum, file ]
+  const rel = path.relative(SRC, abap).split(path.sep); // [ area, ...subfolders, file ]
   if (rel.length < 3) continue;
-  const [area, subnum] = rel;
+  const area = rel[0];
+  // full subfolder path ("08" or nested "08/00") so nested subpackages form
+  // their own group directly after their parent slot
+  const subnum = rel.slice(1, -1).join('/');
   if (!(area in tiles)) continue;
 
-  const xml = fs.readFileSync(abap.replace(/\.clas\.abap$/, '.clas.xml'), 'utf8');
-  const { header, sub } = splitDescript(tag(xml, 'DESCRIPT') || cls);
+  const xmlPath = abap.replace(/\.clas\.abap$/, '.clas.xml');
+  if (!fs.existsSync(xmlPath)) { console.warn(`skipping ${cls}: no .clas.xml`); continue; }
+  const xml = fs.readFileSync(xmlPath, 'utf8');
+  let { header, sub } = splitDescript(tag(xml, 'DESCRIPT') || cls);
+
+  // demo kit rebuilds (AGENTS.md §1) carry the full, untruncated demo kit
+  // description as ABAP Doc lines below the URL line — prefer it as sub over
+  // the 60-char DESCRIPT
+  // the Rebuild line may be preceded by marker lines (e.g. the generated-port
+  // marker), hence the multiline match
+  const doc = fs.readFileSync(abap, 'utf8')
+    .match(/^"! Rebuild of the UI5 demo kit sample: \S+\r?\n((?:"! .*\r?\n)+)/m);
+  if (doc) {
+    sub = doc[1].split(/\r?\n/)
+      .map((l) => l.replace(/^"! ?/, '').trim())
+      .filter(Boolean)
+      .join(' ');
+  }
 
   if (header.trim().toUpperCase() === 'ZZZ') { hidden++; continue; }
   if ((header + sub).includes('`')) throw new Error(`backtick in DESCRIPT of ${cls}`);
@@ -114,8 +135,26 @@ function rewrite(file, list) {
   // indentation of the tiles = indent of "result" line + 2 spaces
   const indent = ' '.repeat((text.slice(0, open).match(/\n( *)$/) || [, ''])[1].length + 2);
 
-  const rows = list.map(
-    (t) => `${indent}( group = \`${t.group}\` header = \`${t.header}\` sub = \`${t.sub}\` app = \`${t.app}\` )`);
+  // ABAP sources are limited to 255 characters per line — longer lines break
+  // the abapGit import ("Literals across more than one line are not allowed")
+  const MAX_LINE = 255;
+  const rows = list.map((t) => {
+    const one = `${indent}( group = \`${t.group}\` header = \`${t.header}\` sub = \`${t.sub}\` app = \`${t.app}\` )`;
+    if (one.length <= MAX_LINE) return one;
+    // split the sub literal into && chunks so no line exceeds the limit
+    const subIndent = `${indent}  `;
+    const contIndent = `${subIndent}      `; // aligns under the first chunk's opening backtick
+    const chunkSize = MAX_LINE - contIndent.length - 6;
+    const chunks = [];
+    for (let s = t.sub; s.length; s = s.slice(chunkSize)) chunks.push(s.slice(0, chunkSize));
+    const subLines = chunks.map((c, i) =>
+      `${i === 0 ? `${subIndent}sub = ` : contIndent}\`${c}\`${i < chunks.length - 1 ? ' &&' : ''}`);
+    return [
+      `${indent}( group = \`${t.group}\` header = \`${t.header}\``,
+      ...subLines,
+      `${subIndent}app = \`${t.app}\` )`,
+    ].join('\n');
+  });
   // the last row additionally closes the constructor + statement
   rows[rows.length - 1] += ' ).';
 
