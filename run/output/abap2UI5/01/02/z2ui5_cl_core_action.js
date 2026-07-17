@@ -14,7 +14,7 @@ class z2ui5_cl_core_action {
 
   constructor({ val } = {}) {
     this.mo_http_post = z2ui5_cl_util.abap_copy(val);
-    this.mo_app = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_app = new z2ui5_cl_core_app();
   }
 
   factory_by_frontend() {

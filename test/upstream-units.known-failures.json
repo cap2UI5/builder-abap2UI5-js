@@ -857,151 +857,127 @@
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_app_prev_stack",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed — expected true, got false"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_event",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_event_empty",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_init",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_init_done",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed — expected true, got false"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_navigated",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed — expected true, got false"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_follow_up_action",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'custom_js')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_follow_up_action_ev",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'custom_js')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_get_event_arg",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of null (reading 'push')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_instantiation",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_dependent",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'dependenton')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_display",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'text')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_type",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'text')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_toast",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'text')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_call",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_call_id_stable",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_leave_event",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_leave_r_data",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_leave_r_data_empty",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_leave_r_data_not_sup",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_leave_r_data_unbound",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest2_view_destroy",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest2_view_display",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'xml')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest_view_destroy",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest_view_display",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'xml')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_destroy",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_display",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'xml')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_model_update",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_update_model')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_destroy",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_display",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'xml')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_model_update",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_update_model')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_app_state_active",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed — expected true, got undefined"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_nav_back",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed — expected true, got undefined"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_push_state",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "assertion failed — expected \"mystate\", got undefined"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_destroy",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_display",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'xml')"
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_model_update",
-    "reason": "Cannot set properties of null (setting 'check_initialized')"
+    "reason": "Cannot read properties of undefined (reading 'check_update_model')"
   },
   {
     "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::load_startup_app",
@@ -1325,7 +1301,7 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::third_test",
-    "reason": "Cannot read properties of null (reading 'mv_value')"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_stringify::test_empty_no_bind",

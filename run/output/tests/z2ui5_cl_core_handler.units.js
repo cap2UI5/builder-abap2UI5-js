@@ -234,7 +234,7 @@ class ltcl_test_handler_post {
     let lx = null;
     lo_handler = new z2ui5_cl_core_handler({ val: `` });
     lo_handler.mv_dispatch_limit = 5;
-    lo_loop_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_loop_app = new ltcl_app_nav_loop();
     lo_handler.mo_action.mo_app.mo_app = z2ui5_cl_util.abap_copy(lo_loop_app);
     lo_handler.mo_action.mo_app.ms_draft.id = z2ui5_cl_a2ui5_context.uuid_get_c32();
     try {

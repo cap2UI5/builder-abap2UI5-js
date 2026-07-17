@@ -1,5 +1,7 @@
 // GENERATED from run/input/abap2UI5/src/01/02/z2ui5_cl_core_client.clas.testclasses.abap — do not edit
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
+const z2ui5_cl_core_action = require("abap2UI5/z2ui5_cl_core_action");
+const z2ui5_cl_core_client = require("abap2UI5/z2ui5_cl_core_client");
 const z2ui5_cl_core_handler = require("abap2UI5/z2ui5_cl_core_handler");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
@@ -23,11 +25,11 @@ class ltcl_test_client {
     let lo_http = null;
     let lo_test_app = null;
     lo_http = new z2ui5_cl_core_handler({ val: `` });
-    this.mo_action = /* TODO(abap2js): NEW #( ) */ null;
-    lo_test_app = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_action = new z2ui5_cl_core_action({ val: lo_http });
+    lo_test_app = new ltcl_test_app();
     lo_test_app.check_initialized = false;
     this.mo_action.mo_app.mo_app = z2ui5_cl_util.abap_copy(lo_test_app);
-    this.mo_client = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_client = new z2ui5_cl_core_client({ action: this.mo_action });
   }
 
   test_instantiation() {
@@ -264,7 +266,7 @@ class ltcl_test_client {
     let temp24 = null;
     let li_client = null;
     let lv_id = ``;
-    lo_new_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_new_app = new ltcl_test_app();
     temp24 = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client = z2ui5_cl_util.abap_copy(temp24);
     lv_id = li_client.nav_app_call(lo_new_app);
@@ -277,7 +279,7 @@ class ltcl_test_client {
     let li_client = null;
     let lv_id_first = ``;
     let lv_id_second = ``;
-    lo_new_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_new_app = new ltcl_test_app();
     li_client = z2ui5_cl_util.abap_copy(this.mo_client);
     lv_id_first = li_client.nav_app_call(lo_new_app);
     lv_id_second = li_client.nav_app_call(lo_new_app);
@@ -289,7 +291,7 @@ class ltcl_test_client {
   test_nav_app_leave_event() {
     let lo_app = null;
     let li_client = null;
-    lo_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app = new ltcl_test_app();
     li_client = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client.nav_app_leave({ app: lo_app, event: `MY_EVENT` });
     cl_abap_unit_assert.assert_bound(this.mo_action.ms_next.o_app_leave);
@@ -301,7 +303,7 @@ class ltcl_test_client {
     let lo_app = null;
     let li_client = null;
     let lv_data = ``;
-    lo_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app = new ltcl_test_app();
     li_client = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client.nav_app_leave({ app: lo_app, event: `MY_EVENT`, r_data: lv_data });
     cl_abap_unit_assert.assert_bound(this.mo_action.ms_next.r_data);
@@ -314,7 +316,7 @@ class ltcl_test_client {
     let lo_app = null;
     let li_client = null;
     let lv_data = ``;
-    lo_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app = new ltcl_test_app();
     li_client = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client.nav_app_leave({ app: lo_app, event: `MY_EVENT`, r_data: lv_data });
     cl_abap_unit_assert.assert_bound(this.mo_action.ms_next.r_data);
@@ -325,7 +327,7 @@ class ltcl_test_client {
   test_nav_leave_r_data_not_sup() {
     let lo_app = null;
     let li_client = null;
-    lo_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app = new ltcl_test_app();
     li_client = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client.nav_app_leave({ app: lo_app, event: `MY_EVENT` });
     cl_abap_unit_assert.assert_not_bound(this.mo_action.ms_next.r_data);
@@ -335,7 +337,7 @@ class ltcl_test_client {
     let lo_app = null;
     let li_client = null;
     let lr_data = null;
-    lo_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app = new ltcl_test_app();
     li_client = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client.nav_app_leave({ app: lo_app, event: `MY_EVENT`, r_data: lr_data });
     cl_abap_unit_assert.assert_not_bound(this.mo_action.ms_next.r_data);

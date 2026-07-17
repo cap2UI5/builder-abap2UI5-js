@@ -308,7 +308,10 @@ function buildModel(file) {
         } else if (T === "Constant") {
           model.fields.set(name, { default: rendered ?? typeDefault(typeTokens), isStatic: true, isConst: true });
         } else {
-          model.fields.set(name, { default: rendered ?? typeDefault(typeTokens), isStatic: T === "ClassData", isConst: false });
+          // remember `REF TO cls` so `<member> = NEW #( )` can infer the class.
+          const refI = typeTokens.findIndex((t, k) => KW(t) === "REF" && KW(typeTokens[k + 1] || "") === "TO");
+          const refType = refI >= 0 && typeTokens[refI + 2] ? String(typeTokens[refI + 2]).toLowerCase() : null;
+          model.fields.set(name, { default: rendered ?? typeDefault(typeTokens), isStatic: T === "ClassData", isConst: false, refType });
         }
       } else if (T === "MethodDef") {
         // CLASS-METHODS lexes as three tokens: CLASS - METHODS
@@ -1031,6 +1034,9 @@ function txConstructor(kind, typeName, inner, ctx) {
           ctx.requires?.add(cls);
           return `new ${cls}(${txArgs(inner, ctx, cls)})`;
         }
+        // local class (lcl_/ltcl_ etc.) defined in the same module — instantiate
+        // directly, no require. Framework prefixes are handled by requirePathFor.
+        if (!/^(cl_|cx_|z2ui5_)/.test(cls)) return `new ${safeIdent(cls)}(${txArgs(inner, ctx, cls)})`;
       }
       // … or from the factory pattern (method returning REF TO own class)
       const ret = ctx.method?.def?.returning;
@@ -2108,7 +2114,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       if (eq < 0) return todo();
       // `x = NEW #( … )` — expose x's declared REF TO class for inference
       const lhsName = eq === i + 1 && isId(toks[i]) ? toks[i].str.toLowerCase() : decl;
-      ctx.newTargetType = lhsName ? ctx.localRefTypes.get(lhsName) || null : null;
+      ctx.newTargetType = lhsName ? ctx.localRefTypes.get(lhsName) || ctx.model.fields.get(lhsName)?.refType || null : null;
       let rhs = txExpr(toks.slice(eq + 1), ctx);
       ctx.newTargetType = null;
       // vars initialized from client.get() carry UPPERCASE component keys

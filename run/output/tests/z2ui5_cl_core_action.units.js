@@ -156,7 +156,7 @@ class ltcl_test {
     lo_action = new z2ui5_cl_core_action({ val: lo_http });
     lo_action.mo_app.mo_app = new ltcl_test_app();
     lo_action.mo_app.ms_draft.id = `CURRENT_DRAFT`;
-    lo_new_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_new_app = new ltcl_test_app();
     lo_action.ms_next.o_app_call = z2ui5_cl_util.abap_copy(lo_new_app);
     lo_action.ms_next.s_set.s_msg_box.text = `box`;
     lo_action.ms_next.s_set.s_msg_toast.text = `toast`;
@@ -187,7 +187,7 @@ class ltcl_test {
     lo_action = new z2ui5_cl_core_action({ val: lo_http });
     lo_action.mo_app.mo_app = new ltcl_test_app();
     lo_action.mo_app.ms_draft.id = `CURRENT_DRAFT`;
-    lo_prev_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_prev_app = new ltcl_test_app();
     lo_action.ms_next.o_app_leave = z2ui5_cl_util.abap_copy(lo_prev_app);
     lo_action.ms_next.s_set.s_msg_box.text = `box`;
     lo_action.ms_next.s_set.s_msg_toast.text = `toast`;

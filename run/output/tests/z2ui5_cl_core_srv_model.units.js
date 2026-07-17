@@ -152,7 +152,7 @@ class ltcl_test_app3 {
   mo_app = null;
 
   constructor() {
-    this.mo_app = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_app = new ltcl_test_app_sub();
   }
 }
 

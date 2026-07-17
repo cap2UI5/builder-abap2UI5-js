@@ -1,5 +1,7 @@
 const z2ui5_cl_a2ui5_context = require("abap2UI5/z2ui5_cl_a2ui5_context");
 const z2ui5_cl_core_app = require("abap2UI5/z2ui5_cl_core_app");
+const z2ui5_cl_core_srv_bind = require("abap2UI5/z2ui5_cl_core_srv_bind");
+const z2ui5_cl_core_srv_event = require("abap2UI5/z2ui5_cl_core_srv_event");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_cx_a2ui5_error = require("abap2UI5/z2ui5_cx_a2ui5_error");
 const z2ui5_if_core_types = require("abap2UI5/z2ui5_if_core_types");
@@ -11,8 +13,8 @@ class z2ui5_cl_core_client {
 
   constructor({ action } = {}) {
     this.mo_action = z2ui5_cl_util.abap_copy(action);
-    this.mo_srv_bind = /* TODO(abap2js): NEW #( ) */ null;
-    this.mo_srv_event = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_srv_bind = new z2ui5_cl_core_srv_bind(this.mo_action.mo_app);
+    this.mo_srv_event = new z2ui5_cl_core_srv_event();
   }
 
   follow_up_action() {

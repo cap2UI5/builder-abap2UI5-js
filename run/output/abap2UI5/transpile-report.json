@@ -362,10 +362,8 @@
   {
     "class": "z2ui5_cl_core_action",
     "path": "01/02/z2ui5_cl_core_action.js",
-    "todos": 1,
-    "todoDetails": [
-      "NEW #( ) — target type unknown, resolve manually"
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_core_app",
@@ -379,11 +377,8 @@
   {
     "class": "z2ui5_cl_core_client",
     "path": "01/02/z2ui5_cl_core_client.js",
-    "todos": 2,
-    "todoDetails": [
-      "NEW #( ) — target type unknown, resolve manually",
-      "NEW #( ) — target type unknown, resolve manually"
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_core_handler",
