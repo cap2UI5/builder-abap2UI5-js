@@ -15,19 +15,24 @@
     "detail": "Cannot read properties of null (reading 'push')"
   },
   {
-    "name": "z2ui5_cl_demo_app_080",
-    "verdict": "error-popup",
-    "detail": "lo_planningcalendar.rows is not a function"
-  },
-  {
     "name": "z2ui5_cl_demo_app_088",
     "verdict": "error-popup",
     "detail": "page.nav_container(...).pages is not a function"
   },
   {
+    "name": "z2ui5_cl_demo_app_105",
+    "verdict": "error-popup",
+    "detail": "Cannot read properties of null (reading 'input')"
+  },
+  {
     "name": "z2ui5_cl_demo_app_110",
     "verdict": "error-popup",
-    "detail": "view.shell(...).page(...).simple_form(...).label(...).mask_input(...).get(...).rules is not a function"
+    "detail": "view.shell(...).page(...).header_content(...).link(...).get_parent(...).simple_form(...).label(...).mask_input(...).get(...).rules is not a function"
+  },
+  {
+    "name": "z2ui5_cl_demo_app_112",
+    "verdict": "error-popup",
+    "detail": "Cannot read properties of null (reading 'input')"
   },
   {
     "name": "z2ui5_cl_demo_app_122",
@@ -43,6 +48,11 @@
     "name": "z2ui5_cl_demo_app_235",
     "verdict": "error-popup",
     "detail": "page_01.page(...).header_content(...).button(...).get_parent(...).sub_header(...).toolbar(...).button(...).toolbar_spacer(...).title(...).toolbar_spacer(...).get_parent(...).get_parent(...).content(.."
+  },
+  {
+    "name": "z2ui5_cl_demo_app_258",
+    "verdict": "error-popup",
+    "detail": "navlist.navigation_list_item(...).get_child is not a function"
   },
   {
     "name": "z2ui5_cl_demo_app_266",

@@ -52,6 +52,13 @@ function splitClasses(source) {
   for (const line of source.split(/\r?\n/)) {
     const open = line.match(/^\s*CLASS\s+(\w+)\s+(DEFINITION|IMPLEMENTATION)\b/i);
     if (open && !cur) {
+      // Skip bodyless CLASS statements that carry no ENDCLASS — otherwise the
+      // scanner opens a chunk that never closes and swallows the following
+      // (real) class, so the whole include fails with "no class found":
+      //   CLASS <main> DEFINITION LOCAL FRIENDS <ltcl>.  (test friends grant)
+      //   CLASS <x> DEFINITION DEFERRED.                 (forward declaration)
+      //   CLASS <x> DEFINITION LOAD.
+      if (/\b(LOCAL\s+FRIENDS|DEFERRED|DEFINITION\s+LOAD)\b/i.test(line)) continue;
       cur = { name: open[1].toLowerCase(), kind: open[2].toUpperCase() };
       buf = [line];
       continue;

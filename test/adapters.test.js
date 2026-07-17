@@ -29,7 +29,7 @@ const HELLO = {
 // full apps-smoke gate — here we prove each ADAPTER runs the same set.
 const CROSS_SECTION = [
   "z2ui5_cl_demo_app_001",
-  "z2ui5_cl_demo_app_003",
+  "z2ui5_cl_demo_app_004",
   "z2ui5_cl_demo_app_070",
   "z2ui5_cl_demo_app_372",
   "z2ui5_cl_app_startup",

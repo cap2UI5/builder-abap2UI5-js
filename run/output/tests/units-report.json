@@ -1,7 +1,9 @@
 [
   {
     "main": "z2ui5_cl_ajson",
-    "error": "z2ui5_cl_ajson: no class found in z2ui5_cl_ajson.clas.abap"
+    "classes": 13,
+    "tests": 149,
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_ajson_filter_lib",
@@ -59,23 +61,33 @@
   },
   {
     "main": "z2ui5_cl_core_action",
-    "error": "z2ui5_cl_core_action: no class found in z2ui5_cl_core_action.clas.abap"
+    "classes": 2,
+    "tests": 9,
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_core_app",
-    "error": "z2ui5_cl_core_app: no class found in z2ui5_cl_core_app.clas.abap"
+    "classes": 2,
+    "tests": 7,
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_core_client",
-    "error": "z2ui5_cl_core_client: no class found in z2ui5_cl_core_client.clas.abap"
+    "classes": 2,
+    "tests": 36,
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_core_handler",
-    "error": "z2ui5_cl_core_handler: no class found in z2ui5_cl_core_handler.clas.abap"
+    "classes": 2,
+    "tests": 20,
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_core_srv_bind",
-    "error": "ltcl_test_app: no class found in ltcl_test_app.clas.abap"
+    "classes": 4,
+    "tests": 10,
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_core_srv_event",
@@ -85,7 +97,9 @@
   },
   {
     "main": "z2ui5_cl_core_srv_model",
-    "error": "z2ui5_cl_core_srv_model: no class found in z2ui5_cl_core_srv_model.clas.abap"
+    "classes": 28,
+    "tests": 51,
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_app_hello_world",
@@ -109,18 +123,6 @@
     "main": "z2ui5_cl_http_handler",
     "classes": 1,
     "tests": 7,
-    "todos": 0
-  },
-  {
-    "main": "z2ui5_cl_xml_view",
-    "classes": 2,
-    "tests": 44,
-    "todos": 0
-  },
-  {
-    "main": "z2ui5_cl_xml_view_cc",
-    "classes": 1,
-    "tests": 29,
     "todos": 0
   }
 ]

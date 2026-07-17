@@ -1,10 +1,658 @@
 [
   {
-    "name": "z2ui5_cl_ajson::__transpile",
-    "reason": "z2ui5_cl_ajson: no class found in z2ui5_cl_ajson.clas.abap"
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_abap_false",
+    "reason": "assertion failed — expected \"false\", got undefined"
   },
   {
-    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::empty_filter_simple",
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_abap_true",
+    "reason": "assertion failed — expected \"true\", got undefined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_cache_hit",
+    "reason": "assertion failed — expected \"true\", got undefined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_char_non_bool",
+    "reason": "assertion failed — expected \"X\", got undefined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_check_by_data",
+    "reason": "assertion failed — expected true, got false"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_binding",
+    "reason": "assertion failed — expected \"{path}\", got undefined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_empty",
+    "reason": "assertion failed — expected \"\", got undefined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_literal",
+    "reason": "assertion failed — expected \"true\", got undefined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_http::__load",
+    "reason": "Unexpected token ';'"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_empty_object",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_empty_string",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_false",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_zero",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_filled_object",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_filled_string",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_number",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_on_open_visit",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_true",
+    "reason": "rv_keep is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::prefix",
+    "reason": "Cannot set properties of null (setting 'path')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_ajson",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_array",
+    "reason": "fs_s is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_complex_obj",
+    "reason": "Cannot set properties of null (setting 'a')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_include_with_suffix",
+    "reason": "Cannot set properties of null (setting 'a_suf')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_null",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_obj",
+    "reason": "Cannot set properties of null (setting 'a')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_false",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_number",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_string",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_timestamp",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_timestamp_initial",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_timestampl",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_timestampl_initial",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_true",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_abap_to_json::set_value_xsdboolean",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_cloning_test::clone_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_cloning_test::filter_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_cloning_test::mapper_and_filter",
+    "reason": "Cannot read properties of null (reading 'set')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_cloning_test::mapper_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_cloning_test::opts_copying",
+    "reason": "Cannot read properties of null (reading 'keep_item_order')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref_negative",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref_no_initiator",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref_table",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_filter_test::array_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_filter_test::simple_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_filter_test::visit_types",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::array_index",
+    "reason": "Cannot set properties of null (setting 'row')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::array_simple",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::chaining",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::is_empty",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::item_order_integrated",
+    "reason": "ls_dummy is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::push_json",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::reader",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_integrated::stringify",
+    "reason": "ls_dummy is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_array",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_array_of_arrays",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_array_of_arrays_simple",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_compressed_hash",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_compressed_sort",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_compressed_sort_unique",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_compressed_stdrd",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_compressed_stdrd_key",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_corresponding",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_corresponding_negative",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_corresponding_pub_neg",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_corresponding_public",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_hashed_plain_tab",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_hashed_tab",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_negative",
+    "reason": "assertion failed — expected \"Expected structure\", got \"Cannot read properties of null (reading 'add')\""
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_sorted_tab",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_str_to_packed",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_struc",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_time",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_timestamp_initial",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_timestamp_long",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_value",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_w_plain_tab",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_w_tab_of_struc",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_mapper_test::array_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_mapper_test::duplication_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_mapper_test::empty_name_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_mapper_test::simple_test",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_mapper_test::trivial",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_bare_values",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_boolean",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_date",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_empty_object",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_error",
+    "reason": "lx_err.get_text is not a function"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_false",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_float",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_input_string",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_input_string_table",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_input_xstring",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_keeping_order",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_null",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_number",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::parse_string",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::special_characters_in_name",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::special_characters_in_path",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::special_characters_in_value",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_parser_test::unicode_characters",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::array_to_string_table",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::exists",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::get_date",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::get_node_type",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::get_timestamp",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::get_timestampl",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::get_value",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::members",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::slice",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::value_boolean",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::value_integer",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::value_number",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_reader_test::value_string",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::array_index",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::empty",
+    "reason": "lcl_json_serializer is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::empty_set",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::escape_string",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::item_order",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::simple_indented",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::stringify_condensed",
+    "reason": "lcl_json_serializer is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_serializer_test::stringify_indented",
+    "reason": "lcl_json_serializer is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_utils_test::normalize_path",
+    "reason": "lcl_utils is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_utils_test::split_path",
+    "reason": "Cannot set properties of null (setting 'path')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_utils_test::string_to_xstring_utf8",
+    "reason": "lcl_utils is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_utils_test::validate_array_index",
+    "reason": "lcl_utils is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::arrays",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::arrays_negative",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::delete",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::delete_subtree",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::ignore_empty",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::new_array_w_keep_order_touch",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::overwrite_w_keep_order_set",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::overwrite_w_keep_order_touch",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::prove_path_exists",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::read_only",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::root_assignment",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_ajson",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_array_obj",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_bool_abap_bool",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_bool_int",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_bool_tab",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_date",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_int",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_number",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_obj",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_obj_w_date_time",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_ref_to_data",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_ref_to_data_struct",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_str",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_tab",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_tab_hashed",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_tab_nested_struct",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_timestamp",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_timestampl",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_utclong",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_value",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::set_with_type",
+    "reason": "Cannot read properties of null (reading 'parse')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::setx",
+    "reason": "Cannot read properties of null (reading 'setx')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::setx_complex",
+    "reason": "Cannot read properties of null (reading 'setx')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::setx_complex_w_keep_order",
+    "reason": "Cannot read properties of null (reading 'setx')"
+  },
+  {
+    "name": "z2ui5_cl_ajson::ltcl_writer_test::setx_float",
+    "reason": "Cannot read properties of null (reading 'setx')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::and_filter",
     "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
   },
   {
@@ -12,7 +660,19 @@
     "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
   },
   {
+    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::empty_filter_simple",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::mixed_case_filter",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
     "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::path_filter",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::path_filter_deep",
     "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
   },
   {
@@ -24,51 +684,27 @@
     "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
   },
   {
-    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::path_filter_deep",
-    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_abap",
+    "reason": "Cannot set properties of null (setting 'abap')"
   },
   {
-    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::and_filter",
-    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_abap_with_slice",
+    "reason": "Cannot set properties of null (setting 'abap')"
   },
   {
-    "name": "z2ui5_cl_ajson_filter_lib::ltcl_filters_test::mixed_case_filter",
-    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_json_with_path",
+    "reason": "Cannot set properties of null (setting 'abap')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_json_without_path",
+    "reason": "Cannot set properties of null (setting 'abap')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::compound_mapper",
+    "reason": "Cannot read properties of null (reading 'push')"
   },
   {
     "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::from_json_to_json",
-    "reason": "Cannot read properties of null (reading 'parse')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_abap",
-    "reason": "Cannot read properties of null (reading 'parse')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json",
-    "reason": "ls_result is not defined"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json_nested_struc",
-    "reason": "ls_result is not defined"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json_nested_table",
-    "reason": "ls_result is not defined"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json_first_lower",
-    "reason": "ls_result is not defined"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_snake",
-    "reason": "Cannot read properties of null (reading 'parse')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_camel",
-    "reason": "Cannot read properties of null (reading 'parse')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_camel_1st_upper",
     "reason": "Cannot read properties of null (reading 'parse')"
   },
   {
@@ -84,32 +720,44 @@
     "reason": "Cannot read properties of null (reading 'push')"
   },
   {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::compound_mapper",
-    "reason": "Cannot read properties of null (reading 'push')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::test_to_lower",
+    "reason": "Cannot read properties of null (reading 'parse')"
   },
   {
     "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::test_to_upper",
     "reason": "Cannot read properties of null (reading 'parse')"
   },
   {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::test_to_lower",
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_abap",
     "reason": "Cannot read properties of null (reading 'parse')"
   },
   {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_json_without_path",
-    "reason": "Cannot set properties of null (setting 'abap')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_camel",
+    "reason": "Cannot read properties of null (reading 'parse')"
   },
   {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_json_with_path",
-    "reason": "Cannot set properties of null (setting 'abap')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_camel_1st_upper",
+    "reason": "Cannot read properties of null (reading 'parse')"
   },
   {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_abap",
-    "reason": "Cannot set properties of null (setting 'abap')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json",
+    "reason": "ls_result is not defined"
   },
   {
-    "name": "z2ui5_cl_ajson_mapping::ltcl_fields::to_abap_with_slice",
-    "reason": "Cannot set properties of null (setting 'abap')"
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json_first_lower",
+    "reason": "ls_result is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json_nested_struc",
+    "reason": "ls_result is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_json_nested_table",
+    "reason": "ls_result is not defined"
+  },
+  {
+    "name": "z2ui5_cl_ajson_mapping::ltcl_test_mappers::to_snake",
+    "reason": "Cannot read properties of null (reading 'parse')"
   },
   {
     "name": "z2ui5_cl_ajson_mapping::ltcl_to_lower::to_json",
@@ -118,26 +766,6 @@
   {
     "name": "z2ui5_cl_ajson_mapping::ltcl_to_upper::to_json",
     "reason": "ls_result is not defined"
-  },
-  {
-    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_diff",
-    "reason": "Cannot read properties of null (reading 'add')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_diff_types",
-    "reason": "Cannot read properties of null (reading 'add')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_diff_arrays",
-    "reason": "Cannot read properties of null (reading 'mt_json_tree')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_merge",
-    "reason": "Cannot read properties of null (reading 'add')"
-  },
-  {
-    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_sort",
-    "reason": "Cannot read properties of null (reading 'sort')"
   },
   {
     "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::is_equal",
@@ -150,6 +778,666 @@
   {
     "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::iterate_object",
     "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_diff",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_diff_arrays",
+    "reason": "Cannot read properties of null (reading 'mt_json_tree')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_diff_types",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_merge",
+    "reason": "Cannot read properties of null (reading 'add')"
+  },
+  {
+    "name": "z2ui5_cl_ajson_utilities::ltcl_json_utils::json_sort",
+    "reason": "Cannot read properties of null (reading 'sort')"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_factory_by_frontend",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_first_start",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_first_start_draft_gone",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_first_start_error",
+    "reason": "lx.get_text is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_reset_view_flags",
+    "reason": "Cannot set properties of undefined (setting 'check_update_model')"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_stack_call",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_stack_leave",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_action::ltcl_test::test_system_startup",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_app::ltcl_test::test_attri_initialized",
+    "reason": "assertion failed — expected 0, got undefined"
+  },
+  {
+    "name": "z2ui5_cl_core_app::ltcl_test::test_buffer_clear",
+    "reason": "Cannot read properties of undefined (reading 'length')"
+  },
+  {
+    "name": "z2ui5_cl_core_app::ltcl_test_db::test_db_roundtrip",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cl_core_app::ltcl_test_db::test_db_save",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cl_core_app::ltcl_test_db::test_db_save_complex",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cl_core_app::ltcl_test_db::test_model_stringify",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_app_prev_stack",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_event",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_event_empty",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_init",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_init_done",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_navigated",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_follow_up_action",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_follow_up_action_ev",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_get_event_arg",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_instantiation",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_display",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_type",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_toast",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_call",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_call_id_stable",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_leave_event",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_leave_r_data",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_leave_r_data_empty",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_leave_r_data_not_sup",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_leave_r_data_unbound",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest2_view_destroy",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest2_view_display",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest_view_destroy",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest_view_display",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_destroy",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_display",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_model_update",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_destroy",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_display",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_model_update",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_app_state_active",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_nav_back",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_push_state",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_destroy",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_display",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_model_update",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::load_startup_app",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_constructor",
+    "reason": "assertion failed — expected \"test payload\", got \"{\\\"val\\\":\\\"test payload\\\"}\""
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_dispatch_loop_guard",
+    "reason": "lx.get_text is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_arg_object",
+    "reason": "Cannot read properties of undefined (reading 't_event_arg')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_arg_string",
+    "reason": "Cannot read properties of undefined (reading 't_event_arg')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_config",
+    "reason": "Cannot read properties of undefined (reading 'o_comp_data')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_model",
+    "reason": "assertion failed"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_model_no_wrap",
+    "reason": "assertion failed"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_no_config",
+    "reason": "Cannot read properties of undefined (reading 'o_comp_data')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_no_wrapper",
+    "reason": "Cannot read properties of undefined (reading 'origin')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_with_wrapper",
+    "reason": "Cannot read properties of undefined (reading 'origin')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_app_start",
+    "reason": "Cannot read properties of undefined (reading 'app_start')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_launchpad",
+    "reason": "Cannot read properties of undefined (reading 'check_launchpad')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_origin",
+    "reason": "Cannot read properties of undefined (reading 'origin')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_parse",
+    "reason": "Cannot read properties of undefined (reading 'origin')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_with_id",
+    "reason": "Cannot read properties of undefined (reading 'id')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_response_json",
+    "reason": "Cannot read properties of null (reading 's_front')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_view_update_flag",
+    "reason": "Cannot read properties of undefined (reading 'params')"
+  },
+  {
+    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_view_update_popup",
+    "reason": "Cannot read properties of undefined (reading 'params')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_error_diff",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_one_way",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_two_way",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_object::test_one_way_struc",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_object::test_one_way_value",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev1",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev2",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev3",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev4_long_name",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_buffer",
+    "reason": "Cannot set properties of null (setting 'id')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_create",
+    "reason": "Cannot set properties of null (setting 'id')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_create_and_read",
+    "reason": "Cannot set properties of null (setting 'id')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_overwrite",
+    "reason": "Cannot set properties of null (setting 'id')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_read_info",
+    "reason": "Cannot set properties of null (setting 'id')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event",
+    "reason": "lo_event.get_event is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_backend",
+    "reason": "lo_event.get_event_client is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_binding_arg",
+    "reason": "Cannot read properties of null (reading 'push')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_client_args",
+    "reason": "Cannot read properties of null (reading 'push')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_dollar_arg",
+    "reason": "Cannot read properties of null (reading 'push')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_empty_arg",
+    "reason": "Cannot read properties of null (reading 'push')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_multi_args",
+    "reason": "Cannot read properties of null (reading 'push')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_multi_req",
+    "reason": "Cannot set properties of null (setting 'check_allow_multi_req')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_with_args",
+    "reason": "Cannot read properties of null (reading 'push')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root4::test_tab_ref_gen",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root_attri2::test_obj_struc_ref",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root_attri::test_obj_tab_ref",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_int_kind",
+    "reason": "assertion failed — expected \"E\", got \"kind_elem\""
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_oref_type_kind",
+    "reason": "assertion failed — expected \"r\", got \"OTHER\""
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_string_type_kind",
+    "reason": "assertion failed — expected \"g\", got \"OTHER\""
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_table_type_kind",
+    "reason": "assertion failed — expected \"h\", got \"OTHER\""
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_refresh::test_bindings_preserved",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_deep_nesting::test_deep_oref_writeback",
+    "reason": "Cannot set properties of null (setting 'mo_inner')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_deep_nesting::test_deep_struct_writeback",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_nested_cell",
+    "reason": "Cannot set properties of null (setting 'mt_tree')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_nested_mixed",
+    "reason": "Cannot set properties of null (setting 'mt_tree')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_out_of_range",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_struct_component",
+    "reason": "Cannot set properties of null (setting 'mt_tree')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_subtable_replace",
+    "reason": "Cannot set properties of null (setting 'mt_tree')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_update_first_row",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_update_second_row",
+    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_dissolve_idempotent",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_mixed_types",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_name_parent_chain",
+    "reason": "Cannot set properties of null (setting 'mo_inner')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_nested_struc",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_oref_chain",
+    "reason": "Cannot set properties of null (setting 'mo_inner')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_search_nested_struc",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_search_table",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_table",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_table_in_dref",
+    "reason": "Cannot read properties of null (reading 'push')"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_dref",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_dref_struc",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_init",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref_dref",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref_dref_struc",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_struc",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_struc_dref",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_entry_refs_children::test_dref_children_name_ref",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_entry_refs_children::test_second_dref_children",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test4",
+    "reason": "ATTRI_GET_VAL_REF_ERROR"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test_first",
+    "reason": "cl_abap_unit_assert.abort is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test_second",
+    "reason": "ATTRI_GET_VAL_REF_ERROR"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::third_test",
+    "reason": "ATTRI_GET_VAL_REF_ERROR"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_stringify::test_empty_no_bind",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_stringify::test_simple_string",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_skips_one_way",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_updates_two_way",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_view_filter",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_types::test_multiple_attrs_same_var",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_types::test_updates_integer",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_refresh_ext::test_oref_after_null_refresh",
+    "reason": "this.mt_attri.value.some is not a function"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_sample335::test_two_drefs_to_same_struc",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_two_tab_refs::test_both_get_name_ref",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_model::ltcl_test_two_tab_refs::test_canonical_search",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cl_exit::ltcl_test::test_init_context",
+    "reason": "Cannot set properties of null (setting 'path')"
+  },
+  {
+    "name": "z2ui5_cl_exit::ltcl_test::test_post_default_exp_time",
+    "reason": "Cannot set properties of null (setting 'draft_exp_time_in_hours')"
+  },
+  {
+    "name": "z2ui5_cl_exit::ltcl_test::test_set_config_http_get",
+    "reason": "Cannot read properties of null (reading 'title')"
+  },
+  {
+    "name": "z2ui5_cl_exit::ltcl_test::test_set_config_http_post",
+    "reason": "Cannot read properties of null (reading 'draft_exp_time_in_hours')"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_html",
+    "reason": "z2ui5_cl_http_handler._http_get is not a function"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_status",
+    "reason": "z2ui5_cl_http_handler._http_get is not a function"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_ui5_boot",
+    "reason": "z2ui5_cl_http_handler._http_get is not a function"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_error",
+    "reason": "Cannot set properties of null (setting 'method')"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_ok",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_get_routing",
+    "reason": "Cannot set properties of null (setting 'method')"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_post_routing",
+    "reason": "sy_sysid is not defined"
+  },
+  {
+    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_chain_texts",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise",
+    "reason": "lx.get_text is not a function"
+  },
+  {
+    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_empty",
+    "reason": "Cannot read properties of undefined (reading 'uuid')"
+  },
+  {
+    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_with_cx",
+    "reason": "lx.get_text is not a function"
+  },
+  {
+    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_with_prev",
+    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
+  },
+  {
+    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_uuid_populated",
+    "reason": "Cannot read properties of undefined (reading 'uuid')"
   },
   {
     "name": "z2ui5_cx_ajson_error::ltcl_error::raise",
@@ -166,349 +1454,5 @@
   {
     "name": "z2ui5_cx_ajson_error::ltcl_error::set_location",
     "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_abap_true",
-    "reason": "assertion failed \u2014 expected \"true\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_abap_false",
-    "reason": "assertion failed \u2014 expected \"false\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_char_non_bool",
-    "reason": "assertion failed \u2014 expected \"X\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_empty",
-    "reason": "assertion failed \u2014 expected \"\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_literal",
-    "reason": "assertion failed \u2014 expected \"true\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_binding",
-    "reason": "assertion failed \u2014 expected \"{path}\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_check_by_data",
-    "reason": "assertion failed \u2014 expected true, got false"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_cache_hit",
-    "reason": "assertion failed \u2014 expected \"true\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_http::__load",
-    "reason": "Unexpected token ';'"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_filled_string",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_empty_string",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_number",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_zero",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_true",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_false",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_filled_object",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_drops_empty_object",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_json_fltr::ltcl_test::test_keeps_on_open_visit",
-    "reason": "rv_keep is not defined"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise",
-    "reason": "lx.get_text is not a function"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_empty",
-    "reason": "Cannot read properties of undefined (reading 'uuid')"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_with_prev",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_with_cx",
-    "reason": "lx.get_text is not a function"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_uuid_populated",
-    "reason": "Cannot read properties of undefined (reading 'uuid')"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_chain_texts",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_create",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_create_and_read",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_read_info",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_buffer",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_overwrite",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_action::__transpile",
-    "reason": "z2ui5_cl_core_action: no class found in z2ui5_cl_core_action.clas.abap"
-  },
-  {
-    "name": "z2ui5_cl_core_app::__transpile",
-    "reason": "z2ui5_cl_core_app: no class found in z2ui5_cl_core_app.clas.abap"
-  },
-  {
-    "name": "z2ui5_cl_core_client::__transpile",
-    "reason": "z2ui5_cl_core_client: no class found in z2ui5_cl_core_client.clas.abap"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::__transpile",
-    "reason": "z2ui5_cl_core_handler: no class found in z2ui5_cl_core_handler.clas.abap"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_bind::__transpile",
-    "reason": "ltcl_test_app: no class found in ltcl_test_app.clas.abap"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event",
-    "reason": "lo_event.get_event is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_backend",
-    "reason": "lo_event.get_event_client is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_with_args",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_multi_args",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_dollar_arg",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_binding_arg",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_empty_arg",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_multi_req",
-    "reason": "Cannot set properties of null (setting 'check_allow_multi_req')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_client_args",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::__transpile",
-    "reason": "z2ui5_cl_core_srv_model: no class found in z2ui5_cl_core_srv_model.clas.abap"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_set_config_http_get",
-    "reason": "Cannot read properties of null (reading 'title')"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_set_config_http_post",
-    "reason": "Cannot read properties of null (reading 'draft_exp_time_in_hours')"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_post_default_exp_time",
-    "reason": "Cannot set properties of null (setting 'draft_exp_time_in_hours')"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_init_context",
-    "reason": "Cannot set properties of null (setting 'path')"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_status",
-    "reason": "z2ui5_cl_http_handler._http_get is not a function"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_html",
-    "reason": "z2ui5_cl_http_handler._http_get is not a function"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_ui5_boot",
-    "reason": "z2ui5_cl_http_handler._http_get is not a function"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_ok",
-    "reason": "sy_sysid is not defined"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_error",
-    "reason": "Cannot set properties of null (setting 'method')"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_get_routing",
-    "reason": "Cannot set properties of null (setting 'method')"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_post_routing",
-    "reason": "sy_sysid is not defined"
-  },
-  {
-    "name": "z2ui5_cl_xml_view::ltcl_unit_test::test_combobox",
-    "reason": "assertion failed \u2014 expected true, got false"
-  },
-  {
-    "name": "z2ui5_cl_xml_view::ltcl_unit_test::test_generic_method",
-    "reason": "Cannot set properties of null (setting 'n')"
-  },
-  {
-    "name": "z2ui5_cl_xml_view::ltcl_unit_test::test_split_container",
-    "reason": "this.find is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_timer",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_focus",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_camera_picture",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_bwip_js",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_geolocation",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_file_uploader",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_favicon",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_title",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_dirty",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_history",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_messaging",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_storage",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_info_frontend",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_lp_title",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_z2ui5_namespace",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_smartmultiinput_ext",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_multiinput_ext",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_uploadset_ext",
-    "reason": "lo_cc.uploadset_ext is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_uitableext",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_camera_selector",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_spreadsheet_export",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_message_manager",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_scrolling",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_tree",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_websocket",
-    "reason": "this.mo_view.boolean_abap_2_json is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_binding_update",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_chartjs",
-    "reason": "this.mo_view.cc is not a function"
-  },
-  {
-    "name": "z2ui5_cl_xml_view_cc::ltcl_test_cc::test_approve_popover",
-    "reason": "this.mo_view.Popover is not a function"
   }
 ]

@@ -311,11 +311,29 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_383",
+    "path": "01/02/z2ui5_cl_demo_app_383.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_446",
+    "path": "01/02/z2ui5_cl_demo_app_446.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_447",
+    "path": "01/02/z2ui5_cl_demo_app_447.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_074",
     "path": "01/05/z2ui5_cl_demo_app_074.js",
     "todos": 1,
     "todoDetails": [
-      "unsupported statement: ASSIGN mr_table->* TO <tab>."
+      "unsupported statement: ASSIGN table->* TO <table>."
     ]
   },
   {
@@ -421,6 +439,12 @@
   {
     "class": "z2ui5_cl_demo_app_160",
     "path": "01/06/z2ui5_cl_demo_app_160.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_445",
+    "path": "01/06/z2ui5_cl_demo_app_445.js",
     "todos": 0,
     "todoDetails": []
   },
