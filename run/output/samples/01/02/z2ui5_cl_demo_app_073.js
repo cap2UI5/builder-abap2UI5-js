@@ -18,7 +18,7 @@ class z2ui5_cl_demo_app_073 extends z2ui5_if_app {
     }
     switch (client.get().EVENT) {
       case `BUTTON_OPEN_NEW_TAB`:
-        client.action.gen({ val: z2ui5_if_client.cs_event.open_new_tab, t_arg: [`https://www.google.com/search?q=abap2ui5&oq=abap2ui5,123`] });
+        client.follow_up_action({ val: z2ui5_if_client.cs_event.open_new_tab, t_arg: [`https://www.google.com/search?q=abap2ui5&oq=abap2ui5,123`] });
         break;
     }
   }

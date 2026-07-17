@@ -82,12 +82,11 @@ class z2ui5_cl_demo_app_074 extends z2ui5_if_app {
     this.client = z2ui5_cl_util.abap_copy(client);
     if (client.check_on_init()) {
       this.view_display();
-      return;
-    }
-    if (((client.get().CHECK_ON_NAVIGATED) === true || (client.get().CHECK_ON_NAVIGATED) === `X`)) {
+    } else if (client.check_on_navigated()) {
       this.view_display();
+    } else {
+      this.on_event();
     }
-    this.on_event();
   }
 }
 

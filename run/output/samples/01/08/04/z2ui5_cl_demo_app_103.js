@@ -36,7 +36,7 @@ class z2ui5_cl_demo_app_103 extends z2ui5_if_app {
   }
 
   resize_message({ val } = {}) {
-    const old_sizes = this.client.get_event_arg(1);
+    const old_sizes = this.client.get_event_arg();
     const new_sizes = this.client.get_event_arg(2);
     let message = z2ui5_cl_util.abap_copy(val);
     if (old_sizes) {

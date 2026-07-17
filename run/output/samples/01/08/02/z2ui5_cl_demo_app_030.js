@@ -35,11 +35,8 @@ class z2ui5_cl_demo_app_030 extends z2ui5_if_app {
         this.show_footer = (!(this.show_footer === true || this.show_footer === `X`));
         this.client.view_model_update();
         break;
-      case `OPEN_POPOVER_TAG`:
-        this.popover_display({ id: `generic_tag_id` });
-        break;
-      case `OPEN_POPOVER_BUTTON`:
-        this.popover_display({ id: `button_layout_data_id` });
+      case `OPEN_POPOVER`:
+        this.popover_display({ id: this.client.get_event_arg() });
         break;
     }
   }
@@ -67,7 +64,7 @@ class z2ui5_cl_demo_app_030 extends z2ui5_if_app {
     header_title._generic({ name: `snappedTitleOnMobile`, ns: `f` }).title(`This is a subheading`);
     header_title.content(`f`)
       .overflow_toolbar()
-      .generic_tag({ id: `generic_tag_id`, text: `SR`, status: `Error`, design: `StatusIconHidden`, press: this.client._event(`OPEN_POPOVER_TAG`) })
+      .generic_tag({ text: `SR`, status: `Error`, design: `StatusIconHidden`, press: this.client._event(`OPEN_POPOVER`, [`\${$source>/id}`]) })
       .object_number({ number: `2`, unit: `M`, emphasized: false, state: `Error` });
     header_title.actions(`f`)
       .button({ text: `Edit`, type: `Emphasized`, press: this.client._event(`TOGGLE_AREA_PRIORITY`) })
@@ -75,7 +72,7 @@ class z2ui5_cl_demo_app_030 extends z2ui5_if_app {
       .button({ text: `Copy`, type: `Transparent` })
       .button({ text: `Toggle Footer`, type: `Transparent`, press: this.client._event(`TOGGLE_FOOTER`) })
       .button({ icon: `sap-icon://action`, type: `Transparent` })
-      .button({ id: `button_layout_data_id`, text: `Button with layoutData`, type: `Transparent`, press: this.client._event(`OPEN_POPOVER_BUTTON`) })
+      .button({ text: `Button with layoutData`, type: `Transparent`, press: this.client._event(`OPEN_POPOVER`, [`\${$source>/id}`]) })
       .get()
       .layout_data()
       .overflow_toolbar_layout_data({ priority: `AlwaysOverflow`, closeoverflowoninteraction: false });

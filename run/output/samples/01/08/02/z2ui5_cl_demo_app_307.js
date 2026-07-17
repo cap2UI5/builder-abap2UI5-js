@@ -49,7 +49,7 @@ class z2ui5_cl_demo_app_307 extends z2ui5_if_app {
       .title({ text: `{TITLE}`, wrapping: true })
       .label({ text: `{SUBTITLE}`, wrapping: true });
     client.view_display(view.stringify());
-    client.action.gen({ val: z2ui5_if_client.cs_event.set_title, t_arg: [`Grid List with Drag and Drop`] });
+    client.follow_up_action({ val: z2ui5_if_client.cs_event.set_title, t_arg: [`Grid List with Drag and Drop`] });
   }
 
   on_event({ client } = {}) {

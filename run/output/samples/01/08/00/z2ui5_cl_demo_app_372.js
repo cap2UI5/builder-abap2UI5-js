@@ -59,10 +59,10 @@ class z2ui5_cl_demo_app_372 extends z2ui5_if_app {
   on_event() {
     switch (this.client.get().EVENT) {
       case `ITEM_PRESS`:
-        this.client.message_toast_display(`${this.client.get_event_arg(1)} Pressed`);
+        this.client.message_toast_display(`${this.client.get_event_arg()} Pressed`);
         break;
       case `MENU_ACTION`:
-        this.client.message_toast_display(`Action triggered on item: ${this.client.get_event_arg(1)}`);
+        this.client.message_toast_display(`Action triggered on item: ${this.client.get_event_arg()}`);
         break;
       case `DEFAULT_ACTION`:
         this.client.message_toast_display(`Default action triggered`);

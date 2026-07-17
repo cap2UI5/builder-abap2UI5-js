@@ -65,9 +65,9 @@ class z2ui5_cl_demo_app_098 extends z2ui5_if_app {
     }
     switch (client.get().EVENT) {
       case `ROW_NAVIGATE`:
-        if (client.get_event_arg(1)) {
+        if (client.get_event_arg()) {
           this.mv_layout = `ThreeColumnsEndExpanded`;
-          this.mv_title = client.get_event_arg(1);
+          this.mv_title = client.get_event_arg();
         }
         client.nest_view_model_update();
         client.view_model_update();

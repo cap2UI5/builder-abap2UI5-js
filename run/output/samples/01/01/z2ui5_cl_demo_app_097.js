@@ -45,7 +45,6 @@ class z2ui5_cl_demo_app_097 extends z2ui5_if_app {
 
   async main(client) {
     let sy_subrc = 0;
-    let lt_arg;
     let ls_arg;
     let lt_sel;
     let ls_sel;
@@ -58,14 +57,7 @@ class z2ui5_cl_demo_app_097 extends z2ui5_if_app {
     }
     switch (client.get().EVENT) {
       case `ROW_DELETE`:
-        lt_arg = client.get().T_EVENT_ARG;
-        ls_arg = {};
-        {
-          const _t = lt_arg;
-          const _i = (1) - 1;
-          sy_subrc = _i >= 0 && _i < _t.length ? 0 : 4;
-          if (sy_subrc === 0) ls_arg = _t[_i];
-        }
+        ls_arg = client.get_event_arg();
         if (ls_arg) {
           for (let _i = this.t_tab2.length - 1; _i >= 0; _i--) { const row = this.t_tab2[_i]; if (row.title === ls_arg) this.t_tab2.splice(_i, 1); }
         }

@@ -32,9 +32,9 @@ class z2ui5_cl_demo_app_101 extends z2ui5_if_app {
       this.value = {};
       this.client.view_model_update();
     } else if (this.client.check_on_event(`SENDER_PRESS`)) {
-      this.client.message_toast_display(`Clicked on Link: ${this.client.get_event_arg(1)}`);
+      this.client.message_toast_display(`Clicked on Link: ${this.client.get_event_arg()}`);
     } else if (this.client.check_on_event(`ICON_PRESS`)) {
-      this.client.message_toast_display(`Clicked on Image: ${this.client.get_event_arg(1)}`);
+      this.client.message_toast_display(`Clicked on Image: ${this.client.get_event_arg()}`);
     }
   }
 

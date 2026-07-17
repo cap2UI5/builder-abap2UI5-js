@@ -65,7 +65,7 @@ class z2ui5_cl_demo_app_052 extends z2ui5_if_app {
       case `POPOVER_DETAIL`:
         this.mv_check_popover = true;
         this.mv_product = client.get_event_arg(2);
-        this.popover_display({ id: client.get_event_arg(1) });
+        this.popover_display({ id: client.get_event_arg() });
         break;
     }
   }

@@ -26,13 +26,13 @@ class z2ui5_cl_demo_app_375 extends z2ui5_if_app {
     let closed_title;
     switch (this.client.get().EVENT) {
       case `CLOSE`:
-        closed_title = this.client.get_event_arg(1);
+        closed_title = this.client.get_event_arg();
         for (let _i = this.t_items.length - 1; _i >= 0; _i--) { const row = this.t_items[_i]; if (row.title === closed_title) this.t_items.splice(_i, 1); }
         this.client.message_toast_display(`Item Closed: ${closed_title}`);
         this.view_display();
         break;
       case `ITEM_PRESS`:
-        this.client.message_toast_display(`Item Pressed: ${this.client.get_event_arg(1)}`);
+        this.client.message_toast_display(`Item Pressed: ${this.client.get_event_arg()}`);
         break;
       case `ACCEPT`:
         this.client.message_toast_display(`Accept Button Pressed`);

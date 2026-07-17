@@ -77,14 +77,6 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_056",
-    "path": "01/01/z2ui5_cl_demo_app_056.js",
-    "todos": 1,
-    "todoDetails": [
-      "IN range-table check approximated (sign E ignored)"
-    ]
-  },
-  {
     "class": "z2ui5_cl_demo_app_061",
     "path": "01/01/z2ui5_cl_demo_app_061.js",
     "todos": 3,
@@ -223,12 +215,6 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_187",
-    "path": "01/01/z2ui5_cl_demo_app_187.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_197",
     "path": "01/01/z2ui5_cl_demo_app_197.js",
     "todos": 3,
@@ -237,6 +223,18 @@
       "unsupported statement: DELETE mt_table.",
       "unsupported statement: DELETE ADJACENT DUPLICATES FROM mt_table_products COMPARING product."
     ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_381",
+    "path": "01/01/z2ui5_cl_demo_app_381.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_382",
+    "path": "01/01/z2ui5_cl_demo_app_382.js",
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_028",
@@ -295,6 +293,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_361",
+    "path": "01/02/z2ui5_cl_demo_app_361.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_362",
     "path": "01/02/z2ui5_cl_demo_app_362.js",
     "todos": 0,
@@ -315,12 +319,6 @@
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_075",
-    "path": "01/05/z2ui5_cl_demo_app_075.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_078",
     "path": "01/05/z2ui5_cl_demo_app_078.js",
     "todos": 0,
@@ -333,16 +331,14 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_136",
-    "path": "01/05/z2ui5_cl_demo_app_136.js",
-    "todos": 1,
-    "todoDetails": [
-      "unsupported statement: ASSIGN mr_table->* TO <tab>."
-    ]
+    "class": "z2ui5_cl_demo_app_120",
+    "path": "01/05/z2ui5_cl_demo_app_120.js",
+    "todos": 0,
+    "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_175",
-    "path": "01/05/z2ui5_cl_demo_app_175.js",
+    "class": "z2ui5_cl_demo_app_170",
+    "path": "01/05/z2ui5_cl_demo_app_170.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -365,6 +361,74 @@
     "todoDetails": [
       "sy-uzeit used — provide manually"
     ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_006",
+    "path": "01/06/z2ui5_cl_demo_app_006.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_011",
+    "path": "01/06/z2ui5_cl_demo_app_011.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_019",
+    "path": "01/06/z2ui5_cl_demo_app_019.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_045",
+    "path": "01/06/z2ui5_cl_demo_app_045.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_048",
+    "path": "01/06/z2ui5_cl_demo_app_048.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_053",
+    "path": "01/06/z2ui5_cl_demo_app_053.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_059",
+    "path": "01/06/z2ui5_cl_demo_app_059.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_070",
+    "path": "01/06/z2ui5_cl_demo_app_070.js",
+    "todos": 1,
+    "todoDetails": [
+      "unsupported statement: DELETE mt_table."
+    ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_143",
+    "path": "01/06/z2ui5_cl_demo_app_143.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_160",
+    "path": "01/06/z2ui5_cl_demo_app_160.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_005",
+    "path": "01/08/00/z2ui5_cl_demo_app_005.js",
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_015",
@@ -392,12 +456,6 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_080",
-    "path": "01/08/00/z2ui5_cl_demo_app_080.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_101",
     "path": "01/08/00/z2ui5_cl_demo_app_101.js",
     "todos": 4,
@@ -411,6 +469,20 @@
   {
     "class": "z2ui5_cl_demo_app_110",
     "path": "01/08/00/z2ui5_cl_demo_app_110.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_114",
+    "path": "01/08/00/z2ui5_cl_demo_app_114.js",
+    "todos": 1,
+    "todoDetails": [
+      "sy-uname used — provide manually"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_140",
+    "path": "01/08/00/z2ui5_cl_demo_app_140.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -553,14 +625,6 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_231",
-    "path": "01/08/00/z2ui5_cl_demo_app_231.js",
-    "todos": 1,
-    "todoDetails": [
-      "unsupported statement: ASSIGN me->(source) TO <drs>."
-    ]
-  },
-  {
     "class": "z2ui5_cl_demo_app_232",
     "path": "01/08/00/z2ui5_cl_demo_app_232.js",
     "todos": 0,
@@ -617,6 +681,12 @@
   {
     "class": "z2ui5_cl_demo_app_241",
     "path": "01/08/00/z2ui5_cl_demo_app_241.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_243",
+    "path": "01/08/00/z2ui5_cl_demo_app_243.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -849,6 +919,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_366",
+    "path": "01/08/00/z2ui5_cl_demo_app_366.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_368",
     "path": "01/08/00/z2ui5_cl_demo_app_368.js",
     "todos": 3,
@@ -857,6 +933,12 @@
       "REDUCE #( ) not supported",
       "REDUCE #( ) not supported"
     ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_369",
+    "path": "01/08/00/z2ui5_cl_demo_app_369.js",
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_371",
@@ -871,8 +953,26 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_374",
+    "path": "01/08/00/z2ui5_cl_demo_app_374.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_375",
     "path": "01/08/00/z2ui5_cl_demo_app_375.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_376",
+    "path": "01/08/00/z2ui5_cl_demo_app_376.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_377",
+    "path": "01/08/00/z2ui5_cl_demo_app_377.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -969,14 +1069,32 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_367",
+    "path": "01/08/04/z2ui5_cl_demo_app_367.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_209",
     "path": "01/08/05/z2ui5_cl_demo_app_209.js",
     "todos": 0,
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_258",
+    "path": "01/08/05/z2ui5_cl_demo_app_258.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_265",
     "path": "01/08/06/z2ui5_cl_demo_app_265.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_270",
+    "path": "01/08/07/z2ui5_cl_demo_app_270.js",
     "todos": 0,
     "todoDetails": []
   },
