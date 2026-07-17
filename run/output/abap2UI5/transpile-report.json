@@ -688,10 +688,8 @@
   {
     "class": "z2ui5_cl_app_startup",
     "path": "02/z2ui5_cl_app_startup.js",
-    "todos": 1,
-    "todoDetails": [
-      "unsupported statement: ASSIGN ls_result-row->* TO FIELD-SYMBOL(<class>)."
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_exit",
@@ -702,34 +700,6 @@
   {
     "class": "z2ui5_cl_http_handler",
     "path": "02/z2ui5_cl_http_handler.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_xml_view_cc",
-    "path": "02/z2ui5_cl_xml_view_cc.js",
-    "todos": 1,
-    "todoDetails": [
-      "unsupported statement: CALL METHOD (lv_class)=>(`GET_STYLE`) RECEIVING result = lv_style."
-    ]
-  },
-  {
-    "class": "z2ui5_cl_xml_view",
-    "path": "02/z2ui5_cl_xml_view.js",
-    "todos": 6,
-    "parseError": "missing ) after argument list",
-    "todoDetails": [
-      "builtin concat_lines_of( ) not mapped",
-      "VALUE #( FOR/BASE/LINES OF ... ) not supported — rewrite manually",
-      "VALUE #( FOR/BASE/LINES OF ... ) not supported — rewrite manually",
-      "builtin concat_lines_of( ) not mapped",
-      "builtin escape( ) not mapped",
-      "builtin concat_lines_of( ) not mapped"
-    ]
-  },
-  {
-    "class": "z2ui5_if_action",
-    "path": "02/z2ui5_if_action.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -1461,6 +1431,28 @@
       "unsupported statement: MOVE-CORRESPONDING <row_selected> TO <row_result>.",
       "unsupported statement: ASSIGN mr_tab_popup->* TO <tab_out>.",
       "unsupported statement: ASSIGN mr_tab_popup_backup->* TO <tab_out_backup>."
+    ]
+  },
+  {
+    "class": "z2ui5_cl_xml_view_cc",
+    "path": "99/z2ui5_cl_xml_view_cc.js",
+    "todos": 1,
+    "todoDetails": [
+      "unsupported statement: CALL METHOD (lv_class)=>(`GET_STYLE`) RECEIVING result = lv_style."
+    ]
+  },
+  {
+    "class": "z2ui5_cl_xml_view",
+    "path": "99/z2ui5_cl_xml_view.js",
+    "todos": 6,
+    "parseError": "missing ) after argument list",
+    "todoDetails": [
+      "builtin concat_lines_of( ) not mapped",
+      "VALUE #( FOR/BASE/LINES OF ... ) not supported — rewrite manually",
+      "VALUE #( FOR/BASE/LINES OF ... ) not supported — rewrite manually",
+      "builtin concat_lines_of( ) not mapped",
+      "builtin escape( ) not mapped",
+      "builtin concat_lines_of( ) not mapped"
     ]
   }
 ]

@@ -13,20 +13,14 @@ class z2ui5_cl_core_client {
     this.mo_action = z2ui5_cl_util.abap_copy(action);
     this.mo_srv_bind = /* TODO(abap2js): NEW #( ) */ null;
     this.mo_srv_event = /* TODO(abap2js): NEW #( ) */ null;
-    this.action = z2ui5_cl_util.abap_copy(this);
   }
 
   follow_up_action() {
-    this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.push(val);
-  }
-
-  gen() {
-    let lv_val = ``;
-    lv_val = z2ui5_cl_util.abap_copy(val);
-    if (!lv_val || ![...String(lv_val)].every(($c) => String(`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_`).includes($c))) {
-      throw new z2ui5_cx_a2ui5_error({ val: `action: invalid event name '${val}' - only A-Z, a-z, 0-9 and _ allowed` });
+    let lv_js = z2ui5_cl_util.abap_copy(val);
+    if (val && [...String(val)].every(($c) => String(`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_`).includes($c))) {
+      lv_js = this.mo_srv_event.get_event_client({ val, t_arg });
     }
-    this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.push(this.mo_srv_event.get_event_client({ val, t_arg }));
+    this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.push(lv_js);
   }
 
   check_on_event() {
