@@ -15,8 +15,32 @@ const path = require("path");
 const vm = require("vm");
 const { transpileFile } = require("./abap2js");
 
+// Framework classes that are hand-maintained in this repo's src/srv/z2ui5
+// overlay win at assemble time (assemble-core copies src/ first and overlays
+// the transpiled tree add-only). Transpiling their upstream ABAP is wasted
+// work, and for classes abap2js cannot yet parse (e.g. z2ui5_cl_xml_view in
+// tree 99) it emits a parse-error file that assemble then skips — pure noise
+// that also masks any *new* parse error. Skip them here; the hand-port already
+// covers every path that requires them. (Popups in 99/02 that are NOT
+// hand-ported — e.g. z2ui5_cl_pop_error, required by core_handler — keep
+// transpiling.)
+const handPortedClasses = (() => {
+  const set = new Set();
+  const base = path.join(__dirname, "..", "src", "srv", "z2ui5");
+  (function walk(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (e.name.endsWith(".js")) set.add(e.name.slice(0, -3).toLowerCase());
+    }
+  })(base);
+  return set;
+})();
+const notHandPorted = (fname) => !handPortedClasses.has(fname.replace(/\.(clas|intf)\.abap$/i, "").toLowerCase());
+
 const TARGETS = {
-  abap2UI5: { base: ["src"], filter: () => true },
+  abap2UI5: { base: ["src"], filter: notHandPorted },
   samples: { base: ["src"], filter: () => true },
 };
 
