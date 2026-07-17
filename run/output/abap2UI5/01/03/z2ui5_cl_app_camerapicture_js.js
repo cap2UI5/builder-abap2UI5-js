@@ -7,10 +7,11 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `    "sap/ui/core/Control",` + `
 ` + `    "sap/m/Dialog",` + `
 ` + `    "sap/m/Button",` + `
+` + `    "sap/m/Text",` + `
 ` + `    "sap/ui/core/HTML",` + `
 ` + `    "z2ui5/core/Lib",` + `
 ` + `  ],` + `
-` + `  (Control, Dialog, Button, HTML, Lib) => {` + `
+` + `  (Control, Dialog, Button, Text, HTML, Lib) => {` + `
 ` + `    "use strict";` + `
 ` + `    // Camera button: opens a dialog with the live camera stream, captures` + `
 ` + `    // a photo on demand and hands it to the backend as a base64 JPEG in` + `
@@ -51,18 +52,28 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `        },` + `
 ` + `      },` + `
 ` + `` + `
+` + `      // Returns true when a photo was taken, false when it could not be (so` + `
+` + `      // the caller can keep the dialog open and let the status line explain).` + `
 ` + `      capture() {` + `
 ` + `        const video = document.getElementById(\`\${this.getId()}-video\`);` + `
 ` + `        const canvas = document.getElementById(\`\${this.getId()}-canvas\`);` + `
-` + `        if (!video || !canvas) return;` + `
+` + `        if (!video || !canvas) return false;` + `
 ` + `` + `
 ` + `        const videoWidth = video.videoWidth;` + `
 ` + `        const videoHeight = video.videoHeight;` + `
+` + `        // The camera may not have delivered a frame yet (Capture pressed too` + `
+` + `        // early, or the stream failed): videoWidth/Height are 0, which would` + `
+` + `        // make the canvas 0-sized and drawImage() throw an InvalidStateError.` + `
+` + `        if (!videoWidth || !videoHeight) {` + `
+` + `          this._setStatus("Camera not ready yet - no frame captured.");` + `
+` + `          Lib.logError("CameraPicture: camera not ready, no frame to capture");` + `
+` + `          return false;` + `
+` + `        }` + `
 ` + `        canvas.width = videoWidth;` + `
 ` + `        canvas.height = videoHeight;` + `
 ` + `` + `
 ` + `        const ctx = canvas.getContext("2d", _CTX_2D_OPTS);` + `
-` + `        if (!ctx) return;` + `
+` + `        if (!ctx) return false;` + `
 ` + `        ctx.drawImage(video, 0, 0, videoWidth, videoHeight);` + `
 ` + `` + `
 ` + `        // Full-resolution JPEG (quality 0.85) for the value, plus a small` + `
@@ -71,8 +82,9 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `        try {` + `
 ` + `          resultb64 = canvas.toDataURL("image/jpeg", 0.85);` + `
 ` + `        } catch (e) {` + `
+` + `          this._setStatus("Could not read the captured image.");` + `
 ` + `          Lib.logError("CameraPicture: canvas toDataURL failed", e);` + `
-` + `          return;` + `
+` + `          return false;` + `
 ` + `        }` + `
 ` + `` + `
 ` + `        const thumbH = videoWidth` + `
@@ -91,11 +103,12 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `          Lib.logError("CameraPicture: thumb toDataURL failed", e);` + `
 ` + `        }` + `
 ` + `` + `
-` + `        if (Lib.isDestroyed(this)) return;` + `
+` + `        if (Lib.isDestroyed(this)) return false;` + `
 ` + `        this.setProperty("value", resultb64);` + `
 ` + `        this.setProperty("thumbnail", thumbB64);` + `
 ` + `        this.fireOnPhoto({ photo: resultb64 });` + `
 ` + `        this._stopCamera();` + `
+` + `        return true;` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      _stopCamera() {` + `
@@ -111,6 +124,11 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `      onPicture() {` + `
 ` + `        if (this._oScanDialog?.isOpen()) return;` + `
 ` + `        if (!this._oScanDialog) {` + `
+` + `          // Visible status line inside the dialog so the user is told what is` + `
+` + `          // happening (starting, ready, or why the camera stays black).` + `
+` + `          this._oStatus = new Text().addStyleClass(` + `
+` + `            "sapUiSmallMarginBegin sapUiSmallMarginTop",` + `
+` + `          );` + `
 ` + `          this._oScanDialog = new Dialog({` + `
 ` + `            title: "Device Photo Function",` + `
 ` + `            contentWidth: "640px",` + `
@@ -120,15 +138,21 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `            stretch: true,` + `
 ` + `            afterClose: () => this._stopCamera(),` + `
 ` + `            content: [` + `
+` + `              this._oStatus,` + `
 ` + `              new HTML({` + `
 ` + `                id: \`\${this.getId()}PictureContainer\`,` + `
-` + `                content: \`<video style="width:100%;height:100%;object-fit:contain;"\${this.getAutoplay() ? " autoplay" : ""} id="\${this.getId()}-video">\`,` + `
+` + `                // playsinline + muted are required for autoplay of a live` + `
+` + `                // stream on iOS/Safari; min-height keeps the preview visible` + `
+` + `                // even if the dialog content box does not give it a height;` + `
+` + `                // the tag must be explicitly closed or the parser mangles it.` + `
+` + `                content: \`<video style="width:100%;height:100%;min-height:60vh;object-fit:contain;background:#000;" playsinline muted\${this.getAutoplay() ? " autoplay" : ""} id="\${this.getId()}-video"></video>\`,` + `
 ` + `              }),` + `
 ` + `              new Button({` + `
 ` + `                text: "Capture",` + `
+` + `                // Keep the dialog open when the capture failed so the status` + `
+` + `                // line stays visible to explain why.` + `
 ` + `                press: () => {` + `
-` + `                  this.capture();` + `
-` + `                  this._oScanDialog.close();` + `
+` + `                  if (this.capture()) this._oScanDialog.close();` + `
 ` + `                },` + `
 ` + `              }),` + `
 ` + `              new HTML({` + `
@@ -145,10 +169,13 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `          });` + `
 ` + `        }` + `
 ` + `` + `
+` + `        this._setStatus("Starting camera...");` + `
+` + `` + `
 ` + `        this._oScanDialog.attachEventOnce("afterOpen", async () => {` + `
 ` + `          if (Lib.isDestroyed(this)) return;` + `
 ` + `          const video = document.getElementById(\`\${this.getId()}-video\`);` + `
 ` + `          if (!video) {` + `
+` + `            this._setStatus("Camera preview element not found.");` + `
 ` + `            Lib.logError(` + `
 ` + `              "CameraPicture: video element not found after dialog open",` + `
 ` + `            );` + `
@@ -165,6 +192,9 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `          try {` + `
 ` + `            const md = navigator.mediaDevices;` + `
 ` + `            if (!md?.getUserMedia) {` + `
+` + `              this._setStatus(` + `
+` + `                "Camera not available - a secure (HTTPS) connection is required.",` + `
+` + `              );` + `
 ` + `              Lib.logError("CameraPicture: mediaDevices API not available");` + `
 ` + `              return;` + `
 ` + `            }` + `
@@ -181,11 +211,29 @@ class z2ui5_cl_app_camerapicture_js {
 ` + `            }` + `
 ` + `            this._stream = stream;` + `
 ` + `            video.srcObject = stream;` + `
+` + `            this._setStatus("Camera ready - press Capture to take a photo.");` + `
+` + `            // Some browsers do not honour the autoplay attribute for a` + `
+` + `            // srcObject stream - start playback explicitly.` + `
+` + `            try {` + `
+` + `              await video.play();` + `
+` + `            } catch (e) {` + `
+` + `              Lib.logError("CameraPicture: video.play() failed", e);` + `
+` + `            }` + `
 ` + `          } catch (error) {` + `
+` + `            this._setStatus(` + `
+` + `              \`Camera unavailable: \${error.name || "Error"} - \${error.message}\`,` + `
+` + `            );` + `
 ` + `            Lib.logError("CameraPicture: getUserMedia failed", error);` + `
 ` + `          }` + `
 ` + `        });` + `
 ` + `        this._oScanDialog.open();` + `
+` + `      },` + `
+` + `` + `
+` + `      // Update the status line inside the camera dialog, if it exists.` + `
+` + `      _setStatus(message) {` + `
+` + `        if (this._oStatus && !Lib.isDestroyed(this._oStatus)) {` + `
+` + `          this._oStatus.setText(message);` + `
+` + `        }` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      exit() {` + `

@@ -36,6 +36,7 @@ class ltcl_test_db extends z2ui5_if_app {
   }
 
   test_db_save() {
+    let sy_sysid = "";
     let lo_app_user = null;
     let lo_app = null;
     let lo_app_db = null;
@@ -58,6 +59,7 @@ class ltcl_test_db extends z2ui5_if_app {
   }
 
   test_db_roundtrip() {
+    let sy_sysid = "";
     let lo_app_user = null;
     let lo_app = null;
     let lo_loaded = null;
@@ -84,6 +86,7 @@ class ltcl_test_db extends z2ui5_if_app {
   }
 
   test_db_save_complex() {
+    let sy_sysid = "";
     let lo_app_user = null;
     let lo_app = null;
     let temp3 = null;

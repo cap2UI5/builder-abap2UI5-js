@@ -23,6 +23,18 @@ class z2ui5_cl_core_client {
     this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.push(lv_js);
   }
 
+  control_call_by_id() {
+    const lt_arg = [(id), (view), (method)];
+    lt_arg.push(...params);
+    this.follow_up_action({ val: `CONTROL_BY_ID`, t_arg: lt_arg });
+  }
+
+  control_call() {
+    const lt_arg = [(object), (method)];
+    lt_arg.push(...params);
+    this.follow_up_action({ val: `CONTROL_GLOBAL`, t_arg: lt_arg });
+  }
+
   check_on_event() {
     if (val) {
       result = (this.mo_action.ms_actual.event === val);
@@ -102,7 +114,7 @@ class z2ui5_cl_core_client {
     if (!lv_type) {
       lv_type = `show`;
     }
-    this.mo_action.ms_next.s_set.s_msg_box = { text: lv_text, type: lv_type, title: lv_title, styleclass: styleclass, onclose: onclose, actions: actions, emphasizedaction: emphasizedaction, initialfocus: initialfocus, textdirection: textdirection, icon: icon, details: lv_details, closeonnavigation: closeonnavigation };
+    this.mo_action.ms_next.s_set.s_msg_box = { text: lv_text, type: lv_type, title: lv_title, styleclass: styleclass, onclose: onclose, actions: actions, emphasizedaction: emphasizedaction, initialfocus: initialfocus, textdirection: textdirection, icon: icon, details: lv_details, closeonnavigation: closeonnavigation, dependenton: dependenton, contentwidth: contentwidth };
   }
 
   message_toast_display() {

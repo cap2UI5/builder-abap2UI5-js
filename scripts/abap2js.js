@@ -24,6 +24,17 @@ const { Registry, MemoryFile } = require("@abaplint/core");
 const fs = require("fs");
 const path = require("path");
 
+// Read-only system fields (sy-<field>) that carry a runtime default instead of
+// being computed. Emitted as `sy_<field>` references; declared once per method
+// (see emitMethod) so transpiled code — mostly test guards like
+// `IF sy-sysid = 'ABC'` — resolves them instead of throwing "not defined".
+// index / tabix / subrc are handled separately (loop / read-table semantics).
+const SY_RUNTIME_FIELDS = {
+  sysid: '""', uname: '""', mandt: '"000"', langu: '"E"',
+  datum: '""', uzeit: '""', datlo: '""', timlo: '""', zonlo: '""',
+  tcode: '""', cprog: '""', repid: '""', host: '""', dbcnt: "0",
+};
+
 // ---------------------------------------------------------------------------
 // require-path mapping (mirrors the "exports" of cap2UI5's package.json)
 // ---------------------------------------------------------------------------
@@ -751,7 +762,7 @@ function parseIdentChain(toks, i, ctx) {
   } else if (up === "SY" && isDash(toks[j] ?? { type: "" })) {
     const field = toks[j + 1].str.toLowerCase();
     str = field === "index" ? "sy_index" : field === "tabix" ? "sy_tabix" : `sy_${field}`;
-    if (!["index", "tabix", "subrc"].includes(field)) ctx.todos?.push(`sy-${field} used — provide manually`);
+    if (!["index", "tabix", "subrc"].includes(field) && !(field in SY_RUNTIME_FIELDS)) ctx.todos?.push(`sy-${field} used — provide manually`);
     j += 2;
   } else if (callFollows && lower in BUILTIN_FN) {
     // builtin function call
@@ -783,7 +794,12 @@ function parseIdentChain(toks, i, ctx) {
     const close = matchGroup(toks, j);
     const group = toks.slice(j + 1, close);
     let args = txArgs(group, ctx, lower);
-    if (group.length && def.importing.length && !namedArgsOf(group, ctx)) {
+    // Wrap a single positional arg as { firstParam: arg }. Skip when the call
+    // carries an EXPORTING/CHANGING/IMPORTING section — txArgs already renders
+    // those as a named-args object (namedArgsOf returns null for them, so the
+    // bare !namedArgsOf test would wrongly re-wrap the whole object).
+    const hasSection = group.some((t) => isId(t) && ["EXPORTING", "IMPORTING", "CHANGING", "RECEIVING", "EXCEPTIONS"].includes(KW(t.str)));
+    if (group.length && def.importing.length && !hasSection && !namedArgsOf(group, ctx)) {
       args = `{ ${def.importing[0].name}: ${args} }`;
     }
     str = `${receiver}.${lower}(${args})`;
@@ -1822,6 +1838,20 @@ function emitMethod(model, body, lines, requires, todos) {
   if (body.statements.some((x) => x.type === "Assign" || x.type === "ReadTable" || /\bsy-subrc\b/i.test(x.src))) {
     ctx.locals.add("sy_subrc");
     push(`let sy_subrc = 0;`);
+  }
+
+  // read-only system fields referenced anywhere in the method body — declared
+  // with runtime defaults (see SY_RUNTIME_FIELDS) so their `sy_<field>`
+  // references resolve. Skipped when the name is already a declared local.
+  {
+    const bodySrc = body.statements.map((x) => x.src || "").join("\n");
+    for (const [field, dflt] of Object.entries(SY_RUNTIME_FIELDS)) {
+      if (ctx.locals.has(`sy_${field}`)) continue;
+      if (new RegExp(`\\bsy-${field}\\b`, "i").test(bodySrc)) {
+        ctx.locals.add(`sy_${field}`);
+        push(`let sy_${field} = ${dflt};`);
+      }
+    }
   }
 
   // field symbols are method-scoped in ABAP while the ASSIGN sites may sit in

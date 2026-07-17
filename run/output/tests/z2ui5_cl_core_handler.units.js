@@ -16,6 +16,7 @@ class ltcl_app_nav_loop extends z2ui5_if_app {
 
 class ltcl_test_handler_post {
   load_startup_app() {
+    let sy_sysid = "";
     let lv_payload = ``;
     let lo_post = null;
     let temp1 = null;

@@ -801,15 +801,15 @@
   },
   {
     "name": "z2ui5_cl_core_action::ltcl_test::test_factory_by_frontend",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of undefined (setting 'id')"
   },
   {
     "name": "z2ui5_cl_core_action::ltcl_test::test_first_start",
-    "reason": "sy_sysid is not defined"
+    "reason": "lo_action.factory_first_start is not a function"
   },
   {
     "name": "z2ui5_cl_core_action::ltcl_test::test_first_start_draft_gone",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of undefined (setting 'app_start_draft')"
   },
   {
     "name": "z2ui5_cl_core_action::ltcl_test::test_first_start_error",
@@ -821,15 +821,15 @@
   },
   {
     "name": "z2ui5_cl_core_action::ltcl_test::test_stack_call",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of undefined (setting 'text')"
   },
   {
     "name": "z2ui5_cl_core_action::ltcl_test::test_stack_leave",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of undefined (setting 'text')"
   },
   {
     "name": "z2ui5_cl_core_action::ltcl_test::test_system_startup",
-    "reason": "sy_sysid is not defined"
+    "reason": "lo_action.factory_system_startup is not a function"
   },
   {
     "name": "z2ui5_cl_core_app::ltcl_test::test_attri_initialized",
@@ -893,6 +893,10 @@
   },
   {
     "name": "z2ui5_cl_core_client::ltcl_test_client::test_instantiation",
+    "reason": "Cannot set properties of null (setting 'check_initialized')"
+  },
+  {
+    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_dependent",
     "reason": "Cannot set properties of null (setting 'check_initialized')"
   },
   {
@@ -1001,7 +1005,7 @@
   },
   {
     "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::load_startup_app",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 'origin')"
   },
   {
     "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_constructor",
@@ -1077,39 +1081,39 @@
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_error_diff",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 'length')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_one_way",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 'length')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_two_way",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 'length')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_object::test_one_way_struc",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of null (reading 'ms_struc')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_object::test_one_way_value",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of null (setting 'mv_value')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev1",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 'length')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev2",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 'input')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev3",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 's_03')"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev4_long_name",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of undefined (reading 's_03')"
   },
   {
     "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_buffer",
@@ -1169,15 +1173,15 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root4::test_tab_ref_gen",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of null (reading 'push')"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root_attri2::test_obj_struc_ref",
-    "reason": "sy_sysid is not defined"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root_attri::test_obj_tab_ref",
-    "reason": "sy_sysid is not defined"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_int_kind",
@@ -1197,7 +1201,7 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_refresh::test_bindings_preserved",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_deep_nesting::test_deep_oref_writeback",
@@ -1205,7 +1209,7 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_deep_nesting::test_deep_struct_writeback",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_nested_cell",
@@ -1236,12 +1240,8 @@
     "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
   },
   {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_dissolve_idempotent",
-    "reason": "this.mt_attri.value.some is not a function"
-  },
-  {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_mixed_types",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_name_parent_chain",
@@ -1249,7 +1249,7 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_nested_struc",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_oref_chain",
@@ -1257,15 +1257,15 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_search_nested_struc",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of undefined (setting 'deep1')"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_search_table",
-    "reason": "sy_sysid is not defined"
+    "reason": "assertion failed — expected \"MT_TAB\", got \"mt_tab\""
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_table",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_table_in_dref",
@@ -1273,43 +1273,43 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_dref",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_dref_struc",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_init",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref_dref",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref_dref_struc",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_struc",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_struc_dref",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "assertion failed"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_entry_refs_children::test_dref_children_name_ref",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of null (reading 'name_ref')"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_entry_refs_children::test_second_dref_children",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of null (reading 'name_ref')"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test4",
@@ -1321,47 +1321,47 @@
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test_second",
-    "reason": "ATTRI_GET_VAL_REF_ERROR"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::third_test",
-    "reason": "ATTRI_GET_VAL_REF_ERROR"
+    "reason": "Cannot read properties of null (reading 'mv_value')"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_stringify::test_empty_no_bind",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "lo_model.main_json_stringify is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_stringify::test_simple_string",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_skips_one_way",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_updates_two_way",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_view_filter",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_types::test_multiple_attrs_same_var",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_json_types::test_updates_integer",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_refresh_ext::test_oref_after_null_refresh",
-    "reason": "this.mt_attri.value.some is not a function"
+    "reason": "cl_abap_unit_assert.abort is not a function"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_sample335::test_two_drefs_to_same_struc",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot read properties of null (reading 'name_ref')"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_two_tab_refs::test_both_get_name_ref",
@@ -1405,7 +1405,7 @@
   },
   {
     "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_ok",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of null (setting 'method')"
   },
   {
     "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_get_routing",
@@ -1413,7 +1413,7 @@
   },
   {
     "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_post_routing",
-    "reason": "sy_sysid is not defined"
+    "reason": "Cannot set properties of null (setting 'method')"
   },
   {
     "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_chain_texts",

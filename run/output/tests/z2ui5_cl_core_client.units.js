@@ -179,6 +179,16 @@ class ltcl_test_client {
     cl_abap_unit_assert.assert_equals({ exp: `error`, act: this.mo_action.ms_next.s_set.s_msg_box.type });
   }
 
+  test_message_box_dependent() {
+    let temp15b = null;
+    let li_client = null;
+    temp15b = z2ui5_cl_util.abap_copy(this.mo_client);
+    li_client = z2ui5_cl_util.abap_copy(temp15b);
+    li_client.message_box_display({ text: `The quantity exceeds the plan.`, type: `confirm`, dependenton: `myPage`, contentwidth: `20rem` });
+    cl_abap_unit_assert.assert_equals({ exp: `myPage`, act: this.mo_action.ms_next.s_set.s_msg_box.dependenton });
+    cl_abap_unit_assert.assert_equals({ exp: `20rem`, act: this.mo_action.ms_next.s_set.s_msg_box.contentwidth });
+  }
+
   test_message_toast() {
     let temp16 = null;
     let li_client = null;
@@ -388,5 +398,5 @@ class ltcl_test_client {
 module.exports = {
   __main: "z2ui5_cl_core_client",
   __classes: { ltcl_test_app, ltcl_test_client },
-  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_type","test_message_toast","test_follow_up_action","test_follow_up_action_ev","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_set_nav_back","test_get_event_arg","test_set_app_state_active"]},
+  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_dependent","test_message_box_type","test_message_toast","test_follow_up_action","test_follow_up_action_ev","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_set_nav_back","test_get_event_arg","test_set_app_state_active"]},
 };

@@ -38,6 +38,7 @@ class ltcl_test_http_handler {
   }
 
   test_http_post_ok() {
+    let sy_sysid = "";
     let ls_req = null;
     let ls_result = null;
     let temp6 = false;
@@ -76,6 +77,7 @@ class ltcl_test_http_handler {
   }
 
   test_main_post_routing() {
+    let sy_sysid = "";
     let ls_req = null;
     let ls_result = null;
     if (sy_sysid === `ABC`) {

@@ -5,11 +5,6 @@
     "detail": "handler answered with z2ui5_cl_app_startup"
   },
   {
-    "name": "z2ui5_cl_demo_app_047",
-    "verdict": "error-popup",
-    "detail": "sy_datum is not defined"
-  },
-  {
     "name": "z2ui5_cl_demo_app_061",
     "verdict": "error-popup",
     "detail": "Cannot read properties of null (reading 'push')"
@@ -22,7 +17,7 @@
   {
     "name": "z2ui5_cl_demo_app_105",
     "verdict": "error-popup",
-    "detail": "Cannot read properties of null (reading 'input')"
+    "detail": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone (same as the abap original). Cannot read properties of null (reading 'input')"
   },
   {
     "name": "z2ui5_cl_demo_app_110",
@@ -32,7 +27,7 @@
   {
     "name": "z2ui5_cl_demo_app_112",
     "verdict": "error-popup",
-    "detail": "Cannot read properties of null (reading 'input')"
+    "detail": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone (same as the abap original). Cannot read properties of null (reading 'input')"
   },
   {
     "name": "z2ui5_cl_demo_app_122",
@@ -48,11 +43,6 @@
     "name": "z2ui5_cl_demo_app_235",
     "verdict": "error-popup",
     "detail": "page_01.page(...).header_content(...).button(...).get_parent(...).sub_header(...).toolbar(...).button(...).toolbar_spacer(...).title(...).toolbar_spacer(...).get_parent(...).get_parent(...).content(.."
-  },
-  {
-    "name": "z2ui5_cl_demo_app_258",
-    "verdict": "error-popup",
-    "detail": "navlist.navigation_list_item(...).get_child is not a function"
   },
   {
     "name": "z2ui5_cl_demo_app_266",

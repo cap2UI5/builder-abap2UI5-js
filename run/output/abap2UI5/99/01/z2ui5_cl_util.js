@@ -321,7 +321,7 @@ class z2ui5_cl_util {
     let lv_value;
     const lt_mapping = z2ui5_cl_util.filter_get_token_range_mapping();
     const lt_tab = {};
-    z2ui5_cl_util.itab_corresponding({ val: { val, tab: lt_tab } });
+    z2ui5_cl_util.itab_corresponding({ val, tab: lt_tab });
     sy_tabix = 0;
     for (const lr_row of lt_tab) {
       sy_tabix++;
@@ -728,6 +728,7 @@ class z2ui5_cl_util {
   }
 
   static conv_exit({ convexit, output = false, value } = {}) {
+    let sy_langu = "E";
     const conex = ((output === true || output === `X`) ? `CONVERSION_EXIT_${convexit}_OUTPUT` : `CONVERSION_EXIT_${convexit}_INPUT`);
     try {
       if (convexit === `CUNIT`) {
@@ -1999,7 +2000,7 @@ class z2ui5_cl_util {
   }
 
   static itab_from_json({ val, data } = {}) {
-    z2ui5_cl_util.json_parse({ val: { val, data } });
+    z2ui5_cl_util.json_parse({ val, data });
   }
 
   static itab_count_by({ tab, fieldname } = {}) {
@@ -2636,6 +2637,7 @@ class z2ui5_cl_util {
 
   static rtti_get_table_desrc({ tabname, langu } = {}) {
     let result = ``;
+    let sy_langu = "E";
     let lan;
     let lv_tabname;
     let ddtext = ``;

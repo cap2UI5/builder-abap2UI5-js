@@ -27,6 +27,7 @@ class ltcl_test {
   }
 
   test_system_startup() {
+    let sy_sysid = "";
     let lo_http = null;
     let lo_action = null;
     let lo_result = null;
@@ -43,6 +44,7 @@ class ltcl_test {
   }
 
   test_first_start() {
+    let sy_sysid = "";
     let lv_payload = ``;
     let lo_http = null;
     let lo_action = null;
@@ -61,6 +63,7 @@ class ltcl_test {
   }
 
   test_first_start_draft_gone() {
+    let sy_sysid = "";
     let lv_payload = ``;
     let lo_http = null;
     let lo_action = null;
@@ -98,6 +101,7 @@ class ltcl_test {
   }
 
   test_factory_by_frontend() {
+    let sy_sysid = "";
     let lv_payload = ``;
     let lo_http = null;
     let lo_action = null;
@@ -140,6 +144,7 @@ class ltcl_test {
   }
 
   test_stack_call() {
+    let sy_sysid = "";
     let lo_http = null;
     let lo_action = null;
     let lo_new_app = null;
@@ -170,6 +175,7 @@ class ltcl_test {
   }
 
   test_stack_leave() {
+    let sy_sysid = "";
     let lo_http = null;
     let lo_action = null;
     let lo_prev_app = null;

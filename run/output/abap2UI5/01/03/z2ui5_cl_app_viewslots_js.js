@@ -114,6 +114,20 @@ class z2ui5_cl_app_viewslots_js {
 ` + `      return view.byId(id);` + `
 ` + `    }` + `
 ` + `` + `
+` + `    // Resolve a control id the backend named (popover openBy, message box` + `
+` + `    // dependentOn) to its control: search every open slot first - the ids` + `
+` + `    // apps use are the local ids they wrote in the XML, which resolve inside` + `
+` + `    // their view/fragment - then fall back to the global UI5 registry for a` + `
+` + `    // fully-qualified id. Returns null when nothing matches.` + `
+` + `    function resolveById(id) {` + `
+` + `      if (!id) return null;` + `
+` + `      for (const slot of slots) {` + `
+` + `        const found = byId(slot.key, id);` + `
+` + `        if (found) return found;` + `
+` + `      }` + `
+` + `      return Lib.getElementById(id);` + `
+` + `    }` + `
+` + `` + `
 ` + `    // Returns the key of the slot a UI5 element belongs to, by walking up` + `
 ` + `    // the control tree until a live slot view is hit (innermost slot wins,` + `
 ` + `    // e.g. nested views). Undefined when the element is in no slot.` + `
@@ -159,6 +173,7 @@ class z2ui5_cl_app_viewslots_js {
 ` + `      paramByKey,` + `
 ` + `      keyOfController,` + `
 ` + `      byId,` + `
+` + `      resolveById,` + `
 ` + `      containingSlotKey,` + `
 ` + `      destroy,` + `
 ` + `    };` + `

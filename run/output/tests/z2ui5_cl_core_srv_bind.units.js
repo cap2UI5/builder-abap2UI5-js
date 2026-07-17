@@ -34,6 +34,7 @@ class ltcl_test_bind {
   }
 
   test_one_way() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -46,6 +47,7 @@ class ltcl_test_bind {
   }
 
   test_error_diff() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -62,6 +64,7 @@ class ltcl_test_bind {
   }
 
   test_two_way() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -82,6 +85,7 @@ class ltcl_test_main_structure {
   ms_struc = {};
 
   test_one_way_lev1() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -96,6 +100,7 @@ class ltcl_test_main_structure {
   }
 
   test_one_way_lev2() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -108,6 +113,7 @@ class ltcl_test_main_structure {
   }
 
   test_one_way_lev3() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -120,6 +126,7 @@ class ltcl_test_main_structure {
   }
 
   test_one_way_lev4_long_name() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -140,6 +147,7 @@ class ltcl_test_main_object {
   ms_struc = {};
 
   test_one_way_value() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -154,6 +162,7 @@ class ltcl_test_main_object {
   }
 
   test_one_way_struc() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }

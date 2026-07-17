@@ -214,6 +214,7 @@ class ltcl_test_app_root_attri {
   }
 
   test_obj_tab_ref() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -249,6 +250,7 @@ class ltcl_test_app_root_attri2 {
   }
 
   test_obj_struc_ref() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -281,6 +283,7 @@ class ltcl_test_app_root4 {
 
   test_tab_ref_gen() {
     let sy_subrc = 0;
+    let sy_sysid = "";
     let fs_tab = null;
     let _fs$fs_tab = null;
     if (sy_sysid === `ABC`) {
@@ -433,6 +436,7 @@ class ltcl_test_diss_complex {
   }
 
   test_search_table() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -445,6 +449,7 @@ class ltcl_test_diss_complex {
   }
 
   test_search_nested_struc() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -500,6 +505,7 @@ class ltcl_app_root_335 {
 
 class ltcl_test_sample335 {
   test_two_drefs_to_same_struc() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -706,6 +712,7 @@ class ltcl_test_attri_refresh {
 
 class ltcl_test_entry_refs_children {
   test_dref_children_name_ref() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -722,6 +729,7 @@ class ltcl_test_entry_refs_children {
   }
 
   test_second_dref_children() {
+    let sy_sysid = "";
     if (sy_sysid === `ABC`) {
       return;
     }

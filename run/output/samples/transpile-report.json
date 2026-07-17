@@ -62,13 +62,8 @@
   {
     "class": "z2ui5_cl_demo_app_047",
     "path": "01/01/z2ui5_cl_demo_app_047.js",
-    "todos": 4,
-    "todoDetails": [
-      "sy-datum used — provide manually",
-      "sy-uzeit used — provide manually",
-      "sy-datum used — provide manually",
-      "sy-uzeit used — provide manually"
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_052",
@@ -375,10 +370,8 @@
   {
     "class": "z2ui5_cl_demo_app_306",
     "path": "01/05/z2ui5_cl_demo_app_306.js",
-    "todos": 1,
-    "todoDetails": [
-      "sy-uzeit used — provide manually"
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_006",
@@ -482,12 +475,10 @@
   {
     "class": "z2ui5_cl_demo_app_101",
     "path": "01/08/00/z2ui5_cl_demo_app_101.js",
-    "todos": 4,
+    "todos": 2,
     "todoDetails": [
       "format option dropped in template: sy - datum DATE = ISO",
-      "sy-datum used — provide manually",
-      "format option dropped in template: sy - uzeit TIME = ISO",
-      "sy-uzeit used — provide manually"
+      "format option dropped in template: sy - uzeit TIME = ISO"
     ]
   },
   {
@@ -499,10 +490,8 @@
   {
     "class": "z2ui5_cl_demo_app_114",
     "path": "01/08/00/z2ui5_cl_demo_app_114.js",
-    "todos": 1,
-    "todoDetails": [
-      "sy-uname used — provide manually"
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_140",
