@@ -242,6 +242,8 @@ class ClassModel {
     this.interfaces = [];
     this.fields = new Map(); // name -> { default, isStatic, isConst, valueExpr }
     this.structConsts = new Map(); // name -> [{ name, valueTok }]
+    this.structTypes = new Map(); // TYPES BEGIN OF name -> [{ name, default }]
+    this.tableTypes = new Map(); // TYPES name TYPE ... TABLE OF row -> row (lower)
     this.methods = new Map(); // lowername -> { isStatic, importing:[{name,defaultTok}], returning:{name,typeTokens}|null }
     this.methodBodies = []; // { name, statements: [{type,toks,src}] }
   }
@@ -311,7 +313,7 @@ function buildModel(file) {
           // remember `REF TO cls` so `<member> = NEW #( )` can infer the class.
           const refI = typeTokens.findIndex((t, k) => KW(t) === "REF" && KW(typeTokens[k + 1] || "") === "TO");
           const refType = refI >= 0 && typeTokens[refI + 2] ? String(typeTokens[refI + 2]).toLowerCase() : null;
-          model.fields.set(name, { default: rendered ?? typeDefault(typeTokens), isStatic: T === "ClassData", isConst: false, refType });
+          model.fields.set(name, { default: rendered ?? typeDefault(typeTokens), isStatic: T === "ClassData", isConst: false, refType, typeTokens });
         }
       } else if (T === "MethodDef") {
         // CLASS-METHODS lexes as three tokens: CLASS - METHODS
@@ -374,7 +376,83 @@ function buildModel(file) {
     }
     if (curMethod) curMethod.statements.push(s);
   }
+  collectTypeDefs(statements, model);
   return model;
+}
+
+// Collect TYPES declarations — flat structures (BEGIN OF … END OF) and named
+// table types (… TYPE STANDARD TABLE OF row) — from any section (class-level
+// or method-local). These let VALUE #( )/INSERT/APPEND complete a partial row
+// with its type's component defaults, matching ABAP where an unmentioned
+// numeric component reads as 0 rather than JS `undefined` (which would poison
+// later arithmetic into NaN).
+function collectTypeDefs(statements, model) {
+  const stack = []; // active BEGIN OF collectors (supports nesting)
+  for (const s of statements) {
+    const T = s.type;
+    const toks = s.toks;
+    if (T === "TypeBegin") {
+      const ofIdx = toks.findIndex((t) => KW(t.str) === "OF");
+      const name = ofIdx >= 0 && toks[ofIdx + 1] ? toks[ofIdx + 1].str.toLowerCase() : null;
+      stack.push({ name, members: [] });
+    } else if (T === "TypeEnd") {
+      const col = stack.pop();
+      if (col && col.name) model.structTypes.set(col.name, col.members);
+    } else if (T === "Type") {
+      const body = toks.slice(0, -1); // drop trailing "," or "."
+      if (!body.length) continue;
+      if (stack.length) {
+        // struct component: TYPES comp TYPE … (a nested BEGIN OF is a TypeBegin)
+        const name = body[1] ? body[1].str.toLowerCase() : null;
+        if (name) {
+          const { typeTokens } = parseTypeAfter(body.slice(2), 0);
+          stack[stack.length - 1].members.push({ name, default: typeDefault(typeTokens) });
+        }
+      } else {
+        // standalone: TYPES name TYPE [STANDARD|SORTED|HASHED] TABLE OF row …
+        const name = body[1] ? body[1].str.toLowerCase() : null;
+        if (!name) continue;
+        const tblIdx = body.findIndex((t) => KW(t.str) === "TABLE");
+        const ofIdx = body.findIndex((t) => KW(t.str) === "OF");
+        if (tblIdx >= 0 && ofIdx > tblIdx && body[ofIdx + 1]) {
+          model.tableTypes.set(name, body[ofIdx + 1].str.toLowerCase());
+        }
+      }
+    }
+  }
+}
+
+// Resolve the component list of the row structure described by `typeTokens`
+// (a TYPE clause as an array of token strings). Handles inline `TABLE OF row`,
+// named table types, and direct structure types. Returns [{name, default}] or
+// null when the type is unknown / not a known structure.
+const TYPE_KEYWORDS = new Set(["TYPE", "LIKE", "REF", "TO", "STANDARD", "SORTED", "HASHED", "TABLE", "OF", "WITH", "DEFAULT", "KEY", "EMPTY", "UNIQUE", "NON-UNIQUE", "LINE", "RANGE", "LENGTH", "DECIMALS", "BOXED", "INITIAL", "READ-ONLY"]);
+function rowStructComponents(typeTokens, model) {
+  if (!typeTokens || !typeTokens.length) return null;
+  const up = typeTokens.map((t) => String(t).toUpperCase());
+  const tblIdx = up.indexOf("TABLE");
+  const ofIdx = up.indexOf("OF");
+  let structName = null;
+  if (tblIdx >= 0 && ofIdx > tblIdx && typeTokens[ofIdx + 1]) {
+    structName = String(typeTokens[ofIdx + 1]).toLowerCase();
+  } else {
+    const nameTok = typeTokens.find((t) => !TYPE_KEYWORDS.has(String(t).toUpperCase()));
+    structName = nameTok ? String(nameTok).toLowerCase() : null;
+  }
+  if (!structName) return null;
+  if (model.tableTypes.has(structName)) structName = model.tableTypes.get(structName);
+  return model.structTypes.get(structName) || null;
+}
+
+// The declared TYPE tokens of a bare variable/attribute target, or null.
+function targetTypeTokens(nameToks, ctx) {
+  if (nameToks.length === 1 && isId(nameToks[0])) {
+    const nm = nameToks[0].str.toLowerCase();
+    if (ctx.varTypes.has(nm)) return ctx.varTypes.get(nm);
+    const f = ctx.model.fields.get(nm);
+    if (f && f.typeTokens) return f.typeTokens;
+  }
+  return null;
 }
 
 function renderLiteralToken(tok) {
@@ -477,6 +555,8 @@ class Ctx {
     this.locals = new Set(); // declared local vars (lowercase)
     this.upperLocals = new Set(); // locals holding client.get() structs (UPPERCASE keys)
     this.localRefTypes = new Map(); // local var → class name (DATA x TYPE REF TO cls)
+    this.varTypes = new Map(); // local/param var → declared TYPE tokens (struct completion)
+    this._completeStruct = null; // pending row components for the next top-level VALUE #()
     this.newTargetType = null; // declared type of the current assignment target (NEW # inference)
     this.requires = null; // shared Set on emitter
     this.todos = null; // shared array
@@ -986,6 +1066,18 @@ function renderNamedVal(v) {
   return `{ ${[...v.entries()].map(([k, x]) => `${k}: ${renderNamedVal(x)}`).join(", ")} }`;
 }
 
+/** like renderNamedVal, but fills components absent from `named` with the
+ *  structure type's declared defaults (0, ``, [], …) — mirrors ABAP, where an
+ *  unmentioned component is INITIAL rather than JS `undefined`. */
+function renderNamedValWithDefaults(named, comps) {
+  const have = new Set([...named.keys()].map((k) => k.toLowerCase()));
+  const parts = [...named.entries()].map(([k, v]) => `${k}: ${renderNamedVal(v)}`);
+  for (const c of comps) {
+    if (!have.has(c.name.toLowerCase())) parts.push(`${c.name}: ${c.default}`);
+  }
+  return `{ ${parts.join(", ")} }`;
+}
+
 /** render call arguments: named → object literal, positional → expression */
 function txArgs(groupToks, ctx, methodName) {
   if (groupToks.length === 0) return "";
@@ -1052,10 +1144,16 @@ function txConstructor(kind, typeName, inner, ctx) {
       return `/* TODO(abap2js): NEW #( ) */ null`;
     }
     case "VALUE": {
+      // A pending row-completion map applies only to this outermost VALUE —
+      // consume it so nested VALUE #( ) constructors don't inherit it.
+      const completeComps = ctx._completeStruct;
+      ctx._completeStruct = null;
       if (inner.length === 0) return "{}";
       // VALUE #( BASE tab ( row ) ... ) → [...tab, row, ...] /
       // VALUE #( BASE struct comp = x ) → { ...struct, comp: x }
-      if (KW(inner[0]?.str) === "BASE" && inner[1] && !isParenL(inner[1])) {
+      // `BASE` starts a VALUE #( BASE tab … ) only when followed by an
+      // expression — a component literally named `base` is followed by `=`.
+      if (KW(inner[0]?.str) === "BASE" && inner[1] && !isParenL(inner[1]) && inner[1].str !== "=") {
         let k = 1;
         let depth = 0;
         while (k < inner.length && !(depth === 0 && (isRowParen(inner[k]) || looksLikeKey(inner, k)))) {
@@ -1142,7 +1240,7 @@ function txConstructor(kind, typeName, inner, ctx) {
         return `[${rows.join(", ")}]`;
       }
       const named = namedArgsOf(inner, ctx);
-      if (named) return renderNamedVal(named);
+      if (named) return completeComps ? renderNamedValWithDefaults(named, completeComps) : renderNamedVal(named);
       return `(${txExpr(inner, ctx)})`;
     }
     case "COND":
@@ -1829,6 +1927,7 @@ function emitMethod(model, body, lines, requires, todos) {
 
   if (def.returning) {
     ctx.locals.add(def.returning.name);
+    ctx.varTypes.set(def.returning.name.toLowerCase(), def.returning.typeTokens);
     push(`let ${def.returning.name} = ${typeDefault(def.returning.typeTokens)};`);
   }
 
@@ -1934,6 +2033,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       // remember REF TO targets so `x = NEW #( … )` can infer the class
       const refIdx = typeTokens.findIndex((t, k) => KW(t) === "REF" && KW(typeTokens[k + 1] || "") === "TO");
       if (refIdx >= 0 && typeTokens[refIdx + 2]) ctx.localRefTypes.set(name, typeTokens[refIdx + 2].toLowerCase());
+      ctx.varTypes.set(name, typeTokens);
       push(`let ${name} = ${typeDefault(typeTokens)};`);
       break;
     }
@@ -2371,7 +2471,10 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         const toIdx = findTopWord(toks, "TO");
         if (toIdx < 0) return todo();
         const tab = txExpr(toks.slice(toIdx + 1, end), ctx);
+        const comps = rowStructComponents(targetTypeTokens(toks.slice(toIdx + 1, end), ctx), ctx.model);
+        if (comps) ctx._completeStruct = comps;
         const val = txExpr(toks.slice(1, toIdx), ctx);
+        ctx._completeStruct = null;
         if (refVar) {
           push(`const ${refVar} = ${val};`);
           push(`${tab}.push(${refVar});`);
@@ -2392,10 +2495,16 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       const end = Math.min(...[idxIdx, refIdx, asgIdx, toks.length].filter((x) => x > 0));
       let tabStart = intoIdx + 1;
       if (KW(toks[tabStart].str) === "TABLE") tabStart++;
-      const tab = txExpr(toks.slice(tabStart, end), ctx);
+      const tabToks = toks.slice(tabStart, end);
+      const tab = txExpr(tabToks, ctx);
       const isLines = KW(toks[1].str) === "LINES" && KW(toks[2].str) === "OF";
       const isInitial = KW(toks[1].str) === "INITIAL" && KW(toks[2].str) === "LINE";
+      if (!isLines && !isInitial) {
+        const comps = rowStructComponents(targetTypeTokens(tabToks, ctx), ctx.model);
+        if (comps) ctx._completeStruct = comps;
+      }
       let val = isInitial ? "{}" : txExpr(toks.slice(isLines ? 3 : 1, intoIdx), ctx);
+      ctx._completeStruct = null;
       const spread = isLines ? "..." : "";
       // capture the inserted line into a reference/field symbol
       if ((refIdx > 0 || asgIdx > 0) && !isLines) {
