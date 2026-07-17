@@ -36,7 +36,6 @@ CLASS z2ui5_cl_demo_app_028 IMPLEMENTATION.
     IF client->check_on_init( ).
       on_init( ).
       view_display( ).
-
     ELSEIF client->check_on_event( `TIMER_FINISHED` ).
       on_event( ).
     ENDIF.
@@ -47,7 +46,6 @@ CLASS z2ui5_cl_demo_app_028 IMPLEMENTATION.
   METHOD on_init.
 
     counter = 1.
-
     t_tab = VALUE #(
         ( title = |entry{ counter }|
           info  = `completed`
@@ -82,9 +80,9 @@ CLASS z2ui5_cl_demo_app_028 IMPLEMENTATION.
 
   METHOD start_timer.
 
-    client->action->gen(
+    client->follow_up_action(
         val   = z2ui5_if_client=>cs_event-start_timer
-        t_arg = VALUE #( ( client->_event( `TIMER_FINISHED` ) ) ( `2000` ) ) ).
+        t_arg = VALUE #( ( `TIMER_FINISHED` ) ( `2000` ) ) ).
 
   ENDMETHOD.
 

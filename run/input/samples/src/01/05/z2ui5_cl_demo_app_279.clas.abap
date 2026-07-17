@@ -18,7 +18,9 @@ CLASS z2ui5_cl_demo_app_279 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-CLASS z2ui5_cl_demo_app_279 IMPLEMENTATION.
+
+CLASS Z2UI5_CL_DEMO_APP_279 IMPLEMENTATION.
+
 
   METHOD view_display.
 
@@ -57,7 +59,7 @@ CLASS z2ui5_cl_demo_app_279 IMPLEMENTATION.
 
     client->view_display( page->stringify( ) ).
 
-    client->action->gen(
+    client->follow_up_action(
         val   = z2ui5_if_client=>cs_event-set_focus
         t_arg = VALUE #( ( `input` ) ) ).
 
@@ -103,12 +105,9 @@ CLASS z2ui5_cl_demo_app_279 IMPLEMENTATION.
     IF client->get( )-check_on_navigated = abap_true.
       on_navigation( ).
     ENDIF.
-
     on_event( ).
-
     IF client->check_on_init( ).
       view_display( ).
-
     ELSE.
       client->view_model_update( ).
     ENDIF.
@@ -132,5 +131,4 @@ CLASS z2ui5_cl_demo_app_279 IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
-
 ENDCLASS.
