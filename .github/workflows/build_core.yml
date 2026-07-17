@@ -47,12 +47,16 @@ jobs:
       - run: npm ci
         working-directory: adapters/web
       - run: npm run build_core
+      # self-healing ratchet: delists fixed known-failures (committed below),
+      # still fails hard on regressions — an emitter improvement can no
+      # longer freeze the nightlies behind a manual delist
+      - run: node scripts/ratchet-update.js
       - run: npm test
       - name: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add core
+          git add core test/upstream-units.known-failures.json test/apps-smoke.known-failures.json
           if git diff --cached --quiet; then
             echo "nothing to commit"
           else
