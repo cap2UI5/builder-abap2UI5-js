@@ -668,7 +668,7 @@ class z2ui5_cl_core_srv_model {
     if (sy_subrc !== 0) {
       return;
     }
-    this.delta_apply_nodes({ io_delta: { io_delta: io_val_front.slice(`/__delta`), ct_tab: fs_delta_tab } });
+    this.delta_apply_nodes({ io_delta: io_val_front.slice(`/__delta`), ct_tab: fs_delta_tab });
   }
 
   delta_apply_nodes({ io_delta, ct_tab } = {}) {
@@ -725,7 +725,7 @@ class z2ui5_cl_core_srv_model {
               // TODO(abap2js): GET REFERENCE OF <comp> INTO lr_sub.
               // TODO(abap2js): ASSIGN lr_sub->* TO <sub_tab>.
               if (sy_subrc === 0) {
-                this.delta_apply_nodes({ io_delta: { io_delta: lo_sub.slice(`/__delta`), ct_tab: fs_sub_tab } });
+                this.delta_apply_nodes({ io_delta: lo_sub.slice(`/__delta`), ct_tab: fs_sub_tab });
               }
             } else {
               // TODO(abap2js): lo_sub->to_abap( EXPORTING iv_corresponding = abap_true IMPORTING ev_container = <comp> ).

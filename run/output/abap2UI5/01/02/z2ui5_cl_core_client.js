@@ -1,5 +1,7 @@
 const z2ui5_cl_a2ui5_context = require("abap2UI5/z2ui5_cl_a2ui5_context");
 const z2ui5_cl_core_app = require("abap2UI5/z2ui5_cl_core_app");
+const z2ui5_cl_core_srv_bind = require("abap2UI5/z2ui5_cl_core_srv_bind");
+const z2ui5_cl_core_srv_event = require("abap2UI5/z2ui5_cl_core_srv_event");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_cx_a2ui5_error = require("abap2UI5/z2ui5_cx_a2ui5_error");
 const z2ui5_if_core_types = require("abap2UI5/z2ui5_if_core_types");
@@ -11,8 +13,8 @@ class z2ui5_cl_core_client {
 
   constructor({ action } = {}) {
     this.mo_action = z2ui5_cl_util.abap_copy(action);
-    this.mo_srv_bind = /* TODO(abap2js): NEW #( ) */ null;
-    this.mo_srv_event = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_srv_bind = new z2ui5_cl_core_srv_bind(this.mo_action.mo_app);
+    this.mo_srv_event = new z2ui5_cl_core_srv_event();
   }
 
   follow_up_action() {
@@ -21,6 +23,18 @@ class z2ui5_cl_core_client {
       lv_js = this.mo_srv_event.get_event_client({ val, t_arg });
     }
     this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.push(lv_js);
+  }
+
+  control_call_by_id() {
+    const lt_arg = [(id), (view), (method)];
+    lt_arg.push(...params);
+    this.follow_up_action({ val: `CONTROL_BY_ID`, t_arg: lt_arg });
+  }
+
+  control_call() {
+    const lt_arg = [(object), (method)];
+    lt_arg.push(...params);
+    this.follow_up_action({ val: `CONTROL_GLOBAL`, t_arg: lt_arg });
   }
 
   check_on_event() {
@@ -102,7 +116,7 @@ class z2ui5_cl_core_client {
     if (!lv_type) {
       lv_type = `show`;
     }
-    this.mo_action.ms_next.s_set.s_msg_box = { text: lv_text, type: lv_type, title: lv_title, styleclass: styleclass, onclose: onclose, actions: actions, emphasizedaction: emphasizedaction, initialfocus: initialfocus, textdirection: textdirection, icon: icon, details: lv_details, closeonnavigation: closeonnavigation };
+    this.mo_action.ms_next.s_set.s_msg_box = { text: lv_text, type: lv_type, title: lv_title, styleclass: styleclass, onclose: onclose, actions: actions, emphasizedaction: emphasizedaction, initialfocus: initialfocus, textdirection: textdirection, icon: icon, details: lv_details, closeonnavigation: closeonnavigation, dependenton: dependenton, contentwidth: contentwidth };
   }
 
   message_toast_display() {

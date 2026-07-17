@@ -2482,7 +2482,7 @@ class z2ui5_cl_xml_view {
   xml_get() {
     let result = ``;
     let lt_parts = [];
-    this.xml_get_parts({ ct_parts: { ct_parts: lt_parts } });
+    this.xml_get_parts({ ct_parts: lt_parts });
     result = /* TODO(abap2js) */ concat_lines_of(lt_parts);
     return result;
   }

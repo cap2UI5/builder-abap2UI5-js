@@ -5,19 +5,9 @@
     "detail": "handler answered with z2ui5_cl_app_startup"
   },
   {
-    "name": "z2ui5_cl_demo_app_047",
-    "verdict": "error-popup",
-    "detail": "sy_datum is not defined"
-  },
-  {
     "name": "z2ui5_cl_demo_app_061",
     "verdict": "error-popup",
     "detail": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_demo_app_080",
-    "verdict": "error-popup",
-    "detail": "lo_planningcalendar.rows is not a function"
   },
   {
     "name": "z2ui5_cl_demo_app_088",
@@ -25,9 +15,19 @@
     "detail": "page.nav_container(...).pages is not a function"
   },
   {
+    "name": "z2ui5_cl_demo_app_105",
+    "verdict": "error-popup",
+    "detail": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone (same as the abap original). Cannot read properties of null (reading 'input')"
+  },
+  {
     "name": "z2ui5_cl_demo_app_110",
     "verdict": "error-popup",
-    "detail": "view.shell(...).page(...).simple_form(...).label(...).mask_input(...).get(...).rules is not a function"
+    "detail": "view.shell(...).page(...).header_content(...).link(...).get_parent(...).simple_form(...).label(...).mask_input(...).get(...).rules is not a function"
+  },
+  {
+    "name": "z2ui5_cl_demo_app_112",
+    "verdict": "error-popup",
+    "detail": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone (same as the abap original). Cannot read properties of null (reading 'input')"
   },
   {
     "name": "z2ui5_cl_demo_app_122",

@@ -61,8 +61,8 @@ class ltcl_fake_server {
   mv_stateful = -;
 
   constructor() {
-    this.request = /* TODO(abap2js): NEW #( ) */ null;
-    this.response = /* TODO(abap2js): NEW #( ) */ null;
+    this.request = new ltcl_fake_request();
+    this.response = new ltcl_fake_response();
   }
 
   set_session_stateful({ stateful } = {}) {
@@ -77,7 +77,7 @@ class ltcl_test {
   mo_cut = null;
 
   setup() {
-    this.mo_server = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_server = new ltcl_fake_server();
     this.mo_cut = z2ui5_cl_a2ui5_http.factory(this.mo_server);
   }
 
