@@ -3,7 +3,7 @@
     "main": "z2ui5_cl_ajson",
     "classes": 21,
     "tests": 149,
-    "todos": 1
+    "todos": 0
   },
   {
     "main": "z2ui5_cl_ajson_filter_lib",
@@ -19,7 +19,7 @@
   },
   {
     "main": "z2ui5_cl_ajson_utilities",
-    "classes": 3,
+    "classes": 4,
     "tests": 8,
     "todos": 0
   },

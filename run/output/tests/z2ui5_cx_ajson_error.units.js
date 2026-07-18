@@ -28,7 +28,7 @@ class ltcl_error {
 
   raise_w_node() {
     let lx = null;
-    let ls_node = null;
+    let ls_node = { path: ``, name: ``, type: null, value: ``, index: 0, order: 0, children: 0 };
     ls_node.path = `/x/`;
     ls_node.name = `y`;
     try {

@@ -28,7 +28,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const { transpileClass, transpileInterface } = require("./abap2js");
+const { createRequire } = require("module");
+const { transpileClass, transpileInterface, parseInterfaceSigs, parseInterfaceTypes } = require("./abap2js");
 
 const root = path.join(__dirname, "..");
 const INPUT = path.join(root, "run", "input", "abap2UI5", "src");
@@ -125,6 +126,39 @@ const nm = path.join(OUTPUT, "node_modules");
 fs.mkdirSync(nm, { recursive: true });
 fs.symlinkSync(path.join(root, "core"), path.join(nm, "abap2UI5"), "junction");
 
+// hand-ported classes may re-export their ABAP class-pool locals as
+// __locals — the tests then bind to the hand-port instead of re-transpiling
+// the (SXML-/RTTI-dependent) ABAP locals
+const coreRequire = createRequire(path.join(OUTPUT, "resolve.js"));
+function handPortedLocals(mainClass) {
+  try {
+    const mod = coreRequire(`abap2UI5/${mainClass}`);
+    if (mod && mod.__locals && typeof mod.__locals === "object") return mod.__locals;
+  } catch {
+    /* not hand-ported / not exported — transpile the ABAP locals */
+  }
+  return null;
+}
+
+// global interface signatures — interface method implementations in the
+// testclasses (METHOD intf~name / INTERFACES intf) need real parameter lists
+const globalIntfSigs = new Map();
+const externTypes = new Map(); // "intf=>ty" -> struct members / ":table" marker
+(function walkIntf(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkIntf(p);
+    else if (entry.name.endsWith(".intf.abap")) {
+      const intfName = entry.name.replace(/\.intf\.abap$/i, "").toLowerCase();
+      try {
+        const src = fs.readFileSync(p, "utf8");
+        globalIntfSigs.set(intfName, parseInterfaceSigs(src, entry.name));
+        for (const [ty, members] of parseInterfaceTypes(src, entry.name)) externTypes.set(`${intfName}=>${ty}`, members);
+      } catch { /* fall back to signature-less */ }
+    }
+  }
+})(INPUT);
+
 const report = [];
 for (const file of walk(INPUT).sort()) {
   const mainClass = path.basename(file).replace(".clas.testclasses.abap", "");
@@ -144,6 +178,8 @@ for (const file of walk(INPUT).sort()) {
   const chunks = new Map([...localChunks, ...splitClasses(source)]);
   const interfaces = new Map([...splitInterfaces(localsSource), ...splitInterfaces(source)]);
   const localNames = new Set([...chunks.keys(), ...interfaces.keys()]);
+  const portedLocals = handPortedLocals(mainClass);
+  const portedNames = [];
 
   const requires = new Map(); // varName → require line
   const todoLines = [];
@@ -156,10 +192,16 @@ for (const file of walk(INPUT).sort()) {
   // onto sibling locals (lo_nodes->add('…')) can be wrapped into the
   // destructured-options convention during the real transpile
   const siblingSigs = new Map(); // class name → Map(method → first importing param)
+  const intfSigs = new Map(globalIntfSigs);
+  for (const [name, src] of interfaces) {
+    try {
+      intfSigs.set(name, parseInterfaceSigs(src, `${name}.intf.abap`));
+    } catch { /* fall back to signature-less */ }
+  }
   for (const [name, { def, impl }] of chunks) {
     if (!def) continue;
     try {
-      const { methodSigs } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`);
+      const { methodSigs } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { intfSigs, externTypes });
       siblingSigs.set(name, methodSigs);
     } catch {
       /* pass 2 reports it */
@@ -168,6 +210,10 @@ for (const file of walk(INPUT).sort()) {
 
   // local interfaces first — pure constant containers the classes reference
   for (const [name, src] of interfaces) {
+    if (portedLocals && name in portedLocals) {
+      portedNames.push(name);
+      continue;
+    }
     try {
       const { code } = transpileInterface(src, `${name}.intf.abap`);
       for (const l of code.split("\n")) {
@@ -185,6 +231,12 @@ for (const file of walk(INPUT).sort()) {
   }
 
   for (const [name, { def, impl }] of chunks) {
+    if (portedLocals && localChunks.has(name) && name in portedLocals) {
+      // the hand-port supplies this local — bind it instead of transpiling
+      portedNames.push(name);
+      emitted.push(name);
+      continue;
+    }
     try {
       if (!def && localChunks.has(name)) {
         // impl-only local relic (definition removed upstream) — skip it,
@@ -192,7 +244,7 @@ for (const file of walk(INPUT).sort()) {
         console.error(`  skip local ${name} in ${mainClass}: no definition`);
         continue;
       }
-      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs });
+      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs, intfSigs, externTypes });
       const lines = code.split("\n").filter((l) => !/^module\.exports =/.test(l));
       for (const l of lines) {
         const req = l.match(/^const (\w+) = require\("(.*)"\);$/);
@@ -229,9 +281,14 @@ for (const file of walk(INPUT).sort()) {
     continue;
   }
 
+  const portedBind = portedNames.length
+    ? [`const { ${portedNames.join(", ")} } = require(${JSON.stringify(`abap2UI5/${mainClass}`)}).__locals;`]
+    : [];
+
   const out = [
     `// GENERATED from ${path.relative(root, file)} — do not edit`,
     ...[...requires.values()].sort(),
+    ...portedBind,
     ...todoLines,
     "",
     ...bodies,

@@ -44,7 +44,9 @@ class z2ui5_cx_ajson_error extends cx_static_check {
     throw lx;
   }
 
-  set_location({ iv_location, is_node } = {}) {
+  set_location(arg = {}) {
+    // positional string (set_location('loc')) and named form both occur
+    const { iv_location, is_node } = typeof arg === "string" ? { iv_location: arg } : arg;
     let lv_location = ``;
     if (iv_location) {
       lv_location = iv_location;

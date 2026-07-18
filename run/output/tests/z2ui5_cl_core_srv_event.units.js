@@ -1,6 +1,7 @@
 // GENERATED from run/input/abap2UI5/src/01/02/z2ui5_cl_core_srv_event.clas.testclasses.abap — do not edit
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
 const z2ui5_cl_core_srv_event = require("abap2UI5/z2ui5_cl_core_srv_event");
+const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_if_client = require("abap2UI5/z2ui5_if_client");
 
 
@@ -28,8 +29,8 @@ class ltcl_test {
     let temp2 = false;
     let temp3 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp1 = null;
-    temp1.push(`arg1`);
+    temp1 = [];
+    temp1.push(z2ui5_cl_util.abap_copy(`arg1`));
     lv_event = lo_event.get_event({ val: `MY_EVT`, t_arg: temp1 });
     temp2 = (String(lv_event).toLowerCase().includes(String(`MY_EVT`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp2);
@@ -45,10 +46,10 @@ class ltcl_test {
     let temp5 = false;
     let temp6 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp3 = null;
-    temp3.push(`a1`);
-    temp3.push(`a2`);
-    temp3.push(`a3`);
+    temp3 = [];
+    temp3.push(z2ui5_cl_util.abap_copy(`a1`));
+    temp3.push(z2ui5_cl_util.abap_copy(`a2`));
+    temp3.push(z2ui5_cl_util.abap_copy(`a3`));
     lv_event = lo_event.get_event({ val: `EVT`, t_arg: temp3 });
     temp4 = (String(lv_event).toLowerCase().includes(String(`'a1'`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp4);
@@ -65,8 +66,8 @@ class ltcl_test {
     let temp7 = false;
     let temp8 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp5 = null;
-    temp5.push(`$event`);
+    temp5 = [];
+    temp5.push(z2ui5_cl_util.abap_copy(`$event`));
     lv_event = lo_event.get_event({ val: `EVT`, t_arg: temp5 });
     temp7 = (String(lv_event).toLowerCase().includes(String(`$event`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp7);
@@ -81,8 +82,8 @@ class ltcl_test {
     let temp9 = false;
     let temp10 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp7 = null;
-    temp7.push(`{/MY_PATH}`);
+    temp7 = [];
+    temp7.push(z2ui5_cl_util.abap_copy(`{/MY_PATH}`));
     lv_event = lo_event.get_event({ val: `EVT`, t_arg: temp7 });
     temp9 = (String(lv_event).toLowerCase().includes(String(`{/MY_PATH}`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp9);
@@ -96,9 +97,9 @@ class ltcl_test {
     let lv_event = ``;
     let temp11 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp9 = null;
-    temp9.push(``);
-    temp9.push(`real`);
+    temp9 = [];
+    temp9.push(z2ui5_cl_util.abap_copy(``));
+    temp9.push(z2ui5_cl_util.abap_copy(`real`));
     lv_event = lo_event.get_event({ val: `EVT`, t_arg: temp9 });
     temp11 = (String(lv_event).toLowerCase().includes(String(`'real'`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp11);
@@ -106,11 +107,11 @@ class ltcl_test {
 
   event_multi_req() {
     let lo_event = null;
-    let temp11 = null;
+    let temp11 = { check_allow_multi_req: false };
     let lv_event = ``;
     let temp12 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp11 = null;
+    temp11 = { check_allow_multi_req: false };
     temp11.check_allow_multi_req = true;
     lv_event = lo_event.get_event({ val: `EVT`, s_cnt: temp11 });
     temp12 = (String(lv_event).toLowerCase().includes(String(`false,true`).toLowerCase()));
@@ -124,8 +125,8 @@ class ltcl_test {
     let temp13 = false;
     let temp14 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp12 = null;
-    temp12.push(`param1`);
+    temp12 = [];
+    temp12.push(z2ui5_cl_util.abap_copy(`param1`));
     lv_event = lo_event.get_event_client({ val: `CLOSE`, t_arg: temp12 });
     temp13 = (String(lv_event).toLowerCase().includes(String(`CLOSE`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp13);

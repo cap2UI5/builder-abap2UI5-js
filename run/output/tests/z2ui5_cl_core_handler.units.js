@@ -37,7 +37,7 @@ class ltcl_test_handler_post {
   test_request_parse() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"https://myhost.com","PATHNAME":"/sap/test","SEARCH":"?param=1"}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -49,7 +49,7 @@ class ltcl_test_handler_post {
   test_request_origin() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"https://example.org","PATHNAME":"/app","SEARCH":""}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -59,7 +59,7 @@ class ltcl_test_handler_post {
   test_request_launchpad() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"O","PATHNAME":"/ui2/flp","SEARCH":"?scenario=LAUNCHPAD"}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -69,7 +69,7 @@ class ltcl_test_handler_post {
   test_parse_body_with_wrapper() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"https://myhost.com","PATHNAME":"/sap/bc/z2ui5","SEARCH":""}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -80,7 +80,7 @@ class ltcl_test_handler_post {
   test_parse_body_no_wrapper() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"S_FRONT":{"ORIGIN":"https://myhost.com","PATHNAME":"/ui2/flp","SEARCH":"?scenario=LAUNCHPAD"}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -91,7 +91,7 @@ class ltcl_test_handler_post {
   test_parse_body_model() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ID":"ABC123","ORIGIN":"O","PATHNAME":"/p","SEARCH":""},"XX":{"NAME":"test-value"}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -102,7 +102,7 @@ class ltcl_test_handler_post {
   test_parse_body_model_no_wrap() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"S_FRONT":{"ID":"ABC123","ORIGIN":"O","PATHNAME":"/p","SEARCH":""},"XX":{"NAME":"test-value"}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -113,7 +113,7 @@ class ltcl_test_handler_post {
   test_parse_body_config() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ID":"ABC123","ORIGIN":"O","PATHNAME":"/p","SEARCH":"",` + `"CONFIG":{"ComponentData":{"startupParameters":{}},` + `"S_DEVICE":{"SYSTEM":"desktop"},` + `"S_FOCUS":{"ID":"my-input","SELECTION_START":2,"SELECTION_END":5},` + `"S_SCROLL":{"MAIN":{"ID":"page","X":0,"Y":150}},` + `"S_UI5":{"VERSION":"1.120.0","BUILDTIMESTAMP":"20240101","GAV":"com.sap.ui:sdk:1.120.0","THEME":"sap_horizon"}}}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -129,7 +129,7 @@ class ltcl_test_handler_post {
   test_parse_body_no_config() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ID":"ABC123","ORIGIN":"O","PATHNAME":"/p","SEARCH":""}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -141,7 +141,7 @@ class ltcl_test_handler_post {
   test_parse_body_arg_string() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ID":"ABC123","ORIGIN":"O","PATHNAME":"/p","SEARCH":"",` + `"EVENT":"MY_EVENT","T_EVENT_ARG":["first","second"]}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -153,7 +153,7 @@ class ltcl_test_handler_post {
   test_parse_body_arg_object() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ID":"ABC123","ORIGIN":"O","PATHNAME":"/p","SEARCH":"",` + `"EVENT":"MY_EVENT","T_EVENT_ARG":["plain",5,true,{"KEY":"val"},[1,2]]}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -168,7 +168,7 @@ class ltcl_test_handler_post {
   test_request_app_start() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"O","PATHNAME":"/p","SEARCH":"?app_start=Z2UI5_CL_APP_HELLO_WORLD"}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -178,7 +178,7 @@ class ltcl_test_handler_post {
   test_request_with_id() {
     let lv_payload = ``;
     let lo_handler = null;
-    let ls_request = null;
+    let ls_request = { o_model: null, s_front: { id: ``, view: ``, t_event_arg: [], event: ``, o_comp_data: null, origin: ``, pathname: ``, search: ``, hash: ``, s_device: { system: ``, orientation: ``, browser: { name: ``, version: `` }, os: { name: ``, version: `` }, resize: { width: 0, height: 0 }, support: { touch: false, pointer: false, retina: false } }, s_focus: { id: ``, selection_start: 0, selection_end: 0 }, s_scroll: { main: { id: ``, x: 0, y: 0 }, nest: { id: ``, x: 0, y: 0 }, nest2: { id: ``, x: 0, y: 0 }, popup: { id: ``, x: 0, y: 0 }, popover: { id: ``, x: 0, y: 0 } }, s_ui5: { version: ``, build_timestamp: ``, gav: ``, theme: `` } }, s_control: { check_launchpad: false, app_start: ``, app_start_draft: `` } };
     lv_payload = `{"value":{"S_FRONT":{"ID":"ABC123","ORIGIN":"O","PATHNAME":"/p","SEARCH":""}}}`;
     lo_handler = new z2ui5_cl_core_handler({ val: lv_payload });
     ls_request = lo_handler.request_json_to_abap(lv_payload);
@@ -187,14 +187,14 @@ class ltcl_test_handler_post {
 
   test_response_json() {
     let lo_handler = null;
-    let temp2 = null;
-    let ls_response = null;
+    let temp2 = { s_front: { params: {}, id: ``, app_start: ``, app: `` }, model: `` };
+    let ls_response = { s_front: { params: {}, id: ``, app_start: ``, app: `` }, model: `` };
     let lv_json = ``;
     let temp1 = false;
     let temp3 = false;
     let temp4 = false;
     lo_handler = new z2ui5_cl_core_handler({ val: `` });
-    temp2 = null;
+    temp2 = { s_front: { params: {}, id: ``, app_start: ``, app: `` }, model: `` };
     temp2.s_front.id = `ID123`;
     temp2.s_front.app = `Z2UI5_CL_APP_HELLO_WORLD`;
     temp2.model = `{"name":"test"}`;
