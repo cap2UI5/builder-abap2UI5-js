@@ -2481,6 +2481,17 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
     case "Return":
       push(methodDef.returning ? `return ${methodDef.returning.name};` : `return;`);
       break;
+    case "Condense": {
+      // CONDENSE x [NO-GAPS] — trim; interior runs of blanks collapse to one
+      // space (or vanish entirely with NO-GAPS)
+      const noGaps = toks.some((t) => KW(t.str) === "NO-GAPS");
+      const end = noGaps ? toks.findIndex((t) => KW(t.str) === "NO-GAPS") : toks.length;
+      const target = txExpr(toks.slice(1, end), ctx);
+      push(`${target} = String(${target}).trim().replace(/\\s+/g, ${noGaps ? "``" : "` `"});`);
+      const shadowC = ctx.fsBacked.get(target);
+      if (shadowC) push(`if (${shadowC}) ${shadowC}.o[${shadowC}.k] = ${target};`);
+      break;
+    }
     case "Clear": {
       const target = txExpr(toks.slice(1), ctx);
       // best effort by declared default

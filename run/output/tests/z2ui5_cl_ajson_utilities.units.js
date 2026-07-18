@@ -14,10 +14,10 @@ class lcl_nodes_helper {
     let fs_n = {};
     this.mt_nodes.push(fs_n);
     [fs_n.path, fs_n.name, fs_n.type, fs_n.value, lv_index, lv_children] = iv_str.split(`|`);
-    // TODO(abap2js): CONDENSE <n>-path.
-    // TODO(abap2js): CONDENSE <n>-name.
-    // TODO(abap2js): CONDENSE <n>-type.
-    // TODO(abap2js): CONDENSE <n>-value.
+    fs_n.path = String(fs_n.path).trim().replace(/\s+/g, ` `);
+    fs_n.name = String(fs_n.name).trim().replace(/\s+/g, ` `);
+    fs_n.type = String(fs_n.type).trim().replace(/\s+/g, ` `);
+    fs_n.value = String(fs_n.value).trim().replace(/\s+/g, ` `);
     fs_n.index = z2ui5_cl_util.abap_copy(lv_index);
     fs_n.children = z2ui5_cl_util.abap_copy(lv_children);
   }
