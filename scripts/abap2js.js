@@ -199,13 +199,13 @@ function commentSafe(src, max = 120) {
 // ---------------------------------------------------------------------------
 
 function typeDefault(typeTokens) {
-  const t = typeTokens.join(" ").toUpperCase().replace(/^(TYPE|LIKE)\s+/, "");
+  const t = typeTokens.join(" ").toUpperCase().replace(/^(TYPE|LIKE)\s+/, "").replace(/\s*READ\s*-\s*ONLY$/, "");
   if (/REF TO/.test(t)) return "null";
-  if (/TABLE OF|TABLE$|_TAB$|^TY_T_|_T_|STANDARD TABLE|SORTED TABLE|HASHED TABLE|TT_|RANGE OF/.test(t)) return "[]";
+  if (/TABLE OF|TABLE$|_TAB$|^TY_T_|_T_|STANDARD TABLE|SORTED TABLE|HASHED TABLE|TT_|_TT$|_TS$|RANGE OF/.test(t)) return "[]";
   if (/ABAP_BOOL|XSDBOOLEAN|^XFELD/.test(t)) return "false";
   // structure types by naming convention (ty_s_result, ts_data, ...)
   if (/^TY_S_|^TS_|^S_[A-Z0-9_]/.test(t)) return "{}";
-  if (/^I$|^INT4|^INT8|^F$|^P |^P$|DECFLOAT/.test(t)) return "0";
+  if (/^I$|^INT4|^INT8|^F$|^P |^P$|DECFLOAT|^TIMESTAMP/.test(t)) return "0";
   if (/^STRING|^C |^C$|CLIKE|^CHAR|^N |^N$|CSEQUENCE/.test(t)) return "``";
   return "null";
 }
@@ -247,6 +247,94 @@ class ClassModel {
     this.methods = new Map(); // lowername -> { isStatic, importing:[{name,defaultTok}], returning:{name,typeTokens}|null }
     this.methodBodies = []; // { name, statements: [{type,toks,src}] }
   }
+}
+
+/** METHODS/CLASS-METHODS definition → { name, def } (shared by classes and
+ *  interfaces; EXPORTING/CHANGING params are recorded as out-params) */
+function parseMethodDef(toksIn) {
+  let toks = toksIn;
+  // CLASS-METHODS lexes as three tokens: CLASS - METHODS
+  const isStatic = KW(toks[0].str) === "CLASS" && isDash(toks[1]);
+  if (isStatic) toks = toks.slice(2);
+  if (!toks[1]) return null;
+  const name = toks[1].str.toLowerCase();
+  const def = { isStatic, importing: [], returning: null, outParams: [] };
+  let mode = null;
+  for (let i = 2; i < toks.length - 1; i++) {
+    const up = KW(toks[i].str);
+    if (["IMPORTING", "EXPORTING", "CHANGING", "RETURNING", "RAISING", "REDEFINITION", "FOR", "ABSTRACT", "FINAL"].includes(up)) {
+      mode = up;
+      continue;
+    }
+    if (["IMPORTING", "EXPORTING", "CHANGING"].includes(mode) && isId(toks[i]) && !["TYPE", "LIKE", "REF", "TO", "OF", "OPTIONAL", "DEFAULT", "TABLE", "STANDARD", "SORTED", "HASHED", "WITH", "KEY", "EMPTY", "UNIQUE", "NON-UNIQUE", "LINE", "PREFERRED", "PARAMETER"].includes(up.replace(/^!/, ""))) {
+      // parameter names are followed by TYPE/LIKE — EXPORTING/CHANGING
+      // params join the destructured signature (JS object refs give the
+      // by-reference semantics for structures and tables)
+      if (KW(toks[i + 1]?.str) === "TYPE" || KW(toks[i + 1]?.str) === "LIKE") {
+        const param = { name: paramName(toks[i].str), defaultToks: null };
+        // scan ahead for DEFAULT <tok...> until next param/section
+        for (let j = i + 2; j < toks.length - 1; j++) {
+          const u = KW(toks[j].str);
+          if (["IMPORTING", "EXPORTING", "CHANGING", "RETURNING", "RAISING"].includes(u)) break;
+          if (u === "DEFAULT") {
+            const dToks = [];
+            for (let k = j + 1; k < toks.length - 1; k++) {
+              const uu = KW(toks[k].str);
+              if (["IMPORTING", "EXPORTING", "CHANGING", "RETURNING", "RAISING", "OPTIONAL", "PREFERRED"].includes(uu)) break;
+              if (isId(toks[k]) && KW(toks[k + 1]?.str) === "TYPE") break;
+              dToks.push(toks[k]);
+            }
+            param.defaultToks = dToks;
+            break;
+          }
+          if (isId(toks[j]) && KW(toks[j + 1]?.str) === "TYPE") break;
+        }
+        def.importing.push(param);
+        // EXPORTING/CHANGING params are out-params — callees sync them
+        // back onto the args object so callers can copy them out
+        if (mode !== "IMPORTING") def.outParams.push(param.name);
+      }
+    }
+    if (mode === "RETURNING" && KW(toks[i].str) === "VALUE" && isParenL(toks[i + 1])) {
+      const close = matchGroup(toks, i + 1);
+      def.returning = { name: paramName(toks[i + 2].str), typeTokens: toks.slice(close + 2, toks.length - 1).map((t) => t.str) };
+    }
+  }
+  return { name, def };
+}
+
+/** INTERFACE source → Map(ty name → struct members) + table-type markers,
+ *  so DATA declarations against intf=>ty_x get typed initializers */
+function parseInterfaceTypes(source, filename) {
+  const reg = new Registry().addFile(new MemoryFile(filename, source));
+  reg.parse();
+  const obj = reg.getFirstObject();
+  const file = obj && obj.getABAPFiles()[0];
+  const out = new Map();
+  if (!file) return out;
+  const fake = { structTypes: new Map(), tableTypes: new Map() };
+  const statements = file.getStatements().map((s) => ({ type: s.get().constructor.name, toks: tokify(s), src: s.concatTokens() }));
+  collectTypeDefs(statements, fake);
+  for (const [ty, members] of fake.structTypes) out.set(ty, members);
+  for (const [ty, rowName] of fake.tableTypes) out.set(`${ty}:table`, rowName);
+  return out;
+}
+
+/** INTERFACE source → Map(method name → method def) — feeds the signatures
+ *  of interface method implementations in classes (METHOD intf~name) */
+function parseInterfaceSigs(source, filename) {
+  const reg = new Registry().addFile(new MemoryFile(filename, source));
+  reg.parse();
+  const obj = reg.getFirstObject();
+  const file = obj && obj.getABAPFiles()[0];
+  if (!file) return new Map();
+  const sigs = new Map();
+  for (const stmt of file.getStatements()) {
+    if (stmt.get().constructor.name !== "MethodDef") continue;
+    const parsed = parseMethodDef(tokify(stmt));
+    if (parsed) sigs.set(parsed.name, parsed.def);
+  }
+  return sigs;
 }
 
 function buildModel(file) {
@@ -316,50 +404,8 @@ function buildModel(file) {
           model.fields.set(name, { default: rendered ?? typeDefault(typeTokens), isStatic: T === "ClassData", isConst: false, refType, typeTokens });
         }
       } else if (T === "MethodDef") {
-        // CLASS-METHODS lexes as three tokens: CLASS - METHODS
-        const isStatic = KW(toks[0].str) === "CLASS" && isDash(toks[1]);
-        if (isStatic) toks = toks.slice(2);
-        const name = toks[1].str.toLowerCase();
-        const def = { isStatic, importing: [], returning: null };
-        let mode = null;
-        for (let i = 2; i < toks.length - 1; i++) {
-          const up = KW(toks[i].str);
-          if (["IMPORTING", "EXPORTING", "CHANGING", "RETURNING", "RAISING", "REDEFINITION", "FOR", "ABSTRACT", "FINAL"].includes(up)) {
-            mode = up;
-            continue;
-          }
-          if (["IMPORTING", "EXPORTING", "CHANGING"].includes(mode) && isId(toks[i]) && !["TYPE", "LIKE", "REF", "TO", "OF", "OPTIONAL", "DEFAULT", "TABLE", "STANDARD", "SORTED", "HASHED", "WITH", "KEY", "EMPTY", "UNIQUE", "NON-UNIQUE", "LINE", "PREFERRED", "PARAMETER"].includes(up.replace(/^!/, ""))) {
-            // parameter names are followed by TYPE/LIKE — EXPORTING/CHANGING
-            // params join the destructured signature (JS object refs give the
-            // by-reference semantics for structures and tables)
-            if (KW(toks[i + 1]?.str) === "TYPE" || KW(toks[i + 1]?.str) === "LIKE") {
-              const param = { name: paramName(toks[i].str), defaultToks: null };
-              // scan ahead for DEFAULT <tok...> until next param/section
-              for (let j = i + 2; j < toks.length - 1; j++) {
-                const u = KW(toks[j].str);
-                if (["IMPORTING", "EXPORTING", "CHANGING", "RETURNING", "RAISING"].includes(u)) break;
-                if (u === "DEFAULT") {
-                  const dToks = [];
-                  for (let k = j + 1; k < toks.length - 1; k++) {
-                    const uu = KW(toks[k].str);
-                    if (["IMPORTING", "EXPORTING", "CHANGING", "RETURNING", "RAISING", "OPTIONAL", "PREFERRED"].includes(uu)) break;
-                    if (isId(toks[k]) && KW(toks[k + 1]?.str) === "TYPE") break;
-                    dToks.push(toks[k]);
-                  }
-                  param.defaultToks = dToks;
-                  break;
-                }
-                if (isId(toks[j]) && KW(toks[j + 1]?.str) === "TYPE") break;
-              }
-              def.importing.push(param);
-            }
-          }
-          if (mode === "RETURNING" && KW(toks[i].str) === "VALUE" && isParenL(toks[i + 1])) {
-            const close = matchGroup(toks, i + 1);
-            def.returning = { name: paramName(toks[i + 2].str), typeTokens: toks.slice(close + 2, toks.length - 1).map((t) => t.str) };
-          }
-        }
-        model.methods.set(name, def);
+        const parsed = parseMethodDef(toks);
+        if (parsed) model.methods.set(parsed.name, parsed.def);
       }
       continue;
     }
@@ -397,7 +443,16 @@ function collectTypeDefs(statements, model) {
       stack.push({ name, members: [] });
     } else if (T === "TypeEnd") {
       const col = stack.pop();
-      if (col && col.name) model.structTypes.set(col.name, col.members);
+      if (col && col.name) {
+        model.structTypes.set(col.name, col.members);
+        if (stack.length) {
+          // nested BEGIN OF — the inner struct is a component of the outer
+          stack[stack.length - 1].members.push({
+            name: col.name,
+            default: `{ ${col.members.map((m) => `${m.name}: ${m.default}`).join(", ")} }`,
+          });
+        }
+      }
     } else if (T === "Type") {
       const body = toks.slice(0, -1); // drop trailing "," or "."
       if (!body.length) continue;
@@ -406,7 +461,7 @@ function collectTypeDefs(statements, model) {
         const name = body[1] ? body[1].str.toLowerCase() : null;
         if (name) {
           const { typeTokens } = parseTypeAfter(body.slice(2), 0);
-          stack[stack.length - 1].members.push({ name, default: typeDefault(typeTokens) });
+          stack[stack.length - 1].members.push({ name, default: typeDefault(typeTokens), typeTokens });
         }
       } else {
         // standalone: TYPES name TYPE [STANDARD|SORTED|HASHED] TABLE OF row …
@@ -444,6 +499,73 @@ function rowStructComponents(typeTokens, model) {
   return model.structTypes.get(structName) || null;
 }
 
+/** initializer for a declared variable — resolves local TYPES structures and
+ *  interface-defined structures (intf=>ty_x, via opts.externTypes) so DATA of
+ *  a known struct type starts as a typed object literal instead of null */
+function declaredInit(typeTokens, model, depth = 0, ctx = null) {
+  let init = typeDefault(typeTokens);
+  if (init !== "null" || !typeTokens || depth > 3) return init;
+  const up = typeTokens.map((t) => String(t).toUpperCase());
+  // LIKE LINE OF <var[-comp…]> — row type of the declared table (member)
+  if (up[0] === "LIKE" && up[1] === "LINE" && up[2] === "OF" && typeTokens[3] && ctx) {
+    const pathToks = typeTokens.slice(3).map((t) => {
+      const str = String(t);
+      return { type: str === "-" ? "Dash" : "Identifier", str };
+    });
+    const src = targetTypeTokens(pathToks, ctx);
+    if (src) {
+      const rowComps = rowStructComponents(src, model) || externRowComponents(src, model);
+      if (rowComps) return renderComps(rowComps, model, depth);
+    }
+    return init;
+  }
+  // LIKE <var> — mirror the referenced variable's declared type
+  if (up[0] === "LIKE" && typeTokens.length === 2) {
+    const nm = String(typeTokens[1]).toLowerCase();
+    const src = ctx?.varTypes.get(nm) || model.fields.get(nm)?.typeTokens;
+    if (src && src !== typeTokens) return declaredInit(src, model, depth + 1, ctx);
+    return init;
+  }
+  if (up.includes("TABLE") || up.includes("REF")) return init;
+  // a bare name that is a declared TABLE type initializes as []
+  {
+    const nameTok = typeTokens.find((t) => !TYPE_KEYWORDS.has(String(t).toUpperCase()));
+    if (nameTok && model.tableTypes?.has(String(nameTok).toLowerCase())) return "[]";
+  }
+  // interface-qualified type: [TYPE] intf => ty_x
+  const arrowIdx = typeTokens.findIndex((t) => String(t) === "=>");
+  let comps = null;
+  if (arrowIdx > 0 && typeTokens[arrowIdx + 1]) {
+    const key = `${String(typeTokens[arrowIdx - 1]).toLowerCase()}=>${String(typeTokens[arrowIdx + 1]).toLowerCase()}`;
+    comps = model.externTypes?.get(key) || null;
+    if (!comps && model.externTypes?.has(`${key}:table`)) return "[]";
+  } else {
+    comps = rowStructComponents(typeTokens, model);
+  }
+  if (!comps) return init;
+  return renderComps(comps, model, depth);
+}
+
+/** row components of an interface-qualified TABLE type ("intf=>tty":table) */
+function externRowComponents(typeTokens, model) {
+  const arrowIdx = typeTokens.findIndex((t) => String(t) === "=>");
+  if (arrowIdx <= 0 || !typeTokens[arrowIdx + 1] || !model.externTypes) return null;
+  const intf = String(typeTokens[arrowIdx - 1]).toLowerCase();
+  const ty = String(typeTokens[arrowIdx + 1]).toLowerCase();
+  const rowName = model.externTypes.get(`${intf}=>${ty}:table`);
+  if (typeof rowName !== "string") return null;
+  return model.externTypes.get(`${intf}=>${rowName}`) || null;
+}
+
+function renderComps(comps, model, depth) {
+  const parts = comps.map((m) => {
+    let d = m.value ?? m.default;
+    if ((d === "null" || d == null) && m.typeTokens) d = declaredInit(m.typeTokens, model, depth + 1);
+    return `${m.name}: ${d ?? "null"}`;
+  });
+  return `{ ${parts.join(", ")} }`;
+}
+
 // The declared TYPE tokens of a bare variable/attribute target, or null.
 function targetTypeTokens(nameToks, ctx) {
   if (nameToks.length === 1 && isId(nameToks[0])) {
@@ -451,6 +573,17 @@ function targetTypeTokens(nameToks, ctx) {
     if (ctx.varTypes.has(nm)) return ctx.varTypes.get(nm);
     const f = ctx.model.fields.get(nm);
     if (f && f.typeTokens) return f.typeTokens;
+  }
+  // dashed member path (var-comp-comp): walk the declared structure types
+  if (nameToks.length >= 3 && isId(nameToks[0]) && isDash(nameToks[1])) {
+    let cur = targetTypeTokens([nameToks[0]], ctx);
+    for (let i = 2; i < nameToks.length && cur; i += 2) {
+      if (!isId(nameToks[i])) return null;
+      const comps = rowStructComponents(cur, ctx.model);
+      const member = comps?.find((c) => c.name === nameToks[i].str.toLowerCase());
+      cur = member?.typeTokens ?? null;
+    }
+    return cur;
   }
   return null;
 }
@@ -950,6 +1083,26 @@ function chainSuffix(toks, j, atoms, ctx, upper = false) {
           args = bindArgs(meth, group, ctx) ?? clientArgs(meth, group, ctx);
         }
         if (args === null) args = txArgs(group, ctx, meth);
+        // sibling local class (same module): its methods destructure an
+        // options object, so wrap a single positional arg as { firstParam: … }
+        // — same convention as own-method calls above. The sibling class is
+        // resolved through the receiver variable's declared REF TO type.
+        if (group.length && ctx.model.siblingSigs) {
+          const recv = atoms[atoms.length - 1].str.match(/^(?:this\.)?([a-z_][a-z0-9_]*)$/)?.[1];
+          const recvCls = recv
+            ? ctx.model.siblingSigs.has(recv)
+              ? recv // static sibling call: cls=>meth( … )
+              : ctx.localRefTypes?.get(recv) || ctx.model.fields.get(recv)?.refType
+            : null;
+          const param = recvCls ? ctx.model.siblingSigs.get(recvCls)?.get(meth) : null;
+          if (
+            param &&
+            !group.some((t) => isId(t) && ["EXPORTING", "IMPORTING", "CHANGING", "RECEIVING", "EXCEPTIONS"].includes(KW(t.str))) &&
+            !namedArgsOf(group, ctx)
+          ) {
+            args = `{ ${param}: ${args} }`;
+          }
+        }
         // client.get() returns the request struct with UPPERCASE keys
         if (meth === "get" && isClientReceiver(atoms[atoms.length - 1].str)) upper = true;
         atoms[atoms.length - 1].str += `.${meth}(${args})`;
@@ -1754,7 +1907,7 @@ function derivePreferredMap(file) {
   return out;
 }
 
-function transpileClass(source, filename) {
+function transpileClass(source, filename, opts = {}) {
   const reg = new Registry().addFile(new MemoryFile(filename, source));
   reg.parse();
   const obj = reg.getFirstObject();
@@ -1762,6 +1915,14 @@ function transpileClass(source, filename) {
   const file = obj.getABAPFiles()[0];
   const model = buildModel(file);
   if (!model) throw new Error(`no class found in ${filename}`);
+  // sibling method signatures (same-module local classes): method name →
+  // first importing param, used to wrap single positional args on instance
+  // calls the same way own-method calls are wrapped
+  model.siblingSigs = opts.siblingSigs || null;
+  // global interface signatures: Map(intf name -> Map(method -> def))
+  model.intfSigs = opts.intfSigs || null;
+  // interface-defined structure types: Map("intf=>ty" -> members)
+  model.externTypes = opts.externTypes || null;
 
   const requires = new Set();
   const todos = [];
@@ -1842,14 +2003,35 @@ function transpileClass(source, filename) {
   }
   header.push("");
 
-  return { code: header.join("\n") + "\n" + lines.join("\n") + "\n", todos, name: model.name };
+  const methodSigs = new Map(
+    [...model.methods].map(([m, def]) => [m, def.importing[0]?.name ?? null])
+  );
+  return { code: header.join("\n") + "\n" + lines.join("\n") + "\n", todos, name: model.name, methodSigs };
 }
 
 function emitMethod(model, body, lines, requires, todos) {
   const lname = body.name;
   const isIntfMain = /~main$/.test(lname);
   const plainName = lname.replace(/^.*~/, "");
-  const def = model.methods.get(lname) ?? model.methods.get(plainName) ?? { isStatic: false, importing: [], returning: null };
+  // interface method implementations take their signature from the interface
+  // definition when available (METHOD intf~name has no local METHODS entry)
+  let intfDef = lname.includes("~") ? model.intfSigs?.get(lname.split("~")[0])?.get(plainName) : null;
+  if (intfDef) {
+    // param DEFAULTs written inside the interface reference its own
+    // constants unqualified — qualify them for the implementing class
+    const intf = lname.split("~")[0];
+    intfDef = {
+      ...intfDef,
+      importing: intfDef.importing.map((p) => {
+        if (!p.defaultToks?.length) return p;
+        const t0 = p.defaultToks[0];
+        if (t0.type !== "Identifier" || /^(abap_true|abap_false|abap_undefined|space)$/i.test(t0.str)) return p;
+        if (p.defaultToks.some((t) => t.str === "=>")) return p;
+        return { ...p, defaultToks: [{ type: "Identifier", str: intf }, { type: "StaticArrow", str: "=>" }, ...p.defaultToks] };
+      }),
+    };
+  }
+  const def = model.methods.get(lname) ?? model.methods.get(plainName) ?? intfDef ?? { isStatic: false, importing: [], returning: null, outParams: [] };
   const ctx = new Ctx(model, { name: plainName, def });
   ctx.requires = requires;
   ctx.todos = todos;
@@ -1882,12 +2064,29 @@ function emitMethod(model, body, lines, requires, todos) {
         if (intoIdx > 0 && ["DATA", "FINAL"].includes(KW(toks[intoIdx + 1]?.str ?? "")) && isParenL(toks[intoIdx + 2] ?? { type: "" })) {
           hoisted.add(safeIdent(toks[intoIdx + 3].str.toLowerCase()));
         }
+      } else if (s.type === "Call") {
+        // out-param call sites copy IMPORTING/CHANGING/RECEIVING targets back
+        // — those targets get reassigned, so inline DATA() must emit `let`
+        const toks = s.toks;
+        let mode = null;
+        for (let k = 0; k < toks.length; k++) {
+          const kw = KW(toks[k].str);
+          if (isId(toks[k]) && ["EXPORTING", "IMPORTING", "CHANGING", "RECEIVING"].includes(kw)) {
+            mode = kw;
+            continue;
+          }
+          if (mode && mode !== "EXPORTING" && isId(toks[k]) && toks[k + 1]?.str === "=" && isId(toks[k + 2] ?? { type: "" })) {
+            assignedTwice.add(toks[k + 2].str.toLowerCase());
+          }
+        }
       }
     }
   }
 
   // signature
+  const outParams = (def.outParams || []).map((n) => safeIdent(n));
   let sig;
+  let argsBind = null;
   if (isIntfMain) {
     sig = `async main(client)`;
     ctx.locals.add("client");
@@ -1900,7 +2099,14 @@ function emitMethod(model, body, lines, requires, todos) {
         return p.defaultToks ? `${bind} = ${txExpr(p.defaultToks, ctx)}` : bind;
       })
       .join(", ");
-    sig = `${def.isStatic ? "static " : ""}${plainName}({ ${params} } = {})`;
+    if (outParams.length) {
+      // out-params (EXPORTING/CHANGING) sync back onto the args object at
+      // every exit so call sites can copy scalar results out
+      sig = `${def.isStatic ? "static " : ""}${plainName}(_args = {})`;
+      argsBind = `let { ${params} } = _args;`;
+    } else {
+      sig = `${def.isStatic ? "static " : ""}${plainName}({ ${params} } = {})`;
+    }
   } else {
     sig = `${def.isStatic ? "static " : ""}${plainName}()`;
   }
@@ -1924,6 +2130,10 @@ function emitMethod(model, body, lines, requires, todos) {
     }
   }
   const push = (s) => lines.push("  ".repeat(st.indent) + s);
+
+  if (argsBind) push(argsBind);
+  // out-param sync emitted before every return and at the method end
+  st.outSync = outParams.length && argsBind ? `Object.assign(_args, { ${outParams.join(", ")} });` : null;
 
   if (def.returning) {
     ctx.locals.add(def.returning.name);
@@ -1984,6 +2194,7 @@ function emitMethod(model, body, lines, requires, todos) {
     emitStatement(s, ctx, st, push, assignedTwice, def);
   }
 
+  if (st.outSync) push(st.outSync);
   if (def.returning) push(`return ${def.returning.name};`);
   lines.push(`  }`);
 }
@@ -2025,16 +2236,50 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
   };
 
   switch (T) {
+    case "DataBegin": {
+      // DATA BEGIN OF s ... DATA END OF s — collect members into one object
+      const ofIdx = toks.findIndex((t) => KW(t.str) === "OF");
+      st.dataStructs = st.dataStructs || [];
+      st.dataStructs.push({ name: safeIdent(toks[ofIdx + 1].str.toLowerCase()), members: [] });
+      break;
+    }
+    case "DataEnd": {
+      const col = st.dataStructs?.pop();
+      if (!col) break;
+      const literal = `{ ${col.members.map((m) => `${m.name}: ${m.init}`).join(", ")} }`;
+      if (st.dataStructs?.length) {
+        st.dataStructs[st.dataStructs.length - 1].members.push({ name: col.name, init: literal });
+      } else {
+        ctx.locals.add(col.name);
+        push(`let ${col.name} = ${literal};`);
+      }
+      break;
+    }
     case "Data": {
-      // DATA x TYPE t.
+      // DATA x TYPE t [VALUE lit].
       const name = safeIdent(toks[1].str.toLowerCase());
       ctx.locals.add(name);
-      const { typeTokens } = parseTypeAfter(toks.slice(2), 0);
+      const { typeTokens, value } = parseTypeAfter(toks.slice(2), 0);
       // remember REF TO targets so `x = NEW #( … )` can infer the class
       const refIdx = typeTokens.findIndex((t, k) => KW(t) === "REF" && KW(typeTokens[k + 1] || "") === "TO");
       if (refIdx >= 0 && typeTokens[refIdx + 2]) ctx.localRefTypes.set(name, typeTokens[refIdx + 2].toLowerCase());
       ctx.varTypes.set(name, typeTokens);
-      push(`let ${name} = ${typeDefault(typeTokens)};`);
+      let init = declaredInit(typeTokens, ctx.model, 0, ctx);
+      if (value) {
+        const rendered = renderLiteralToken(value);
+        if (rendered != null) {
+          // numeric target types take the literal as a number ('123.45' → 123.45)
+          const numericTarget = init === "0" || /^(TYPE|LIKE)\s+(P\b|I$|INT|F$|DECFLOAT|TIMESTAMP)/.test(typeTokens.join(" ").toUpperCase());
+          const numeric = Number(String(value.str).replace(/^'|'$/g, "").replace(/''/g, "'"));
+          init = numericTarget && !Number.isNaN(numeric) ? String(numeric) : rendered;
+        }
+      }
+      if (st.dataStructs?.length) {
+        // member of a DATA BEGIN OF block
+        st.dataStructs[st.dataStructs.length - 1].members.push({ name, init });
+        break;
+      }
+      push(`let ${name} = ${init};`);
       break;
     }
     case "Constant": {
@@ -2264,9 +2509,76 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
     case "Call": {
       // CALL METHOD long form / dynamic invocation cannot be mapped inline
       if (KW(toks[0].str) === "CALL") return todo();
-      // out-params on a plain call statement need a rewritten callee —
-      // EXPORTING/CHANGING-only calls go through txArgs (merged object)
-      if (toks.some((t) => isId(t) && ["IMPORTING", "RECEIVING", "EXCEPTIONS"].includes(KW(t.str)))) return todo();
+      const hasOut = toks.some((t) => isId(t) && ["IMPORTING", "RECEIVING", "CHANGING"].includes(KW(t.str)));
+      if (toks.some((t) => isId(t) && KW(t.str) === "EXCEPTIONS")) return todo();
+      if (hasOut) {
+        // method( EXPORTING a = x IMPORTING b = y CHANGING c = z RECEIVING r = w )
+        // → one merged args object; IMPORTING/CHANGING targets are copied
+        // back afterwards (callees sync their out-params onto the object)
+        const parenIdx = toks.findIndex((t) => isParenL(t));
+        const close = parenIdx >= 0 ? matchGroup(toks, parenIdx) : -1;
+        if (parenIdx <= 0 || close !== toks.length - 1) return todo();
+        const inner = toks.slice(parenIdx + 1, close);
+        const sections = []; // { kind, toks }
+        let cur = { kind: "EXPORTING", toks: [] };
+        let depth = 0;
+        for (const t of inner) {
+          depth += depthDelta(t);
+          const kw = KW(t.str);
+          if (depth === 0 && isId(t) && ["EXPORTING", "IMPORTING", "CHANGING", "RECEIVING"].includes(kw)) {
+            if (cur.toks.length) sections.push(cur);
+            cur = { kind: kw, toks: [] };
+            continue;
+          }
+          cur.toks.push(t);
+        }
+        if (cur.toks.length) sections.push(cur);
+
+        const pairs = new Map(); // key → rendered expr
+        const copyBack = []; // [key, targetJs]
+        let receiving = null;
+        let ok = true;
+        for (const sec of sections) {
+          const named = namedArgsOf(sec.toks, ctx);
+          if (!named) {
+            ok = false;
+            break;
+          }
+          for (const [k, v] of named) {
+            if (v instanceof Map) {
+              pairs.set(k, renderNamedVal(v));
+              continue;
+            }
+            if (sec.kind === "RECEIVING") {
+              receiving = v;
+              continue;
+            }
+            pairs.set(k, v);
+            if (sec.kind !== "EXPORTING" && /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*|\[[^\]]+\])*$/.test(v)) {
+              copyBack.push([k, v]);
+            }
+          }
+        }
+        if (!ok) return todo();
+        let callee;
+        if (parenIdx === 1 && isId(toks[0])) {
+          // bare own-method call — qualify like the expression renderer would
+          const mname = toks[0].str.toLowerCase();
+          const mdef = ctx.model.methods.get(mname);
+          callee = `${mdef?.isStatic ? ctx.model.name : "this"}.${safeIdent(mname)}`;
+        } else {
+          callee = txExpr(toks.slice(0, parenIdx), ctx);
+        }
+        const outVar = `_out${st.tabixSeq++}`;
+        push(`const ${outVar} = { ${[...pairs.entries()].map(([k, v]) => (k === v ? k : `${k}: ${v}`)).join(", ")} };`);
+        push(`${receiving ? `${receiving} = ` : ""}${callee}(${outVar});`);
+        for (const [k, tgt] of copyBack) {
+          push(`if (${JSON.stringify(k)} in ${outVar}) ${tgt} = ${outVar}.${k};`);
+          const shadow = ctx.fsBacked.get(tgt);
+          if (shadow) push(`if (${shadow}) ${shadow}.o[${shadow}.k] = ${tgt};`);
+        }
+        break;
+      }
       push(`${txExpr(toks, ctx)};`);
       break;
     }
@@ -2285,12 +2597,39 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
           break;
         }
       }
-      // static TYPE cls without EXPORTING
-      if (typeIdx > 0 && typeIdx === toks.length - 2 && isId(toks[typeIdx + 1])) {
+      // statement tokens carry no trailing "." — strip one defensively anyway
+      const endTok = toks[toks.length - 1]?.str === "." ? toks.length - 1 : toks.length;
+      const expIdx = toks.findIndex((t) => isId(t) && KW(t.str) === "EXPORTING");
+      // static TYPE cls [EXPORTING …]
+      if (typeIdx > 0 && isId(toks[typeIdx + 1]) && (typeIdx === endTok - 2 || expIdx === typeIdx + 2)) {
         const cls = toks[typeIdx + 1].str.toLowerCase();
         if (/^z2ui5_/.test(cls)) ctx.requires?.add(cls);
-        push(`${target} = new ${safeIdent(cls)}();`);
+        const args = expIdx > 0 ? txArgs(toks.slice(expIdx + 1, endTok), ctx, cls) : "";
+        push(`${target} = new ${safeIdent(cls)}(${args});`);
         break;
+      }
+      // plain CREATE OBJECT x [EXPORTING …] — infer the class from the
+      // target's declared REF TO type, same inference as `x = NEW #( )`
+      if (typeIdx < 0 && isId(toks[2])) {
+        const tname = toks[2].str.toLowerCase();
+        const cls = ctx.localRefTypes?.get(tname) || ctx.model.fields.get(tname)?.refType || null;
+        if (cls && /^[a-z_][a-z0-9_]*$/.test(cls)) {
+          const args = expIdx > 0 ? txArgs(toks.slice(expIdx + 1, endTok), ctx, cls) : "";
+          if (cls === ctx.model.name) {
+            push(`${target} = new ${ctx.model.name}(${args});`);
+            break;
+          }
+          if (requirePathFor(cls)) {
+            ctx.requires?.add(cls);
+            push(`${target} = new ${cls}(${args});`);
+            break;
+          }
+          // local class (lcl_/ltcl_) defined in the same module — no require
+          if (!/^(cl_|cx_|z2ui5_)/.test(cls)) {
+            push(`${target} = new ${safeIdent(cls)}(${args});`);
+            break;
+          }
+        }
       }
       ctx.todos.push(`CREATE OBJECT: ${s.src}`);
       push(`${target} = null; // TODO(abap2js): ${s.src}`);
@@ -2421,18 +2760,51 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       break;
     case "Check": {
       const cond = txCond(toks.slice(1), ctx);
-      push(st.loopStack.length ? `if (!(${cond})) continue;` : methodDef.returning ? `if (!(${cond})) return ${methodDef.returning.name};` : `if (!(${cond})) return;`);
+      const ret = methodDef.returning ? `return ${methodDef.returning.name};` : `return;`;
+      push(st.loopStack.length ? `if (!(${cond})) continue;` : `if (!(${cond})) { ${st.outSync ?? ""} ${ret} }`);
       break;
     }
     case "Return":
+      if (st.outSync) push(st.outSync);
       push(methodDef.returning ? `return ${methodDef.returning.name};` : `return;`);
       break;
+    case "Condense": {
+      // CONDENSE x [NO-GAPS] — strip leading/trailing blanks; interior runs
+      // of blanks collapse to one space (or vanish entirely with NO-GAPS).
+      // ABAP blanks are SPACES only — tabs/newlines survive CONDENSE.
+      const noGaps = toks.some((t) => KW(t.str) === "NO-GAPS");
+      const end = noGaps ? toks.findIndex((t) => KW(t.str) === "NO-GAPS") : toks.length;
+      const target = txExpr(toks.slice(1, end), ctx);
+      push(`${target} = String(${target}).replace(/^ +| +$/g, "").replace(/ +/g, ${noGaps ? "``" : "` `"});`);
+      const shadowC = ctx.fsBacked.get(target);
+      if (shadowC) push(`if (${shadowC}) ${shadowC}.o[${shadowC}.k] = ${target};`);
+      break;
+    }
+    case "Replace": {
+      // REPLACE [ALL OCCURRENCES OF|FIRST OCCURRENCE OF] sub IN target WITH with.
+      // (REGEX / section-based variants keep falling through to TODO)
+      const kws = toks.map((t) => KW(t.str));
+      if (kws.includes("REGEX") || kws.includes("SECTION")) return todo();
+      const inIdx = findTopWord(toks, "IN");
+      const withIdx = findTopWord(toks, "WITH");
+      if (inIdx < 0 || withIdx < 0 || withIdx < inIdx) return todo();
+      const all = kws.includes("ALL");
+      const ofIdx = findTopWord(toks, "OF");
+      const sub = txExpr(toks.slice(ofIdx >= 0 && ofIdx < inIdx ? ofIdx + 1 : 1, inIdx), ctx);
+      const target = txExpr(toks.slice(inIdx + 1, withIdx), ctx);
+      const withExpr = txExpr(toks.slice(withIdx + 1), ctx);
+      push(`${target} = String(${target}).${all ? "replaceAll" : "replace"}(${sub}, ${withExpr} ?? \`\`);`);
+      const shadowR = ctx.fsBacked.get(target);
+      if (shadowR) push(`if (${shadowR}) ${shadowR}.o[${shadowR}.k] = ${target};`);
+      break;
+    }
     case "Clear": {
       const target = txExpr(toks.slice(1), ctx);
       // best effort by declared default
       const name = toks[1].str.toLowerCase();
       const f = ctx.model.fields.get(name);
-      const dflt = f ? f.default : ctx.isLocal(name) ? "null" : "null";
+      const vt = ctx.varTypes.get(name);
+      const dflt = f ? f.default : vt ? declaredInit(vt, ctx.model, 0, ctx) : "null";
       push(`${target} = ${dflt === "null" && /\.length/.test(target) ? "[]" : dflt};`);
       const shadow = ctx.fsBacked.get(target);
       if (shadow) push(`if (${shadow}) ${shadow}.o[${shadow}.k] = ${target};`);
@@ -2453,16 +2825,29 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
             break;
           }
         }
-        if (refVar) ctx.locals.add(refVar);
+        // … or is a pre-declared target: ASSIGNING <n> / REFERENCE INTO ref
+        if (!refVar) {
+          const at = asgIdx > 0 ? asgIdx + 1 : refIdx + 2;
+          if (toks[at]) refVar = varOrFsIdent(toks[at].str);
+        }
       }
+      // a target seen before (hoisted field symbol, or re-ASSIGNING the same
+      // inline one) is re-bound, not re-declared — and a rebindable target's
+      // first declaration must be `let`, not `const`
+      const refSeen = refVar && (ctx.hoisted?.has(refVar) || ctx.locals.has(refVar));
+      if (refVar) ctx.locals.add(refVar);
+      const refKw = refSeen ? "" : "let ";
       const up1 = KW(toks[1].str);
       if (up1 === "INITIAL") {
-        const tab = txExpr(toks.slice(4, end), ctx);
+        const tabToks0 = toks.slice(4, end);
+        const tab = txExpr(tabToks0, ctx);
+        const rowComps = rowStructComponents(targetTypeTokens(tabToks0, ctx), ctx.model);
+        const blank = rowComps ? renderComps(rowComps, ctx.model, 0) : "{}";
         if (refVar) {
-          push(`const ${refVar} = {};`);
+          push(`${refKw}${refVar} = ${blank};`);
           push(`${tab}.push(${refVar});`);
         } else {
-          push(`${tab}.push({});`);
+          push(`${tab}.push(${blank});`);
         }
       } else if (up1 === "LINES") {
         const toIdx = toks.findIndex((t, k) => k > 2 && KW(t.str) === "TO");
@@ -2473,10 +2858,12 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         const tab = txExpr(toks.slice(toIdx + 1, end), ctx);
         const comps = rowStructComponents(targetTypeTokens(toks.slice(toIdx + 1, end), ctx), ctx.model);
         if (comps) ctx._completeStruct = comps;
-        const val = txExpr(toks.slice(1, toIdx), ctx);
+        // ABAP APPEND copies the line — plain JS push would alias the object
+        ctx.requires?.add("z2ui5_cl_util");
+        const val = `z2ui5_cl_util.abap_copy(${txExpr(toks.slice(1, toIdx), ctx)})`;
         ctx._completeStruct = null;
         if (refVar) {
-          push(`const ${refVar} = ${val};`);
+          push(`${refKw}${refVar} = ${val};`);
           push(`${tab}.push(${refVar});`);
         } else {
           push(`${tab}.push(${val});`);
@@ -2503,7 +2890,12 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         const comps = rowStructComponents(targetTypeTokens(tabToks, ctx), ctx.model);
         if (comps) ctx._completeStruct = comps;
       }
+      // ABAP INSERT copies the line(s) — plain JS push would alias the object
       let val = isInitial ? "{}" : txExpr(toks.slice(isLines ? 3 : 1, intoIdx), ctx);
+      if (!isInitial) {
+        ctx.requires?.add("z2ui5_cl_util");
+        val = isLines ? `${val}.map((_r) => z2ui5_cl_util.abap_copy(_r))` : `z2ui5_cl_util.abap_copy(${val})`;
+      }
       ctx._completeStruct = null;
       const spread = isLines ? "..." : "";
       // capture the inserted line into a reference/field symbol
@@ -2800,6 +3192,58 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       push(`sy_subrc = z2ui5_port.sy_subrc;`);
       break;
     }
+    case "Convert": {
+      // ABAP timestamps are packed YYYYMMDDhhmmss numbers — the two CONVERT
+      // forms are digit-group splices (timezone shifts are not modeled; the
+      // framework passes UTC everywhere)
+      const kws = toks.map((t) => KW(t.str));
+      const intoIdx = findTopWord(toks, "INTO");
+      if (intoIdx < 0) return todo();
+      if (kws[1] === "DATE") {
+        // CONVERT DATE d TIME t INTO TIME STAMP ts [TIME ZONE tz]
+        const timeIdx = findTopWord(toks.slice(0, intoIdx), "TIME");
+        if (timeIdx < 0 || kws[intoIdx + 1] !== "TIME" || kws[intoIdx + 2] !== "STAMP") return todo();
+        const dateExpr = txExpr(toks.slice(2, timeIdx), ctx);
+        const timeExpr = txExpr(toks.slice(timeIdx + 1, intoIdx), ctx);
+        const target = txExpr([toks[intoIdx + 3]], ctx);
+        push(`${target} = Number(\`\${${dateExpr}}\${${timeExpr}}\`) || 0;`);
+        break;
+      }
+      if (kws[1] === "TIME" && kws[2] === "STAMP") {
+        // CONVERT TIME STAMP ts [TIME ZONE tz] INTO DATE d [TIME t]
+        const zoneIdx = findTopWord(toks.slice(0, intoIdx), "ZONE");
+        const tsExpr = txExpr(toks.slice(3, zoneIdx > 0 ? zoneIdx - 1 : intoIdx), ctx);
+        const after = toks.slice(intoIdx + 1);
+        const afterKw = after.map((t) => KW(t.str));
+        const dIdx = afterKw.indexOf("DATE");
+        const tIdx = afterKw.indexOf("TIME");
+        const tmp = `_ts${st.tabixSeq++}`;
+        push(`const ${tmp} = String(Math.trunc(Number(${tsExpr}) || 0)).padStart(14, \`0\`);`);
+        if (dIdx >= 0) push(`${txExpr([after[dIdx + 1]], ctx)} = ${tmp}.slice(0, 8);`);
+        if (tIdx >= 0) push(`${txExpr([after[tIdx + 1]], ctx)} = ${tmp}.slice(8, 14);`);
+        break;
+      }
+      return todo();
+    }
+    case "GetReference": {
+      // GET REFERENCE OF x INTO y — JS has no scalar refs; objects/tables
+      // alias naturally, scalars degrade to a value copy (deref collapses)
+      const intoIdx = findTopWord(toks, "INTO");
+      if (intoIdx < 0) return todo();
+      const src = txExpr(toks.slice(3, intoIdx), ctx);
+      let tgtToks = toks.slice(intoIdx + 1);
+      if (["DATA", "FINAL"].includes(KW(tgtToks[0]?.str ?? "")) && isParenL(tgtToks[1] ?? { type: "" })) {
+        const nm = safeIdent(tgtToks[2].str.toLowerCase());
+        ctx.locals.add(nm);
+        push(`let ${nm} = ${src};`);
+        break;
+      }
+      const tgt = txExpr(tgtToks, ctx);
+      push(`${tgt} = ${src};`);
+      const shadowG = ctx.fsBacked.get(tgt);
+      if (shadowG) push(`if (${shadowG}) ${shadowG}.o[${shadowG}.k] = ${tgt};`);
+      break;
+    }
     case "Comment":
       break;
     default:
@@ -2915,6 +3359,16 @@ function transpileInterface(source, filename) {
   let name = null;
   const consts = []; // { name, value } — value is a rendered literal or object
   let structCollector = null;
+  const requires = new Set();
+
+  // VALUE may carry a literal or a reference chain (cl_x=>const-comp)
+  const renderConstValue = (valToks, typeTokens) => {
+    if (!valToks.length) return typeDefault(typeTokens);
+    if (valToks.length === 1) return renderLiteralToken(valToks[0]);
+    const head = valToks[0].str.toLowerCase();
+    if (/^(cl_|cx_|z2ui5_)/.test(head)) requires.add(head);
+    return valToks.map((t) => (t.str === "=>" || t.str === "-" ? "." : t.str.toLowerCase())).join("");
+  };
 
   for (const s of file.getStatements()) {
     const T = s.get().constructor.name;
@@ -2931,8 +3385,10 @@ function transpileInterface(source, filename) {
       }
     } else if (T === "Constant") {
       const cname = toks[1].str.toLowerCase();
-      const { typeTokens, value } = parseTypeAfter(toks.slice(2, -1), 0);
-      const rendered = value ? renderLiteralToken(value) : typeDefault(typeTokens);
+      const body = [".", ","].includes(toks[toks.length - 1]?.str) ? toks.slice(2, -1) : toks.slice(2);
+      const valIdx = body.findIndex((t) => KW(t.str) === "VALUE");
+      const { typeTokens } = parseTypeAfter(valIdx >= 0 ? body.slice(0, valIdx) : body, 0);
+      const rendered = renderConstValue(valIdx >= 0 ? body.slice(valIdx + 1) : [], typeTokens);
       if (structCollector) structCollector.members.push({ name: cname, value: rendered });
       else consts.push({ name: cname, value: rendered });
     }
@@ -2941,6 +3397,10 @@ function transpileInterface(source, filename) {
 
   const lines = [];
   lines.push(`// transpiled ABAP interface — constants only, types/methods have no JS form`);
+  for (const req of [...requires].sort()) {
+    const p = requirePathFor(req);
+    if (p) lines.push(`const ${req} = require("${p}");`);
+  }
   lines.push(`const ${name} = {`);
   for (const c of consts) lines.push(`  ${c.name}: ${c.value},`);
   lines.push(`};`);
@@ -2953,12 +3413,12 @@ function transpileInterface(source, filename) {
 // CLI
 // ---------------------------------------------------------------------------
 
-function transpileFile(inputPath) {
+function transpileFile(inputPath, opts = {}) {
   const source = fs.readFileSync(inputPath, "utf8");
   if (inputPath.endsWith(".intf.abap")) {
     return transpileInterface(source, path.basename(inputPath));
   }
-  const { code, todos, name } = transpileClass(source, path.basename(inputPath));
+  const { code, todos, name } = transpileClass(source, path.basename(inputPath), opts);
   return { code: breakChains(code), todos, name };
 }
 
@@ -3047,6 +3507,6 @@ function main(argv) {
   if (todoTotal) console.error(`\n${todoTotal} TODO(s) need manual follow-up (search for "TODO(abap2js)").`);
 }
 
-module.exports = { transpileClass, transpileFile };
+module.exports = { transpileClass, transpileFile, transpileInterface, parseInterfaceSigs, parseInterfaceTypes };
 
 if (require.main === module) main(process.argv);

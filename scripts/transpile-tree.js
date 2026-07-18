@@ -13,7 +13,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
-const { transpileFile } = require("./abap2js");
+const { transpileFile, parseInterfaceSigs, parseInterfaceTypes } = require("./abap2js");
 
 // Framework classes that are hand-maintained in this repo's src/srv/z2ui5
 // overlay win at assemble time (assemble-core copies src/ first and overlays
@@ -71,12 +71,31 @@ const targets = [];
   }
 })(srcBase);
 
+// interface signatures (from every *.intf.abap in the tree) let interface
+// method implementations (METHOD intf~name) get their real parameter lists
+const intfSigs = new Map();
+const externTypes = new Map(); // "intf=>ty" -> struct members / ":table" marker
+(function walkIntf(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkIntf(full);
+    else if (entry.name.endsWith(".intf.abap")) {
+      const intfName = entry.name.replace(/\.intf\.abap$/i, "").toLowerCase();
+      try {
+        const src = fs.readFileSync(full, "utf8");
+        intfSigs.set(intfName, parseInterfaceSigs(src, entry.name));
+        for (const [ty, members] of parseInterfaceTypes(src, entry.name)) externTypes.set(`${intfName}=>${ty}`, members);
+      } catch { /* signature-less interface — implementations fall back as before */ }
+    }
+  }
+})(srcBase);
+
 fs.rmSync(outBase, { recursive: true, force: true });
 const report = [];
 const failed = [];
 for (const { file, relDir } of targets) {
   try {
-    const { code, todos, name: className } = transpileFile(file);
+    const { code, todos, name: className } = transpileFile(file, { intfSigs, externTypes });
     const relPath = path.join(relDir, `${className}.js`);
     const outPath = path.join(outBase, relPath);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });

@@ -13,7 +13,7 @@ class ltcl_test {
   }
 
   test_bool_char_non_bool() {
-    let lv_char = ``;
+    let lv_char = `X`;
     cl_abap_unit_assert.assert_equals({ exp: `X`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(lv_char) });
   }
 
@@ -31,8 +31,8 @@ class ltcl_test {
   }
 
   test_bool_check_by_data() {
-    let lv_char = ``;
-    let lv_int = 0;
+    let lv_char = `X`;
+    let lv_int = 5;
     cl_abap_unit_assert.assert_true(z2ui5_cl_a2ui5_context.boolean_check_by_data(true));
     cl_abap_unit_assert.assert_true(z2ui5_cl_a2ui5_context.boolean_check_by_data(false));
     cl_abap_unit_assert.assert_false(z2ui5_cl_a2ui5_context.boolean_check_by_data(lv_char));

@@ -5,14 +5,14 @@ const z2ui5_cl_http_handler = require("abap2UI5/z2ui5_cl_http_handler");
 
 class ltcl_test_http_handler {
   test_http_get_status() {
-    let ls_result = null;
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     ls_result = z2ui5_cl_http_handler._http_get();
     cl_abap_unit_assert.assert_equals({ exp: 200, act: ls_result.status_code });
     cl_abap_unit_assert.assert_equals({ exp: `success`, act: ls_result.status_reason });
   }
 
   test_http_get_html() {
-    let ls_result = null;
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     let temp1 = false;
     let temp2 = false;
     let temp3 = false;
@@ -27,7 +27,7 @@ class ltcl_test_http_handler {
   }
 
   test_http_get_ui5_boot() {
-    let ls_result = null;
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     let temp4 = false;
     let temp5 = false;
     ls_result = z2ui5_cl_http_handler._http_get();
@@ -40,7 +40,7 @@ class ltcl_test_http_handler {
   test_http_post_ok() {
     let sy_sysid = "";
     let ls_req = null;
-    let ls_result = null;
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     let temp6 = false;
     if (sy_sysid === `ABC`) {
       return;
@@ -55,7 +55,7 @@ class ltcl_test_http_handler {
 
   test_http_post_error() {
     let ls_req = null;
-    let ls_result = null;
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     let temp7 = false;
     ls_req.method = `POST`;
     ls_req.body = `not valid json at all!!!`;
@@ -67,7 +67,7 @@ class ltcl_test_http_handler {
 
   test_main_get_routing() {
     let ls_req = null;
-    let ls_result = null;
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     let temp8 = false;
     ls_req.method = `GET`;
     ls_result = z2ui5_cl_http_handler._main(ls_req);
@@ -79,7 +79,7 @@ class ltcl_test_http_handler {
   test_main_post_routing() {
     let sy_sysid = "";
     let ls_req = null;
-    let ls_result = null;
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     if (sy_sysid === `ABC`) {
       return;
     }

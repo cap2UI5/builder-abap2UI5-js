@@ -68,8 +68,10 @@ reported.
 
 Test ratchets: `test/upstream-units.known-failures.json` and
 `test/apps-smoke.known-failures.json` — a new failure is a regression (red),
-a fixed entry must be delisted (red). Regenerate via
-`node scripts/run-units.js --json` / `node scripts/smoke-apps.js --json`.
+a fixed entry must be delisted (red). `node scripts/ratchet-update.js`
+reconciles both baselines (delists fixed entries, fails on regressions;
+`--check` for a dry run) — the `build_core` pipeline runs it and commits the
+shrunken baselines, so only regressions can turn the nightlies red.
 
 ## Workflows (.github/workflows)
 

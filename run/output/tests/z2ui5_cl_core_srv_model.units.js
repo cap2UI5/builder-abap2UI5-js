@@ -162,7 +162,7 @@ class ltcl_test_get_attri {
   test_first() {
     const lo_app_client = new ltcl_test_app3();
     let lr_value = null;
-    // TODO(abap2js): GET REFERENCE OF lo_app_client->mv_value INTO lr_value.
+    lr_value = lo_app_client.mv_value;
     const lt_attri = {};
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app_client });
     const lr_attri = lo_model.attri_get_val_ref(`MV_VALUE`);
@@ -235,7 +235,7 @@ class ltcl_test_app_root {
   mo_obj = null;
 
   constructor() {
-    this.mt_tab.push({ comp1: `comp1`, comp2: `comp2` });
+    this.mt_tab.push(z2ui5_cl_util.abap_copy({ comp1: `comp1`, comp2: `comp2` }));
     this.mo_obj = new ltcl_test_app_root_attri({ ir_tab: (this.mt_tab) });
   }
 }
@@ -292,7 +292,7 @@ class ltcl_test_app_root4 {
     let lo_app = new ltcl_test_app_root4();
     // TODO(abap2js): CREATE DATA lo_app->mr_tab TYPE ty_t_tab.
     // TODO(abap2js): ASSIGN lo_app->mr_tab->* TO <tab>.
-    fs_tab.push({ comp1: `comp1`, comp2: `comp2` });
+    fs_tab.push(z2ui5_cl_util.abap_copy({ comp1: `comp1`, comp2: `comp2` }));
     const lt_attri = {};
     let lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     const ls_attri = lo_model.main_attri_search(lo_app.mr_tab);
@@ -390,7 +390,7 @@ class ltcl_test_diss_complex {
     let ls_row = [];
     ls_row.col1 = `X`;
     ls_row.col2 = `Y`;
-    fs_tab.push(ls_row);
+    fs_tab.push(z2ui5_cl_util.abap_copy(ls_row));
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -1043,11 +1043,11 @@ class ltcl_test_json_types {
     lr1.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
     lr1.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
     lr1.name_client = `/XX/MV_SIMPLE`;
-    let ls_extra = null;
+    let ls_extra = { name: ``, name_client: ``, name_parent: ``, name_ref: ``, bind_type: ``, srtti_data: ``, check_dissolved: false, view: ``, custom_filter: null, custom_filter_back: null, custom_mapper: null, custom_mapper_back: null, o_typedescr: null, type_kind: ``, kind: `` };
     ls_extra = z2ui5_cl_util.abap_copy(lr1);
     ls_extra.name = `MV_SIMPLE_ALIAS`;
     ls_extra.name_client = `/XX/ALIAS`;
-    lt_attri.push(ls_extra);
+    lt_attri.push(z2ui5_cl_util.abap_copy(ls_extra));
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
     lo_model_json.set({ iv_path: `/XX/MV_SIMPLE`, iv_val: `first` });

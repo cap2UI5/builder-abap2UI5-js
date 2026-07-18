@@ -17,8 +17,10 @@ class ltcl_test {
 
   test_set_config_http_get() {
     const li_exit = z2ui5_cl_exit.get_instance();
-    let ls_config = null;
-    li_exit.set_config_http_get({ cs_config: ls_config });
+    let ls_config = { src: ``, theme: ``, content_security_policy: ``, styles_css: ``, title: ``, t_add_config: [], custom_js: ``, t_security_header: [] };
+    const _out0 = { cs_config: ls_config };
+    li_exit.set_config_http_get(_out0);
+    if ("cs_config" in _out0) ls_config = _out0.cs_config;
     cl_abap_unit_assert.assert_not_initial(ls_config.title);
     cl_abap_unit_assert.assert_not_initial(ls_config.theme);
     cl_abap_unit_assert.assert_not_initial(ls_config.src);
@@ -28,16 +30,20 @@ class ltcl_test {
 
   test_set_config_http_post() {
     const li_exit = z2ui5_cl_exit.get_instance();
-    let ls_config = null;
-    li_exit.set_config_http_post({ cs_config: ls_config });
+    let ls_config = { draft_exp_time_in_hours: 0, check_hide_error_details: false };
+    const _out0 = { cs_config: ls_config };
+    li_exit.set_config_http_post(_out0);
+    if ("cs_config" in _out0) ls_config = _out0.cs_config;
     cl_abap_unit_assert.assert_equals({ exp: 4, act: ls_config.draft_exp_time_in_hours });
   }
 
   test_post_default_exp_time() {
     const li_exit = z2ui5_cl_exit.get_instance();
-    let ls_config = null;
+    let ls_config = { draft_exp_time_in_hours: 0, check_hide_error_details: false };
     ls_config.draft_exp_time_in_hours = - 1;
-    li_exit.set_config_http_post({ cs_config: ls_config });
+    const _out0 = { cs_config: ls_config };
+    li_exit.set_config_http_post(_out0);
+    if ("cs_config" in _out0) ls_config = _out0.cs_config;
     cl_abap_unit_assert.assert_equals({ exp: 4, act: ls_config.draft_exp_time_in_hours });
   }
 

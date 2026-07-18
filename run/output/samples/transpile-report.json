@@ -1122,19 +1122,15 @@
   {
     "class": "z2ui5_cl_sample_context",
     "path": "01/z2ui5_cl_sample_context.js",
-    "todos": 64,
+    "todos": 59,
     "todoDetails": [
       "builtin shift_left( ) not mapped",
       "builtin shift_left( ) not mapped",
       "unsupported statement: ASSIGN ref->(ls_filter-name) TO FIELD-SYMBOL(<field>).",
       "IN range-table check approximated (sign E ignored)",
       "unsupported statement: DELETE val.",
-      "unsupported statement: REPLACE `{LOW}` IN lv_value WITH lr_row->low.",
-      "unsupported statement: REPLACE `{HIGH}` IN lv_value WITH lr_row->high.",
       "unsupported statement: DELETE tab.",
       "unsupported statement: ASSIGN lr_row->* TO FIELD-SYMBOL(<row>).",
-      "unsupported statement: REPLACE ALL OCCURRENCES OF `;` IN lv_field_val WITH `,`.",
-      "unsupported statement: REPLACE ALL OCCURRENCES OF ` ` IN lv_name WITH `_`.",
       "unsupported statement: CREATE DATA result TYPE HANDLE o_table_desc.",
       "unsupported statement: ASSIGN result->* TO <tab>.",
       "unsupported statement: CREATE DATA lr_row TYPE HANDLE struc.",
@@ -1186,8 +1182,7 @@
       "unsupported statement: CREATE DATA lr_tab TYPE (`BAPIRETTAB`).",
       "unsupported statement: ASSIGN lr_tab->* TO <tab2>.",
       "unsupported statement: CALL METHOD obj->(`ZIF_LOGGER~EXPORT_TO_TABLE`) RECEIVING rt_bapiret = <tab2>.",
-      "unsupported statement: ASSIGN obj->(lv_name) TO <comp>.",
-      "unsupported statement: msg_get_rap_row( EXPORTING val = val entity_name = entity_name IMPORTING messages = result is_row = DATA(lv_is_row) )."
+      "unsupported statement: ASSIGN obj->(lv_name) TO <comp>."
     ]
   },
   {

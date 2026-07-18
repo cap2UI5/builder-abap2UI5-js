@@ -302,7 +302,7 @@ class ltcl_test_client {
   test_nav_app_leave_r_data() {
     let lo_app = null;
     let li_client = null;
-    let lv_data = ``;
+    let lv_data = `payload`;
     lo_app = new ltcl_test_app();
     li_client = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client.nav_app_leave({ app: lo_app, event: `MY_EVENT`, r_data: lv_data });
@@ -375,9 +375,9 @@ class ltcl_test_client {
     let temp28 = [];
     let temp30 = null;
     let li_client = null;
-    temp28 = null;
-    temp28.push(`arg1`);
-    temp28.push(`arg2`);
+    temp28 = [];
+    temp28.push(z2ui5_cl_util.abap_copy(`arg1`));
+    temp28.push(z2ui5_cl_util.abap_copy(`arg2`));
     this.mo_action.ms_actual.t_event_arg = z2ui5_cl_util.abap_copy(temp28);
     temp30 = z2ui5_cl_util.abap_copy(this.mo_client);
     li_client = z2ui5_cl_util.abap_copy(temp30);

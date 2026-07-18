@@ -2,6 +2,8 @@
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
 const z2ui5_cl_ajson = require("abap2UI5/z2ui5_cl_ajson");
 const z2ui5_cl_ajson_filter_lib = require("abap2UI5/z2ui5_cl_ajson_filter_lib");
+const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
+const { lcl_empty_filter, lcl_paths_filter, lcl_and_filter } = require("abap2UI5/z2ui5_cl_ajson_filter_lib").__locals;
 
 
 class ltcl_filters_test {
@@ -36,7 +38,7 @@ class ltcl_filters_test {
     let li_json = null;
     let li_json_filtered = null;
     let lt_paths = [];
-    lt_paths.push(`/b/c`);
+    lt_paths.push(z2ui5_cl_util.abap_copy(`/b/c`));
     li_json = z2ui5_cl_ajson.create_empty();
     li_json.set({ iv_path: `/a`, iv_val: `1` });
     li_json.set({ iv_path: `/b/c`, iv_val: `2` });
@@ -73,7 +75,7 @@ class ltcl_filters_test {
     let li_json = null;
     let li_json_filtered = null;
     let lt_paths = [];
-    lt_paths.push(`/b`);
+    lt_paths.push(z2ui5_cl_util.abap_copy(`/b`));
     li_json = z2ui5_cl_ajson.create_empty();
     li_json.set({ iv_path: `/a`, iv_val: `1` });
     li_json.set({ iv_path: `/b/c`, iv_val: `2` });
@@ -87,8 +89,8 @@ class ltcl_filters_test {
     let li_json = null;
     let li_json_filtered = null;
     let lt_filters = [];
-    lt_filters.push(z2ui5_cl_ajson_filter_lib.create_empty_filter());
-    lt_filters.push(z2ui5_cl_ajson_filter_lib.create_path_filter({ iv_skip_paths: `/c` }));
+    lt_filters.push(z2ui5_cl_util.abap_copy(z2ui5_cl_ajson_filter_lib.create_empty_filter()));
+    lt_filters.push(z2ui5_cl_util.abap_copy(z2ui5_cl_ajson_filter_lib.create_path_filter({ iv_skip_paths: `/c` })));
     li_json = z2ui5_cl_ajson.create_empty();
     li_json.set({ iv_path: `/a`, iv_val: `1` });
     li_json.set({ iv_ignore_empty: false, iv_path: `/b`, iv_val: `` });
@@ -116,6 +118,6 @@ class ltcl_filters_test {
 
 module.exports = {
   __main: "z2ui5_cl_ajson_filter_lib",
-  __classes: { ltcl_filters_test },
+  __classes: { lcl_empty_filter, lcl_paths_filter, lcl_and_filter, ltcl_filters_test },
   __tests: {"ltcl_filters_test":["empty_filter_simple","empty_filter_deep","path_filter","path_filter_string","path_filter_w_patterns","path_filter_deep","and_filter","mixed_case_filter"]},
 };

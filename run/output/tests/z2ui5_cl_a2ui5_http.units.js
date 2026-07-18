@@ -37,15 +37,17 @@ class ltcl_fake_response {
   }
 
   set_header_field({ name, value } = {}) {
-    this.mt_header.push({ n: name, v: value });
+    this.mt_header.push(z2ui5_cl_util.abap_copy({ n: name, v: value }));
   }
 
-  get_cookie({ name, value } = {}) {
+  get_cookie(_args = {}) {
+    let { name, value } = _args;
     value = null;
     try {
       value = this.mt_cookie.find((row) => row.n === name).v;
     } catch (error) {
     }
+    Object.assign(_args, { value });
   }
 
   delete_cookie({ name } = {}) {
@@ -99,7 +101,7 @@ class ltcl_test {
   }
 
   test_get_header_field() {
-    this.mo_server.request.mt_header.push({ n: `~path`, v: `/sap/bc/z2ui5` });
+    this.mo_server.request.mt_header.push(z2ui5_cl_util.abap_copy({ n: `~path`, v: `/sap/bc/z2ui5` }));
     cl_abap_unit_assert.assert_equals({ exp: `/sap/bc/z2ui5`, act: this.mo_cut.get_header_field(`~path`) });
   }
 
@@ -114,7 +116,7 @@ class ltcl_test {
   }
 
   test_get_response_cookie() {
-    this.mo_server.response.mt_cookie.push({ n: `sap-sessionid`, v: `ABC123` });
+    this.mo_server.response.mt_cookie.push(z2ui5_cl_util.abap_copy({ n: `sap-sessionid`, v: `ABC123` }));
     cl_abap_unit_assert.assert_equals({ exp: `ABC123`, act: this.mo_cut.get_response_cookie(`sap-sessionid`) });
   }
 

@@ -160,7 +160,7 @@ class ltcl_test {
     lo_action.ms_next.o_app_call = z2ui5_cl_util.abap_copy(lo_new_app);
     lo_action.ms_next.s_set.s_msg_box.text = `box`;
     lo_action.ms_next.s_set.s_msg_toast.text = `toast`;
-    lo_action.ms_next.s_set.s_follow_up_action.custom_js.push(`some_js`);
+    lo_action.ms_next.s_set.s_follow_up_action.custom_js.push(z2ui5_cl_util.abap_copy(`some_js`));
     lo_action.ms_next.s_set.s_popup.xml = `<popup/>`;
     lo_action.ms_next.s_set.s_popover.xml = `<popover/>`;
     lo_result = lo_action.factory_stack_call();
@@ -191,7 +191,7 @@ class ltcl_test {
     lo_action.ms_next.o_app_leave = z2ui5_cl_util.abap_copy(lo_prev_app);
     lo_action.ms_next.s_set.s_msg_box.text = `box`;
     lo_action.ms_next.s_set.s_msg_toast.text = `toast`;
-    lo_action.ms_next.s_set.s_follow_up_action.custom_js.push(`some_js`);
+    lo_action.ms_next.s_set.s_follow_up_action.custom_js.push(z2ui5_cl_util.abap_copy(`some_js`));
     lo_action.ms_next.s_set.s_popup.xml = `<popup/>`;
     lo_action.ms_next.s_set.s_popover.xml = `<popover/>`;
     lo_result = lo_action.factory_stack_leave();
