@@ -47,6 +47,8 @@ function requirePathFor(className) {
   // a class without a shim fails the assemble load-gate visibly, not silently
   if (/^cl_abap_[a-z0-9_]+$/.test(className)) return `abap2UI5/${className}`;
   if (/^cx_sy_[a-z0-9_]+$/.test(className)) return `abap2UI5/${className}`;
+  // kernel exception roots — one shared shim keeps previous/textid + get_text
+  if (/^cx_(root|no_check|static_check|dynamic_check)$/.test(className)) return `abap2UI5/cx_root`;
   if (
     /^z2ui5_(cl|cx)_abap2ui5_/.test(className) ||
     /^z2ui5_(cl|cx)_a2ui5_/.test(className) ||
@@ -220,6 +222,11 @@ function parseTypeAfter(toks, i) {
       i++;
       if (i < toks.length) {
         value = toks[i];
+        // negative literal (VALUE -1) lexes as two tokens
+        if (isDash(value) && toks[i + 1]) {
+          value = { ...toks[i + 1], str: `-${toks[i + 1].str}` };
+          i++;
+        }
         i++;
       }
       continue;
@@ -271,7 +278,10 @@ function parseMethodDef(toksIn) {
       // params join the destructured signature (JS object refs give the
       // by-reference semantics for structures and tables)
       if (KW(toks[i + 1]?.str) === "TYPE" || KW(toks[i + 1]?.str) === "LIKE") {
-        const param = { name: paramName(toks[i].str), defaultToks: null };
+        // TYPE REF TO … params carry reference semantics — assignments from
+        // them must NOT be routed through the value-copy helper
+        const isRef = KW(toks[i + 1]?.str) === "TYPE" && KW(toks[i + 2]?.str) === "REF" && KW(toks[i + 3]?.str) === "TO";
+        const param = { name: paramName(toks[i].str), defaultToks: null, isRef };
         // scan ahead for DEFAULT <tok...> until next param/section
         for (let j = i + 2; j < toks.length - 1; j++) {
           const u = KW(toks[j].str);
@@ -384,6 +394,7 @@ function buildModel(file) {
               default: "{ " + structCollector.members.map((m) => `${m.name}: ${m.value ?? m.default}`).join(", ") + " }",
               isStatic: false,
               isConst: false,
+              members: structCollector.members,
             });
           structCollector = null;
         }
@@ -394,7 +405,7 @@ function buildModel(file) {
         const { typeTokens, value } = parseTypeAfter(body.slice(2, -1), 0);
         const rendered = value ? renderLiteralToken(value) : null;
         if (structCollector) {
-          structCollector.members.push({ name, default: typeDefault(typeTokens), value: rendered });
+          structCollector.members.push({ name, default: typeDefault(typeTokens), value: rendered, typeTokens });
         } else if (T === "Constant") {
           model.fields.set(name, { default: rendered ?? typeDefault(typeTokens), isStatic: true, isConst: true });
         } else {
@@ -496,7 +507,8 @@ function rowStructComponents(typeTokens, model) {
   }
   if (!structName) return null;
   if (model.tableTypes.has(structName)) structName = model.tableTypes.get(structName);
-  return model.structTypes.get(structName) || null;
+  else if (model.siblingTypes?.tableTypes.has(structName)) structName = model.siblingTypes.tableTypes.get(structName);
+  return model.structTypes.get(structName) || model.siblingTypes?.structTypes.get(structName) || null;
 }
 
 /** initializer for a declared variable — resolves local TYPES structures and
@@ -504,7 +516,9 @@ function rowStructComponents(typeTokens, model) {
  *  a known struct type starts as a typed object literal instead of null */
 function declaredInit(typeTokens, model, depth = 0, ctx = null) {
   let init = typeDefault(typeTokens);
-  if (init !== "null" || !typeTokens || depth > 3) return init;
+  // "{}" comes from struct-naming conventions (ty_s_x, s_x, …) — still try to
+  // resolve the real component defaults; "null" is the unknown-type fallback
+  if ((init !== "null" && init !== "{}") || !typeTokens || depth > 3) return init;
   const up = typeTokens.map((t) => String(t).toUpperCase());
   // LIKE LINE OF <var[-comp…]> — row type of the declared table (member)
   if (up[0] === "LIKE" && up[1] === "LINE" && up[2] === "OF" && typeTokens[3] && ctx) {
@@ -560,7 +574,7 @@ function externRowComponents(typeTokens, model) {
 function renderComps(comps, model, depth) {
   const parts = comps.map((m) => {
     let d = m.value ?? m.default;
-    if ((d === "null" || d == null) && m.typeTokens) d = declaredInit(m.typeTokens, model, depth + 1);
+    if ((d === "null" || d === "{}" || d == null) && m.typeTokens) d = declaredInit(m.typeTokens, model, depth + 1);
     return `${m.name}: ${d ?? "null"}`;
   });
   return `{ ${parts.join(", ")} }`;
@@ -586,6 +600,82 @@ function targetTypeTokens(nameToks, ctx) {
     return cur;
   }
   return null;
+}
+
+/** field entry ({refType, typeTokens, …}) of `fname` on class `cls` — own
+ *  model or a sibling local class of the same module (opts.siblingFields) */
+function fieldEntryOf(cls, fname, ctx) {
+  if (!cls || !fname) return null;
+  if (cls === ctx.model.name) return ctx.model.fields.get(fname) || null;
+  return ctx.model.siblingFields?.get(cls)?.get(fname) || null;
+}
+
+/** Walk a member path (`a->b->c`, dashes allowed for struct components) to
+ *  the declared field entry of the LAST segment. Returns {refType?,
+ *  typeTokens?} or null. Used for `x->field = NEW #( )` inference and for
+ *  CREATE DATA without TYPE clause. */
+function resolveMemberEntry(nameToks, ctx) {
+  // split into segments at -> (class hop) / - (struct component)
+  const segs = [];
+  for (let i = 0; i < nameToks.length; i++) {
+    const t = nameToks[i];
+    if (isId(t)) segs.push({ name: t.str.toLowerCase(), viaArrow: i > 0 && nameToks[i - 1].type === "InstanceArrow" });
+    else if (t.type !== "InstanceArrow" && !isDash(t)) return null; // parens/indices — give up
+  }
+  if (!segs.length) return null;
+  if (segs.length === 1) {
+    const nm = segs[0].name;
+    const f = ctx.model.fields.get(nm);
+    if (f) return f;
+    if (ctx.varTypes.has(nm)) return { typeTokens: ctx.varTypes.get(nm), refType: ctx.localRefTypes.get(nm) || null };
+    if (ctx.localRefTypes.has(nm)) return { refType: ctx.localRefTypes.get(nm) };
+    return null;
+  }
+  // start: class of the first segment (me/local var/own field)
+  let cls = null;
+  let typeToks = null;
+  let members = null; // DATA BEGIN OF … blocks carry their member list
+  {
+    const nm = segs[0].name;
+    if (nm === "me") cls = ctx.model.name;
+    else {
+      const f = ctx.model.fields.get(nm);
+      cls = ctx.localRefTypes.get(nm) || f?.refType || null;
+      typeToks = ctx.varTypes.get(nm) || f?.typeTokens || null;
+      members = f?.members || null;
+    }
+  }
+  let entry = null;
+  for (let k = 1; k < segs.length; k++) {
+    const seg = segs[k];
+    if (seg.viaArrow && cls) {
+      entry = fieldEntryOf(cls, seg.name, ctx);
+    } else if (!seg.viaArrow && (members || typeToks)) {
+      const comps = members || rowStructComponents(typeToks, ctx.model);
+      entry = comps?.find((c) => c.name === seg.name) || null;
+    } else {
+      entry = null;
+    }
+    if (!entry) return k === segs.length - 1 ? uniqueSiblingField(segs[segs.length - 1].name, ctx) : null;
+    cls = entry.refType || null;
+    typeToks = entry.typeTokens || null;
+    members = entry.members || null;
+  }
+  return entry;
+}
+
+/** last-resort inference: the field name exists with a REF TO type on exactly
+ *  one distinct class among the module's local classes */
+function uniqueSiblingField(fname, ctx) {
+  if (!ctx.model.siblingFields) return null;
+  const found = new Map(); // refType → entry
+  const own = ctx.model.fields.get(fname);
+  if (own?.refType) found.set(own.refType, own);
+  for (const fields of ctx.model.siblingFields.values()) {
+    const f = fields.get(fname);
+    if (f?.refType) found.set(f.refType, f);
+  }
+  return found.size === 1 ? [...found.values()][0] : null;
 }
 
 function renderLiteralToken(tok) {
@@ -688,6 +778,7 @@ class Ctx {
     this.locals = new Set(); // declared local vars (lowercase)
     this.upperLocals = new Set(); // locals holding client.get() structs (UPPERCASE keys)
     this.localRefTypes = new Map(); // local var → class name (DATA x TYPE REF TO cls)
+    this.refVars = new Set(); // params/locals declared TYPE REF TO … (reference semantics)
     this.varTypes = new Map(); // local/param var → declared TYPE tokens (struct completion)
     this._completeStruct = null; // pending row components for the next top-level VALUE #()
     this.newTargetType = null; // declared type of the current assignment target (NEW # inference)
@@ -701,7 +792,10 @@ class Ctx {
     return this.locals.has(name.toLowerCase());
   }
   isField(name) {
-    return this.model.fields.has(name.toLowerCase()) && !this.model.fields.get(name.toLowerCase()).isStatic;
+    const lower = name.toLowerCase();
+    // inherited exception-class attributes (cx_root) — resolve as fields
+    if (this.model.superclass && (lower === "previous" || lower === "textid")) return true;
+    return this.model.fields.has(lower) && !this.model.fields.get(lower).isStatic;
   }
   isStaticField(name) {
     const f = this.model.fields.get(name.toLowerCase());
@@ -1292,6 +1386,8 @@ function txConstructor(kind, typeName, inner, ctx) {
           ctx.requires?.add(cls);
           return `new ${cls}(${txArgs(inner, ctx, cls)})`;
         }
+        // local class (lcl_/ltcl_) defined in the same module
+        if (!/^(cl_|cx_)/.test(cls)) return `new ${safeIdent(cls)}(${txArgs(inner, ctx, cls)})`;
       }
       ctx.todos?.push(`NEW #( ) — target type unknown, resolve manually`);
       return `/* TODO(abap2js): NEW #( ) */ null`;
@@ -1614,27 +1710,16 @@ function joinAtoms(atoms, ctx) {
       const operand = out.pop();
       const w = what?.kind === "op" ? what.up : KW(what?.str ?? "");
       let cond;
-      if (w === "INITIAL") cond = `!${wrap(operand)}`;
-      else if (w === "BOUND") cond = `${wrap(operand)} != null`;
-      else if (w === "SUPPLIED") cond = `${wrap(operand)} !== undefined`;
-      else if (w === "ASSIGNED") cond = `${wrap(operand)} != null`;
+      if (w === "INITIAL") cond = negated ? `${wrap(operand)}` : `!${wrap(operand)}`;
+      else if (w === "BOUND" || w === "ASSIGNED") cond = negated ? `${wrap(operand)} == null` : `${wrap(operand)} != null`;
+      else if (w === "SUPPLIED") cond = negated ? `${wrap(operand)} === undefined` : `${wrap(operand)} !== undefined`;
       else if (w === "INSTANCE") {
-        // IS INSTANCE OF cls
+        // IS [NOT] INSTANCE OF cls
         const cls = atoms[i + (negated ? 4 : 3)];
         cond = `${wrap(operand)} instanceof ${cls.str}`;
+        if (negated) cond = `!(${cond})`;
         i += 2;
       } else cond = `${wrap(operand)} /* TODO(abap2js): IS ${w} */`;
-      if (w === "BOUND" && negated) cond = `${wrap(operand)} == null`;
-      else if (w === "INITIAL" && negated) cond = `${wrap(operand)}` === operand ? `${wrap(operand)}` : cond;
-      if (negated) {
-        if (w === "INITIAL") cond = `${wrap(operand)}`;
-        else if (w === "BOUND") cond = `${wrap(operand)} == null` === cond ? cond : `!(${cond})`;
-        else if (w !== "INSTANCE") cond = `!(${cond})`;
-      }
-      // careful: NOT BOUND swap
-      if (negated && w === "BOUND") cond = `${wrap(operand)} != null`;
-      if (!negated && w === "BOUND") cond = `${wrap(operand)} != null`;
-      if (negated && w === "BOUND") cond = `${wrap(operand)} != null`;
       out.push(cond);
       i += negated ? 2 : 1;
       continue;
@@ -1923,6 +2008,8 @@ function transpileClass(source, filename, opts = {}) {
   model.intfSigs = opts.intfSigs || null;
   // interface-defined structure types: Map("intf=>ty" -> members)
   model.externTypes = opts.externTypes || null;
+  model.siblingFields = opts.siblingFields || null; // Map(cls → Map(field → {refType, typeTokens, …}))
+  model.siblingTypes = opts.siblingTypes || null; // { structTypes: Map, tableTypes: Map } of the sibling classes
 
   const requires = new Set();
   const todos = [];
@@ -1937,12 +2024,17 @@ function transpileClass(source, filename, opts = {}) {
   // fields
   const instanceFields = [...model.fields.entries()].filter(([, f]) => !f.isStatic);
   const staticFields = [...model.fields.entries()].filter(([, f]) => f.isStatic);
-  for (const [name, f] of staticFields) lines.push(`  static ${name} = ${f.default};`);
+  // typed initializers: fields declared against known struct types start as
+  // full object literals (collectTypeDefs has run by now — the parse-time
+  // default couldn't see the TYPES yet)
+  const fieldInit = (f) =>
+    (f.default === "null" || f.default === "{}") && f.typeTokens ? declaredInit(f.typeTokens, model) : f.default;
+  for (const [name, f] of staticFields) lines.push(`  static ${name} = ${fieldInit(f)};`);
   for (const [name, members] of model.structConsts) {
     lines.push(`  static ${name} = { ${members.map((m) => `${m.name}: ${m.value ?? m.default}`).join(", ")} };`);
   }
   if (staticFields.length || model.structConsts.size) lines.push("");
-  for (const [name, f] of instanceFields) lines.push(`  ${name} = ${f.default};`);
+  for (const [name, f] of instanceFields) lines.push(`  ${name} = ${fieldInit(f)};`);
   if (instanceFields.length) lines.push("");
 
   // methods
@@ -1953,6 +2045,15 @@ function transpileClass(source, filename, opts = {}) {
   while (lines[lines.length - 1] === "") lines.pop();
   lines.push(`}`);
   lines.push("");
+
+  // export BEFORE the (non-base) requires — CommonJS cycle break: when two
+  // transpiled classes require each other, the later-loaded one would
+  // otherwise capture the first's still-empty module.exports. Method bodies
+  // touch the required bindings only at call time, so requiring after the
+  // export is safe; only the superclass is needed at definition time.
+  lines.push(`module.exports = ${model.name};`);
+  lines.push("");
+  lines.push(`__REQUIRES__`);
 
   // abap PREFERRED PARAMETER call style for popup factories — abap (and code
   // transpiled 1:1 from it) passes the preferred/single-mandatory parameter
@@ -1980,10 +2081,10 @@ function transpileClass(source, filename, opts = {}) {
     lines.push("");
   }
 
-  lines.push(`module.exports = ${model.name};`);
-
-  // requires header
+  // requires — the superclass at the top (definition-time), everything else
+  // after the export (call-time; see the cycle-break note above)
   const header = [];
+  const tailReqs = [];
   for (const req of [...requires].sort()) {
     if (req === model.name) continue;
     if (!/^[a-z_][a-z0-9_]*$/.test(req)) {
@@ -1991,22 +2092,34 @@ function transpileClass(source, filename, opts = {}) {
       continue;
     }
     const p = requirePathFor(req);
-    if (p) header.push(`const ${req} = require("${p}");`);
+    if (p) (req === base ? header : tailReqs).push(`const ${req} = require("${p}");`);
     else if (req === base) {
       // an unresolved superclass would throw at load time — stub it
       header.push(`const ${req} = class {}; // TODO(abap2js): unresolved superclass — replace stub manually`);
       todos.push(`unresolved superclass stubbed: ${req}`);
     } else {
-      header.push(`// TODO(abap2js): unresolved reference ${req} — add require manually`);
+      tailReqs.push(`// TODO(abap2js): unresolved reference ${req} — add require manually`);
       todos.push(`unresolved class reference: ${req}`);
     }
   }
   header.push("");
+  {
+    const at = lines.indexOf(`__REQUIRES__`);
+    lines.splice(at, 1, ...tailReqs, ...(tailReqs.length ? [""] : []));
+  }
 
   const methodSigs = new Map(
     [...model.methods].map(([m, def]) => [m, def.importing[0]?.name ?? null])
   );
-  return { code: header.join("\n") + "\n" + lines.join("\n") + "\n", todos, name: model.name, methodSigs };
+  return {
+    code: header.join("\n") + "\n" + lines.join("\n") + "\n",
+    todos,
+    name: model.name,
+    methodSigs,
+    fields: model.fields,
+    structTypes: model.structTypes,
+    tableTypes: model.tableTypes,
+  };
 }
 
 function emitMethod(model, body, lines, requires, todos) {
@@ -2032,6 +2145,11 @@ function emitMethod(model, body, lines, requires, todos) {
     };
   }
   const def = model.methods.get(lname) ?? model.methods.get(plainName) ?? intfDef ?? { isStatic: false, importing: [], returning: null, outParams: [] };
+  // get_text/get_longtext REDEFINITIONs inherit `RETURNING VALUE(result) TYPE string`
+  // from cx_root — the local definition carries no signature
+  if ((plainName === "get_text" || plainName === "get_longtext") && !def.returning) {
+    def.returning = { name: "result", typeTokens: ["TYPE", "string"] };
+  }
   const ctx = new Ctx(model, { name: plainName, def });
   ctx.requires = requires;
   ctx.todos = todos;
@@ -2064,6 +2182,21 @@ function emitMethod(model, body, lines, requires, todos) {
         if (intoIdx > 0 && ["DATA", "FINAL"].includes(KW(toks[intoIdx + 1]?.str ?? "")) && isParenL(toks[intoIdx + 2] ?? { type: "" })) {
           hoisted.add(safeIdent(toks[intoIdx + 3].str.toLowerCase()));
         }
+      } else if (s.type === "Catch") {
+        // CATCH … INTO DATA(x) — ABAP catch vars are method-scoped, a JS
+        // catch binding is block-scoped: hoist and assign inside the catch
+        const toks = s.toks;
+        const intoIdx = findTopWord(toks, "INTO");
+        // only the INTO DATA(x) inline-declaration form introduces a new
+        // var — bare INTO x targets an existing declaration
+        if (intoIdx > 0 && ["DATA", "FINAL"].includes(KW(toks[intoIdx + 1]?.str ?? "")) && isParenL(toks[intoIdx + 2] ?? { type: "" })) {
+          const v = toks[intoIdx + 3];
+          if (v) {
+            const n = safeIdent(v.str.toLowerCase());
+            hoisted.add(n);
+            declared.add(n);
+          }
+        }
       } else if (s.type === "Call") {
         // out-param call sites copy IMPORTING/CHANGING/RECEIVING targets back
         // — those targets get reassigned, so inline DATA() must emit `let`
@@ -2095,6 +2228,7 @@ function emitMethod(model, body, lines, requires, todos) {
       .map((p) => {
         const local = safeIdent(p.name);
         ctx.locals.add(local);
+        if (p.isRef) ctx.refVars.add(local);
         const bind = local === p.name ? p.name : `${p.name}: ${local}`;
         return p.defaultToks ? `${bind} = ${txExpr(p.defaultToks, ctx)}` : bind;
       })
@@ -2190,8 +2324,24 @@ function emitMethod(model, body, lines, requires, todos) {
     push(`let ${name};`);
   }
 
+  const bodyStart = lines.length;
   for (const s of body.statements) {
     emitStatement(s, ctx, st, push, assignedTwice, def);
+  }
+
+  // derived-class constructor MUST call super() — either the transpiled
+  // `super->constructor( … )` (emitted as super.constructor(…)) becomes the
+  // real super(…) call, or a plain super() is injected at the top
+  if (plainName === "constructor" && (model.superclass || model.interfaces.includes("z2ui5_if_app"))) {
+    let called = false;
+    for (let k = bodyStart; k < lines.length; k++) {
+      if (/\bsuper\.constructor\(/.test(lines[k])) {
+        lines[k] = lines[k].replace(/\bsuper\.constructor\(/, "super(");
+        called = true;
+        break;
+      }
+    }
+    if (!called) lines.splice(bodyStart, 0, `${"  ".repeat(2)}super();`);
   }
 
   if (st.outSync) push(st.outSync);
@@ -2262,7 +2412,10 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       const { typeTokens, value } = parseTypeAfter(toks.slice(2), 0);
       // remember REF TO targets so `x = NEW #( … )` can infer the class
       const refIdx = typeTokens.findIndex((t, k) => KW(t) === "REF" && KW(typeTokens[k + 1] || "") === "TO");
-      if (refIdx >= 0 && typeTokens[refIdx + 2]) ctx.localRefTypes.set(name, typeTokens[refIdx + 2].toLowerCase());
+      if (refIdx >= 0 && typeTokens[refIdx + 2]) {
+        ctx.localRefTypes.set(name, typeTokens[refIdx + 2].toLowerCase());
+        ctx.refVars.add(name);
+      }
       ctx.varTypes.set(name, typeTokens);
       let init = declaredInit(typeTokens, ctx.model, 0, ctx);
       if (value) {
@@ -2333,12 +2486,24 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         push(`${name} = ${shadow} ? ${shadow}.o[${shadow}.k] : null;`);
         push(`sy_subrc = ${shadow} ? 0 : 4;`);
       } else {
-        // dynamic access (ref->*, obj->('NAME'), (name)) has no JS mapping
-        const srcToks = toks.slice(1, toIdx);
+        // a dref deref (`ref->*`) collapses to the value itself — drop the
+        // tokens; ASSIGN obj->(`NAME`) resolves the attribute dynamically
+        let srcToks = toks.slice(1, toIdx);
         if (isParenL(srcToks[0])) return todo();
         for (let k = 0; k < srcToks.length; k++) {
-          if (srcToks[k].str === "->*" || (srcToks[k].str === "->" && (srcToks[k + 1]?.str === "*" || isParenL(srcToks[k + 1] ?? { type: "" })))) return todo();
+          if (isInstArrow(srcToks[k]) && isParenL(srcToks[k + 1] ?? { type: "" })) {
+            const closeAt = matchGroup(srcToks, k + 1);
+            if (closeAt !== srcToks.length - 1) return todo();
+            const objExpr = txExpr(srcToks.slice(0, k), ctx);
+            const attrExpr = txExpr(srcToks.slice(k + 2, closeAt), ctx);
+            push(`${shadow} = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(${objExpr}, ${attrExpr});`);
+            push(`${name} = ${shadow} ? ${shadow}.o[${shadow}.k] : null;`);
+            push(`sy_subrc = ${shadow} ? 0 : 4;`);
+            return;
+          }
         }
+        srcToks = srcToks.filter((t, k) => t.str !== "->*" && !(t.str === "*" && srcToks[k - 1]?.str === "->") && !(t.str === "->" && srcToks[k + 1]?.str === "*"));
+        if (!srcToks.length) return todo();
         const src = txExpr(srcToks, ctx);
         const m = src.match(/^(.+)\.([A-Za-z_$][\w$]*)$/);
         push(`${name} = ${src};`);
@@ -2460,8 +2625,36 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       // `x = NEW #( … )` — expose x's declared REF TO class for inference
       const lhsName = eq === i + 1 && isId(toks[i]) ? toks[i].str.toLowerCase() : decl;
       ctx.newTargetType = lhsName ? ctx.localRefTypes.get(lhsName) || ctx.model.fields.get(lhsName)?.refType || null : null;
+      // member-path target (`lo_app->mo_mid = NEW #( )`) — resolve the last
+      // segment's declared REF TO type through own/sibling class fields
+      const lhsEntry = !ctx.newTargetType && eq > i + 1 ? resolveMemberEntry(toks.slice(i, eq), ctx) : null;
+      if (lhsEntry?.refType) ctx.newTargetType = lhsEntry.refType;
       let rhs = txExpr(toks.slice(eq + 1), ctx);
       ctx.newTargetType = null;
+      // remember the class of `DATA(x) = NEW cls( … )` for member-path walks
+      if (decl) {
+        const newCls = rhs.match(/^new ([a-z_][a-z0-9_]*)\(/)?.[1];
+        if (newCls) {
+          ctx.localRefTypes.set(decl, newCls);
+          ctx.refVars.add(decl);
+        }
+      }
+      // `?=` downcast onto a declared object reference — a scalar RHS must
+      // raise cx_sy_move_cast_error (ABAP semantics), objects pass through
+      if (toks[eq].str === "?=") {
+        const refOfToks = (tt) => {
+          if (!tt) return null;
+          const k = tt.findIndex((t, x) => KW(String(t)) === "REF" && KW(String(tt[x + 1] ?? "")) === "TO");
+          return k >= 0 && tt[k + 2] ? String(tt[k + 2]).toLowerCase() : null;
+        };
+        const refTarget = lhsName
+          ? ctx.localRefTypes.get(lhsName) || ctx.model.fields.get(lhsName)?.refType
+          : lhsEntry?.refType || refOfToks(lhsEntry?.typeTokens);
+        if (refTarget && refTarget !== "data") {
+          ctx.requires?.add("z2ui5_cl_util");
+          rhs = `z2ui5_cl_util.abap_cast(${rhs})`;
+        }
+      }
       // vars initialized from client.get() carry UPPERCASE component keys
       if (decl && /(?:^|\.)client\.get\(\)/.test(rhs)) ctx.upperLocals.add(decl);
       // ABAP assignments have VALUE semantics: copying a table/struct variable
@@ -2471,8 +2664,19 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       // through the runtime copy helper (class refs pass through unchanged).
       // Constructor expressions / calls already produce fresh values.
       if (/^(this\.)?[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*|\[[^\[\]]*\])*$/.test(rhs) && !/^(true|false|null|undefined)$/.test(rhs)) {
-        ctx.requires?.add("z2ui5_cl_util");
-        rhs = `z2ui5_cl_util.abap_copy(${rhs})`;
+        // REF TO assignments keep reference semantics — no value copy when
+        // either side is declared as a reference (param/local/field) or the
+        // RHS chain ends in a REF TO field
+        const isRefName = (n) => !!n && (ctx.refVars.has(n) || !!ctx.model.fields.get(n)?.refType);
+        const rhsBare = rhs.match(/^(?:this\.)?([A-Za-z_$][\w$]*)$/)?.[1];
+        const rhsLast = rhs.match(/\.([A-Za-z_$][\w$]*)$/)?.[1];
+        const entryIsRef = (e) => !!e && (e.refType || e.isRef || (e.typeTokens && /\bREF\s+TO\b/i.test(e.typeTokens.join(" "))));
+        const lhsIsRef = lhsName ? isRefName(lhsName) : entryIsRef(lhsEntry);
+        const rhsIsRef = rhsBare ? isRefName(rhsBare) : rhsLast ? isRefName(rhsLast) || !!uniqueSiblingField(rhsLast, ctx) : false;
+        if (!lhsIsRef && !rhsIsRef) {
+          ctx.requires?.add("z2ui5_cl_util");
+          rhs = `z2ui5_cl_util.abap_copy(${rhs})`;
+        }
       }
       if (decl) {
         const kw = ctx.hoisted?.has(decl) ? "" : `${assignedTwice.has(decl) ? "let" : "const"} `;
@@ -2499,6 +2703,13 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
           ctx.requires?.add("z2ui5_cl_util");
           rhs2 = `z2ui5_cl_util.struct_lower_keys(${rhs2})`;
         }
+        // ABAP table assignment fills the target IN PLACE — references onto
+        // the table (REF #( itab ) held elsewhere) stay valid. Preserve the
+        // array identity when both sides are tables.
+        if (rhs2.startsWith("[") || rhs2.startsWith("z2ui5_cl_util.abap_copy(")) {
+          ctx.requires?.add("z2ui5_cl_util");
+          rhs2 = `z2ui5_cl_util.abap_tab_assign(${lhs}, ${rhs2})`;
+        }
         push(`${lhs} = ${rhs2};`);
         // writes through a backed field symbol propagate into the structure
         const shadow = ctx.fsBacked.get(lhs);
@@ -2507,8 +2718,100 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       break;
     }
     case "Call": {
-      // CALL METHOD long form / dynamic invocation cannot be mapped inline
-      if (KW(toks[0].str) === "CALL") return todo();
+      // CALL METHOD long form / dynamic invocation cannot be mapped inline —
+      // except for kernel APIs the JS runtime emulates:
+      if (KW(toks[0].str) === "CALL") {
+        // CALL METHOD (…)=>if_system_uuid_static~create_uuid_c32 RECEIVING uuid = x
+        if (/if_system_uuid_static~create_uuid_c32/i.test(s.src)) {
+          const recIdx = toks.findIndex((t) => isId(t) && KW(t.str) === "RECEIVING");
+          const eqIdx = toks.findIndex((t, k) => k > recIdx && t.str === "=");
+          if (recIdx > 0 && eqIdx > recIdx) {
+            const uuidTarget = txExpr(toks.slice(eqIdx + 1, toks.length), ctx);
+            ctx.requires?.add("z2ui5_cl_util");
+            push(`${uuidTarget} = z2ui5_cl_util.uuid_get_c32();`);
+            break;
+          }
+        }
+        // CALL METHOD obj->(`NAME`) [EXPORTING …] [IMPORTING …] [RECEIVING …]
+        // [EXCEPTIONS …] — dynamic instance dispatch resolves natively on JS
+        // objects (methods are lowercase); missing method → sy-subrc 4 (the
+        // ABAP EXCEPTIONS convention) or a throw without EXCEPTIONS clause.
+        {
+          let arrowIdx = -1;
+          for (let k = 2; k < toks.length; k++) {
+            if (isInstArrow(toks[k]) && isParenL(toks[k + 1] ?? { type: "" })) {
+              arrowIdx = k;
+              break;
+            }
+            if (isId(toks[k]) && ["EXPORTING", "IMPORTING", "RECEIVING", "CHANGING", "EXCEPTIONS"].includes(KW(toks[k].str))) break;
+          }
+          if (arrowIdx > 2 && KW(toks[1].str) === "METHOD") {
+            const close = matchGroup(toks, arrowIdx + 1);
+            const recv = txExpr(toks.slice(2, arrowIdx), ctx);
+            const nameExpr = txExpr(toks.slice(arrowIdx + 2, close), ctx);
+            // split trailing sections
+            const sections = [];
+            let cur = null;
+            for (let k = close + 1; k < toks.length; k++) {
+              const kw = KW(toks[k].str);
+              if (isId(toks[k]) && ["EXPORTING", "IMPORTING", "RECEIVING", "CHANGING", "EXCEPTIONS"].includes(kw)) {
+                cur = { kind: kw, toks: [] };
+                sections.push(cur);
+                continue;
+              }
+              if (cur) cur.toks.push(toks[k]);
+            }
+            const pairs = [];
+            const copyBack = [];
+            let receiving = null;
+            let hasExceptions = false;
+            let ok = true;
+            for (const sec of sections) {
+              if (sec.kind === "EXCEPTIONS") {
+                hasExceptions = true;
+                continue;
+              }
+              const named = namedArgsOf(sec.toks, ctx);
+              if (!named) {
+                ok = false;
+                break;
+              }
+              for (const [k2, v] of named) {
+                const rendered = renderNamedVal(v);
+                if (sec.kind === "RECEIVING") {
+                  receiving = { key: k2, target: rendered };
+                } else if (sec.kind === "EXPORTING") {
+                  pairs.push(`${k2}: ${rendered}`);
+                } else {
+                  // IMPORTING/CHANGING — pass current value, copy back afterwards
+                  pairs.push(`${k2}: ${rendered}`);
+                  copyBack.push([k2, rendered]);
+                }
+              }
+            }
+            if (ok) {
+              push(`{`);
+              push(`  const _dynr = (${recv});`);
+              push(`  const _dynm = _dynr ? _dynr[String(${nameExpr}).toLowerCase()] : undefined;`);
+              if (hasExceptions && ctx.locals.has("sy_subrc")) {
+                push(`  sy_subrc = typeof _dynm === "function" ? 0 : 4;`);
+                push(`  if (typeof _dynm === "function") {`);
+              } else {
+                push(`  if (typeof _dynm !== "function") throw new Error(\`CALL METHOD: \${String(${nameExpr})} not found\`);`);
+                push(`  {`);
+              }
+              push(`    const _dynargs = { ${pairs.join(", ")} };`);
+              push(`    const _dynret = _dynm.call(_dynr, _dynargs);`);
+              for (const [k2, target] of copyBack) push(`    ${target} = _dynargs.${k2};`);
+              if (receiving) push(`    ${receiving.target} = _dynret !== undefined ? _dynret : _dynargs.${receiving.key};`);
+              push(`  }`);
+              push(`}`);
+              break;
+            }
+          }
+        }
+        return todo();
+      }
       const hasOut = toks.some((t) => isId(t) && ["IMPORTING", "RECEIVING", "CHANGING"].includes(KW(t.str)));
       if (toks.some((t) => isId(t) && KW(t.str) === "EXCEPTIONS")) return todo();
       if (hasOut) {
@@ -2633,6 +2936,56 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       }
       ctx.todos.push(`CREATE OBJECT: ${s.src}`);
       push(`${target} = null; // TODO(abap2js): ${s.src}`);
+      break;
+    }
+    case "CreateData": {
+      // JS has no data references — a dref collapses to its value. CREATE
+      // DATA therefore initializes the target with the referenced type's
+      // INITIAL value (`x->*` deref sites read the value directly):
+      //   CREATE DATA x TYPE t   → x = <initial of t>
+      //   CREATE DATA x LIKE y   → x = abap_initial_like(y)  (runtime shape)
+      //   CREATE DATA x          → x = <initial of x's declared REF TO type>
+      const cdToks = toks[toks.length - 1]?.str === "." ? toks.slice(0, -1) : toks;
+      let clauseIdx = -1;
+      let clause = null;
+      for (let k = 2; k < cdToks.length; k++) {
+        const kw = KW(cdToks[k].str);
+        if (isId(cdToks[k]) && (kw === "TYPE" || kw === "LIKE") && !isInstArrow(cdToks[k - 1] ?? { type: "" }) && !isDash(cdToks[k - 1] ?? { type: "" })) {
+          clauseIdx = k;
+          clause = kw;
+          break;
+        }
+      }
+      const targetToks = cdToks.slice(2, clauseIdx > 0 ? clauseIdx : cdToks.length);
+      const cdTarget = txExpr(targetToks, ctx);
+      if (clause === "LIKE" && KW(cdToks[clauseIdx + 1]?.str) !== "LINE") {
+        ctx.requires?.add("z2ui5_cl_util");
+        push(`${cdTarget} = z2ui5_cl_util.abap_initial_like(${txExpr(cdToks.slice(clauseIdx + 1), ctx)});`);
+        break;
+      }
+      let cdTypeToks = null;
+      if (clause === "TYPE") {
+        const tt = cdToks.slice(clauseIdx, cdToks.length).map((t) => t.str);
+        // TYPE HANDLE / TYPE (dyn) — no static type available
+        if (!/^(HANDLE|\()/i.test(String(tt[1] ?? ""))) cdTypeToks = tt;
+      } else if (!clause) {
+        const entry = resolveMemberEntry(targetToks, ctx);
+        const et = entry?.typeTokens;
+        if (et && /\bREF\s+TO\b/i.test(et.join(" "))) {
+          const toIdx = et.findIndex((t, k) => KW(t) === "REF" && KW(et[k + 1] || "") === "TO");
+          const refd = et.slice(toIdx + 2).filter((t) => !/^(READ-ONLY|OPTIONAL)$/i.test(String(t)));
+          if (refd.length && String(refd[0]).toLowerCase() !== "data" && String(refd[0]).toLowerCase() !== "object") {
+            cdTypeToks = ["TYPE", ...refd];
+          }
+        }
+      }
+      if (cdTypeToks) {
+        const init = declaredInit(cdTypeToks, ctx.model, 0, ctx);
+        push(`${cdTarget} = ${init};`);
+        break;
+      }
+      ctx.todos.push(`CREATE DATA: ${s.src}`);
+      push(`// TODO(abap2js): ${s.src}`);
       break;
     }
     case "If":
@@ -3032,9 +3385,17 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       const info = s._catch;
       if (!info || info.tryInfo.catches <= 1) {
         st.indent--;
-        push(`} catch (${varName ?? "error"}) {`);
-        st.indent++;
-        if (!varName) ctx.locals.add("error");
+        if (varName) {
+          // hoisted method-scoped var (see pre-scan) — assign the caught value
+          const tmp = `_caught${++st.caughtSeq}`;
+          push(`} catch (${tmp}) {`);
+          st.indent++;
+          push(`${varName} = ${tmp};`);
+        } else {
+          push(`} catch (error) {`);
+          st.indent++;
+          ctx.locals.add("error");
+        }
         break;
       }
       // multi-CATCH: dispatch on the exception class
@@ -3064,7 +3425,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         push(`} else if (${cond}) {`);
         st.indent++;
       }
-      if (varName) push(`const ${varName} = ${caught};`);
+      if (varName) push(`${varName} = ${caught};`);
       break;
     }
     case "EndTry": {

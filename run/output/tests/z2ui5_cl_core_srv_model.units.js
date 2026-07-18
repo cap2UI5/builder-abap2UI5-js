@@ -11,12 +11,12 @@ const z2ui5_if_core_types = require("abap2UI5/z2ui5_if_core_types");
 
 
 class ltcl_test_dissolve {
-  ms_struc = {};
+  ms_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
   mv_value = ``;
   mr_value = null;
   mr_struc = null;
   mo_app = null;
-  ms_struc2 = {};
+  ms_struc2 = { r_ref: null, s_01: { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } } };
 
   test_init() {
     const lo_app = new ltcl_test_dissolve();
@@ -33,8 +33,8 @@ class ltcl_test_dissolve {
 
   test_dref() {
     const lo_app = new ltcl_test_dissolve();
-    // TODO(abap2js): CREATE DATA lo_app->mr_struc.
-    // TODO(abap2js): CREATE DATA lo_app->mr_value TYPE string.
+    lo_app.mr_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
+    lo_app.mr_value = ``;
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -44,11 +44,11 @@ class ltcl_test_dissolve {
 
   test_oref() {
     const lo_app = new ltcl_test_dissolve();
-    lo_app.mo_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app.mo_app = new ltcl_test_dissolve();
     const lo_app2 = new ltcl_test_dissolve();
-    lo_app2.mo_app = z2ui5_cl_util.abap_copy(lo_app);
-    // TODO(abap2js): CREATE DATA lo_app->mo_app->mr_struc.
-    // TODO(abap2js): CREATE DATA lo_app->mo_app->mr_value TYPE string.
+    lo_app2.mo_app = lo_app;
+    lo_app.mo_app.mr_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
+    lo_app.mo_app.mr_value = ``;
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app2 });
     lo_model.dissolve();
@@ -76,10 +76,10 @@ class ltcl_test_dissolve {
 
   test_dref_struc() {
     const lo_app = new ltcl_test_dissolve();
-    lo_app.mo_app = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app.mo_app = new ltcl_test_dissolve();
     const lo_app2 = new ltcl_test_dissolve();
-    lo_app2.mo_app = z2ui5_cl_util.abap_copy(lo_app);
-    // TODO(abap2js): CREATE DATA lo_app->mr_struc.
+    lo_app2.mo_app = lo_app;
+    lo_app.mr_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -93,8 +93,8 @@ class ltcl_test_dissolve {
   test_oref_dref() {
     const lo_app = new ltcl_test_dissolve();
     const lo_app2 = new ltcl_test_dissolve();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app2);
-    // TODO(abap2js): CREATE DATA lo_app2->mr_value TYPE string.
+    lo_app.mo_app = lo_app2;
+    lo_app2.mr_value = ``;
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -106,8 +106,8 @@ class ltcl_test_dissolve {
   test_oref_dref_struc() {
     const lo_app = new ltcl_test_dissolve();
     const lo_app2 = new ltcl_test_dissolve();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app2);
-    // TODO(abap2js): CREATE DATA lo_app->mo_app->mr_struc.
+    lo_app.mo_app = lo_app2;
+    lo_app.mo_app.mr_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -121,8 +121,8 @@ class ltcl_test_dissolve {
 
   test_struc_dref() {
     const lo_app = new ltcl_test_dissolve();
-    lo_app.mo_app = /* TODO(abap2js): NEW #( ) */ null;
-    // TODO(abap2js): CREATE DATA lo_app->mo_app->ms_struc2-r_ref TYPE string.
+    lo_app.mo_app = new ltcl_test_dissolve();
+    lo_app.mo_app.ms_struc2.r_ref = ``;
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -136,6 +136,8 @@ class ltcl_test_dissolve {
 
 
 
+
+
 class ltcl_test_app_sub {
   mv_value = ``;
   mr_value = null;
@@ -143,6 +145,7 @@ class ltcl_test_app_sub {
   constructor() {
   }
 }
+
 
 
 
@@ -155,6 +158,7 @@ class ltcl_test_app3 {
     this.mo_app = new ltcl_test_app_sub();
   }
 }
+
 
 
 
@@ -173,7 +177,7 @@ class ltcl_test_get_attri {
 
   test_second() {
     const lo_app_client = new ltcl_test_app3();
-    // TODO(abap2js): CREATE DATA lo_app_client->mr_value.
+    lo_app_client.mr_value = ``;
     const lt_attri = {};
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app_client });
     const lr_attri = lo_model.attri_get_val_ref(`MR_VALUE->*`);
@@ -194,7 +198,7 @@ class ltcl_test_get_attri {
 
   test4() {
     const lo_app_client = new ltcl_test_app3();
-    // TODO(abap2js): CREATE DATA lo_app_client->mo_app->mr_value.
+    lo_app_client.mo_app.mr_value = ``;
     const lt_attri = {};
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app_client });
     const lr_attri = lo_model.attri_get_val_ref(`MO_APP->MR_VALUE->*`);
@@ -206,11 +210,13 @@ class ltcl_test_get_attri {
 
 
 
+
+
 class ltcl_test_app_root_attri {
   mr_tab = null;
 
   constructor({ ir_tab } = {}) {
-    this.mr_tab = z2ui5_cl_util.abap_copy(ir_tab);
+    this.mr_tab = ir_tab;
   }
 
   test_obj_tab_ref() {
@@ -230,6 +236,8 @@ class ltcl_test_app_root_attri {
 
 
 
+
+
 class ltcl_test_app_root {
   mt_tab = [];
   mo_obj = null;
@@ -242,11 +250,13 @@ class ltcl_test_app_root {
 
 
 
+
+
 class ltcl_test_app_root_attri2 {
   mr_struc = null;
 
   constructor({ ir_struc } = {}) {
-    this.mr_struc = z2ui5_cl_util.abap_copy(ir_struc);
+    this.mr_struc = ir_struc;
   }
 
   test_obj_struc_ref() {
@@ -266,8 +276,10 @@ class ltcl_test_app_root_attri2 {
 
 
 
+
+
 class ltcl_test_app_root2 {
-  ms_struc = {};
+  ms_struc = { comp1: ``, comp2: `` };
   mo_obj = null;
 
   constructor() {
@@ -275,6 +287,7 @@ class ltcl_test_app_root2 {
     this.mo_obj = new ltcl_test_app_root_attri2({ ir_struc: (this.ms_struc) });
   }
 }
+
 
 
 
@@ -290,8 +303,10 @@ class ltcl_test_app_root4 {
       return;
     }
     let lo_app = new ltcl_test_app_root4();
-    // TODO(abap2js): CREATE DATA lo_app->mr_tab TYPE ty_t_tab.
-    // TODO(abap2js): ASSIGN lo_app->mr_tab->* TO <tab>.
+    lo_app.mr_tab = [];
+    fs_tab = lo_app.mr_tab;
+    _fs$fs_tab = { o: lo_app, k: `mr_tab` };
+    sy_subrc = 0;
     fs_tab.push(z2ui5_cl_util.abap_copy({ comp1: `comp1`, comp2: `comp2` }));
     const lt_attri = {};
     let lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
@@ -303,11 +318,13 @@ class ltcl_test_app_root4 {
     lo_app = new ltcl_test_app_root4();
     lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.main_attri_db_load();
-    if (lo_app.mr_tab != null) {
+    if (lo_app.mr_tab == null) {
       cl_abap_unit_assert.abort();
     }
   }
 }
+
+
 
 
 
@@ -318,6 +335,7 @@ class ltcl_app_inner {
 
 
 
+
 class ltcl_app_middle {
   mv_mid = ``;
   mo_inner = null;
@@ -325,11 +343,12 @@ class ltcl_app_middle {
 
 
 
+
 class ltcl_app_complex extends z2ui5_if_app {
   mt_tab = [];
-  ms_nested = {};
+  ms_nested = { name: ``, value: ``, inner: { deep1: ``, deep2: `` } };
   mo_mid = null;
-  ms_ref = {};
+  ms_ref = { text: ``, r_tab: null };
   mr_tab = null;
   mv_simple = ``;
   mv_int = 0;
@@ -340,10 +359,11 @@ class ltcl_app_complex extends z2ui5_if_app {
 
 
 
+
 class ltcl_test_diss_complex {
   test_table() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mt_tab = [{ col1: `A`, col2: `1` }, { col1: `B`, col2: `2` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `A`, col2: `1` }, { col1: `B`, col2: `2` }]);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -368,8 +388,8 @@ class ltcl_test_diss_complex {
 
   test_oref_chain() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mo_mid = /* TODO(abap2js): NEW #( ) */ null;
-    lo_app.mo_mid.mo_inner = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app.mo_mid = new ltcl_app_middle();
+    lo_app.mo_mid.mo_inner = new ltcl_app_inner();
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -385,8 +405,10 @@ class ltcl_test_diss_complex {
     let fs_tab = null;
     let _fs$fs_tab = null;
     const lo_app = new ltcl_app_complex();
-    // TODO(abap2js): CREATE DATA lo_app->mr_tab LIKE lo_app->mt_tab.
-    // TODO(abap2js): ASSIGN lo_app->mr_tab->* TO <tab>.
+    lo_app.mr_tab = z2ui5_cl_util.abap_initial_like(lo_app.mt_tab);
+    fs_tab = lo_app.mr_tab;
+    _fs$fs_tab = { o: lo_app, k: `mr_tab` };
+    sy_subrc = 0;
     let ls_row = [];
     ls_row.col1 = `X`;
     ls_row.col2 = `Y`;
@@ -403,10 +425,10 @@ class ltcl_test_diss_complex {
 
   test_mixed_types() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mt_tab = [{ col1: `A`, col2: `1` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `A`, col2: `1` }]);
     lo_app.ms_nested.name = `test`;
-    lo_app.mo_mid = /* TODO(abap2js): NEW #( ) */ null;
-    // TODO(abap2js): CREATE DATA lo_app->mr_tab LIKE lo_app->mt_tab.
+    lo_app.mo_mid = new ltcl_app_middle();
+    lo_app.mr_tab = z2ui5_cl_util.abap_initial_like(lo_app.mt_tab);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -423,7 +445,7 @@ class ltcl_test_diss_complex {
   test_dissolve_idempotent() {
     const lo_app = new ltcl_app_complex();
     lo_app.ms_nested.name = `test`;
-    lo_app.mo_mid = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app.mo_mid = new ltcl_app_middle();
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -441,7 +463,7 @@ class ltcl_test_diss_complex {
       return;
     }
     const lo_app = new ltcl_app_complex();
-    lo_app.mt_tab = [{ col1: `A`, col2: `1` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `A`, col2: `1` }]);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     const ls_attri = lo_model.main_attri_search((lo_app.mt_tab));
@@ -463,8 +485,8 @@ class ltcl_test_diss_complex {
 
   test_name_parent_chain() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mo_mid = /* TODO(abap2js): NEW #( ) */ null;
-    lo_app.mo_mid.mo_inner = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app.mo_mid = new ltcl_app_middle();
+    lo_app.mo_mid.mo_inner = new ltcl_app_inner();
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -479,18 +501,21 @@ class ltcl_test_diss_complex {
 
 
 
+
+
 class ltcl_app_inner_335 {
   mr_data = null;
 
   constructor({ ir_data } = {}) {
-    this.mr_data = z2ui5_cl_util.abap_copy(ir_data);
+    this.mr_data = ir_data;
   }
 }
 
 
 
+
 class ltcl_app_root_335 {
-  ms_struc = {};
+  ms_struc = { comp1: ``, comp2: `` };
   mo_obj = null;
   mo_obj_2 = null;
 
@@ -500,6 +525,7 @@ class ltcl_app_root_335 {
     this.mo_obj_2 = new ltcl_app_inner_335({ ir_data: (this.ms_struc) });
   }
 }
+
 
 
 
@@ -524,6 +550,8 @@ class ltcl_test_sample335 {
 
 
 
+
+
 class ltcl_test_attri_create {
   test_string_type_kind() {
     const lo_app = new ltcl_app_complex();
@@ -543,7 +571,7 @@ class ltcl_test_attri_create {
 
   test_oref_type_kind() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mo_mid = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app.mo_mid = new ltcl_app_middle();
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     const ls_result = lo_model.attri_create_new(`MO_MID`);
@@ -558,6 +586,8 @@ class ltcl_test_attri_create {
     cl_abap_unit_assert.assert_equals({ exp: cl_abap_typedescr.kind_elem, act: ls_result.kind });
   }
 }
+
+
 
 
 
@@ -579,7 +609,7 @@ class ltcl_test_json_stringify {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr_simple.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.one_way);
+    lr_simple.bind_type = z2ui5_cl_util.abap_tab_assign(lr_simple.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.one_way));
     lr_simple.name_client = `/MV_SIMPLE`;
     const lv_json = lo_model.main_json_stringify();
     const lo_result = z2ui5_cl_ajson.parse(lv_json);
@@ -595,6 +625,8 @@ class ltcl_test_json_stringify {
     cl_abap_unit_assert.assert_equals({ exp: `{}`, act: lv_json });
   }
 }
+
+
 
 
 
@@ -615,8 +647,8 @@ class ltcl_test_json_to_attri {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
-    lr.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
+    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
+    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
     lr.name_client = `/MV_SIMPLE`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
@@ -641,8 +673,8 @@ class ltcl_test_json_to_attri {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.one_way);
-    lr.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
+    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.one_way));
+    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
     lr.name_client = `/MV_SIMPLE`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
@@ -667,8 +699,8 @@ class ltcl_test_json_to_attri {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
-    lr.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.popup);
+    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
+    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.popup));
     lr.name_client = `/MV_SIMPLE`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
@@ -677,6 +709,8 @@ class ltcl_test_json_to_attri {
     cl_abap_unit_assert.assert_equals({ exp: ``, act: lo_app.mv_simple });
   }
 }
+
+
 
 
 
@@ -697,9 +731,9 @@ class ltcl_test_attri_refresh {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
+    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
     lr.name_client = `/XX/MV_SIMPLE`;
-    lr.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
+    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
     lo_model.main_attri_refresh();
     const ls_after = (() => { try { return lt_attri.find((row) => row.name === `MV_SIMPLE`) ?? null; } catch { return null; } })();
     cl_abap_unit_assert.assert_equals({ exp: z2ui5_if_core_types.cs_bind_type.two_way, act: ls_after.bind_type });
@@ -707,6 +741,8 @@ class ltcl_test_attri_refresh {
     cl_abap_unit_assert.assert_equals({ exp: z2ui5_if_client.cs_view.main, act: ls_after.view });
   }
 }
+
+
 
 
 
@@ -748,6 +784,8 @@ class ltcl_test_entry_refs_children {
 
 
 
+
+
 class ltcl_app_tree extends z2ui5_if_app {
   mt_tree = [];
 
@@ -757,10 +795,11 @@ class ltcl_app_tree extends z2ui5_if_app {
 
 
 
+
 class ltcl_test_delta_apply {
   test_update_first_row() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mt_tab = [{ col1: `A`, col2: `1` }, { col1: `B`, col2: `2` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `A`, col2: `1` }, { col1: `B`, col2: `2` }]);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     let lo_delta = null;
@@ -774,7 +813,7 @@ class ltcl_test_delta_apply {
 
   test_update_second_row() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mt_tab = [{ col1: `A`, col2: `1` }, { col1: `B`, col2: `2` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `A`, col2: `1` }, { col1: `B`, col2: `2` }]);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     let lo_delta = null;
@@ -788,7 +827,7 @@ class ltcl_test_delta_apply {
 
   test_out_of_range() {
     const lo_app = new ltcl_app_complex();
-    lo_app.mt_tab = [{ col1: `A`, col2: `1` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `A`, col2: `1` }]);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     let lo_delta = null;
@@ -801,8 +840,8 @@ class ltcl_test_delta_apply {
 
   tree_app_create() {
     let result = null;
-    result = /* TODO(abap2js): NEW #( ) */ null;
-    result.mt_tree = [{ user: `Manager`, enabled: false, s_adr: { city: `Old Town`, zip: `00000` }, nodes: [{ user: `E1`, validated: false }, { user: `E2`, validated: false }] }];
+    result = new ltcl_app_tree();
+    result.mt_tree = z2ui5_cl_util.abap_tab_assign(result.mt_tree, [{ user: `Manager`, enabled: false, s_adr: { city: `Old Town`, zip: `00000` }, nodes: [{ user: `E1`, validated: false }, { user: `E2`, validated: false }] }]);
     return result;
   }
 
@@ -854,6 +893,8 @@ class ltcl_test_delta_apply {
 
 
 
+
+
 class ltcl_app_two_tab_drefs extends z2ui5_if_app {
   mt_tab = [];
   mo_ref1 = null;
@@ -863,6 +904,7 @@ class ltcl_app_two_tab_drefs extends z2ui5_if_app {
   }
 
   constructor() {
+    super();
     this.mo_ref1 = new ltcl_app_inner_335({ ir_data: (this.mt_tab) });
     this.mo_ref2 = new ltcl_app_inner_335({ ir_data: (this.mt_tab) });
   }
@@ -870,10 +912,11 @@ class ltcl_app_two_tab_drefs extends z2ui5_if_app {
 
 
 
+
 class ltcl_test_two_tab_refs {
   test_both_get_name_ref() {
     const lo_app = new ltcl_app_two_tab_drefs();
-    lo_app.mt_tab = [{ col1: `A`, col2: `1` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `A`, col2: `1` }]);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -890,7 +933,7 @@ class ltcl_test_two_tab_refs {
     let fs_tab = null;
     let _fs$fs_tab = null;
     const lo_app = new ltcl_app_two_tab_drefs();
-    lo_app.mt_tab = [{ col1: `X`, col2: `Y` }];
+    lo_app.mt_tab = z2ui5_cl_util.abap_tab_assign(lo_app.mt_tab, [{ col1: `X`, col2: `Y` }]);
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -898,10 +941,14 @@ class ltcl_test_two_tab_refs {
     lo_model.dissolve();
     const lr_tab = lo_model.attri_get_val_ref(`MT_TAB`);
     cl_abap_unit_assert.assert_bound(lr_tab);
-    // TODO(abap2js): ASSIGN lr_tab->* TO FIELD-SYMBOL(<tab>).
+    fs_tab = lr_tab;
+    _fs$fs_tab = null;
+    sy_subrc = 0;
     cl_abap_unit_assert.assert_not_initial(fs_tab);
   }
 }
+
+
 
 
 
@@ -923,8 +970,8 @@ class ltcl_test_deep_nesting {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
-    lr.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
+    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
+    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
     lr.name_client = `/MS_NESTED-INNER-DEEP1`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
@@ -936,8 +983,8 @@ class ltcl_test_deep_nesting {
   test_deep_oref_writeback() {
     let sy_subrc = 0;
     const lo_app = new ltcl_app_complex();
-    lo_app.mo_mid = /* TODO(abap2js): NEW #( ) */ null;
-    lo_app.mo_mid.mo_inner = /* TODO(abap2js): NEW #( ) */ null;
+    lo_app.mo_mid = new ltcl_app_middle();
+    lo_app.mo_mid.mo_inner = new ltcl_app_inner();
     let lt_attri = [];
     const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
     lo_model.dissolve();
@@ -953,8 +1000,8 @@ class ltcl_test_deep_nesting {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr_inner.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
-    lr_inner.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
+    lr_inner.bind_type = z2ui5_cl_util.abap_tab_assign(lr_inner.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
+    lr_inner.view = z2ui5_cl_util.abap_tab_assign(lr_inner.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
     lr_inner.name_client = `/MO_MID-MO_INNER-MV_INNER`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
@@ -963,6 +1010,8 @@ class ltcl_test_deep_nesting {
     cl_abap_unit_assert.assert_equals({ exp: `inner_value`, act: lo_app.mo_mid.mo_inner.mv_inner });
   }
 }
+
+
 
 
 
@@ -983,10 +1032,10 @@ class ltcl_test_refresh_ext {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
+    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
     lr.name_client = `/XX/MV_SIMPLE`;
-    lr.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
-    lo_app.mo_mid = /* TODO(abap2js): NEW #( ) */ null;
+    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lo_app.mo_mid = new ltcl_app_middle();
     lo_model.main_attri_refresh();
     cl_abap_unit_assert.assert_not_initial((() => { try { return lt_attri.find((row) => row.name === `MO_MID->MV_MID`) ?? null; } catch { return null; } })());
     const ls_simple = (() => { try { return lt_attri.find((row) => row.name === `MV_SIMPLE`) ?? null; } catch { return null; } })();
@@ -994,6 +1043,8 @@ class ltcl_test_refresh_ext {
     cl_abap_unit_assert.assert_equals({ exp: `/XX/MV_SIMPLE`, act: ls_simple.name_client });
   }
 }
+
+
 
 
 
@@ -1014,8 +1065,8 @@ class ltcl_test_json_types {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
-    lr.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
+    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
+    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
     lr.name_client = `/MV_INT`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
@@ -1040,11 +1091,11 @@ class ltcl_test_json_types {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr1.bind_type = z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way);
-    lr1.view = z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main);
+    lr1.bind_type = z2ui5_cl_util.abap_tab_assign(lr1.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
+    lr1.view = z2ui5_cl_util.abap_tab_assign(lr1.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
     lr1.name_client = `/XX/MV_SIMPLE`;
     let ls_extra = { name: ``, name_client: ``, name_parent: ``, name_ref: ``, bind_type: ``, srtti_data: ``, check_dissolved: false, view: ``, custom_filter: null, custom_filter_back: null, custom_mapper: null, custom_mapper_back: null, o_typedescr: null, type_kind: ``, kind: `` };
-    ls_extra = z2ui5_cl_util.abap_copy(lr1);
+    ls_extra = z2ui5_cl_util.abap_tab_assign(ls_extra, z2ui5_cl_util.abap_copy(lr1));
     ls_extra.name = `MV_SIMPLE_ALIAS`;
     ls_extra.name_client = `/XX/ALIAS`;
     lt_attri.push(z2ui5_cl_util.abap_copy(ls_extra));
@@ -1055,6 +1106,8 @@ class ltcl_test_json_types {
     cl_abap_unit_assert.assert_equals({ exp: `first`, act: lo_app.mv_simple });
   }
 }
+
+
 
 
 

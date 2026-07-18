@@ -1,6 +1,7 @@
 // GENERATED from run/input/abap2UI5/src/02/z2ui5_cl_exit.clas.testclasses.abap — do not edit
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
 const z2ui5_cl_exit = require("abap2UI5/z2ui5_cl_exit");
+const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 
 
 class ltcl_test {
@@ -48,12 +49,14 @@ class ltcl_test {
   }
 
   test_init_context() {
-    let ls_req = null;
+    let ls_req = { method: ``, body: ``, path: ``, t_params: [] };
     ls_req.path = `/sap/test`;
-    ls_req.t_params = [{ n: `app_start`, v: `z2ui5_cl_app_hello_world` }, { n: `sap-client`, v: `100` }];
+    ls_req.t_params = z2ui5_cl_util.abap_tab_assign(ls_req.t_params, [{ n: `app_start`, v: `z2ui5_cl_app_hello_world` }, { n: `sap-client`, v: `100` }]);
     z2ui5_cl_exit.init_context(ls_req);
   }
 }
+
+
 
 
 

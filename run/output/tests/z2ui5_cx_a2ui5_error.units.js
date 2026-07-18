@@ -6,28 +6,34 @@ const z2ui5_cx_a2ui5_error = require("abap2UI5/z2ui5_cx_a2ui5_error");
 
 class ltcl_unit_test {
   test_raise() {
+    let lx;
     try {
       throw new z2ui5_cx_a2ui5_error({ val: `this is an error text` });
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ exp: `this is an error text`, act: lx.get_text() });
     }
   }
 
   test_raise_empty() {
+    let lx;
     try {
       throw new z2ui5_cx_a2ui5_error();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_bound(lx);
       cl_abap_unit_assert.assert_not_initial(lx.ms_error.uuid);
     }
   }
 
   test_raise_with_prev() {
+    let lx;
     let lv_text;
     const lx_prev = new z2ui5_cx_a2ui5_error({ val: `previous error` });
     try {
       throw new z2ui5_cx_a2ui5_error({ val: `current error`, previous: lx_prev });
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       lv_text = lx.get_text();
       cl_abap_unit_assert.assert_true((String(lv_text).toLowerCase().includes(String(`current error`).toLowerCase())));
       cl_abap_unit_assert.assert_true((String(lv_text).toLowerCase().includes(String(`previous error`).toLowerCase())));
@@ -36,22 +42,28 @@ class ltcl_unit_test {
 
   test_raise_with_cx() {
     let lv_val;
+    let lx_root;
+    let lx;
     try {
       lv_val = z2ui5_cl_util.abap_div(1, 0);
-    } catch (lx_root) {
+    } catch (_caught1) {
+      lx_root = _caught1;
     }
     try {
       throw new z2ui5_cx_a2ui5_error({ val: lx_root });
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_not_initial(lx.get_text());
       cl_abap_unit_assert.assert_bound(lx.ms_error.x_root);
     }
   }
 
   test_uuid_populated() {
+    let lx;
     try {
       throw new z2ui5_cx_a2ui5_error({ val: `test` });
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_not_initial(lx.ms_error.uuid);
       cl_abap_unit_assert.assert_equals({ exp: 32, act: lx.ms_error.uuid.length });
     }
@@ -67,6 +79,8 @@ class ltcl_unit_test {
     cl_abap_unit_assert.assert_true((String(lv_text).toLowerCase().includes(String(`inner`).toLowerCase())));
   }
 }
+
+
 
 
 

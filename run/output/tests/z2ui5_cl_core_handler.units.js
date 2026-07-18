@@ -14,6 +14,7 @@ class ltcl_app_nav_loop extends z2ui5_if_app {
 
 
 
+
 class ltcl_test_handler_post {
   load_startup_app() {
     let sy_sysid = "";
@@ -30,8 +31,8 @@ class ltcl_test_handler_post {
     cl_abap_unit_assert.assert_bound(lo_post.mo_action);
     cl_abap_unit_assert.assert_equals({ exp: `ORIGIN`, act: lo_post.ms_request.s_front.origin });
     cl_abap_unit_assert.assert_equals({ exp: `PATHNAME`, act: lo_post.ms_request.s_front.pathname });
-    temp1 = z2ui5_cl_util.abap_copy(lo_post.mo_action.mo_app.mo_app);
-    lo_startup = z2ui5_cl_util.abap_copy(temp1);
+    temp1 = z2ui5_cl_util.abap_cast(lo_post.mo_action.mo_app.mo_app);
+    lo_startup = temp1;
   }
 
   test_request_parse() {
@@ -198,7 +199,7 @@ class ltcl_test_handler_post {
     temp2.s_front.id = `ID123`;
     temp2.s_front.app = `Z2UI5_CL_APP_HELLO_WORLD`;
     temp2.model = `{"name":"test"}`;
-    ls_response = z2ui5_cl_util.abap_copy(temp2);
+    ls_response = z2ui5_cl_util.abap_tab_assign(ls_response, z2ui5_cl_util.abap_copy(temp2));
     lv_json = lo_handler.response_abap_to_json(ls_response);
     temp1 = (String(lv_json).toLowerCase().includes(String(`S_FRONT`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp1);
@@ -235,12 +236,13 @@ class ltcl_test_handler_post {
     lo_handler = new z2ui5_cl_core_handler({ val: `` });
     lo_handler.mv_dispatch_limit = 5;
     lo_loop_app = new ltcl_app_nav_loop();
-    lo_handler.mo_action.mo_app.mo_app = z2ui5_cl_util.abap_copy(lo_loop_app);
+    lo_handler.mo_action.mo_app.mo_app = lo_loop_app;
     lo_handler.mo_action.mo_app.ms_draft.id = z2ui5_cl_a2ui5_context.uuid_get_c32();
     try {
       lo_handler.main_loop();
       cl_abap_unit_assert.fail(`dispatch loop guard did not raise`);
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_char_cp({ act: lx.get_text(), exp: `*nav_app_call*` });
     }
   }
@@ -252,6 +254,8 @@ class ltcl_test_handler_post {
     cl_abap_unit_assert.assert_bound(lo_handler.mo_action);
   }
 }
+
+
 
 
 

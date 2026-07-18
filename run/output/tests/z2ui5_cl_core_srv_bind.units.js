@@ -2,12 +2,11 @@
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
 const z2ui5_cl_core_app = require("abap2UI5/z2ui5_cl_core_app");
 const z2ui5_cl_core_srv_bind = require("abap2UI5/z2ui5_cl_core_srv_bind");
-const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_if_core_types = require("abap2UI5/z2ui5_if_core_types");
 
 
 class ltcl_test_app {
-  ms_struc = {};
+  ms_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
   mv_value = ``;
   mr_value = null;
   mr_struc = null;
@@ -20,11 +19,12 @@ class ltcl_test_app {
 
 
 
+
 class ltcl_test_bind {
   test_one_way_w_x_error() {
     const lo_app_client = new ltcl_test_app();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_client);
+    lo_app.mo_app = lo_app_client;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     try {
       lo_bind.main({ val: (lo_app_client.xx), type: z2ui5_if_core_types.cs_bind_type.one_way });
@@ -40,7 +40,7 @@ class ltcl_test_bind {
     }
     const lo_app_client = new ltcl_test_app();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_client);
+    lo_app.mo_app = lo_app_client;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     const lv_bind = lo_bind.main({ val: (lo_app_client.mv_value), type: z2ui5_if_core_types.cs_bind_type.one_way });
     cl_abap_unit_assert.assert_equals({ exp: `{/MV_VALUE}`, act: lv_bind });
@@ -53,7 +53,7 @@ class ltcl_test_bind {
     }
     const lo_app_client = new ltcl_test_app();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_client);
+    lo_app.mo_app = lo_app_client;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     lo_bind.main({ val: (lo_app_client.mv_value), type: z2ui5_if_core_types.cs_bind_type.one_way });
     try {
@@ -70,7 +70,7 @@ class ltcl_test_bind {
     }
     const lo_app_client = new ltcl_test_app();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_client);
+    lo_app.mo_app = lo_app_client;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     const lv_bind = lo_bind.main({ val: (lo_app_client.mv_value), type: z2ui5_if_core_types.cs_bind_type.two_way });
     const lv_bind2 = lo_bind.main({ val: (lo_app_client.mv_value), type: z2ui5_if_core_types.cs_bind_type.two_way });
@@ -81,8 +81,10 @@ class ltcl_test_bind {
 
 
 
+
+
 class ltcl_test_main_structure {
-  ms_struc = {};
+  ms_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
 
   test_one_way_lev1() {
     let sy_sysid = "";
@@ -91,7 +93,7 @@ class ltcl_test_main_structure {
     }
     const lo_test_app = new ltcl_test_main_structure();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_test_app);
+    lo_app.mo_app = lo_test_app;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     let lv_result = lo_bind.main({ val: (lo_test_app.ms_struc.input), type: z2ui5_if_core_types.cs_bind_type.one_way });
     cl_abap_unit_assert.assert_equals({ exp: `{/MS_STRUC/INPUT}`, act: lv_result });
@@ -106,7 +108,7 @@ class ltcl_test_main_structure {
     }
     const lo_test_app = new ltcl_test_main_structure();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_test_app);
+    lo_app.mo_app = lo_test_app;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     const lv_result = lo_bind.main({ val: (lo_test_app.ms_struc.s_02.input), type: z2ui5_if_core_types.cs_bind_type.one_way });
     cl_abap_unit_assert.assert_equals({ exp: `{/MS_STRUC/S_02/INPUT}`, act: lv_result });
@@ -119,7 +121,7 @@ class ltcl_test_main_structure {
     }
     const lo_test_app = new ltcl_test_main_structure();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_test_app);
+    lo_app.mo_app = lo_test_app;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     const lv_result = lo_bind.main({ val: (lo_test_app.ms_struc.s_02.s_03.input), type: z2ui5_if_core_types.cs_bind_type.one_way });
     cl_abap_unit_assert.assert_equals({ exp: `{/MS_STRUC/S_02/S_03/INPUT}`, act: lv_result });
@@ -132,7 +134,7 @@ class ltcl_test_main_structure {
     }
     const lo_test_app = new ltcl_test_main_structure();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_test_app);
+    lo_app.mo_app = lo_test_app;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     const lv_result = lo_bind.main({ val: (lo_test_app.ms_struc.s_02.s_03.s_04.input), type: z2ui5_if_core_types.cs_bind_type.one_way });
     cl_abap_unit_assert.assert_equals({ exp: `{/MS_STRUC/S_02/S_03/S_04/INPUT}`, act: lv_result });
@@ -141,10 +143,12 @@ class ltcl_test_main_structure {
 
 
 
+
+
 class ltcl_test_main_object {
   mo_obj = null;
   mv_value = ``;
-  ms_struc = {};
+  ms_struc = { input: ``, s_02: { input: ``, s_03: { input: ``, s_04: { input: `` } } } };
 
   test_one_way_value() {
     let sy_sysid = "";
@@ -152,10 +156,10 @@ class ltcl_test_main_object {
       return;
     }
     const lo_test_app = new ltcl_test_main_object();
-    lo_test_app.mo_obj = /* TODO(abap2js): NEW #( ) */ null;
+    lo_test_app.mo_obj = new ltcl_test_main_object();
     lo_test_app.mo_obj.mv_value = `test`;
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_test_app);
+    lo_app.mo_app = lo_test_app;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     const lv_result = lo_bind.main({ val: (lo_test_app.mo_obj.mv_value), type: z2ui5_if_core_types.cs_bind_type.one_way });
     cl_abap_unit_assert.assert_equals({ exp: `{/MO_OBJ/MV_VALUE}`, act: lv_result });
@@ -167,14 +171,16 @@ class ltcl_test_main_object {
       return;
     }
     const lo_test_app = new ltcl_test_main_object();
-    lo_test_app.mo_obj = /* TODO(abap2js): NEW #( ) */ null;
+    lo_test_app.mo_obj = new ltcl_test_main_object();
     const lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_test_app);
+    lo_app.mo_app = lo_test_app;
     const lo_bind = new z2ui5_cl_core_srv_bind(lo_app);
     const lv_result = lo_bind.main({ val: (lo_test_app.mo_obj.ms_struc.input), type: z2ui5_if_core_types.cs_bind_type.one_way });
     cl_abap_unit_assert.assert_equals({ exp: `{/MO_OBJ/MS_STRUC/INPUT}`, act: lv_result });
   }
 }
+
+
 
 
 

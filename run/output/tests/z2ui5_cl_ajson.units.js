@@ -49,14 +49,14 @@ class lcl_nodes_helper {
     fs_n.name = String(fs_n.name).replace(/^ +| +$/g, "").replace(/ +/g, ` `);
     fs_n.type = String(fs_n.type).replace(/^ +| +$/g, "").replace(/ +/g, ` `);
     fs_n.value = String(fs_n.value).replace(/^ +| +$/g, "").replace(/ +/g, ` `);
-    fs_n.index = z2ui5_cl_util.abap_copy(lv_index);
-    fs_n.children = z2ui5_cl_util.abap_copy(lv_children);
-    fs_n.order = z2ui5_cl_util.abap_copy(lv_order);
+    fs_n.index = z2ui5_cl_util.abap_tab_assign(fs_n.index, z2ui5_cl_util.abap_copy(lv_index));
+    fs_n.children = z2ui5_cl_util.abap_tab_assign(fs_n.children, z2ui5_cl_util.abap_copy(lv_children));
+    fs_n.order = z2ui5_cl_util.abap_tab_assign(fs_n.order, z2ui5_cl_util.abap_copy(lv_order));
   }
 
   sorted() {
     let rt_nodes = [];
-    rt_nodes = z2ui5_cl_util.abap_copy(this.mt_nodes);
+    rt_nodes = z2ui5_cl_util.abap_tab_assign(rt_nodes, z2ui5_cl_util.abap_copy(this.mt_nodes));
     return rt_nodes;
   }
 
@@ -64,6 +64,8 @@ class lcl_nodes_helper {
     this.mt_nodes = [];
   }
 }
+
+
 
 
 
@@ -105,14 +107,16 @@ class ltcl_parser_test {
     try {
       lt_act = this.mo_cut.parse({ iv_json: `abc` });
       cl_abap_unit_assert.fail(`Parsing of string w/o quotes must fail (spec)`);
-    } catch (lx_err) {
+    } catch (_caught1) {
+      lx_err = _caught1;
       cl_abap_unit_assert.assert_char_cp({ act: lx_err.get_text(), exp: `*parsing error*` });
       cl_abap_unit_assert.assert_char_cp({ act: lx_err.location, exp: `Line 1, Offset 1` });
     }
     try {
       lt_act = this.mo_cut.parse({ iv_json: `{` + cl_abap_char_utilities.newline + `"ok": "abc",` + cl_abap_char_utilities.newline + `"error"` + cl_abap_char_utilities.newline + `}` });
       cl_abap_unit_assert.fail(`Parsing of invalid JSON must fail (spec)`);
-    } catch (lx_err) {
+    } catch (_caught2) {
+      lx_err = _caught2;
       cl_abap_unit_assert.assert_char_cp({ act: lx_err.get_text(), exp: `*parsing error*` });
       cl_abap_unit_assert.assert_char_cp({ act: lx_err.location, exp: `Line 3, Offset 8` });
     }
@@ -218,13 +222,15 @@ class ltcl_parser_test {
     try {
       lo_cut.parse({ iv_json: lv_numc });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_not_initial(lx);
     }
     try {
       lo_cut.parse({ iv_json: lt_hashed });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_not_initial(lx);
     }
   }
@@ -329,7 +335,8 @@ class ltcl_parser_test {
       lo_cut = new lcl_json_parser();
       lo_cut.parse({ iv_json: `{ "a" = 1, "a" = 1 }` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_not_initial(lx);
     }
   }
@@ -341,7 +348,8 @@ class ltcl_parser_test {
       lo_cut = new lcl_json_parser();
       lo_cut.parse({ iv_json: `<html><head><title>X</title></head><body><h1>Y</h1></body></html>` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_not_initial(lx);
     }
   }
@@ -441,6 +449,8 @@ feed              |  |0` });
     }
   }
 }
+
+
 
 
 
@@ -601,6 +611,8 @@ class ltcl_serializer_test {
 
 
 
+
+
 class ltcl_utils_test {
   string_to_xstring_utf8() {
     cl_abap_unit_assert.assert_equals({ act: lcl_utils.string_to_xstring_utf8({ iv_str: `123` }), exp: `313233` });
@@ -669,6 +681,8 @@ class ltcl_utils_test {
 
 
 
+
+
 class ltcl_reader_test {
   slice() {
     let lo_cut = null;
@@ -696,7 +710,7 @@ class ltcl_reader_test {
     lo_nodes.add({ iv_str: `/2/end/   |col      |num    |22                      |  |0` });
     lo_nodes.add({ iv_str: `/2/       |filename |str    |./zxxx.prog.abap        |  |0` });
     lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
-    lo_cut = lo_cut.slice(`/issues`);
+    lo_cut = z2ui5_cl_util.abap_cast(lo_cut.slice(`/issues`));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.mt_json_tree, exp: lo_nodes.sorted() });
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `                 |         |object |                        |  |8` });
@@ -729,20 +743,20 @@ class ltcl_reader_test {
     lo_nodes.add({ iv_str: `/issues/2/end/   |col      |num    |22                      |  |0` });
     lo_nodes.add({ iv_str: `/issues/2/       |filename |str    |./zxxx.prog.abap        |  |0` });
     lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
-    lo_cut = lo_cut.slice(`/`);
+    lo_cut = z2ui5_cl_util.abap_cast(lo_cut.slice(`/`));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.mt_json_tree, exp: lo_nodes.sorted() });
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |object |                        | |2` });
     lo_nodes.add({ iv_str: `/ |row      |num    |3                       | |0` });
     lo_nodes.add({ iv_str: `/ |col      |num    |21                      | |0` });
     lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
-    lo_cut = lo_cut.slice(`/issues/2/start/`);
+    lo_cut = z2ui5_cl_util.abap_cast(lo_cut.slice(`/issues/2/start/`));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.mt_json_tree, exp: lo_nodes.sorted() });
   }
 
   get_value() {
     let lo_cut = null;
-    lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
+    lo_cut = z2ui5_cl_util.abap_cast(z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json()));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get(`/string`), exp: `abc` });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get(`/string/`), exp: `abc` });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get(`/boolean`), exp: `true` });
@@ -772,17 +786,17 @@ class ltcl_reader_test {
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |object |                        | |1` });
     lo_nodes.add({ iv_str: `/ |date1    |str    |2020-07-28              | |0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_date(`/date1`), exp: lv_exp });
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |object |                        | |1` });
     lo_nodes.add({ iv_str: `/ |date1    |str    |2020-07-28T01:00:00Z    | |0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_date(`/date1`), exp: lv_exp });
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |object |                        | |1` });
     lo_nodes.add({ iv_str: `/ |date1    |str    |20200728                | |0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_date(`/date1`), exp: `` });
   }
 
@@ -794,7 +808,7 @@ class ltcl_reader_test {
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |object |                        | |1` });
     lo_nodes.add({ iv_str: `/ |timestamp|str    |2020-07-28T00:00:00Z    | |0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_timestamp(`/timestamp`), exp: lv_exp });
   }
 
@@ -806,13 +820,13 @@ class ltcl_reader_test {
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |object |                          | |1` });
     lo_nodes.add({ iv_str: `/ |timestamp|str    |2020-07-28T12:34:56.78934Z| |0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_timestampl(`/timestamp`), exp: lv_exp });
   }
 
   exists() {
     let lo_cut = null;
-    lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
+    lo_cut = z2ui5_cl_util.abap_cast(z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json()));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.exists(`/string`), exp: true });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.exists(`/string/`), exp: true });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.exists(`/xxx`), exp: false });
@@ -821,7 +835,7 @@ class ltcl_reader_test {
 
   value_integer() {
     let lo_cut = null;
-    lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
+    lo_cut = z2ui5_cl_util.abap_cast(z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json()));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_integer(`/string`), exp: 0 });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_integer(`/number`), exp: 123 });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_integer(`/float`), exp: 123 });
@@ -829,7 +843,7 @@ class ltcl_reader_test {
 
   value_number() {
     let lo_cut = null;
-    lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
+    lo_cut = z2ui5_cl_util.abap_cast(z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json()));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_number(`/string`), exp: 0 });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_number(`/number`), exp: `123.0` });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_number(`/float`), exp: `123.45` });
@@ -837,7 +851,7 @@ class ltcl_reader_test {
 
   value_boolean() {
     let lo_cut = null;
-    lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
+    lo_cut = z2ui5_cl_util.abap_cast(z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json()));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_boolean(`/string`), exp: true });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_boolean(`/number`), exp: true });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_boolean(`/xxx`), exp: false });
@@ -846,7 +860,7 @@ class ltcl_reader_test {
 
   value_string() {
     let lo_cut = null;
-    lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
+    lo_cut = z2ui5_cl_util.abap_cast(z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json()));
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_string(`/string`), exp: `abc` });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_string(`/number`), exp: `123` });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.get_string(`/xxx`), exp: `` });
@@ -856,7 +870,7 @@ class ltcl_reader_test {
   members() {
     let lt_exp = [];
     let lo_cut = null;
-    lo_cut = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
+    lo_cut = z2ui5_cl_util.abap_cast(z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json()));
     lt_exp = [];
     lt_exp.push(z2ui5_cl_util.abap_copy(`1`));
     lt_exp.push(z2ui5_cl_util.abap_copy(`2`));
@@ -887,44 +901,50 @@ class ltcl_reader_test {
     lt_exp.push(z2ui5_cl_util.abap_copy(``));
     lt_exp.push(z2ui5_cl_util.abap_copy(``));
     lo_cut = new z2ui5_cl_ajson();
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     lt_act = lo_cut.array_to_string_table(`/`);
     cl_abap_unit_assert.assert_equals({ act: lt_act, exp: lt_exp });
     let lx = null;
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |object |                        | |1` });
     lo_nodes.add({ iv_str: `/ |a        |str    |abc                     | |0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     try {
       lo_cut.array_to_string_table(`/x`);
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Path not found: /x` });
     }
     try {
       lo_cut.array_to_string_table(`/`);
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Array expected at: /` });
     }
     try {
       lo_cut.array_to_string_table(`/a`);
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught3) {
+      lx = _caught3;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Array expected at: /a` });
     }
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `  |         |array  |                        | |1` });
     lo_nodes.add({ iv_str: `/ |1        |object |                        |1|0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     try {
       lo_cut.array_to_string_table(`/`);
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught4) {
+      lx = _caught4;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Cannot convert [object] to string at [/1]` });
     }
   }
 }
+
+
 
 
 
@@ -961,12 +981,12 @@ class ltcl_json_to_abap {
     ls_exp.float = `5.5`;
     ls_exp.bool = true;
     ls_exp.obj.a = `world`;
-    ls_exp.date1 = z2ui5_cl_util.abap_copy(lv_exp_date);
-    ls_exp.date2 = z2ui5_cl_util.abap_copy(lv_exp_date);
-    ls_exp.timestamp1 = z2ui5_cl_util.abap_copy(lv_exp_timestamp);
-    ls_exp.timestamp2 = z2ui5_cl_util.abap_copy(lv_exp_timestamp);
-    ls_exp.timestamp3 = z2ui5_cl_util.abap_copy(lv_exp_timestamp);
-    ls_exp.timestamp4 = z2ui5_cl_util.abap_copy(lv_exp_timestamp);
+    ls_exp.date1 = z2ui5_cl_util.abap_tab_assign(ls_exp.date1, z2ui5_cl_util.abap_copy(lv_exp_date));
+    ls_exp.date2 = z2ui5_cl_util.abap_tab_assign(ls_exp.date2, z2ui5_cl_util.abap_copy(lv_exp_date));
+    ls_exp.timestamp1 = z2ui5_cl_util.abap_tab_assign(ls_exp.timestamp1, z2ui5_cl_util.abap_copy(lv_exp_timestamp));
+    ls_exp.timestamp2 = z2ui5_cl_util.abap_tab_assign(ls_exp.timestamp2, z2ui5_cl_util.abap_copy(lv_exp_timestamp));
+    ls_exp.timestamp3 = z2ui5_cl_util.abap_tab_assign(ls_exp.timestamp3, z2ui5_cl_util.abap_copy(lv_exp_timestamp));
+    ls_exp.timestamp4 = z2ui5_cl_util.abap_tab_assign(ls_exp.timestamp4, z2ui5_cl_util.abap_copy(lv_exp_timestamp));
     ls_exp.timestamp5 = lv_exp_timestamp + `0.12345`;
     cl_abap_unit_assert.assert_equals({ act: ls_mock, exp: ls_exp });
   }
@@ -998,7 +1018,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out0);
       if ("c_container" in _out0) lv_mock = _out0.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Unexpected timestamp format` });
     }
     lo_nodes = new lcl_nodes_helper();
@@ -1256,7 +1277,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out0);
       if ("c_container" in _out0) ls_mock = _out0.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Expected structure` });
     }
     try {
@@ -1267,7 +1289,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out1);
       if ("c_container" in _out1) ls_mock = _out1.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Expected table` });
     }
     try {
@@ -1278,7 +1301,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out2);
       if ("c_container" in _out2) ls_mock = _out2.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught3) {
+      lx = _caught3;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Source is not a number` });
     }
     try {
@@ -1289,7 +1313,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out3);
       if ("c_container" in _out3) ls_mock = _out3.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught4) {
+      lx = _caught4;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Unexpected date format` });
     }
     try {
@@ -1300,7 +1325,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out4);
       if ("c_container" in _out4) ls_mock = _out4.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught5) {
+      lx = _caught5;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Path not found` });
     }
     try {
@@ -1312,7 +1338,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out5);
       if ("c_container" in _out5) lt_str = _out5.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught6) {
+      lx = _caught6;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Need index to access tables` });
     }
     try {
@@ -1323,7 +1350,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out6);
       if ("c_container" in _out6) lr_obj = _out6.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught7) {
+      lx = _caught7;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Cannot assign to ref` });
     }
     try {
@@ -1336,7 +1364,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out7);
       if ("c_container" in _out7) lt_hashed = _out7.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught8) {
+      lx = _caught8;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Duplicate insertion` });
     }
   }
@@ -1376,7 +1405,8 @@ class ltcl_json_to_abap {
       lo_cut.to_abap(_out0);
       if ("c_container" in _out0) ls_act = _out0.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Path not found` });
     }
   }
@@ -1393,7 +1423,7 @@ class ltcl_json_to_abap {
     lo_nodes.add({ iv_str: `/      |c          |num    |24022022                  | ` });
     ls_exp.a = `test`;
     lo_cut = new z2ui5_cl_ajson();
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     const _out0 = { iv_corresponding: true, ev_container: ls_act };
     lo_cut.to_abap(_out0);
     if ("ev_container" in _out0) ls_act = _out0.ev_container;
@@ -1418,13 +1448,14 @@ class ltcl_json_to_abap {
     lo_nodes.add({ iv_str: `/      |c          |num    |24022022                  | ` });
     ls_exp.a = `test`;
     lo_cut = new z2ui5_cl_ajson();
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     try {
       const _out0 = { ev_container: ls_act };
       lo_cut.to_abap(_out0);
       if ("ev_container" in _out0) ls_act = _out0.ev_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Path not found` });
     }
   }
@@ -1532,6 +1563,8 @@ class ltcl_json_to_abap {
 
 
 
+
+
 class ltcl_writer_test {
   prove_path_exists() {
     let lo_cut = null;
@@ -1565,7 +1598,7 @@ class ltcl_writer_test {
     lo_nodes_exp.add({ iv_str: `/a/     |b     |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/a/b/   |c     |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/a/b/c/ |d     |object |     ||0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes_exp.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes_exp.mt_nodes));
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |object |     ||0` });
@@ -1583,7 +1616,7 @@ class ltcl_writer_test {
     lo_nodes_exp.add({ iv_str: `/a/     |b     |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/a/b/   |c     |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/a/b/c/ |d     |object |     ||0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes_exp.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes_exp.mt_nodes));
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |object |     ||0` });
@@ -1595,7 +1628,7 @@ class ltcl_writer_test {
     lo_nodes_exp.add({ iv_str: `/a/     |b     |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/a/b/   |c     |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/a/b/c/ |d     |object |     ||0` });
-    lo_cut.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes_exp.mt_nodes);
+    lo_cut.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_cut.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes_exp.mt_nodes));
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |object |     ||0` });
@@ -1610,13 +1643,13 @@ class ltcl_writer_test {
     let li_writer = null;
     lo_src = z2ui5_cl_ajson.create_empty();
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `        |      |object |     ||1` });
     lo_nodes.add({ iv_str: `/       |x     |object |     ||2` });
     lo_nodes.add({ iv_str: `/x/     |b     |str    |abc  ||0` });
     lo_nodes.add({ iv_str: `/x/     |c     |num    |10   ||0` });
-    lo_src.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_src.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_src.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     li_writer.set({ iv_path: ``, iv_val: lo_src });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.mt_json_tree, exp: lo_nodes.sorted() });
     li_writer.set({ iv_path: `/`, iv_val: lo_src });
@@ -1648,7 +1681,7 @@ class ltcl_writer_test {
     let lo_cut = null;
     let li_writer = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `        |      |object |     ||1` });
     lo_nodes.add({ iv_str: `/       |x     |object |     ||2` });
@@ -1684,7 +1717,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let ls_struc = { b: `abc`, c: 10, d: `20220401` };
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `        |      |object |           ||1` });
     lo_nodes.add({ iv_str: `/       |x     |object |           ||3` });
@@ -1701,7 +1734,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let ls_struc = { d: `20220401`, d_empty: null, t: `200103`, t_empty: null, ts: 20220401200103, p: `123.45` };
     lo_cut = z2ui5_cl_ajson.create_empty().format_datetime();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `      |        |object |           ||6` });
     lo_nodes.add({ iv_str: `/     |d       |str    |2022-04-01 ||0` });
@@ -1720,7 +1753,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let lt_tab = [];
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lt_tab.push(z2ui5_cl_util.abap_copy(`hello`));
     lt_tab.push(z2ui5_cl_util.abap_copy(`world`));
     lo_nodes = new lcl_nodes_helper();
@@ -1738,7 +1771,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let lt_tab = [];
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lt_tab.push(z2ui5_cl_util.abap_copy(`hello`));
     lt_tab.push(z2ui5_cl_util.abap_copy(`world`));
     lo_nodes = new lcl_nodes_helper();
@@ -1786,7 +1819,7 @@ class ltcl_writer_test {
     let lv_foo = 0;
     let lr_foo = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `        |      |num    |10         ||0` });
     lv_foo = 10;
@@ -1802,7 +1835,7 @@ class ltcl_writer_test {
     let lv_foo = ``;
     let ls_struc = { r: null };
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes = new lcl_nodes_helper();
     lo_nodes.add({ iv_str: `        |      |object |           ||1` });
     lo_nodes.add({ iv_str: `/       |r     |str    |abc        ||0` });
@@ -1817,7 +1850,7 @@ class ltcl_writer_test {
     let lo_nodes_exp = null;
     let li_writer = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |     | |1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |array  |     | |0` });
@@ -1860,44 +1893,50 @@ class ltcl_writer_test {
     let lo_cut = null;
     let li_writer = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     li_writer.touch_array({ iv_path: `/a` });
     li_writer.push({ iv_path: `/a`, iv_val: 123 });
     let lx = null;
     try {
       li_writer.touch_array({ iv_path: `/a/1` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Path [/a/1] already used and is not array` });
     }
     try {
       li_writer.push({ iv_path: `/a/1`, iv_val: 123 });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Path [/a/1] is not array` });
     }
     try {
       li_writer.push({ iv_path: `/x`, iv_val: 123 });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught3) {
+      lx = _caught3;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Path [/x] does not exist` });
     }
     try {
       li_writer.set({ iv_path: `/a/abc/x`, iv_val: 123 });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught4) {
+      lx = _caught4;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Cannot add non-numeric key [abc] to array [/a/]` });
     }
     try {
       li_writer.set({ iv_path: `/a/abc`, iv_val: 123 });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught5) {
+      lx = _caught5;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Cannot add non-numeric key [abc] to array [/a/]` });
     }
     try {
       li_writer.set({ iv_path: `/a/0`, iv_val: 123 });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught6) {
+      lx = _caught6;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Cannot add zero key to array [/a/]` });
     }
   }
@@ -1908,7 +1947,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let ls_dummy = { x: `hello` };
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |     ||1` });
     lo_nodes_exp.add({ iv_str: `/       |x     |str    |hello||0` });
@@ -1939,7 +1978,7 @@ class ltcl_writer_test {
     let lo_nodes_exp = null;
     let li_writer = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |      ||2` });
     lo_nodes_exp.add({ iv_str: `/       |a     |bool   |true  ||0` });
@@ -1954,7 +1993,7 @@ class ltcl_writer_test {
     let lo_nodes_exp = null;
     let li_writer = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |      ||2` });
     lo_nodes_exp.add({ iv_str: `/       |a     |bool   |true  ||0` });
@@ -1970,7 +2009,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let lt_tab = [];
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |      ||2` });
     lo_nodes_exp.add({ iv_str: `/       |a     |bool   |true  ||0` });
@@ -1988,7 +2027,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let lv_date = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |         ||3` });
     lo_nodes_exp.add({ iv_str: `/       |a     |str    |123      ||0` });
@@ -2006,7 +2045,7 @@ class ltcl_writer_test {
     let lo_nodes_exp = null;
     let li_writer = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |         ||1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |num    |123      ||0` });
@@ -2032,7 +2071,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let lv_date = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |           ||2` });
     lo_nodes_exp.add({ iv_str: `/       |a     |str    |2020-07-05 ||0` });
@@ -2050,7 +2089,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let lv_timestamp = 0;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |                     ||1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |str    |2021-05-05T12:00:00Z ||0` });
@@ -2065,7 +2104,7 @@ class ltcl_writer_test {
     let li_writer = null;
     let lv_timestampl = 0;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |                            ||1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |str    |2021-05-05T12:00:00.123456Z ||0` });
@@ -2084,12 +2123,14 @@ class ltcl_writer_test {
     let lr_utclong = null;
     try {
       // TODO(abap2js): CREATE DATA lr_utclong TYPE ('utclong').
-      // TODO(abap2js): ASSIGN lr_utclong->* TO <utclong>.
+      fs_utclong = lr_utclong;
+      _fs$fs_utclong = null;
+      sy_subrc = 0;
     } catch (error) {
       return;
     }
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     lo_nodes_exp = new lcl_nodes_helper();
     lo_nodes_exp.add({ iv_str: `        |      |object |                            ||1` });
     lo_nodes_exp.add({ iv_str: `/       |a     |str    |2021-05-05T12:00:00.1234567Z||0` });
@@ -2103,7 +2144,7 @@ class ltcl_writer_test {
     let lo_cut = null;
     let li_writer = null;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     li_writer.set({ iv_path: `/a`, iv_val: `abc` });
     li_writer.touch_array({ iv_path: `/b` });
     li_writer.push({ iv_path: `/b`, iv_val: `abc` });
@@ -2151,7 +2192,7 @@ class ltcl_writer_test {
     lo_nodes_exp.add({ iv_str: `/issues/2/end/   |col      |num    |22                      |  |0` });
     lo_nodes_exp.add({ iv_str: `/issues/2/end/   |row      |num    |3                       |  |0` });
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     li_writer.touch_array({ iv_path: `/issues` });
     li_writer.set({ iv_path: `/issues/1/end/col`, iv_val: 26 });
     li_writer.set({ iv_path: `/issues/1/end/row`, iv_val: 4 });
@@ -2166,7 +2207,7 @@ class ltcl_writer_test {
     let li_writer = null;
     lo_sample = z2ui5_cl_ajson.parse(ltcl_parser_test.sample_json());
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     this.set_with_type_slice({ io_json_in: lo_sample, io_json_out: li_writer, iv_path: `/` });
     cl_abap_unit_assert.assert_equals({ act: lo_cut.mt_json_tree, exp: lo_sample.mt_json_tree });
   }
@@ -2283,6 +2324,8 @@ class ltcl_writer_test {
 
 
 
+
+
 class ltcl_integrated {
   array_simple() {
     let lt_act = [];
@@ -2318,7 +2361,7 @@ class ltcl_integrated {
         lv_src = lv_src + `, `;
       }
       lv_src = lv_src + `{ "row": ${sy_index} }`;
-      ls_exp.row = z2ui5_cl_util.abap_copy(sy_index);
+      ls_exp.row = z2ui5_cl_util.abap_tab_assign(ls_exp.row, z2ui5_cl_util.abap_copy(sy_index));
       lt_exp.push(z2ui5_cl_util.abap_copy(ls_exp));
     }
     lv_src = lv_src + `]`;
@@ -2376,7 +2419,7 @@ class ltcl_integrated {
     let ls_data = { str: ``, cls: null };
     ls_dummy.x = 1;
     lo_cut = z2ui5_cl_ajson.create_empty();
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     li_writer.set({ iv_path: `/a`, iv_val: 1 });
     li_writer.set({ iv_path: `/b`, iv_val: `B` });
     li_writer.set({ iv_path: `/c`, iv_val: true });
@@ -2394,7 +2437,7 @@ class ltcl_integrated {
     lv_exp = lv_exp.replaceAll(`\\n`, cl_abap_char_utilities.newline);
     cl_abap_unit_assert.assert_equals({ act: lo_cut.stringify({ iv_indent: 2 }), exp: lv_exp });
     ls_data.str = `test`;
-    li_writer = z2ui5_cl_util.abap_copy(lo_cut);
+    li_writer = lo_cut;
     li_writer.set({ iv_path: `/`, iv_val: ls_data });
     lv_exp = `{"cls":null,"str":"test"}`;
     cl_abap_unit_assert.assert_equals({ act: lo_cut.stringify(), exp: lv_exp });
@@ -2458,6 +2501,8 @@ class ltcl_integrated {
 
 
 
+
+
 class ltcl_abap_to_json {
   set_ajson() {
     let lo_nodes = null;
@@ -2468,7 +2513,7 @@ class ltcl_abap_to_json {
     lo_nodes.add({ iv_str: `/       |a     |object |     ||1` });
     lo_nodes.add({ iv_str: `/a/     |b     |object |     ||1` });
     lo_nodes.add({ iv_str: `/a/b/   |c     |object |     ||0` });
-    lo_src.mt_json_tree = z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes);
+    lo_src.mt_json_tree = z2ui5_cl_util.abap_tab_assign(lo_src.mt_json_tree, z2ui5_cl_util.abap_copy(lo_nodes.mt_nodes));
     let lt_nodes = [];
     lt_nodes = lcl_abap_to_json.convert({ iv_data: lo_src });
     cl_abap_unit_assert.assert_equals({ act: lt_nodes, exp: lo_nodes.mt_nodes });
@@ -2717,6 +2762,8 @@ class ltcl_abap_to_json {
 
 
 
+
+
 class ltcl_filter_test {
   mt_visit_history = [];
 
@@ -2724,7 +2771,7 @@ class ltcl_filter_test {
     let rv_keep = false;
     let ls_visit_history = { path: ``, type: null };
     if (iv_visit > 0) {
-      ls_visit_history.type = z2ui5_cl_util.abap_copy(iv_visit);
+      ls_visit_history.type = z2ui5_cl_util.abap_tab_assign(ls_visit_history.type, z2ui5_cl_util.abap_copy(iv_visit));
       ls_visit_history.path = is_node.path + is_node.name + `/`;
       this.mt_visit_history.push(z2ui5_cl_util.abap_copy(ls_visit_history));
     }
@@ -2800,22 +2847,24 @@ class ltcl_filter_test {
     let fs_v = {};
     lt_visits_exp.push(fs_v);
     fs_v.path = `/`;
-    fs_v.type = z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.open);
+    fs_v.type = z2ui5_cl_util.abap_tab_assign(fs_v.type, z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.open));
     fs_v = {};
     lt_visits_exp.push(fs_v);
     fs_v.path = `/3/`;
-    fs_v.type = z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.open);
+    fs_v.type = z2ui5_cl_util.abap_tab_assign(fs_v.type, z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.open));
     fs_v = {};
     lt_visits_exp.push(fs_v);
     fs_v.path = `/3/`;
-    fs_v.type = z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.close);
+    fs_v.type = z2ui5_cl_util.abap_tab_assign(fs_v.type, z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.close));
     fs_v = {};
     lt_visits_exp.push(fs_v);
     fs_v.path = `/`;
-    fs_v.type = z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.close);
+    fs_v.type = z2ui5_cl_util.abap_tab_assign(fs_v.type, z2ui5_cl_util.abap_copy(z2ui5_if_ajson_filter.visit_type.close));
     cl_abap_unit_assert.assert_equals({ act: this.mt_visit_history, exp: lt_visits_exp });
   }
 }
+
+
 
 
 
@@ -2900,7 +2949,8 @@ class ltcl_mapper_test {
     try {
       z2ui5_cl_ajson.create_from({ ii_source_json: lo_json, ii_mapper: this });
       cl_abap_unit_assert.fail();
-    } catch (lx_err) {
+    } catch (_caught1) {
+      lx_err = _caught1;
       cl_abap_unit_assert.assert_char_cp({ act: lx_err.get_text(), exp: `Renamed node has a duplicate @/AB` });
     }
   }
@@ -2927,11 +2977,14 @@ class ltcl_mapper_test {
     try {
       z2ui5_cl_ajson.create_from({ ii_source_json: lo_json, ii_mapper: this });
       cl_abap_unit_assert.fail();
-    } catch (lx_err) {
+    } catch (_caught1) {
+      lx_err = _caught1;
       cl_abap_unit_assert.assert_char_cp({ act: lx_err.get_text(), exp: `Renamed node name cannot be empty @/set_this_empty` });
     }
   }
 }
+
+
 
 
 
@@ -3036,6 +3089,8 @@ class ltcl_cloning_test {
 
 
 
+
+
 class ltcl_data_ref_test {
   to_abap_data_ref() {
     let lo_cut = null;
@@ -3111,7 +3166,8 @@ class ltcl_data_ref_test {
       lo_cut.to_abap(_out0);
       if ("c_container" in _out0) ls_mock = _out0.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Cannot use initial data ref` });
     }
   }
@@ -3131,11 +3187,14 @@ class ltcl_data_ref_test {
       lo_cut.to_abap(_out0);
       if ("c_container" in _out0) ls_mock = _out0.c_container;
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ act: lx.message, exp: `Missing ref initiator` });
     }
   }
 }
+
+
 
 
 

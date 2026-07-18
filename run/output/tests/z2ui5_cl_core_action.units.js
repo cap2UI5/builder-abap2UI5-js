@@ -15,6 +15,7 @@ class ltcl_test_app extends z2ui5_if_app {
 
 
 
+
 class ltcl_test {
   test_instantiation() {
     let lo_http = null;
@@ -94,7 +95,8 @@ class ltcl_test {
     try {
       lo_action.factory_first_start();
       cl_abap_unit_assert.fail(`Expected exception for nonexistent class`);
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       temp1 = (String(lx.get_text()).toLowerCase().includes(String(`NONEXISTENT_CLASS`).toLowerCase()));
       cl_abap_unit_assert.assert_true(temp1);
     }
@@ -115,7 +117,7 @@ class ltcl_test {
     lo_action = new z2ui5_cl_core_action({ val: lo_http });
     lo_action.mo_app.mo_app = new ltcl_test_app();
     lo_action.mo_app.ms_draft.id = `OLD_DRAFT_ID`;
-    lo_http.mo_action = z2ui5_cl_util.abap_copy(lo_action);
+    lo_http.mo_action = lo_action;
     lo_http.ms_request.s_front.id = `OLD_DRAFT_ID`;
     lo_http.ms_request.s_front.event = `MY_EVENT`;
     lo_result = lo_action.factory_by_frontend();
@@ -157,7 +159,7 @@ class ltcl_test {
     lo_action.mo_app.mo_app = new ltcl_test_app();
     lo_action.mo_app.ms_draft.id = `CURRENT_DRAFT`;
     lo_new_app = new ltcl_test_app();
-    lo_action.ms_next.o_app_call = z2ui5_cl_util.abap_copy(lo_new_app);
+    lo_action.ms_next.o_app_call = lo_new_app;
     lo_action.ms_next.s_set.s_msg_box.text = `box`;
     lo_action.ms_next.s_set.s_msg_toast.text = `toast`;
     lo_action.ms_next.s_set.s_follow_up_action.custom_js.push(z2ui5_cl_util.abap_copy(`some_js`));
@@ -188,7 +190,7 @@ class ltcl_test {
     lo_action.mo_app.mo_app = new ltcl_test_app();
     lo_action.mo_app.ms_draft.id = `CURRENT_DRAFT`;
     lo_prev_app = new ltcl_test_app();
-    lo_action.ms_next.o_app_leave = z2ui5_cl_util.abap_copy(lo_prev_app);
+    lo_action.ms_next.o_app_leave = lo_prev_app;
     lo_action.ms_next.s_set.s_msg_box.text = `box`;
     lo_action.ms_next.s_set.s_msg_toast.text = `toast`;
     lo_action.ms_next.s_set.s_follow_up_action.custom_js.push(z2ui5_cl_util.abap_copy(`some_js`));
@@ -204,6 +206,8 @@ class ltcl_test {
     cl_abap_unit_assert.assert_equals({ exp: `<popover/>`, act: lo_result.ms_next.s_set.s_popover.xml });
   }
 }
+
+
 
 
 

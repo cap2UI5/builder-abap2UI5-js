@@ -5,47 +5,49 @@ const z2ui5_cl_a2ui5_context = require("abap2UI5/z2ui5_cl_a2ui5_context");
 
 class ltcl_test {
   test_bool_abap_true() {
-    cl_abap_unit_assert.assert_equals({ exp: `true`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(true) });
+    cl_abap_unit_assert.assert_equals({ exp: `true`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: true }) });
   }
 
   test_bool_abap_false() {
-    cl_abap_unit_assert.assert_equals({ exp: `false`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(false) });
+    cl_abap_unit_assert.assert_equals({ exp: `false`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: false }) });
   }
 
   test_bool_char_non_bool() {
     let lv_char = `X`;
-    cl_abap_unit_assert.assert_equals({ exp: `X`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(lv_char) });
+    cl_abap_unit_assert.assert_equals({ exp: `X`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: lv_char }) });
   }
 
   test_bool_string_empty() {
     let lv_string = ``;
-    cl_abap_unit_assert.assert_equals({ exp: ``, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(lv_string) });
+    cl_abap_unit_assert.assert_equals({ exp: ``, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: lv_string }) });
   }
 
   test_bool_string_literal() {
-    cl_abap_unit_assert.assert_equals({ exp: `true`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(`true`) });
+    cl_abap_unit_assert.assert_equals({ exp: `true`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: `true` }) });
   }
 
   test_bool_string_binding() {
-    cl_abap_unit_assert.assert_equals({ exp: `{path}`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(`{path}`) });
+    cl_abap_unit_assert.assert_equals({ exp: `{path}`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: `{path}` }) });
   }
 
   test_bool_check_by_data() {
     let lv_char = `X`;
     let lv_int = 5;
-    cl_abap_unit_assert.assert_true(z2ui5_cl_a2ui5_context.boolean_check_by_data(true));
-    cl_abap_unit_assert.assert_true(z2ui5_cl_a2ui5_context.boolean_check_by_data(false));
-    cl_abap_unit_assert.assert_false(z2ui5_cl_a2ui5_context.boolean_check_by_data(lv_char));
-    cl_abap_unit_assert.assert_false(z2ui5_cl_a2ui5_context.boolean_check_by_data(`X`));
-    cl_abap_unit_assert.assert_false(z2ui5_cl_a2ui5_context.boolean_check_by_data(lv_int));
+    cl_abap_unit_assert.assert_true(z2ui5_cl_a2ui5_context.boolean_check_by_data({ val: true }));
+    cl_abap_unit_assert.assert_true(z2ui5_cl_a2ui5_context.boolean_check_by_data({ val: false }));
+    cl_abap_unit_assert.assert_false(z2ui5_cl_a2ui5_context.boolean_check_by_data({ val: lv_char }));
+    cl_abap_unit_assert.assert_false(z2ui5_cl_a2ui5_context.boolean_check_by_data({ val: `X` }));
+    cl_abap_unit_assert.assert_false(z2ui5_cl_a2ui5_context.boolean_check_by_data({ val: lv_int }));
   }
 
   test_bool_cache_hit() {
-    z2ui5_cl_a2ui5_context.boolean_abap_2_json(true);
-    cl_abap_unit_assert.assert_equals({ exp: `true`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(true) });
-    cl_abap_unit_assert.assert_equals({ exp: `false`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json(false) });
+    z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: true });
+    cl_abap_unit_assert.assert_equals({ exp: `true`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: true }) });
+    cl_abap_unit_assert.assert_equals({ exp: `false`, act: z2ui5_cl_a2ui5_context.boolean_abap_2_json({ val: false }) });
   }
 }
+
+
 
 
 

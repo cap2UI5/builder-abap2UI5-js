@@ -11,7 +11,8 @@ class ltcl_error {
     try {
       z2ui5_cx_ajson_error.raise(lv_msg);
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ exp: lv_msg, act: lx.get_text() });
     }
   }
@@ -21,7 +22,8 @@ class ltcl_error {
     try {
       z2ui5_cx_ajson_error.raise({ iv_msg: `a`, iv_location: `b` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ exp: `a @b`, act: lx.get_text() });
     }
   }
@@ -34,7 +36,8 @@ class ltcl_error {
     try {
       z2ui5_cx_ajson_error.raise({ iv_msg: `a`, is_node: ls_node });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ exp: `a @/x/y`, act: lx.get_text() });
     }
   }
@@ -44,7 +47,8 @@ class ltcl_error {
     try {
       z2ui5_cx_ajson_error.raise({ iv_msg: `a`, iv_location: `b` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_equals({ exp: lx.location, act: `b` });
       lx.set_location(`c`);
       cl_abap_unit_assert.assert_equals({ exp: lx.location, act: `c` });
@@ -53,7 +57,8 @@ class ltcl_error {
     try {
       z2ui5_cx_ajson_error.raise({ iv_msg: `a` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_equals({ exp: lx.location, act: `` });
       lx.set_location(`c`);
       cl_abap_unit_assert.assert_equals({ exp: lx.location, act: `c` });
@@ -61,6 +66,8 @@ class ltcl_error {
     }
   }
 }
+
+
 
 
 

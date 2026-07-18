@@ -74,7 +74,7 @@
   {
     "main": "z2ui5_cl_core_client",
     "classes": 2,
-    "tests": 37,
+    "tests": 38,
     "todos": 0
   },
   {
@@ -92,7 +92,7 @@
   {
     "main": "z2ui5_cl_core_srv_event",
     "classes": 1,
-    "tests": 9,
+    "tests": 10,
     "todos": 0
   },
   {

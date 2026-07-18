@@ -155,6 +155,50 @@ const externTypes = new Map(); // "intf=>ty" -> struct members / ":table" marker
         globalIntfSigs.set(intfName, parseInterfaceSigs(src, entry.name));
         for (const [ty, members] of parseInterfaceTypes(src, entry.name)) externTypes.set(`${intfName}=>${ty}`, members);
       } catch { /* fall back to signature-less */ }
+    } else if (entry.name.endsWith(".clas.abap") && !entry.name.includes(".testclasses.") && !entry.name.includes(".locals_")) {
+      // class-qualified TYPES (z2ui5_cl_a2ui5_http=>ty_s_http_req) — same
+      // typed-initializer treatment as interface types
+      const clsName = entry.name.replace(/\.clas\.abap$/i, "").toLowerCase();
+      try {
+        const src = fs.readFileSync(p, "utf8");
+        for (const [ty, members] of parseInterfaceTypes(src, entry.name)) externTypes.set(`${clsName}=>${ty}`, members);
+      } catch { /* no types */ }
+    }
+  }
+})(INPUT);
+
+// global framework class signatures — positional calls onto TRANSPILED
+// framework classes (z2ui5_cl_a2ui5_context=>boolean_abap_2_json( val )) are
+// wrapped into the destructured-options convention like sibling locals.
+// Hand-ported classes are excluded: their JS APIs take positional args.
+const handPorted = (() => {
+  const set = new Set();
+  const base = path.join(root, "src", "srv", "z2ui5");
+  (function walkSrc(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walkSrc(p);
+      else if (e.name.endsWith(".js")) set.add(e.name.slice(0, -3).toLowerCase());
+    }
+  })(base);
+  return set;
+})();
+const globalClassSigs = new Map(); // class → Map(method → first importing param)
+(function walkCls(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== "99") walkCls(p);
+    } else if (entry.name.endsWith(".clas.abap") && !entry.name.includes(".testclasses.") && !entry.name.includes(".locals_")) {
+      const clsName = entry.name.replace(/\.clas\.abap$/i, "").toLowerCase();
+      if (handPorted.has(clsName)) continue;
+      try {
+        const defs = parseInterfaceSigs(fs.readFileSync(p, "utf8"), entry.name);
+        const sigs = new Map();
+        for (const [m, def] of defs) sigs.set(m, def.importing[0]?.name ?? null);
+        globalClassSigs.set(clsName, sigs);
+      } catch { /* signature-less */ }
     }
   }
 })(INPUT);
@@ -191,7 +235,9 @@ for (const file of walk(INPUT).sort()) {
   // pass 1: collect every chunk's method signatures, so positional calls
   // onto sibling locals (lo_nodes->add('…')) can be wrapped into the
   // destructured-options convention during the real transpile
-  const siblingSigs = new Map(); // class name → Map(method → first importing param)
+  const siblingSigs = new Map(globalClassSigs); // class name → Map(method → first importing param)
+  const siblingFields = new Map(); // class name → Map(field → {refType, typeTokens, …})
+  const siblingTypes = { structTypes: new Map(), tableTypes: new Map() }; // merged TYPES of all classes
   const intfSigs = new Map(globalIntfSigs);
   for (const [name, src] of interfaces) {
     try {
@@ -201,8 +247,11 @@ for (const file of walk(INPUT).sort()) {
   for (const [name, { def, impl }] of chunks) {
     if (!def) continue;
     try {
-      const { methodSigs } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { intfSigs, externTypes });
+      const { methodSigs, fields, structTypes, tableTypes } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { intfSigs, externTypes });
       siblingSigs.set(name, methodSigs);
+      if (fields) siblingFields.set(name, fields);
+      for (const [ty, members] of structTypes || []) siblingTypes.structTypes.set(ty, members);
+      for (const [ty, row] of tableTypes || []) siblingTypes.tableTypes.set(ty, row);
     } catch {
       /* pass 2 reports it */
     }
@@ -244,7 +293,7 @@ for (const file of walk(INPUT).sort()) {
         console.error(`  skip local ${name} in ${mainClass}: no definition`);
         continue;
       }
-      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs, intfSigs, externTypes });
+      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs, siblingFields, siblingTypes, intfSigs, externTypes });
       const lines = code.split("\n").filter((l) => !/^module\.exports =/.test(l));
       for (const l of lines) {
         const req = l.match(/^const (\w+) = require\("(.*)"\);$/);

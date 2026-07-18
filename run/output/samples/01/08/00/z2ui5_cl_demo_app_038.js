@@ -1,5 +1,3 @@
-const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
-const z2ui5_cl_xml_view = require("abap2UI5/z2ui5_cl_xml_view");
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
 
 class z2ui5_cl_demo_app_038 extends z2ui5_if_app {
@@ -7,7 +5,7 @@ class z2ui5_cl_demo_app_038 extends z2ui5_if_app {
   client = null;
 
   async main(client) {
-    this.client = z2ui5_cl_util.abap_copy(client);
+    this.client = client;
     if (client.check_on_init()) {
       this.on_init();
     } else if (client.check_on_event()) {
@@ -17,7 +15,7 @@ class z2ui5_cl_demo_app_038 extends z2ui5_if_app {
 
   on_init() {
     const description = `First Error message description. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ` + `Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ` + `Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ` + `Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`;
-    this.t_msg = [{ type: `Error`, title: `Account 801 requires an assignment`, subtitle: `Role is invalid`, description: description, group: `Purchase Order 450001` }, { type: `Warning`, title: `Account 821 requires a check`, subtitle: `Undefined task`, description: description, group: `Purchase Order 450001` }, { type: `Warning`, title: `Enter a text with maximum 6 characters length`, description: description, group: `Purchase Order 450002` }, { type: `Warning`, title: `Enter a text with maximum 8 characters length`, description: description, group: `Purchase Order 450002` }, { type: `Error`, title: `Account 802 requires an assignment`, subtitle: `Role is invalid`, description: description, group: `Purchase Order 450002` }, { type: `Information`, title: `Account 804 requires an assignment`, subtitle: `Information type subtitle`, description: description, group: `Purchase Order 450002` }, { type: `Error`, title: `Technical message without object relation`, description: description, group: `General` }, { type: `Warning`, title: `Global System will be down on Sunday`, description: description, group: `General` }, { type: `Error`, title: `Global System will be down on Sunday`, description: description, group: `General` }, { type: `Error`, title: `An Error`, subtitle: `Ungrouped message`, description: description }, { type: `Warning`, title: `A Warning`, subtitle: `Ungrouped message`, description: description }];
+    this.t_msg = z2ui5_cl_util.abap_tab_assign(this.t_msg, [{ type: `Error`, title: `Account 801 requires an assignment`, subtitle: `Role is invalid`, description: description, group: `Purchase Order 450001` }, { type: `Warning`, title: `Account 821 requires a check`, subtitle: `Undefined task`, description: description, group: `Purchase Order 450001` }, { type: `Warning`, title: `Enter a text with maximum 6 characters length`, description: description, group: `Purchase Order 450002` }, { type: `Warning`, title: `Enter a text with maximum 8 characters length`, description: description, group: `Purchase Order 450002` }, { type: `Error`, title: `Account 802 requires an assignment`, subtitle: `Role is invalid`, description: description, group: `Purchase Order 450002` }, { type: `Information`, title: `Account 804 requires an assignment`, subtitle: `Information type subtitle`, description: description, group: `Purchase Order 450002` }, { type: `Error`, title: `Technical message without object relation`, description: description, group: `General` }, { type: `Warning`, title: `Global System will be down on Sunday`, description: description, group: `General` }, { type: `Error`, title: `Global System will be down on Sunday`, description: description, group: `General` }, { type: `Error`, title: `An Error`, subtitle: `Ungrouped message`, description: description }, { type: `Warning`, title: `A Warning`, subtitle: `Ungrouped message`, description: description }]);
     this.view_display();
   }
 
@@ -80,3 +78,7 @@ class z2ui5_cl_demo_app_038 extends z2ui5_if_app {
 }
 
 module.exports = z2ui5_cl_demo_app_038;
+
+const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
+const z2ui5_cl_xml_view = require("abap2UI5/z2ui5_cl_xml_view");
+

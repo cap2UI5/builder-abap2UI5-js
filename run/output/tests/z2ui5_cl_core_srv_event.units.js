@@ -22,6 +22,13 @@ class ltcl_test {
     cl_abap_unit_assert.assert_equals({ exp: `.eF('POPOVER_CLOSE')`, act: lv_event });
   }
 
+  event_nav_container() {
+    let lo_event = null;
+    lo_event = new z2ui5_cl_core_srv_event();
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'myContainer', 'MAIN', 'to', 'myPage')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.nav_container_to, t_arg: [`myContainer`, `myPage`] }) });
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'nestCon', 'NEST', 'to', 'nestPage')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.nest_nav_container_to, t_arg: [`nestCon`, `nestPage`] }) });
+  }
+
   event_with_args() {
     let lo_event = null;
     let temp1 = [];
@@ -137,8 +144,10 @@ class ltcl_test {
 
 
 
+
+
 module.exports = {
   __main: "z2ui5_cl_core_srv_event",
   __classes: { ltcl_test },
-  __tests: {"ltcl_test":["event","event_backend","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_multi_req","event_client_args"]},
+  __tests: {"ltcl_test":["event","event_backend","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_multi_req","event_client_args","event_nav_container"]},
 };

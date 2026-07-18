@@ -5,11 +5,6 @@
     "detail": "handler answered with z2ui5_cl_app_startup"
   },
   {
-    "name": "z2ui5_cl_demo_app_061",
-    "verdict": "error-popup",
-    "detail": "Cannot read properties of null (reading 'push')"
-  },
-  {
     "name": "z2ui5_cl_demo_app_088",
     "verdict": "error-popup",
     "detail": "page.nav_container(...).pages is not a function"
