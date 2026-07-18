@@ -92,7 +92,9 @@ RTTI-typed conversions, sync-over-async) — reasons live in the baseline.
 ## Rules
 
 - Never hand-edit `core/` or anything under `run/` — edit `src/` (or the
-  transpiler in `scripts/abap2js.js`) and rebuild.
+  transpiler in `scripts/abap2js.js`) and rebuild. `scripts/abap2js.js` is a
+  thin re-export of the transpiler modules under `scripts/abap2js/` (lex,
+  naming, model, expr, stmt, method, interface, index, cli).
 - `core/README.md` comes from `src/README.md`.
 - The jest suite must stay green; it gates every pipeline commit.
 - Scripts anchor all paths at the repo root (`__dirname/..`) — keep it that
