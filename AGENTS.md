@@ -72,6 +72,11 @@ a fixed entry must be delisted (red). `node scripts/ratchet-update.js`
 reconciles both baselines (delists fixed entries, fails on regressions;
 `--check` for a dry run) — the `build_core` pipeline runs it and commits the
 shrunken baselines, so only regressions can turn the nightlies red.
+`scripts/oracle-classify.js` classifies the baseline against the upstream
+`node/` runtime (official @abaplint transpiler + open-abap): entries green
+there are provable-in-JS; the remaining ones here need ABAP type/reference
+semantics our idiomatic port deliberately avoids (scalar/dref identity,
+RTTI-typed conversions, sync-over-async) — reasons live in the baseline.
 
 ## Workflows (.github/workflows)
 
