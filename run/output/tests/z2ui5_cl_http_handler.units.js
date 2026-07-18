@@ -39,7 +39,7 @@ class ltcl_test_http_handler {
 
   test_http_post_ok() {
     let sy_sysid = "";
-    let ls_req = null;
+    let ls_req = { method: ``, body: ``, path: ``, t_params: [] };
     let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     let temp6 = false;
     if (sy_sysid === `ABC`) {
@@ -54,19 +54,20 @@ class ltcl_test_http_handler {
   }
 
   test_http_post_error() {
-    let ls_req = null;
-    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
-    let temp7 = false;
+    let ls_req = { method: ``, body: ``, path: ``, t_params: [] };
+    let lv_raised = false;
     ls_req.method = `POST`;
     ls_req.body = `not valid json at all!!!`;
-    ls_result = z2ui5_cl_http_handler._http_post(ls_req);
-    cl_abap_unit_assert.assert_equals({ exp: 500, act: ls_result.status_code });
-    temp7 = (String(ls_result.body).toLowerCase().includes(String(`abap2UI5 Error`).toLowerCase()));
-    cl_abap_unit_assert.assert_true(temp7);
+    try {
+      z2ui5_cl_http_handler._http_post(ls_req);
+    } catch (error) {
+      lv_raised = true;
+    }
+    cl_abap_unit_assert.assert_true(lv_raised);
   }
 
   test_main_get_routing() {
-    let ls_req = null;
+    let ls_req = { method: ``, body: ``, path: ``, t_params: [] };
     let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     let temp8 = false;
     ls_req.method = `GET`;
@@ -78,7 +79,7 @@ class ltcl_test_http_handler {
 
   test_main_post_routing() {
     let sy_sysid = "";
-    let ls_req = null;
+    let ls_req = { method: ``, body: ``, path: ``, t_params: [] };
     let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
     if (sy_sysid === `ABC`) {
       return;
@@ -89,6 +90,8 @@ class ltcl_test_http_handler {
     cl_abap_unit_assert.assert_equals({ exp: 200, act: ls_result.status_code });
   }
 }
+
+
 
 
 

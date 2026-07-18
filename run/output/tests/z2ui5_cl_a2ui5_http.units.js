@@ -10,7 +10,7 @@ class ltcl_fake_request {
 
   get_cdata() {
     let data = ``;
-    data = z2ui5_cl_util.abap_copy(this.mv_cdata);
+    data = z2ui5_cl_util.abap_tab_assign(data, z2ui5_cl_util.abap_copy(this.mv_cdata));
     return data;
   }
 
@@ -26,6 +26,8 @@ class ltcl_fake_request {
 
 
 
+
+
 class ltcl_fake_response {
   mv_cdata = ``;
   mt_header = [];
@@ -33,7 +35,7 @@ class ltcl_fake_response {
   mv_cookie_deleted = ``;
 
   set_cdata({ data } = {}) {
-    this.mv_cdata = z2ui5_cl_util.abap_copy(data);
+    this.mv_cdata = z2ui5_cl_util.abap_tab_assign(this.mv_cdata, z2ui5_cl_util.abap_copy(data));
   }
 
   set_header_field({ name, value } = {}) {
@@ -51,16 +53,18 @@ class ltcl_fake_response {
   }
 
   delete_cookie({ name } = {}) {
-    this.mv_cookie_deleted = z2ui5_cl_util.abap_copy(name);
+    this.mv_cookie_deleted = z2ui5_cl_util.abap_tab_assign(this.mv_cookie_deleted, z2ui5_cl_util.abap_copy(name));
   }
 }
+
+
 
 
 
 class ltcl_fake_server {
   request = null;
   response = null;
-  mv_stateful = -;
+  mv_stateful = -1;
 
   constructor() {
     this.request = new ltcl_fake_request();
@@ -68,9 +72,11 @@ class ltcl_fake_server {
   }
 
   set_session_stateful({ stateful } = {}) {
-    this.mv_stateful = z2ui5_cl_util.abap_copy(stateful);
+    this.mv_stateful = z2ui5_cl_util.abap_tab_assign(this.mv_stateful, z2ui5_cl_util.abap_copy(stateful));
   }
 }
+
+
 
 
 
@@ -80,7 +86,7 @@ class ltcl_test {
 
   setup() {
     this.mo_server = new ltcl_fake_server();
-    this.mo_cut = z2ui5_cl_a2ui5_http.factory(this.mo_server);
+    this.mo_cut = z2ui5_cl_a2ui5_http.factory({ server: this.mo_server });
   }
 
   test_factory() {
@@ -102,11 +108,11 @@ class ltcl_test {
 
   test_get_header_field() {
     this.mo_server.request.mt_header.push(z2ui5_cl_util.abap_copy({ n: `~path`, v: `/sap/bc/z2ui5` }));
-    cl_abap_unit_assert.assert_equals({ exp: `/sap/bc/z2ui5`, act: this.mo_cut.get_header_field(`~path`) });
+    cl_abap_unit_assert.assert_equals({ exp: `/sap/bc/z2ui5`, act: this.mo_cut.get_header_field({ val: `~path` }) });
   }
 
   test_set_cdata() {
-    this.mo_cut.set_cdata(`<html>hello</html>`);
+    this.mo_cut.set_cdata({ val: `<html>hello</html>` });
     cl_abap_unit_assert.assert_equals({ exp: `<html>hello</html>`, act: this.mo_server.response.mv_cdata });
   }
 
@@ -117,27 +123,29 @@ class ltcl_test {
 
   test_get_response_cookie() {
     this.mo_server.response.mt_cookie.push(z2ui5_cl_util.abap_copy({ n: `sap-sessionid`, v: `ABC123` }));
-    cl_abap_unit_assert.assert_equals({ exp: `ABC123`, act: this.mo_cut.get_response_cookie(`sap-sessionid`) });
+    cl_abap_unit_assert.assert_equals({ exp: `ABC123`, act: this.mo_cut.get_response_cookie({ val: `sap-sessionid` }) });
   }
 
   test_delete_resp_cookie() {
-    this.mo_cut.delete_response_cookie(`sap-contextid`);
+    this.mo_cut.delete_response_cookie({ val: `sap-contextid` });
     cl_abap_unit_assert.assert_equals({ exp: `sap-contextid`, act: this.mo_server.response.mv_cookie_deleted });
   }
 
   test_set_session_stateful() {
-    this.mo_cut.set_session_stateful(1);
+    this.mo_cut.set_session_stateful({ val: 1 });
     cl_abap_unit_assert.assert_equals({ exp: 1, act: this.mo_server.mv_stateful });
   }
 
   test_request_cached() {
     this.mo_server.request.mv_cdata = `first`;
     cl_abap_unit_assert.assert_equals({ exp: `first`, act: this.mo_cut.get_cdata() });
-    this.mo_server.request = /* TODO(abap2js): NEW #( ) */ null;
+    this.mo_server.request = new ltcl_fake_request();
     this.mo_server.request.mv_cdata = `second`;
     cl_abap_unit_assert.assert_equals({ exp: `first`, act: this.mo_cut.get_cdata() });
   }
 }
+
+
 
 
 

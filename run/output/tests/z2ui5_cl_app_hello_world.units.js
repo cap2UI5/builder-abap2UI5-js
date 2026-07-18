@@ -13,7 +13,7 @@ class ltcl_test {
   test_implements_app() {
     const lo_app = new z2ui5_cl_app_hello_world();
     let li_app = null;
-    li_app = z2ui5_cl_util.abap_copy(lo_app);
+    li_app = z2ui5_cl_util.abap_cast(lo_app);
     cl_abap_unit_assert.assert_bound(li_app);
   }
 
@@ -23,6 +23,8 @@ class ltcl_test {
     cl_abap_unit_assert.assert_equals({ exp: `Test Name`, act: lo_app.name });
   }
 }
+
+
 
 
 

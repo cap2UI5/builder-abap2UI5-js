@@ -27,12 +27,15 @@ class ltcl_test {
 
 
 
+
+
 class ltcl_test_db extends z2ui5_if_app {
   mv_value = ``;
   mv_name = ``;
   mv_count = 0;
 
   constructor() {
+    super();
   }
 
   test_db_save() {
@@ -49,12 +52,12 @@ class ltcl_test_db extends z2ui5_if_app {
     lo_app_user.mv_value = `my value`;
     lo_app = new z2ui5_cl_core_app();
     lo_app.ms_draft.id = `TEST_ID`;
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_user);
+    lo_app.mo_app = lo_app_user;
     lo_app.db_save();
     z2ui5_cl_core_app.db_load_buffer_clear();
     lo_app_db = z2ui5_cl_core_app.db_load(`TEST_ID`);
-    temp1 = z2ui5_cl_util.abap_copy(lo_app_db.mo_app);
-    lo_app_user_db = z2ui5_cl_util.abap_copy(temp1);
+    temp1 = z2ui5_cl_util.abap_cast(lo_app_db.mo_app);
+    lo_app_user_db = temp1;
     cl_abap_unit_assert.assert_equals({ exp: lo_app_user.mv_value, act: lo_app_user_db.mv_value });
   }
 
@@ -74,12 +77,12 @@ class ltcl_test_db extends z2ui5_if_app {
     lo_app_user.mv_count = 42;
     lo_app = new z2ui5_cl_core_app();
     lo_app.ms_draft.id = `TEST_ROUNDTRIP`;
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_user);
+    lo_app.mo_app = lo_app_user;
     lo_app.db_save();
     z2ui5_cl_core_app.db_load_buffer_clear();
     lo_loaded = z2ui5_cl_core_app.db_load(`TEST_ROUNDTRIP`);
-    temp2 = z2ui5_cl_util.abap_copy(lo_loaded.mo_app);
-    lo_restored = z2ui5_cl_util.abap_copy(temp2);
+    temp2 = z2ui5_cl_util.abap_cast(lo_loaded.mo_app);
+    lo_restored = temp2;
     cl_abap_unit_assert.assert_equals({ exp: `roundtrip value`, act: lo_restored.mv_value });
     cl_abap_unit_assert.assert_equals({ exp: `test name`, act: lo_restored.mv_name });
     cl_abap_unit_assert.assert_equals({ exp: 42, act: lo_restored.mv_count });
@@ -97,11 +100,11 @@ class ltcl_test_db extends z2ui5_if_app {
     lo_app_user.mv_value = `complex`;
     lo_app = new z2ui5_cl_core_app();
     lo_app.ms_draft.id = `TEST_COMPLEX`;
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_user);
+    lo_app.mo_app = lo_app_user;
     lo_app.ms_draft.id_prev = `PREV_ID`;
     lo_app.ms_draft.id_prev_app = `PREV_APP`;
     lo_app.db_save();
-    temp3 = z2ui5_cl_util.abap_copy(lo_app.mo_app);
+    temp3 = z2ui5_cl_util.abap_cast(lo_app.mo_app);
     cl_abap_unit_assert.assert_equals({ exp: true, act: temp3.check_initialized });
   }
 
@@ -112,7 +115,7 @@ class ltcl_test_db extends z2ui5_if_app {
     lo_app_user = new ltcl_test_db();
     lo_app_user.mv_value = `json test`;
     lo_app = new z2ui5_cl_core_app();
-    lo_app.mo_app = z2ui5_cl_util.abap_copy(lo_app_user);
+    lo_app.mo_app = lo_app_user;
     lv_json = lo_app.model_json_stringify();
     cl_abap_unit_assert.assert_not_initial(lv_json);
   }
@@ -120,6 +123,8 @@ class ltcl_test_db extends z2ui5_if_app {
   async main(client) {
   }
 }
+
+
 
 
 

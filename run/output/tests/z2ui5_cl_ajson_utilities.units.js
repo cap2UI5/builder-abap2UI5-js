@@ -20,16 +20,18 @@ class lcl_nodes_helper {
     fs_n.name = String(fs_n.name).replace(/^ +| +$/g, "").replace(/ +/g, ` `);
     fs_n.type = String(fs_n.type).replace(/^ +| +$/g, "").replace(/ +/g, ` `);
     fs_n.value = String(fs_n.value).replace(/^ +| +$/g, "").replace(/ +/g, ` `);
-    fs_n.index = z2ui5_cl_util.abap_copy(lv_index);
-    fs_n.children = z2ui5_cl_util.abap_copy(lv_children);
+    fs_n.index = z2ui5_cl_util.abap_tab_assign(fs_n.index, z2ui5_cl_util.abap_copy(lv_index));
+    fs_n.children = z2ui5_cl_util.abap_tab_assign(fs_n.children, z2ui5_cl_util.abap_copy(lv_children));
   }
 
   sorted() {
     let rt_nodes = [];
-    rt_nodes = z2ui5_cl_util.abap_copy(this.mt_nodes);
+    rt_nodes = z2ui5_cl_util.abap_tab_assign(rt_nodes, z2ui5_cl_util.abap_copy(this.mt_nodes));
     return rt_nodes;
   }
 }
+
+
 
 
 
@@ -41,6 +43,7 @@ class ltcl_parser_test {
     return rv_json;
   }
 }
+
 
 
 
@@ -244,13 +247,15 @@ class ltcl_json_utils {
     try {
       z2ui5_cl_ajson_utilities.iterate_array({ ii_json: li_cut, iv_path: `/notexisting` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_char_cp({ act: lx.get_text(), exp: `Path not found*` });
     }
     try {
       z2ui5_cl_ajson_utilities.iterate_array({ ii_json: li_cut, iv_path: `/` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_char_cp({ act: lx.get_text(), exp: `Array expected*` });
     }
   }
@@ -276,17 +281,21 @@ class ltcl_json_utils {
     try {
       z2ui5_cl_ajson_utilities.iterate_object({ ii_json: li_cut, iv_path: `/notexisting` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught1) {
+      lx = _caught1;
       cl_abap_unit_assert.assert_char_cp({ act: lx.get_text(), exp: `Path not found*` });
     }
     try {
       z2ui5_cl_ajson_utilities.iterate_object({ ii_json: li_cut, iv_path: `/array` });
       cl_abap_unit_assert.fail();
-    } catch (lx) {
+    } catch (_caught2) {
+      lx = _caught2;
       cl_abap_unit_assert.assert_char_cp({ act: lx.get_text(), exp: `Object expected*` });
     }
   }
 }
+
+
 
 
 

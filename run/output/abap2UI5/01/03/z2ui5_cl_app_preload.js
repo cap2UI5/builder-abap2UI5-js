@@ -1,38 +1,3 @@
-const z2ui5_cl_app_app_js = require("abap2UI5/z2ui5_cl_app_app_js");
-const z2ui5_cl_app_app_xml = require("abap2UI5/z2ui5_cl_app_app_xml");
-const z2ui5_cl_app_appstate_js = require("abap2UI5/z2ui5_cl_app_appstate_js");
-const z2ui5_cl_app_camerapicture_js = require("abap2UI5/z2ui5_cl_app_camerapicture_js");
-const z2ui5_cl_app_cameraselector_js = require("abap2UI5/z2ui5_cl_app_cameraselector_js");
-const z2ui5_cl_app_component_js = require("abap2UI5/z2ui5_cl_app_component_js");
-const z2ui5_cl_app_debugtool_js = require("abap2UI5/z2ui5_cl_app_debugtool_js");
-const z2ui5_cl_app_debugtool_xml = require("abap2UI5/z2ui5_cl_app_debugtool_xml");
-const z2ui5_cl_app_dirty_js = require("abap2UI5/z2ui5_cl_app_dirty_js");
-const z2ui5_cl_app_errorview_js = require("abap2UI5/z2ui5_cl_app_errorview_js");
-const z2ui5_cl_app_favicon_js = require("abap2UI5/z2ui5_cl_app_favicon_js");
-const z2ui5_cl_app_fileuploader_js = require("abap2UI5/z2ui5_cl_app_fileuploader_js");
-const z2ui5_cl_app_focus_js = require("abap2UI5/z2ui5_cl_app_focus_js");
-const z2ui5_cl_app_frontendaction_js = require("abap2UI5/z2ui5_cl_app_frontendaction_js");
-const z2ui5_cl_app_geolocation_js = require("abap2UI5/z2ui5_cl_app_geolocation_js");
-const z2ui5_cl_app_history_js = require("abap2UI5/z2ui5_cl_app_history_js");
-const z2ui5_cl_app_info_js = require("abap2UI5/z2ui5_cl_app_info_js");
-const z2ui5_cl_app_lib_js = require("abap2UI5/z2ui5_cl_app_lib_js");
-const z2ui5_cl_app_lptitle_js = require("abap2UI5/z2ui5_cl_app_lptitle_js");
-const z2ui5_cl_app_manifest_json = require("abap2UI5/z2ui5_cl_app_manifest_json");
-const z2ui5_cl_app_messages_js = require("abap2UI5/z2ui5_cl_app_messages_js");
-const z2ui5_cl_app_models_js = require("abap2UI5/z2ui5_cl_app_models_js");
-const z2ui5_cl_app_multiinputext_js = require("abap2UI5/z2ui5_cl_app_multiinputext_js");
-const z2ui5_cl_app_scrolling_js = require("abap2UI5/z2ui5_cl_app_scrolling_js");
-const z2ui5_cl_app_server_js = require("abap2UI5/z2ui5_cl_app_server_js");
-const z2ui5_cl_app_smartmultiinpu_js = require("abap2UI5/z2ui5_cl_app_smartmultiinpu_js");
-const z2ui5_cl_app_storage_js = require("abap2UI5/z2ui5_cl_app_storage_js");
-const z2ui5_cl_app_timer_js = require("abap2UI5/z2ui5_cl_app_timer_js");
-const z2ui5_cl_app_title_js = require("abap2UI5/z2ui5_cl_app_title_js");
-const z2ui5_cl_app_tree_js = require("abap2UI5/z2ui5_cl_app_tree_js");
-const z2ui5_cl_app_uitableext_js = require("abap2UI5/z2ui5_cl_app_uitableext_js");
-const z2ui5_cl_app_uploadsetext_js = require("abap2UI5/z2ui5_cl_app_uploadsetext_js");
-const z2ui5_cl_app_util_js = require("abap2UI5/z2ui5_cl_app_util_js");
-const z2ui5_cl_app_view1_js = require("abap2UI5/z2ui5_cl_app_view1_js");
-const z2ui5_cl_app_viewslots_js = require("abap2UI5/z2ui5_cl_app_viewslots_js");
 
 class z2ui5_cl_app_preload {
   static get({ styles_css, custom_js } = {}) {
@@ -79,3 +44,40 @@ class z2ui5_cl_app_preload {
 }
 
 module.exports = z2ui5_cl_app_preload;
+
+const z2ui5_cl_app_app_js = require("abap2UI5/z2ui5_cl_app_app_js");
+const z2ui5_cl_app_app_xml = require("abap2UI5/z2ui5_cl_app_app_xml");
+const z2ui5_cl_app_appstate_js = require("abap2UI5/z2ui5_cl_app_appstate_js");
+const z2ui5_cl_app_camerapicture_js = require("abap2UI5/z2ui5_cl_app_camerapicture_js");
+const z2ui5_cl_app_cameraselector_js = require("abap2UI5/z2ui5_cl_app_cameraselector_js");
+const z2ui5_cl_app_component_js = require("abap2UI5/z2ui5_cl_app_component_js");
+const z2ui5_cl_app_debugtool_js = require("abap2UI5/z2ui5_cl_app_debugtool_js");
+const z2ui5_cl_app_debugtool_xml = require("abap2UI5/z2ui5_cl_app_debugtool_xml");
+const z2ui5_cl_app_dirty_js = require("abap2UI5/z2ui5_cl_app_dirty_js");
+const z2ui5_cl_app_errorview_js = require("abap2UI5/z2ui5_cl_app_errorview_js");
+const z2ui5_cl_app_favicon_js = require("abap2UI5/z2ui5_cl_app_favicon_js");
+const z2ui5_cl_app_fileuploader_js = require("abap2UI5/z2ui5_cl_app_fileuploader_js");
+const z2ui5_cl_app_focus_js = require("abap2UI5/z2ui5_cl_app_focus_js");
+const z2ui5_cl_app_frontendaction_js = require("abap2UI5/z2ui5_cl_app_frontendaction_js");
+const z2ui5_cl_app_geolocation_js = require("abap2UI5/z2ui5_cl_app_geolocation_js");
+const z2ui5_cl_app_history_js = require("abap2UI5/z2ui5_cl_app_history_js");
+const z2ui5_cl_app_info_js = require("abap2UI5/z2ui5_cl_app_info_js");
+const z2ui5_cl_app_lib_js = require("abap2UI5/z2ui5_cl_app_lib_js");
+const z2ui5_cl_app_lptitle_js = require("abap2UI5/z2ui5_cl_app_lptitle_js");
+const z2ui5_cl_app_manifest_json = require("abap2UI5/z2ui5_cl_app_manifest_json");
+const z2ui5_cl_app_messages_js = require("abap2UI5/z2ui5_cl_app_messages_js");
+const z2ui5_cl_app_models_js = require("abap2UI5/z2ui5_cl_app_models_js");
+const z2ui5_cl_app_multiinputext_js = require("abap2UI5/z2ui5_cl_app_multiinputext_js");
+const z2ui5_cl_app_scrolling_js = require("abap2UI5/z2ui5_cl_app_scrolling_js");
+const z2ui5_cl_app_server_js = require("abap2UI5/z2ui5_cl_app_server_js");
+const z2ui5_cl_app_smartmultiinpu_js = require("abap2UI5/z2ui5_cl_app_smartmultiinpu_js");
+const z2ui5_cl_app_storage_js = require("abap2UI5/z2ui5_cl_app_storage_js");
+const z2ui5_cl_app_timer_js = require("abap2UI5/z2ui5_cl_app_timer_js");
+const z2ui5_cl_app_title_js = require("abap2UI5/z2ui5_cl_app_title_js");
+const z2ui5_cl_app_tree_js = require("abap2UI5/z2ui5_cl_app_tree_js");
+const z2ui5_cl_app_uitableext_js = require("abap2UI5/z2ui5_cl_app_uitableext_js");
+const z2ui5_cl_app_uploadsetext_js = require("abap2UI5/z2ui5_cl_app_uploadsetext_js");
+const z2ui5_cl_app_util_js = require("abap2UI5/z2ui5_cl_app_util_js");
+const z2ui5_cl_app_view1_js = require("abap2UI5/z2ui5_cl_app_view1_js");
+const z2ui5_cl_app_viewslots_js = require("abap2UI5/z2ui5_cl_app_viewslots_js");
+

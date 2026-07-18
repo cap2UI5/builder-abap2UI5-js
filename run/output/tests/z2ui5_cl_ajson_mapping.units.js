@@ -144,6 +144,8 @@ class ltcl_test_mappers {
 
 
 
+
+
 class ltcl_fields {
   to_abap() {
     let lo_ajson = null;
@@ -211,6 +213,8 @@ class ltcl_fields {
 
 
 
+
+
 class ltcl_to_lower {
   to_json() {
     let lo_ajson = null;
@@ -226,6 +230,8 @@ class ltcl_to_lower {
 
 
 
+
+
 class ltcl_to_upper {
   to_json() {
     let lo_ajson = null;
@@ -238,6 +244,8 @@ class ltcl_to_upper {
     cl_abap_unit_assert.assert_equals({ act: lo_ajson.stringify(), exp: `{"FIELD_DATA":"field_value"}` });
   }
 }
+
+
 
 
 

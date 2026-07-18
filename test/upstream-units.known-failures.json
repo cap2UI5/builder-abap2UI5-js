@@ -1,682 +1,94 @@
 [
   {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_abap_false",
-    "reason": "assertion failed — expected \"false\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_abap_true",
-    "reason": "assertion failed — expected \"true\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_cache_hit",
-    "reason": "assertion failed — expected \"true\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_char_non_bool",
-    "reason": "assertion failed — expected \"X\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_check_by_data",
-    "reason": "assertion failed — expected true, got false"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_binding",
-    "reason": "assertion failed — expected \"{path}\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_context::ltcl_test::test_bool_string_literal",
-    "reason": "assertion failed — expected \"true\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_a2ui5_http::__load",
-    "reason": "Unexpected token ';'"
-  },
-  {
     "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref",
-    "reason": "Cannot read properties of null (reading 'add')"
+    "reason": "assertion failed — expected \"hello\", got \"\" [JS limit: REF TO data initiator refs — a null JS field carries no type/ref identity to fill through]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref_no_initiator",
-    "reason": "Cannot read properties of null (reading 'add')"
+    "reason": "assertion failed — expected \"Missing ref initiator\", got \"assertion failed\" [JS limit: REF TO data initiator refs — a null JS field carries no type/ref identity to fill through]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref_table",
-    "reason": "Cannot read properties of null (reading 'add')"
+    "reason": "assertion failed — expected [\"one\",\"two\"], got [] [JS limit: REF TO data initiator refs — a null JS field carries no type/ref identity to fill through]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_negative",
-    "reason": "assertion failed — expected \"Expected structure\", got \"Cannot read properties of null (reading 'add')\""
+    "reason": "assertion failed — expected \"Unexpected date format\", got \"assertion failed\" [JS limit: RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_str_to_packed",
-    "reason": "Cannot read properties of null (reading 'add')"
+    "reason": "assertion failed — expected \"1.333\", got 1.3333 [JS limit: RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_struc",
-    "reason": "Cannot read properties of null (reading 'add')"
+    "reason": "Unexpected timestamp format [JS limit: RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_time",
-    "reason": "Cannot read properties of null (reading 'add')"
+    "reason": "assertion failed — expected \"111111\", got \"11:11:11\" [JS limit: RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_parser_test::unicode_characters",
-    "reason": "Cannot read properties of null (reading 'add')"
+    "reason": "assertion failed — expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"  \",\"children\":\"3\"},{\"path\":\"/\",\"name\":\"unicode\",\"type\":\"num\",\"value\":\"3\",\"index\":\"  \",\"childr [JS limit: RTTI type precision — sorted node-table index is TYPE i (blank-padded) in ABAP, plain number in JS]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_writer_test::set_obj",
-    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
+    "reason": "assertion failed — expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"1\"},{\"path\":\"/\",\"name\":\"x\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"3\"} [JS limit: RTTI type precision — typed DATS/TIMS/timestamp components serialize as plain strings/numbers]"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_writer_test::set_obj_w_date_time",
-    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_factory_by_frontend",
-    "reason": "Cannot set properties of undefined (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_first_start",
-    "reason": "lo_action.factory_first_start is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_first_start_draft_gone",
-    "reason": "Cannot set properties of undefined (setting 'app_start_draft')"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_first_start_error",
-    "reason": "lx.get_text is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_reset_view_flags",
-    "reason": "Cannot set properties of undefined (setting 'check_update_model')"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_stack_call",
-    "reason": "Cannot set properties of undefined (setting 'text')"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_stack_leave",
-    "reason": "Cannot set properties of undefined (setting 'text')"
-  },
-  {
-    "name": "z2ui5_cl_core_action::ltcl_test::test_system_startup",
-    "reason": "lo_action.factory_system_startup is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_app::ltcl_test::test_buffer_clear",
-    "reason": "Cannot read properties of undefined (reading 'length')"
-  },
-  {
-    "name": "z2ui5_cl_core_app::ltcl_test_db::test_db_roundtrip",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cl_core_app::ltcl_test_db::test_db_save",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cl_core_app::ltcl_test_db::test_db_save_complex",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cl_core_app::ltcl_test_db::test_model_stringify",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_app_prev_stack",
-    "reason": "assertion failed — expected true, got false"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_event",
-    "reason": "assertion failed — expected true, got false"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_check_on_navigated",
-    "reason": "assertion failed — expected true, got false"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_follow_up_action",
-    "reason": "Cannot read properties of undefined (reading 'custom_js')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_follow_up_action_ev",
-    "reason": "Cannot read properties of undefined (reading 'custom_js')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_get_event_arg",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_instantiation",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_dependent",
-    "reason": "Cannot read properties of undefined (reading 'dependenton')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_display",
-    "reason": "Cannot read properties of undefined (reading 'text')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_box_type",
-    "reason": "Cannot read properties of undefined (reading 'text')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_message_toast",
-    "reason": "Cannot read properties of undefined (reading 'text')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_call",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_leave_event",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_app_leave_r_data",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nav_leave_r_data_empty",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest2_view_destroy",
-    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest2_view_display",
-    "reason": "Cannot read properties of undefined (reading 'xml')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest_view_destroy",
-    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_nest_view_display",
-    "reason": "Cannot read properties of undefined (reading 'xml')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_destroy",
-    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_display",
-    "reason": "Cannot read properties of undefined (reading 'xml')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popover_model_update",
-    "reason": "Cannot read properties of undefined (reading 'check_update_model')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_destroy",
-    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_display",
-    "reason": "Cannot read properties of undefined (reading 'xml')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_popup_model_update",
-    "reason": "Cannot read properties of undefined (reading 'check_update_model')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_app_state_active",
-    "reason": "assertion failed — expected true, got undefined"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_nav_back",
-    "reason": "assertion failed — expected true, got undefined"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_set_push_state",
-    "reason": "assertion failed — expected \"mystate\", got undefined"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_destroy",
-    "reason": "Cannot read properties of undefined (reading 'check_destroy')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_display",
-    "reason": "Cannot read properties of undefined (reading 'xml')"
-  },
-  {
-    "name": "z2ui5_cl_core_client::ltcl_test_client::test_view_model_update",
-    "reason": "Cannot read properties of undefined (reading 'check_update_model')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::load_startup_app",
-    "reason": "Cannot read properties of undefined (reading 'origin')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_constructor",
-    "reason": "assertion failed — expected \"test payload\", got \"{\\\"val\\\":\\\"test payload\\\"}\""
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_dispatch_loop_guard",
-    "reason": "lx.get_text is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_arg_object",
-    "reason": "Cannot read properties of undefined (reading 't_event_arg')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_arg_string",
-    "reason": "Cannot read properties of undefined (reading 't_event_arg')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_config",
-    "reason": "Cannot read properties of undefined (reading 'o_comp_data')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_model",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_model_no_wrap",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_no_config",
-    "reason": "Cannot read properties of undefined (reading 'o_comp_data')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_no_wrapper",
-    "reason": "Cannot read properties of undefined (reading 'origin')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_parse_body_with_wrapper",
-    "reason": "Cannot read properties of undefined (reading 'origin')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_app_start",
-    "reason": "Cannot read properties of undefined (reading 'app_start')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_launchpad",
-    "reason": "Cannot read properties of undefined (reading 'check_launchpad')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_origin",
-    "reason": "Cannot read properties of undefined (reading 'origin')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_parse",
-    "reason": "Cannot read properties of undefined (reading 'origin')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_request_with_id",
-    "reason": "Cannot read properties of undefined (reading 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_response_json",
-    "reason": "Cannot read properties of null (reading 's_front')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_view_update_flag",
-    "reason": "Cannot read properties of undefined (reading 'params')"
-  },
-  {
-    "name": "z2ui5_cl_core_handler::ltcl_test_handler_post::test_view_update_popup",
-    "reason": "Cannot read properties of undefined (reading 'params')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_error_diff",
-    "reason": "Cannot read properties of undefined (reading 'length')"
+    "reason": "assertion failed — expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"6\"},{\"path\":\"/\",\"name\":\"d\",\"type\":\"str\",\"value\":\"2022-04-01\",\"index\":\"\",\"childre [JS limit: RTTI type precision — typed DATS/TIMS/timestamp components serialize as plain strings/numbers]"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_one_way",
-    "reason": "Cannot read properties of undefined (reading 'length')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_two_way",
-    "reason": "Cannot read properties of undefined (reading 'length')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_object::test_one_way_struc",
-    "reason": "Cannot read properties of null (reading 'ms_struc')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_object::test_one_way_value",
-    "reason": "Cannot set properties of null (setting 'mv_value')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev1",
-    "reason": "Cannot read properties of undefined (reading 'length')"
+    "reason": "assertion failed — expected \"{/MV_VALUE}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev2",
-    "reason": "Cannot read properties of undefined (reading 'input')"
+    "reason": "assertion failed — expected \"{/MS_STRUC/S_02/INPUT}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev3",
-    "reason": "Cannot read properties of undefined (reading 's_03')"
+    "reason": "assertion failed — expected \"{/MS_STRUC/S_02/S_03/INPUT}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
     "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev4_long_name",
-    "reason": "Cannot read properties of undefined (reading 's_03')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_buffer",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_create",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_create_and_read",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_overwrite",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_draft::ltcl_test::test_read_info",
-    "reason": "Cannot set properties of null (setting 'id')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event",
-    "reason": "lo_event.get_event is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_backend",
-    "reason": "lo_event.get_event_client is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_binding_arg",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_client_args",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_dollar_arg",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_empty_arg",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_multi_args",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_multi_req",
-    "reason": "Cannot set properties of null (setting 'check_allow_multi_req')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_event::ltcl_test::event_with_args",
-    "reason": "Cannot read properties of null (reading 'push')"
+    "reason": "assertion failed — expected \"{/MS_STRUC/S_02/S_03/S_04/INPUT}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root4::test_tab_ref_gen",
-    "reason": "Cannot read properties of null (reading 'push')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root_attri2::test_obj_struc_ref",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_app_root_attri::test_obj_tab_ref",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_int_kind",
-    "reason": "assertion failed — expected \"E\", got \"kind_elem\""
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_oref_type_kind",
-    "reason": "assertion failed — expected \"r\", got \"OTHER\""
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_string_type_kind",
-    "reason": "assertion failed — expected \"g\", got \"OTHER\""
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_create::test_table_type_kind",
-    "reason": "assertion failed — expected \"h\", got \"OTHER\""
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_attri_refresh::test_bindings_preserved",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_deep_nesting::test_deep_oref_writeback",
-    "reason": "Cannot set properties of null (setting 'mo_inner')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_deep_nesting::test_deep_struct_writeback",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_nested_cell",
-    "reason": "Cannot set properties of null (setting 'mt_tree')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_nested_mixed",
-    "reason": "Cannot set properties of null (setting 'mt_tree')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_struct_component",
-    "reason": "Cannot set properties of null (setting 'mt_tree')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_subtable_replace",
-    "reason": "Cannot set properties of null (setting 'mt_tree')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_update_first_row",
-    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_delta_apply::test_update_second_row",
-    "reason": "Cannot set properties of null (setting 'mi_custom_mapping')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_mixed_types",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_name_parent_chain",
-    "reason": "Cannot set properties of null (setting 'mo_inner')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_nested_struc",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_oref_chain",
-    "reason": "Cannot set properties of null (setting 'mo_inner')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_search_nested_struc",
-    "reason": "Cannot set properties of undefined (setting 'deep1')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_search_table",
-    "reason": "assertion failed — expected \"MT_TAB\", got \"mt_tab\""
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_table",
-    "reason": "assertion failed"
+    "reason": "test aborted (cl_abap_unit_assert=>abort) [JS limit: CREATE DATA dref without canonical attr + SRTTI persistence (main_attri_db_* are JSON no-ops)]"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_diss_complex::test_table_in_dref",
-    "reason": "Cannot read properties of null (reading 'push')"
+    "reason": "assertion failed [JS limit: CREATE DATA dref without an aliased canonical attribute — no MR_TAB->* entry derivable]"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_dref",
-    "reason": "assertion failed"
+    "reason": "assertion failed [JS limit: CREATE DATA drefs without an aliased canonical attribute carry no ref identity (no ->*/-> naming possible)]"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_dref_struc",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_init",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref",
-    "reason": "assertion failed"
+    "reason": "assertion failed [JS limit: CREATE DATA drefs without an aliased canonical attribute carry no ref identity (no ->*/-> naming possible)]"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref_dref",
-    "reason": "assertion failed"
+    "reason": "assertion failed [JS limit: CREATE DATA drefs without an aliased canonical attribute carry no ref identity (no ->*/-> naming possible)]"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_oref_dref_struc",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_struc",
-    "reason": "assertion failed"
+    "reason": "assertion failed [JS limit: CREATE DATA drefs without an aliased canonical attribute carry no ref identity (no ->*/-> naming possible)]"
   },
   {
     "name": "z2ui5_cl_core_srv_model::ltcl_test_dissolve::test_struc_dref",
-    "reason": "assertion failed"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_entry_refs_children::test_dref_children_name_ref",
-    "reason": "Cannot read properties of null (reading 'name_ref')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_entry_refs_children::test_second_dref_children",
-    "reason": "Cannot read properties of null (reading 'name_ref')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test4",
-    "reason": "ATTRI_GET_VAL_REF_ERROR"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test_first",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::test_second",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_get_attri::third_test",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_stringify::test_empty_no_bind",
-    "reason": "lo_model.main_json_stringify is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_stringify::test_simple_string",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_skips_one_way",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_updates_two_way",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_to_attri::test_view_filter",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_types::test_multiple_attrs_same_var",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_json_types::test_updates_integer",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_refresh_ext::test_oref_after_null_refresh",
-    "reason": "cl_abap_unit_assert.abort is not a function"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_sample335::test_two_drefs_to_same_struc",
-    "reason": "Cannot read properties of null (reading 'name_ref')"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_two_tab_refs::test_both_get_name_ref",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cl_core_srv_model::ltcl_test_two_tab_refs::test_canonical_search",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_init_context",
-    "reason": "Cannot set properties of null (setting 'path')"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_post_default_exp_time",
-    "reason": "Cannot set properties of null (setting 'draft_exp_time_in_hours')"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_set_config_http_get",
-    "reason": "Cannot read properties of null (reading 'title')"
-  },
-  {
-    "name": "z2ui5_cl_exit::ltcl_test::test_set_config_http_post",
-    "reason": "Cannot read properties of null (reading 'draft_exp_time_in_hours')"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_html",
-    "reason": "z2ui5_cl_http_handler._http_get is not a function"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_status",
-    "reason": "z2ui5_cl_http_handler._http_get is not a function"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_get_ui5_boot",
-    "reason": "z2ui5_cl_http_handler._http_get is not a function"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_error",
-    "reason": "Cannot set properties of null (setting 'method')"
+    "reason": "assertion failed [JS limit: CREATE DATA drefs without an aliased canonical attribute carry no ref identity (no ->*/-> naming possible)]"
   },
   {
     "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_ok",
-    "reason": "Cannot set properties of null (setting 'method')"
-  },
-  {
-    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_get_routing",
-    "reason": "Cannot set properties of null (setting 'method')"
+    "reason": "assertion failed — expected 200, got undefined [JS async boundary: the POST roundtrip awaits app main()/draft store — result is a Promise, the sync ABAP test cannot await it]"
   },
   {
     "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_post_routing",
-    "reason": "Cannot set properties of null (setting 'method')"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_chain_texts",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise",
-    "reason": "lx.get_text is not a function"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_empty",
-    "reason": "Cannot read properties of undefined (reading 'uuid')"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_with_cx",
-    "reason": "lx.get_text is not a function"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_raise_with_prev",
-    "reason": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor"
-  },
-  {
-    "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_uuid_populated",
-    "reason": "Cannot read properties of undefined (reading 'uuid')"
+    "reason": "assertion failed — expected 200, got undefined [JS async boundary: the POST roundtrip awaits app main()/draft store — result is a Promise, the sync ABAP test cannot await it]"
   }
 ]
