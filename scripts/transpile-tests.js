@@ -28,7 +28,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { transpileClass } = require("./abap2js");
+const { transpileClass, transpileInterface } = require("./abap2js");
 
 const root = path.join(__dirname, "..");
 const INPUT = path.join(root, "run", "input", "abap2UI5", "src");
@@ -76,6 +76,30 @@ function splitClasses(source) {
   return chunks;
 }
 
+/** local INTERFACE blocks (constants containers like ajson's lif_kind) */
+function splitInterfaces(sourceText) {
+  const out = new Map();
+  let cur = null;
+  let buf = [];
+  for (const line of sourceText.split(/\r?\n/)) {
+    const open = line.match(/^\s*INTERFACE\s+(\w+)/i);
+    if (open && !cur) {
+      if (/\bDEFERRED\b/i.test(line)) continue;
+      cur = open[1].toLowerCase();
+      buf = [line];
+      continue;
+    }
+    if (cur) {
+      buf.push(line);
+      if (/^\s*ENDINTERFACE\s*\./i.test(line)) {
+        out.set(cur, buf.join("\n"));
+        cur = null;
+      }
+    }
+  }
+  return out;
+}
+
 /** test method names: METHODS <name> ... FOR TESTING (single or chained form) */
 function testMethods(def) {
   // class-header noise that also precedes FOR TESTING (CLASS x DEFINITION
@@ -105,8 +129,21 @@ const report = [];
 for (const file of walk(INPUT).sort()) {
   const mainClass = path.basename(file).replace(".clas.testclasses.abap", "");
   const source = fs.readFileSync(file, "utf8");
-  const chunks = splitClasses(source);
-  const localNames = new Set(chunks.keys());
+  // The testclasses may exercise the class pool's LOCAL classes directly
+  // (e.g. ajson's ltcl_parser_test instantiates lcl_json_parser, defined in
+  // the locals includes) — emit those into the same module first, so the
+  // references resolve in-module. abapGit splits locals into locals_def
+  // (definitions) + locals_imp (implementations); concatenate before
+  // chunking so def/impl pairs land in one slot.
+  const localsSource = [".clas.locals_def.abap", ".clas.locals_imp.abap"]
+    .map((suffix) => file.replace(".clas.testclasses.abap", suffix))
+    .filter((f) => fs.existsSync(f))
+    .map((f) => fs.readFileSync(f, "utf8"))
+    .join("\n");
+  const localChunks = splitClasses(localsSource);
+  const chunks = new Map([...localChunks, ...splitClasses(source)]);
+  const interfaces = new Map([...splitInterfaces(localsSource), ...splitInterfaces(source)]);
+  const localNames = new Set([...chunks.keys(), ...interfaces.keys()]);
 
   const requires = new Map(); // varName → require line
   const todoLines = [];
@@ -115,9 +152,47 @@ for (const file of walk(INPUT).sort()) {
   const emitted = [];
   let error = null;
 
+  // pass 1: collect every chunk's method signatures, so positional calls
+  // onto sibling locals (lo_nodes->add('…')) can be wrapped into the
+  // destructured-options convention during the real transpile
+  const siblingSigs = new Map(); // class name → Map(method → first importing param)
+  for (const [name, { def, impl }] of chunks) {
+    if (!def) continue;
+    try {
+      const { methodSigs } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`);
+      siblingSigs.set(name, methodSigs);
+    } catch {
+      /* pass 2 reports it */
+    }
+  }
+
+  // local interfaces first — pure constant containers the classes reference
+  for (const [name, src] of interfaces) {
+    try {
+      const { code } = transpileInterface(src, `${name}.intf.abap`);
+      for (const l of code.split("\n")) {
+        if (/^module\.exports =/.test(l)) continue;
+        const req = l.match(/^const (\w+) = require\("(.*)"\);$/);
+        if (req) {
+          if (!localNames.has(req[1])) requires.set(req[1], l);
+          continue;
+        }
+        bodies.push(l);
+      }
+    } catch (e) {
+      console.error(`  skip local interface ${name} in ${mainClass}: ${e.message}`);
+    }
+  }
+
   for (const [name, { def, impl }] of chunks) {
     try {
-      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`);
+      if (!def && localChunks.has(name)) {
+        // impl-only local relic (definition removed upstream) — skip it,
+        // only tests that reach the missing class will fail
+        console.error(`  skip local ${name} in ${mainClass}: no definition`);
+        continue;
+      }
+      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs });
       const lines = code.split("\n").filter((l) => !/^module\.exports =/.test(l));
       for (const l of lines) {
         const req = l.match(/^const (\w+) = require\("(.*)"\);$/);
@@ -137,6 +212,13 @@ for (const file of walk(INPUT).sort()) {
       if (t.length) tests[name] = t;
       emitted.push(name);
     } catch (e) {
+      if (localChunks.has(name)) {
+        // a broken LOCAL must not sink the whole include — the testclasses
+        // still transpile; only tests reaching this class fail (visible on
+        // the ratchet worklist instead of a blanket __transpile entry)
+        console.error(`  skip local ${name} in ${mainClass}: ${e.message}`);
+        continue;
+      }
       error = `${name}: ${e.message}`;
       break;
     }

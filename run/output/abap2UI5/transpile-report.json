@@ -2,10 +2,8 @@
   {
     "class": "z2ui5_cl_ajson_refinitlib",
     "path": "00/01/z2ui5_cl_ajson_refinitlib.js",
-    "todos": 1,
-    "todoDetails": [
-      "CREATE OBJECT: CREATE OBJECT ri_refs_init TYPE lcl_path_refs_init EXPORTING it_data_refs = it_data_refs."
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_if_ajson_filter",

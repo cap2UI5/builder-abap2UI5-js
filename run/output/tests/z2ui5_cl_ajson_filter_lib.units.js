@@ -2,6 +2,112 @@
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
 const z2ui5_cl_ajson = require("abap2UI5/z2ui5_cl_ajson");
 const z2ui5_cl_ajson_filter_lib = require("abap2UI5/z2ui5_cl_ajson_filter_lib");
+const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
+const z2ui5_cx_ajson_error = require("abap2UI5/z2ui5_cx_ajson_error");
+const z2ui5_if_ajson_filter = require("abap2UI5/z2ui5_if_ajson_filter");
+const z2ui5_if_ajson_types = require("abap2UI5/z2ui5_if_ajson_types");
+
+
+class lcl_empty_filter {
+  keep_node() {
+    rv_keep = ((iv_visit === z2ui5_if_ajson_filter.visit_type.value && is_node.type !== z2ui5_if_ajson_types.node_type.number && is_node.value) || (iv_visit === z2ui5_if_ajson_filter.visit_type.value && is_node.type === z2ui5_if_ajson_types.node_type.number && is_node.value !== `0`) || (iv_visit !== z2ui5_if_ajson_filter.visit_type.value && is_node.children > 0));
+  }
+}
+
+
+
+class lcl_paths_filter {
+  mt_skip_paths = [];
+  mv_pattern_search = false;
+
+  keep_node() {
+    let sy_tabix = 0;
+    let sy_subrc = 0;
+    let lv_full_path = ``;
+    lv_full_path = is_node.path + is_node.name;
+    if ((this.mv_pattern_search === true || this.mv_pattern_search === `X`)) {
+      rv_keep = true;
+      sy_tabix = 0;
+      for (const fs_p of this.mt_skip_paths) {
+        sy_tabix++;
+        if (String(lv_full_path).includes(String(fs_p).replace(/\*/g, ""))) {
+          rv_keep = false;
+          break;
+        }
+      }
+    } else {
+      {
+        const _t = this.mt_skip_paths;
+        const _i = _t.findIndex((_r) => _r === lv_full_path);
+        sy_subrc = _i >= 0 && _i < _t.length ? 0 : 4;
+      }
+      rv_keep = (sy_subrc !== 0);
+    }
+  }
+
+  constructor({ it_skip_paths, iv_skip_paths, iv_pattern_search } = {}) {
+    let sy_tabix = 0;
+    let lv_s = ``;
+    let lt_tab = [];
+    if ((!iv_skip_paths) === (!it_skip_paths)) {
+      z2ui5_cx_ajson_error.raise(`no filter path specified`);
+    }
+    sy_tabix = 0;
+    for (const lv_s of it_skip_paths) {
+      sy_tabix++;
+      lv_s = lv_s.trim();
+      lt_tab.push(lv_s);
+    }
+    if (iv_skip_paths) {
+      lt_tab = iv_skip_paths.split(`,`);
+      sy_tabix = 0;
+      for (const fs_s of lt_tab) {
+        sy_tabix++;
+        if (!fs_s) {
+          // TODO(abap2js): DELETE lt_tab INDEX sy-tabix.
+          continue;
+        }
+        fs_s = fs_s.trim();
+      }
+    }
+    lt_tab.sort((a, b) => ((a.table_line > b.table_line ? 1 : a.table_line < b.table_line ? -1 : 0)));
+    // TODO(abap2js): DELETE ADJACENT DUPLICATES FROM lt_tab.
+    this.mt_skip_paths = z2ui5_cl_util.abap_copy(lt_tab);
+    this.mv_pattern_search = z2ui5_cl_util.abap_copy(iv_pattern_search);
+  }
+}
+
+
+
+class lcl_and_filter {
+  mt_filters = [];
+
+  keep_node() {
+    let sy_tabix = 0;
+    let li_filter = null;
+    rv_keep = true;
+    sy_tabix = 0;
+    for (const li_filter of this.mt_filters) {
+      sy_tabix++;
+      rv_keep = li_filter.keep_node({ is_node, iv_visit });
+      if (!(rv_keep === true || rv_keep === `X`)) {
+        return;
+      }
+    }
+  }
+
+  constructor({ it_filters } = {}) {
+    let sy_tabix = 0;
+    let li_filter = null;
+    sy_tabix = 0;
+    for (const li_filter of it_filters) {
+      sy_tabix++;
+      if (!(li_filter.table_line != null)) continue;
+      this.mt_filters.push(li_filter);
+    }
+  }
+}
+
 
 
 class ltcl_filters_test {
@@ -116,6 +222,6 @@ class ltcl_filters_test {
 
 module.exports = {
   __main: "z2ui5_cl_ajson_filter_lib",
-  __classes: { ltcl_filters_test },
+  __classes: { lcl_empty_filter, lcl_paths_filter, lcl_and_filter, ltcl_filters_test },
   __tests: {"ltcl_filters_test":["empty_filter_simple","empty_filter_deep","path_filter","path_filter_string","path_filter_w_patterns","path_filter_deep","and_filter","mixed_case_filter"]},
 };

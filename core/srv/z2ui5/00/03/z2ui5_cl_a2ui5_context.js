@@ -554,7 +554,8 @@ class z2ui5_cl_a2ui5_context {
     sy_tabix = 0;
     for (const fs_row_in of val) {
       sy_tabix++;
-      tab.push({});
+      let fs_row_out = {};
+      tab.push(fs_row_out);
       // TODO(abap2js): MOVE-CORRESPONDING <row_in> TO <row_out>.
     }
   }

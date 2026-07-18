@@ -1,19 +1,19 @@
 [
   {
     "main": "z2ui5_cl_ajson",
-    "classes": 13,
+    "classes": 21,
     "tests": 149,
-    "todos": 0
+    "todos": 1
   },
   {
     "main": "z2ui5_cl_ajson_filter_lib",
-    "classes": 1,
+    "classes": 4,
     "tests": 8,
     "todos": 0
   },
   {
     "main": "z2ui5_cl_ajson_mapping",
-    "classes": 4,
+    "classes": 12,
     "tests": 21,
     "todos": 0
   },

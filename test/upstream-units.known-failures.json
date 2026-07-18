@@ -464,10 +464,6 @@
     "reason": "Cannot read properties of null (reading 'add')"
   },
   {
-    "name": "z2ui5_cl_ajson::ltcl_serializer_test::empty",
-    "reason": "lcl_json_serializer is not defined"
-  },
-  {
     "name": "z2ui5_cl_ajson::ltcl_serializer_test::empty_set",
     "reason": "Cannot read properties of null (reading 'add')"
   },
@@ -490,10 +486,6 @@
   {
     "name": "z2ui5_cl_ajson::ltcl_serializer_test::stringify_indented",
     "reason": "lcl_json_serializer is not defined"
-  },
-  {
-    "name": "z2ui5_cl_ajson::ltcl_utils_test::normalize_path",
-    "reason": "lcl_utils is not defined"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_utils_test::split_path",
@@ -1414,14 +1406,6 @@
   {
     "name": "z2ui5_cx_a2ui5_error::ltcl_unit_test::test_uuid_populated",
     "reason": "Cannot read properties of undefined (reading 'uuid')"
-  },
-  {
-    "name": "z2ui5_cx_ajson_error::ltcl_error::raise",
-    "reason": "lx.get_text is not a function"
-  },
-  {
-    "name": "z2ui5_cx_ajson_error::ltcl_error::raise_w_location",
-    "reason": "lx.get_text is not a function"
   },
   {
     "name": "z2ui5_cx_ajson_error::ltcl_error::raise_w_node",

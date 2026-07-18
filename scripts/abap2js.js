@@ -201,7 +201,7 @@ function commentSafe(src, max = 120) {
 function typeDefault(typeTokens) {
   const t = typeTokens.join(" ").toUpperCase().replace(/^(TYPE|LIKE)\s+/, "");
   if (/REF TO/.test(t)) return "null";
-  if (/TABLE OF|TABLE$|_TAB$|^TY_T_|_T_|STANDARD TABLE|SORTED TABLE|HASHED TABLE|TT_|RANGE OF/.test(t)) return "[]";
+  if (/TABLE OF|TABLE$|_TAB$|^TY_T_|_T_|STANDARD TABLE|SORTED TABLE|HASHED TABLE|TT_|_TT$|_TS$|RANGE OF/.test(t)) return "[]";
   if (/ABAP_BOOL|XSDBOOLEAN|^XFELD/.test(t)) return "false";
   // structure types by naming convention (ty_s_result, ts_data, ...)
   if (/^TY_S_|^TS_|^S_[A-Z0-9_]/.test(t)) return "{}";
@@ -950,6 +950,26 @@ function chainSuffix(toks, j, atoms, ctx, upper = false) {
           args = bindArgs(meth, group, ctx) ?? clientArgs(meth, group, ctx);
         }
         if (args === null) args = txArgs(group, ctx, meth);
+        // sibling local class (same module): its methods destructure an
+        // options object, so wrap a single positional arg as { firstParam: … }
+        // — same convention as own-method calls above. The sibling class is
+        // resolved through the receiver variable's declared REF TO type.
+        if (group.length && ctx.model.siblingSigs) {
+          const recv = atoms[atoms.length - 1].str.match(/^(?:this\.)?([a-z_][a-z0-9_]*)$/)?.[1];
+          const recvCls = recv
+            ? ctx.model.siblingSigs.has(recv)
+              ? recv // static sibling call: cls=>meth( … )
+              : ctx.localRefTypes?.get(recv) || ctx.model.fields.get(recv)?.refType
+            : null;
+          const param = recvCls ? ctx.model.siblingSigs.get(recvCls)?.get(meth) : null;
+          if (
+            param &&
+            !group.some((t) => isId(t) && ["EXPORTING", "IMPORTING", "CHANGING", "RECEIVING", "EXCEPTIONS"].includes(KW(t.str))) &&
+            !namedArgsOf(group, ctx)
+          ) {
+            args = `{ ${param}: ${args} }`;
+          }
+        }
         // client.get() returns the request struct with UPPERCASE keys
         if (meth === "get" && isClientReceiver(atoms[atoms.length - 1].str)) upper = true;
         atoms[atoms.length - 1].str += `.${meth}(${args})`;
@@ -1754,7 +1774,7 @@ function derivePreferredMap(file) {
   return out;
 }
 
-function transpileClass(source, filename) {
+function transpileClass(source, filename, opts = {}) {
   const reg = new Registry().addFile(new MemoryFile(filename, source));
   reg.parse();
   const obj = reg.getFirstObject();
@@ -1762,6 +1782,10 @@ function transpileClass(source, filename) {
   const file = obj.getABAPFiles()[0];
   const model = buildModel(file);
   if (!model) throw new Error(`no class found in ${filename}`);
+  // sibling method signatures (same-module local classes): method name →
+  // first importing param, used to wrap single positional args on instance
+  // calls the same way own-method calls are wrapped
+  model.siblingSigs = opts.siblingSigs || null;
 
   const requires = new Set();
   const todos = [];
@@ -1842,7 +1866,10 @@ function transpileClass(source, filename) {
   }
   header.push("");
 
-  return { code: header.join("\n") + "\n" + lines.join("\n") + "\n", todos, name: model.name };
+  const methodSigs = new Map(
+    [...model.methods].map(([m, def]) => [m, def.importing[0]?.name ?? null])
+  );
+  return { code: header.join("\n") + "\n" + lines.join("\n") + "\n", todos, name: model.name, methodSigs };
 }
 
 function emitMethod(model, body, lines, requires, todos) {
@@ -2285,12 +2312,39 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
           break;
         }
       }
-      // static TYPE cls without EXPORTING
-      if (typeIdx > 0 && typeIdx === toks.length - 2 && isId(toks[typeIdx + 1])) {
+      // statement tokens carry no trailing "." — strip one defensively anyway
+      const endTok = toks[toks.length - 1]?.str === "." ? toks.length - 1 : toks.length;
+      const expIdx = toks.findIndex((t) => isId(t) && KW(t.str) === "EXPORTING");
+      // static TYPE cls [EXPORTING …]
+      if (typeIdx > 0 && isId(toks[typeIdx + 1]) && (typeIdx === endTok - 2 || expIdx === typeIdx + 2)) {
         const cls = toks[typeIdx + 1].str.toLowerCase();
         if (/^z2ui5_/.test(cls)) ctx.requires?.add(cls);
-        push(`${target} = new ${safeIdent(cls)}();`);
+        const args = expIdx > 0 ? txArgs(toks.slice(expIdx + 1, endTok), ctx, cls) : "";
+        push(`${target} = new ${safeIdent(cls)}(${args});`);
         break;
+      }
+      // plain CREATE OBJECT x [EXPORTING …] — infer the class from the
+      // target's declared REF TO type, same inference as `x = NEW #( )`
+      if (typeIdx < 0 && isId(toks[2])) {
+        const tname = toks[2].str.toLowerCase();
+        const cls = ctx.localRefTypes?.get(tname) || ctx.model.fields.get(tname)?.refType || null;
+        if (cls && /^[a-z_][a-z0-9_]*$/.test(cls)) {
+          const args = expIdx > 0 ? txArgs(toks.slice(expIdx + 1, endTok), ctx, cls) : "";
+          if (cls === ctx.model.name) {
+            push(`${target} = new ${ctx.model.name}(${args});`);
+            break;
+          }
+          if (requirePathFor(cls)) {
+            ctx.requires?.add(cls);
+            push(`${target} = new ${cls}(${args});`);
+            break;
+          }
+          // local class (lcl_/ltcl_) defined in the same module — no require
+          if (!/^(cl_|cx_|z2ui5_)/.test(cls)) {
+            push(`${target} = new ${safeIdent(cls)}(${args});`);
+            break;
+          }
+        }
       }
       ctx.todos.push(`CREATE OBJECT: ${s.src}`);
       push(`${target} = null; // TODO(abap2js): ${s.src}`);
@@ -2453,13 +2507,23 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
             break;
           }
         }
-        if (refVar) ctx.locals.add(refVar);
+        // … or is a pre-declared target: ASSIGNING <n> / REFERENCE INTO ref
+        if (!refVar) {
+          const at = asgIdx > 0 ? asgIdx + 1 : refIdx + 2;
+          if (toks[at]) refVar = varOrFsIdent(toks[at].str);
+        }
       }
+      // a target seen before (hoisted field symbol, or re-ASSIGNING the same
+      // inline one) is re-bound, not re-declared — and a rebindable target's
+      // first declaration must be `let`, not `const`
+      const refSeen = refVar && (ctx.hoisted?.has(refVar) || ctx.locals.has(refVar));
+      if (refVar) ctx.locals.add(refVar);
+      const refKw = refSeen ? "" : "let ";
       const up1 = KW(toks[1].str);
       if (up1 === "INITIAL") {
         const tab = txExpr(toks.slice(4, end), ctx);
         if (refVar) {
-          push(`const ${refVar} = {};`);
+          push(`${refKw}${refVar} = {};`);
           push(`${tab}.push(${refVar});`);
         } else {
           push(`${tab}.push({});`);
@@ -2476,7 +2540,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         const val = txExpr(toks.slice(1, toIdx), ctx);
         ctx._completeStruct = null;
         if (refVar) {
-          push(`const ${refVar} = ${val};`);
+          push(`${refKw}${refVar} = ${val};`);
           push(`${tab}.push(${refVar});`);
         } else {
           push(`${tab}.push(${val});`);
@@ -2915,6 +2979,16 @@ function transpileInterface(source, filename) {
   let name = null;
   const consts = []; // { name, value } — value is a rendered literal or object
   let structCollector = null;
+  const requires = new Set();
+
+  // VALUE may carry a literal or a reference chain (cl_x=>const-comp)
+  const renderConstValue = (valToks, typeTokens) => {
+    if (!valToks.length) return typeDefault(typeTokens);
+    if (valToks.length === 1) return renderLiteralToken(valToks[0]);
+    const head = valToks[0].str.toLowerCase();
+    if (/^(cl_|cx_|z2ui5_)/.test(head)) requires.add(head);
+    return valToks.map((t) => (t.str === "=>" || t.str === "-" ? "." : t.str.toLowerCase())).join("");
+  };
 
   for (const s of file.getStatements()) {
     const T = s.get().constructor.name;
@@ -2931,8 +3005,10 @@ function transpileInterface(source, filename) {
       }
     } else if (T === "Constant") {
       const cname = toks[1].str.toLowerCase();
-      const { typeTokens, value } = parseTypeAfter(toks.slice(2, -1), 0);
-      const rendered = value ? renderLiteralToken(value) : typeDefault(typeTokens);
+      const body = [".", ","].includes(toks[toks.length - 1]?.str) ? toks.slice(2, -1) : toks.slice(2);
+      const valIdx = body.findIndex((t) => KW(t.str) === "VALUE");
+      const { typeTokens } = parseTypeAfter(valIdx >= 0 ? body.slice(0, valIdx) : body, 0);
+      const rendered = renderConstValue(valIdx >= 0 ? body.slice(valIdx + 1) : [], typeTokens);
       if (structCollector) structCollector.members.push({ name: cname, value: rendered });
       else consts.push({ name: cname, value: rendered });
     }
@@ -2941,6 +3017,10 @@ function transpileInterface(source, filename) {
 
   const lines = [];
   lines.push(`// transpiled ABAP interface — constants only, types/methods have no JS form`);
+  for (const req of [...requires].sort()) {
+    const p = requirePathFor(req);
+    if (p) lines.push(`const ${req} = require("${p}");`);
+  }
   lines.push(`const ${name} = {`);
   for (const c of consts) lines.push(`  ${c.name}: ${c.value},`);
   lines.push(`};`);
@@ -3047,6 +3127,6 @@ function main(argv) {
   if (todoTotal) console.error(`\n${todoTotal} TODO(s) need manual follow-up (search for "TODO(abap2js)").`);
 }
 
-module.exports = { transpileClass, transpileFile };
+module.exports = { transpileClass, transpileFile, transpileInterface };
 
 if (require.main === module) main(process.argv);

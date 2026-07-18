@@ -11,7 +11,8 @@ class lcl_nodes_helper {
   add({ iv_str } = {}) {
     let lv_children = ``;
     let lv_index = ``;
-    this.mt_nodes.push({});
+    let fs_n = {};
+    this.mt_nodes.push(fs_n);
     [fs_n.path, fs_n.name, fs_n.type, fs_n.value, lv_index, lv_children] = iv_str.split(`|`);
     // TODO(abap2js): CONDENSE <n>-path.
     // TODO(abap2js): CONDENSE <n>-name.
@@ -22,7 +23,7 @@ class lcl_nodes_helper {
   }
 
   sorted() {
-    let rt_nodes = null;
+    let rt_nodes = [];
     rt_nodes = z2ui5_cl_util.abap_copy(this.mt_nodes);
     return rt_nodes;
   }
@@ -53,30 +54,30 @@ class ltcl_json_utils {
     let lo_change_exp = null;
     lv_json = `{\\n` + `  "string": "abc",\\n` + `  "number": 789,\\n` + `  "float": 123.45,\\n` + `  "boolean": "true",\\n` + `  "true": true,\\n` + `  "null": null,\\n` + `  "date": "2020-03-15",\\n` + `  "issues": [\\n` + `    {\\n` + `      "message": "Indentation problem ...",\\n` + `      "key": "indentation",\\n` + `      "start": {\\n` + `        "row": 5,\\n` + `        "col": 3\\n` + `      },\\n` + `      "end": {\\n` + `        "new": 1,\\n` + `        "col": 26\\n` + `      },\\n` + `      "filename": "./zxxx.prog.abap"\\n` + `    },\\n` + `    {\\n` + `      "message": "Remove space before XXX",\\n` + `      "key": "space_before_dot",\\n` + `      "start": {\\n` + `        "row": 3,\\n` + `        "col": 21\\n` + `      },\\n` + `      "end": {\\n` + `        "row": 3,\\n` + `        "col": 22\\n` + `      },\\n` + `      "filename": "./zxxx.prog.abap"\\n` + `    }\\n` + `  ]\\n` + `}`;
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json WITH cl_abap_char_utilities=>newline.
-    lo_insert_exp = null; // TODO(abap2js): CREATE OBJECT lo_insert_exp.
-    lo_insert_exp.add(`                |        |object |        |0|3`);
-    lo_insert_exp.add(`/               |boolean |str    |true    |0|0`);
-    lo_insert_exp.add(`/               |issues  |array  |        |0|1`);
-    lo_insert_exp.add(`/               |true    |bool   |true    |0|0`);
-    lo_insert_exp.add(`/issues/        |1       |object |        |1|1`);
-    lo_insert_exp.add(`/issues/1/      |end     |object |        |0|1`);
-    lo_insert_exp.add(`/issues/1/end/  |new     |num    |1       |0|0`);
-    lo_delete_exp = null; // TODO(abap2js): CREATE OBJECT lo_delete_exp.
-    lo_delete_exp.add(`                |        |object |        |0|3`);
-    lo_delete_exp.add(`/               |boolean |bool   |true    |0|0`);
-    lo_delete_exp.add(`/               |false   |bool   |false   |0|0`);
-    lo_delete_exp.add(`/               |issues  |array  |        |0|1`);
-    lo_delete_exp.add(`/issues/        |1       |object |        |1|1`);
-    lo_delete_exp.add(`/issues/1/      |end     |object |        |0|1`);
-    lo_delete_exp.add(`/issues/1/end/  |row     |num    |4       |0|0`);
-    lo_change_exp = null; // TODO(abap2js): CREATE OBJECT lo_change_exp.
-    lo_change_exp.add(`                |        |object |        |0|2`);
-    lo_change_exp.add(`/               |issues  |array  |        |0|1`);
-    lo_change_exp.add(`/               |number  |num    |789     |0|0`);
-    lo_change_exp.add(`/issues/        |1       |object |        |1|1`);
-    lo_change_exp.add(`/issues/1/      |start   |object |        |0|1`);
-    lo_change_exp.add(`/issues/1/start/|row     |num    |5       |0|0`);
-    lo_util = null; // TODO(abap2js): CREATE OBJECT lo_util.
+    lo_insert_exp = new lcl_nodes_helper();
+    lo_insert_exp.add({ iv_str: `                |        |object |        |0|3` });
+    lo_insert_exp.add({ iv_str: `/               |boolean |str    |true    |0|0` });
+    lo_insert_exp.add({ iv_str: `/               |issues  |array  |        |0|1` });
+    lo_insert_exp.add({ iv_str: `/               |true    |bool   |true    |0|0` });
+    lo_insert_exp.add({ iv_str: `/issues/        |1       |object |        |1|1` });
+    lo_insert_exp.add({ iv_str: `/issues/1/      |end     |object |        |0|1` });
+    lo_insert_exp.add({ iv_str: `/issues/1/end/  |new     |num    |1       |0|0` });
+    lo_delete_exp = new lcl_nodes_helper();
+    lo_delete_exp.add({ iv_str: `                |        |object |        |0|3` });
+    lo_delete_exp.add({ iv_str: `/               |boolean |bool   |true    |0|0` });
+    lo_delete_exp.add({ iv_str: `/               |false   |bool   |false   |0|0` });
+    lo_delete_exp.add({ iv_str: `/               |issues  |array  |        |0|1` });
+    lo_delete_exp.add({ iv_str: `/issues/        |1       |object |        |1|1` });
+    lo_delete_exp.add({ iv_str: `/issues/1/      |end     |object |        |0|1` });
+    lo_delete_exp.add({ iv_str: `/issues/1/end/  |row     |num    |4       |0|0` });
+    lo_change_exp = new lcl_nodes_helper();
+    lo_change_exp.add({ iv_str: `                |        |object |        |0|2` });
+    lo_change_exp.add({ iv_str: `/               |issues  |array  |        |0|1` });
+    lo_change_exp.add({ iv_str: `/               |number  |num    |789     |0|0` });
+    lo_change_exp.add({ iv_str: `/issues/        |1       |object |        |1|1` });
+    lo_change_exp.add({ iv_str: `/issues/1/      |start   |object |        |0|1` });
+    lo_change_exp.add({ iv_str: `/issues/1/start/|row     |num    |5       |0|0` });
+    lo_util = new z2ui5_cl_ajson_utilities();
     // TODO(abap2js): lo_util->diff( EXPORTING iv_json_a = ltcl_parser_test=>sample_json( ) iv_json_b = lv_json IMPORTING eo_insert = lo_insert eo_delete = lo_delete eo_change = lo_change ).
     cl_abap_unit_assert.assert_equals({ act: lo_insert.mt_json_tree, exp: lo_insert_exp.mt_nodes });
     cl_abap_unit_assert.assert_equals({ act: lo_delete.mt_json_tree, exp: lo_delete_exp.mt_nodes });
@@ -96,16 +97,16 @@ class ltcl_json_utils {
     lv_json_b = `{\\n` + `  "string": [\\n` + `    "a",\\n` + `    "b",\\n` + `    "c"\\n` + `  ],\\n` + `  "number": 123\\n` + `}`;
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json_a WITH cl_abap_char_utilities=>newline.
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json_b WITH cl_abap_char_utilities=>newline.
-    lo_insert_exp = null; // TODO(abap2js): CREATE OBJECT lo_insert_exp.
-    lo_insert_exp.add(`                |        |object |        |0|1`);
-    lo_insert_exp.add(`/               |string  |array  |        |0|3`);
-    lo_insert_exp.add(`/string/        |1       |str    |a       |1|0`);
-    lo_insert_exp.add(`/string/        |2       |str    |b       |2|0`);
-    lo_insert_exp.add(`/string/        |3       |str    |c       |3|0`);
-    lo_delete_exp = null; // TODO(abap2js): CREATE OBJECT lo_delete_exp.
-    lo_delete_exp.add(`                |        |object |        |0|1`);
-    lo_delete_exp.add(`/               |string  |str    |abc     |0|0`);
-    lo_util = null; // TODO(abap2js): CREATE OBJECT lo_util.
+    lo_insert_exp = new lcl_nodes_helper();
+    lo_insert_exp.add({ iv_str: `                |        |object |        |0|1` });
+    lo_insert_exp.add({ iv_str: `/               |string  |array  |        |0|3` });
+    lo_insert_exp.add({ iv_str: `/string/        |1       |str    |a       |1|0` });
+    lo_insert_exp.add({ iv_str: `/string/        |2       |str    |b       |2|0` });
+    lo_insert_exp.add({ iv_str: `/string/        |3       |str    |c       |3|0` });
+    lo_delete_exp = new lcl_nodes_helper();
+    lo_delete_exp.add({ iv_str: `                |        |object |        |0|1` });
+    lo_delete_exp.add({ iv_str: `/               |string  |str    |abc     |0|0` });
+    lo_util = new z2ui5_cl_ajson_utilities();
     // TODO(abap2js): lo_util->diff( EXPORTING iv_json_a = lv_json_a iv_json_b = lv_json_b IMPORTING eo_insert = lo_insert eo_delete = lo_delete eo_change = lo_change ).
     cl_abap_unit_assert.assert_equals({ act: lo_insert.mt_json_tree, exp: lo_insert_exp.mt_nodes });
     cl_abap_unit_assert.assert_equals({ act: lo_delete.mt_json_tree, exp: lo_delete_exp.mt_nodes });
@@ -128,15 +129,15 @@ class ltcl_json_utils {
     lv_json_b = `{\\n` + `  "names": [],\\n` + `  "number": 123\\n` + `}`;
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json_a WITH cl_abap_char_utilities=>newline.
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json_b WITH cl_abap_char_utilities=>newline.
-    lo_util = null; // TODO(abap2js): CREATE OBJECT lo_util.
+    lo_util = new z2ui5_cl_ajson_utilities();
     // TODO(abap2js): lo_util->diff( EXPORTING iv_json_a = lv_json_a iv_json_b = lv_json_b IMPORTING eo_insert = lo_insert eo_delete = lo_delete eo_change = lo_change ).
     cl_abap_unit_assert.assert_equals({ act: lo_insert.mt_json_tree.length, exp: 0 });
     cl_abap_unit_assert.assert_equals({ act: lo_delete.mt_json_tree.length, exp: 0 });
     cl_abap_unit_assert.assert_equals({ act: lo_change.mt_json_tree.length, exp: 0 });
     // TODO(abap2js): lo_util->diff( EXPORTING iv_json_a = lv_json_a iv_json_b = lv_json_b iv_keep_empty_arrays = abap_true IMPORTING eo_insert = lo_insert eo_delete = lo_delete eo_change = lo_change ).
-    lo_insert_exp = null; // TODO(abap2js): CREATE OBJECT lo_insert_exp.
-    lo_insert_exp.add(`                |        |object |        |0|1`);
-    lo_insert_exp.add(`/               |names   |array  |        |0|0`);
+    lo_insert_exp = new lcl_nodes_helper();
+    lo_insert_exp.add({ iv_str: `                |        |object |        |0|1` });
+    lo_insert_exp.add({ iv_str: `/               |names   |array  |        |0|0` });
     cl_abap_unit_assert.assert_equals({ act: lo_insert.mt_json_tree, exp: lo_insert_exp.mt_nodes });
     cl_abap_unit_assert.assert_equals({ act: lo_delete.mt_json_tree.length, exp: 0 });
     cl_abap_unit_assert.assert_equals({ act: lo_change.mt_json_tree.length, exp: 0 });
@@ -152,15 +153,15 @@ class ltcl_json_utils {
     lv_json_b = `{\\n` + `  "string": [\\n` + `    "a",\\n` + `    "b"\\n` + `  ],\\n` + `  "number": 456,\\n` + `  "float": 123.45\\n` + `}`;
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json_a WITH cl_abap_char_utilities=>newline.
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json_b WITH cl_abap_char_utilities=>newline.
-    lo_merge_exp = null; // TODO(abap2js): CREATE OBJECT lo_merge_exp.
-    lo_merge_exp.add(`                |        |object |        |0|3`);
-    lo_merge_exp.add(`/               |float   |num    |123.45  |0|0`);
-    lo_merge_exp.add(`/               |number  |num    |123     |0|0`);
-    lo_merge_exp.add(`/               |string  |array  |        |0|3`);
-    lo_merge_exp.add(`/string/        |1       |str    |a       |1|0`);
-    lo_merge_exp.add(`/string/        |2       |str    |c       |2|0`);
-    lo_merge_exp.add(`/string/        |3       |str    |b       |3|0`);
-    lo_util = null; // TODO(abap2js): CREATE OBJECT lo_util.
+    lo_merge_exp = new lcl_nodes_helper();
+    lo_merge_exp.add({ iv_str: `                |        |object |        |0|3` });
+    lo_merge_exp.add({ iv_str: `/               |float   |num    |123.45  |0|0` });
+    lo_merge_exp.add({ iv_str: `/               |number  |num    |123     |0|0` });
+    lo_merge_exp.add({ iv_str: `/               |string  |array  |        |0|3` });
+    lo_merge_exp.add({ iv_str: `/string/        |1       |str    |a       |1|0` });
+    lo_merge_exp.add({ iv_str: `/string/        |2       |str    |c       |2|0` });
+    lo_merge_exp.add({ iv_str: `/string/        |3       |str    |b       |3|0` });
+    lo_util = new z2ui5_cl_ajson_utilities();
     lo_merge = lo_util.merge({ iv_json_a: lv_json_a, iv_json_b: lv_json_b });
     cl_abap_unit_assert.assert_equals({ act: lo_merge.mt_json_tree, exp: lo_merge_exp.mt_nodes });
   }
@@ -174,7 +175,7 @@ class ltcl_json_utils {
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_json WITH cl_abap_char_utilities=>newline.
     lv_sorted_exp = `{\\n` + `  "boolean": "true",\\n` + `  "date": "2020-03-15",\\n` + `  "false": false,\\n` + `  "float": 123.45,\\n` + `  "null": null,\\n` + `  "number": 789,\\n` + `  "string": "abc",\\n` + `  "true": true\\n` + `}`;
     // TODO(abap2js): REPLACE ALL OCCURRENCES OF '\n' IN lv_sorted_exp WITH cl_abap_char_utilities=>newline.
-    lo_util = null; // TODO(abap2js): CREATE OBJECT lo_util.
+    lo_util = new z2ui5_cl_ajson_utilities();
     lv_sorted = lo_util.sort({ iv_json: lv_json });
     cl_abap_unit_assert.assert_equals({ act: lv_sorted, exp: lv_sorted_exp });
   }
