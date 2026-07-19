@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 17 suites / ~220 tests
+npm test                         # 19 suites / ~225 tests
 ```
 
 Pipeline steps (all runnable standalone, `MIRROR_SOURCE=/path` uses a local
@@ -63,8 +63,10 @@ Assemble policies (scripts/assemble-core.js): `src/` wins on every conflict;
 backend overlay is add-only + **load-gated** (each fill-in must `require()`
 — third-party deps resolve via `adapters/cap/node_modules` through
 NODE_PATH); samples are flattened into `core/srv/app/samples/`; the webapp
-replaces `core/app/z2ui5/webapp` 1:1. Non-parsing transpiles are skipped and
-reported.
+replaces `core/app/z2ui5/webapp` 1:1. Non-parsing transpiles fail the
+transpile step (scripts/transpile-tree.js exits 1) unless deliberately
+allow-listed in `scripts/transpile-parse-allow.json`; assemble additionally
+skips and reports anything that still does not parse or load.
 
 Test ratchets: `test/upstream-units.known-failures.json` and
 `test/apps-smoke.known-failures.json` — a new failure is a regression (red),
@@ -85,9 +87,11 @@ RTTI-typed conversions, sync-over-async) — reasons live in the baseline.
   `build_core` runs jest and only commits `core/` on green.
 - `trigger_update`: all three back-to-back (manual).
 - `test`: jest on PRs / pushes to main.
-- `trigger_cap`: manual; writes the sha of the last commit touching `core/`
-  into builder-cap2UI5:`UPSTREAM_HEAD` (deploy key `ACTION_KEY_CAP`) to kick
-  the downstream CAP build.
+- `trigger_cap`: chained automatically after `build_core` in every update
+  pipeline (also runnable manually); writes the sha of the last commit
+  touching `core/` into builder-cap2UI5:`UPSTREAM_HEAD` (deploy key
+  `ACTION_KEY_CAP`) to kick the downstream CAP build. Idempotent — pushes
+  only when that sha changed.
 
 ## Rules
 
