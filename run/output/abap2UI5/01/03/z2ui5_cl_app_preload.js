@@ -35,6 +35,7 @@ class z2ui5_cl_app_preload {
 ` + `      "z2ui5/core/ViewSlots.js": function(){${z2ui5_cl_app_viewslots_js.get()}},` + `
 ` + `      "z2ui5/css/style.css": '${styles_css}',` + `
 ` + `      "z2ui5/manifest.json": '${z2ui5_cl_app_manifest_json.get()}',` + `
+` + `      "z2ui5/model/formatter.js": function(){${z2ui5_cl_app_formatter_js.get()}},` + `
 ` + `      "z2ui5/model/models.js": function(){${z2ui5_cl_app_models_js.get()}},` + `
 ` + `      "z2ui5/Util.js": function(){${z2ui5_cl_app_util_js.get()}},` + `
 ` + `      "z2ui5/view/App.view.xml": '${z2ui5_cl_app_app_xml.get()}',` + `
@@ -58,6 +59,7 @@ const z2ui5_cl_app_errorview_js = require("abap2UI5/z2ui5_cl_app_errorview_js");
 const z2ui5_cl_app_favicon_js = require("abap2UI5/z2ui5_cl_app_favicon_js");
 const z2ui5_cl_app_fileuploader_js = require("abap2UI5/z2ui5_cl_app_fileuploader_js");
 const z2ui5_cl_app_focus_js = require("abap2UI5/z2ui5_cl_app_focus_js");
+const z2ui5_cl_app_formatter_js = require("abap2UI5/z2ui5_cl_app_formatter_js");
 const z2ui5_cl_app_frontendaction_js = require("abap2UI5/z2ui5_cl_app_frontendaction_js");
 const z2ui5_cl_app_geolocation_js = require("abap2UI5/z2ui5_cl_app_geolocation_js");
 const z2ui5_cl_app_history_js = require("abap2UI5/z2ui5_cl_app_history_js");
