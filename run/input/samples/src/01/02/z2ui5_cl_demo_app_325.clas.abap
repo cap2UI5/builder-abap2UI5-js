@@ -23,13 +23,20 @@ CLASS Z2UI5_CL_DEMO_APP_325 IMPLEMENTATION.
       DATA(page) = view->shell(
           )->page( title          = `Clipboard`
                    navbuttonpress = client->_event_nav_app_leave( )
-                   shownavbutton  = client->check_app_prev_stack( )
-              )->object_page_layout(
-                  showtitleinheadercontent = abap_true
-                  showeditheaderbutton     = abap_true
-                  uppercaseanchorbar       = abap_false ).
+                   shownavbutton  = client->check_app_prev_stack( ) ).
 
-      DATA(header_title) = page->header_title(
+      page->message_strip(
+          text     = `Copy the input field or text-area content to the system clipboard via the clipboard_copy follow-up action.`
+          type     = `Information`
+          showicon = abap_true
+          class    = `sapUiSmallMargin` ).
+
+      DATA(obj_page) = page->object_page_layout(
+          showtitleinheadercontent = abap_true
+          showeditheaderbutton     = abap_true
+          uppercaseanchorbar       = abap_false ).
+
+      DATA(header_title) = obj_page->header_title(
          )->object_page_dyn_header_title( ).
 
       header_title->expanded_heading( )->hbox( )->title( text     = `Test`
@@ -37,13 +44,13 @@ CLASS Z2UI5_CL_DEMO_APP_325 IMPLEMENTATION.
       header_title->snapped_heading( )->flex_box( alignitems = `Center` )->title( text     = `Test`
                                                                                   wrapping = abap_true ).
 
-      DATA(sections) = page->sections( ).
+      DATA(sections) = obj_page->sections( ).
 
       sections->object_page_section( titleuppercase = abap_false
                                      id             = `id_sec1`
-                                     title          = `...` )->heading( `uxap`
-        )->get_parent( )->sub_sections( )->object_page_sub_section( id    = `id_input`
-                                                                    title = `Input field`
+                                     title          = `...`
+        )->sub_sections( )->object_page_sub_section( id    = `id_input`
+                                                     title = `Input field`
         )->blocks( )->vbox(
         )->input( value = client->_bind_edit( input )
                   width = `50%`
@@ -53,9 +60,9 @@ CLASS Z2UI5_CL_DEMO_APP_325 IMPLEMENTATION.
 
       sections->object_page_section( titleuppercase = abap_false
                                      id             = `id_sec2`
-                                     title          = `...` )->heading( `uxap`
-        )->get_parent( )->sub_sections( )->object_page_sub_section( id    = `id_text_area`
-                                                                    title = `Text area`
+                                     title          = `...`
+        )->sub_sections( )->object_page_sub_section( id    = `id_text_area`
+                                                     title = `Text area`
         )->blocks( )->vbox(
         )->button( text  = `Copy text area`
                    type  = `Emphasized`

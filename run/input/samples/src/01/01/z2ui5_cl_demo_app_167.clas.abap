@@ -14,7 +14,9 @@ CLASS z2ui5_cl_demo_app_167 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-CLASS z2ui5_cl_demo_app_167 IMPLEMENTATION.
+
+CLASS Z2UI5_CL_DEMO_APP_167 IMPLEMENTATION.
+
 
   METHOD set_view.
 
@@ -24,6 +26,13 @@ CLASS z2ui5_cl_demo_app_167 IMPLEMENTATION.
                 title          = `abap2UI5 - Event with add Information and t_arg`
                 navbuttonpress = client->_event_nav_app_leave( )
                 shownavbutton  = client->check_app_prev_stack( ) ).
+
+    page->message_strip(
+        text     = `This sample shows how to pass extra arguments to an event via t_arg - fixed ` &&
+                   `values, model values, or client-side expressions - and read them in the backend.`
+        type     = `Information`
+        showicon = abap_true
+        class    = `sapUiSmallMargin` ).
 
     page->link( text   = `More Infos..`
                 target = `_blank`
@@ -73,5 +82,4 @@ CLASS z2ui5_cl_demo_app_167 IMPLEMENTATION.
     client->view_model_update( ).
 
   ENDMETHOD.
-
 ENDCLASS.

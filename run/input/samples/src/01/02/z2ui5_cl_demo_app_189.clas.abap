@@ -17,7 +17,9 @@ CLASS z2ui5_cl_demo_app_189 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-CLASS z2ui5_cl_demo_app_189 IMPLEMENTATION.
+
+CLASS Z2UI5_CL_DEMO_APP_189 IMPLEMENTATION.
+
 
   METHOD dispatch.
 
@@ -45,7 +47,14 @@ CLASS z2ui5_cl_demo_app_189 IMPLEMENTATION.
               navbuttonpress = client->_event_nav_app_leave( )
               shownavbutton  = client->check_app_prev_stack( ) ).
 
+    page->message_strip(
+        text     = `Pressing Enter in an input field jumps the cursor to the next one via the set_focus follow-up action.`
+        type     = `Information`
+        showicon = abap_true
+        class    = `sapUiSmallMargin` ).
+
     page->simple_form(
+        editable = abap_true
        )->content( `form`
        )->label( `One (Press Enter)` )->input( id     = `IdOne`
                                                value  = client->_bind_edit( one )
@@ -75,5 +84,4 @@ CLASS z2ui5_cl_demo_app_189 IMPLEMENTATION.
     dispatch( ).
 
   ENDMETHOD.
-
 ENDCLASS.

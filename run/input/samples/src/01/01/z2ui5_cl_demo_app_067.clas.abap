@@ -12,7 +12,9 @@ CLASS z2ui5_cl_demo_app_067 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-CLASS z2ui5_cl_demo_app_067 IMPLEMENTATION.
+
+CLASS Z2UI5_CL_DEMO_APP_067 IMPLEMENTATION.
+
 
   METHOD z2ui5_if_app~main.
 
@@ -27,6 +29,13 @@ CLASS z2ui5_cl_demo_app_067 IMPLEMENTATION.
          )->page( title          = `abap2UI5 - Currency Format`
                   navbuttonpress = client->_event_nav_app_leave( )
                   shownavbutton  = client->check_app_prev_stack( ) ).
+
+    page->message_strip(
+        text     = `Formats amounts with the sap.ui.model.type.Currency type and its format options, ` &&
+                   `and shows how to strip the leading zeros from a numeric field.`
+        type     = `Information`
+        showicon = abap_true
+        class    = `sapUiSmallMargin` ).
 
     page->simple_form( title    = `Currency`
                        editable = abap_true
@@ -106,5 +115,4 @@ CLASS z2ui5_cl_demo_app_067 IMPLEMENTATION.
     client->view_display( page->stringify( ) ).
 
   ENDMETHOD.
-
 ENDCLASS.

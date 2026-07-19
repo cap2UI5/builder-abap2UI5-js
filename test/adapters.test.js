@@ -24,11 +24,11 @@ const HELLO = {
 };
 
 // Representative sample cross-section for the transport equivalence check:
-// plain form, table binding, popup helper, xml-view breadth, new upstream
-// features (menu), framework startup app. Per-app behavior is covered by the
+// getting-started gallery, table binding, popup helper, xml-view breadth,
+// new upstream features (menu), framework startup app. Per-app behavior is covered by the
 // full apps-smoke gate — here we prove each ADAPTER runs the same set.
 const CROSS_SECTION = [
-  "z2ui5_cl_demo_app_001",
+  "z2ui5_cl_demo_app_g00",
   "z2ui5_cl_demo_app_004",
   "z2ui5_cl_demo_app_070",
   "z2ui5_cl_demo_app_372",

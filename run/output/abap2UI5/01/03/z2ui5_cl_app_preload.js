@@ -25,8 +25,8 @@ class z2ui5_cl_app_preload {
 ` + `      "z2ui5/controller/App.controller.js": function(){${z2ui5_cl_app_app_js.get()}},` + `
 ` + `      "z2ui5/controller/View1.controller.js": function(){${z2ui5_cl_app_view1_js.get()}},` + `
 ` + `      "z2ui5/core/AppState.js": function(){${z2ui5_cl_app_appstate_js.get()}},` + `
-` + `      "z2ui5/core/DebugTool.fragment.xml": '${z2ui5_cl_app_debugtool_xml.get()}',` + `
-` + `      "z2ui5/core/DebugTool.js": function(){${z2ui5_cl_app_debugtool_js.get()}},` + `
+` + `      "z2ui5/core/DeveloperTools.fragment.xml": '${z2ui5_cl_app_developertool_xml.get()}',` + `
+` + `      "z2ui5/core/DeveloperTools.js": function(){${z2ui5_cl_app_developertools_js.get()}},` + `
 ` + `      "z2ui5/core/ErrorView.js": function(){${z2ui5_cl_app_errorview_js.get()}},` + `
 ` + `      "z2ui5/core/FrontendAction.js": function(){${z2ui5_cl_app_frontendaction_js.get()}},` + `
 ` + `      "z2ui5/core/Lib.js": function(){${z2ui5_cl_app_lib_js.get()}},` + `
@@ -52,8 +52,8 @@ const z2ui5_cl_app_appstate_js = require("abap2UI5/z2ui5_cl_app_appstate_js");
 const z2ui5_cl_app_camerapicture_js = require("abap2UI5/z2ui5_cl_app_camerapicture_js");
 const z2ui5_cl_app_cameraselector_js = require("abap2UI5/z2ui5_cl_app_cameraselector_js");
 const z2ui5_cl_app_component_js = require("abap2UI5/z2ui5_cl_app_component_js");
-const z2ui5_cl_app_debugtool_js = require("abap2UI5/z2ui5_cl_app_debugtool_js");
-const z2ui5_cl_app_debugtool_xml = require("abap2UI5/z2ui5_cl_app_debugtool_xml");
+const z2ui5_cl_app_developertool_xml = require("abap2UI5/z2ui5_cl_app_developertool_xml");
+const z2ui5_cl_app_developertools_js = require("abap2UI5/z2ui5_cl_app_developertools_js");
 const z2ui5_cl_app_dirty_js = require("abap2UI5/z2ui5_cl_app_dirty_js");
 const z2ui5_cl_app_errorview_js = require("abap2UI5/z2ui5_cl_app_errorview_js");
 const z2ui5_cl_app_favicon_js = require("abap2UI5/z2ui5_cl_app_favicon_js");

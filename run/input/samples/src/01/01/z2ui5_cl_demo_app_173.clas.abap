@@ -32,7 +32,9 @@ CLASS z2ui5_cl_demo_app_173 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-CLASS z2ui5_cl_demo_app_173 IMPLEMENTATION.
+
+CLASS Z2UI5_CL_DEMO_APP_173 IMPLEMENTATION.
+
 
   METHOD view_display.
 
@@ -43,6 +45,13 @@ CLASS z2ui5_cl_demo_app_173 IMPLEMENTATION.
     title          = `abap2UI5 - Sample Templating I`
     navbuttonpress = client->_event_nav_app_leave( )
     shownavbutton  = client->check_app_prev_stack( ) ).
+
+    view->message_strip(
+        text     = `This sample builds table columns and cells dynamically from a layout table ` &&
+                   `using template repeat, plus a template if/then/else that re-renders on a switch.`
+        type     = `Information`
+        showicon = abap_true
+        class    = `sapUiSmallMargin` ).
 
     view->table( client->_bind_edit( mt_data )
       )->columns(
@@ -101,5 +110,4 @@ CLASS z2ui5_cl_demo_app_173 IMPLEMENTATION.
     ENDCASE.
 
   ENDMETHOD.
-
 ENDCLASS.
