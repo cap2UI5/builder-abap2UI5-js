@@ -250,6 +250,43 @@ ENDCLASS.
     });
   });
 
+  describe("LOOP AT ... TRANSPORTING NO FIELDS", () => {
+    const abap = `
+CLASS zcl_tnf DEFINITION PUBLIC CREATE PUBLIC.
+  PUBLIC SECTION.
+    TYPES: BEGIN OF ty_msg,
+             type TYPE string,
+             text TYPE string,
+           END OF ty_msg.
+    TYPES ty_msg_tab TYPE STANDARD TABLE OF ty_msg WITH EMPTY KEY.
+    METHODS count_errors IMPORTING i_msgs          TYPE ty_msg_tab
+                         RETURNING VALUE(r_count) TYPE i.
+ENDCLASS.
+
+CLASS zcl_tnf IMPLEMENTATION.
+
+  METHOD count_errors.
+    LOOP AT i_msgs TRANSPORTING NO FIELDS WHERE type = \`Error\`.
+      r_count = r_count + 1.
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
+`;
+
+    test("counts WHERE matches without a row target", () => {
+      const { code, todos } = transpileClass(abap, "zcl_tnf.clas.abap");
+      expect(todos).toEqual([]);
+      const Tnf = loadGenerated(code);
+      const msgs = [
+        { type: "Error", text: "a" },
+        { type: "Warning", text: "b" },
+        { type: "Error", text: "c" },
+      ];
+      expect(new Tnf().count_errors({ i_msgs: msgs })).toBe(2);
+    });
+  });
+
   describe("view builder preferred-parameter shim", () => {
     const View = require("abap2UI5/z2ui5_cl_xml_view");
 
