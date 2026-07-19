@@ -1,6 +1,6 @@
 /**
  * Wire-level regression for the starter-sample flow the live site exposes:
- * start z2ui5_cl_sample_app_001, jump into a sample (tile press sends the
+ * start z2ui5_cl_demo_app_g00, jump into a sample (tile press sends the
  * classname as EVENT + the current scroll position in CONFIG.S_SCROLL),
  * nav back — the sample must be back on screen AND restore the scroll
  * position via a fully-formatted SCROLL_TO follow-up action (a bare
@@ -10,7 +10,7 @@ const path = require("path");
 
 const core = (p) => require(path.join(__dirname, "..", "core", "srv", "z2ui5", p));
 
-describe("sample_app_001 — jump-in and scroll restore", () => {
+describe("demo_app_g00 — jump-in and scroll restore", () => {
   jest.setTimeout(30000);
 
   const S = (o) => ({ ORIGIN: "http://x", PATHNAME: "/", SEARCH: "", HASH: "", ...o });
@@ -22,8 +22,8 @@ describe("sample_app_001 — jump-in and scroll restore", () => {
     draft.set_store({ load: async (id) => mem.get(id), save: async (e) => void mem.set(e.id, e) });
     const handler = core("02/z2ui5_cl_http_handler");
 
-    const start = await handler({ data: { value: { S_FRONT: S({ SEARCH: "?app_start=z2ui5_cl_sample_app_001" }) } } });
-    expect(start.S_FRONT.APP).toBe("z2ui5_cl_sample_app_001");
+    const start = await handler({ data: { value: { S_FRONT: S({ SEARCH: "?app_start=z2ui5_cl_demo_app_g00" }) } } });
+    expect(start.S_FRONT.APP).toBe("z2ui5_cl_demo_app_g00");
 
     const nav = await handler({
       data: {
@@ -41,11 +41,11 @@ describe("sample_app_001 — jump-in and scroll restore", () => {
     const back = await handler({
       data: { value: { S_FRONT: S({ ID: nav.S_FRONT.ID, EVENT: types.cs_event_nav_app_leave }) } },
     });
-    expect(back.S_FRONT.APP).toBe("z2ui5_cl_sample_app_001");
+    expect(back.S_FRONT.APP).toBe("z2ui5_cl_demo_app_g00");
     expect(back.S_FRONT.PARAMS.S_FOLLOW_UP_ACTION.CUSTOM_JS).toContain(".eF('SCROLL_TO','page','333','0')");
   });
 
-  test("startup app links the starter sample in What's next", async () => {
+  test("startup app links the samples gallery in What's next", async () => {
     const draft = core("01/01/z2ui5_cl_core_srv_draft");
     const mem = new Map();
     draft.set_store({ load: async (id) => mem.get(id), save: async (e) => void mem.set(e.id, e) });
@@ -53,7 +53,7 @@ describe("sample_app_001 — jump-in and scroll restore", () => {
 
     const r = await handler({ data: { value: { S_FRONT: S({}) } } });
     expect(r.S_FRONT.APP).toBe("z2ui5_cl_app_startup");
-    // the What's-next button opens the starter sample (upstream behavior)
-    expect(r.S_FRONT.PARAMS.S_VIEW.XML).toContain("z2ui5_cl_sample_app_001");
+    // the What's-next button opens the getting-started gallery (upstream behavior)
+    expect(r.S_FRONT.PARAMS.S_VIEW.XML).toContain("z2ui5_cl_demo_app_g00");
   });
 });

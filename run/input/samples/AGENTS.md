@@ -33,11 +33,9 @@ apps directly in `src/` root** — every sample sits in a categorised subpackage
 ```
 src/
 ├── 01/  "basic"     cloud-ready & downportable — survives every build
-│   ├── 01/  framework - basics
-│   ├── 02/  framework - action
-│   ├── 05/  framework - extended Controls (CC and Action)
-│   ├── 06/  framework - use cases
-│   └── 08/  controls - UI5 Demo Kit     1:1 rebuilds of UI5 demo kit samples, split by library
+│   ├── 01/  Basic I
+│   ├── 02/  Basic II     framework actions, custom controls and use cases
+│   └── 08/  Control Library     1:1 rebuilds of UI5 demo kit samples, split by library
 │       ├── 00/  controls - sap.m
 │       ├── 01/  controls - sap.uxap
 │       ├── 02/  controls - sap.f
@@ -47,14 +45,13 @@ src/
 │       ├── 06/  controls - sap.ui.codeeditor
 │       └── 07/  controls - sap.ui.unified
 └── 00/  "extended"  restricted / special-purpose — STRIPPED from cloud & 702 builds
+    ├── 00/  extended                     restricted samples without a more specific category
     ├── 01/  only non-abap-cloud          on-premise-only ABAP (not ABAP Cloud ready)
     ├── 02/  only non-openui5 or higher UI5 1.71   SAPUI5-only controls (sap.suite.*, sap.ui.comp.*, VizFrame, …) or a control/property introduced after UI5 1.71
     ├── 03/  only with launchpad          runs only inside the Fiori Launchpad
-    ├── 04/  use of z2ui5                 needs the z2ui5/Util frontend helper module in the view
     ├── 05/  only with javascript and css and html   needs native JS / CSS / HTML
     ├── 06/  only testing                 test / scaffolding apps, not demos
     ├── 07/  experimental, TODO           work-in-progress / not finished
-    ├── 08/  framework - new (beta)       needs framework features not yet in a stable release
     └── 99/  obsolete                     superseded, or built on a deprecated UI5 control
 ```
 
@@ -84,8 +81,8 @@ truncated to the 60-character DESCRIPT limit). The **full, untruncated**
 description is kept as additional ABAP Doc lines below the URL line; the
 overview generator prefers those lines as the tile `sub` (§4).
 Demos that have no demo kit original do not belong in `01/08` — file them in
-the framework packages (`01/05` for custom-control/action demos, `01/06` for
-use cases) or, when a restriction applies, in the matching `src/00` category.
+the framework package (`01/02`, actions / custom controls / use cases) or,
+when a restriction applies, in the matching `src/00` category.
 
 Machine-generated demo kit ports that have not been manually reviewed do not
 live in this repository — they are collected in the separate api repository
@@ -117,12 +114,11 @@ The split is driven directly by the CI builds:
   1. Needs on-premise-only ABAP (not Cloud) → `00/01`
   2. Uses a SAPUI5-only control, **or** a control/property introduced after UI5 1.71 → `00/02`
   3. Runs only inside the Launchpad → `00/03`
-  4. Needs the `z2ui5/Util` frontend helper module in the view (`core:require {Helper:'z2ui5/Util'}`) → `00/04`
-  5. Needs native JavaScript / CSS / HTML → `00/05`
-  6. Test / scaffolding app → `00/06`
-  7. Experimental / work-in-progress → `00/07`
-  8. Needs framework features not yet in a stable release (beta) → `00/08`
-  9. Deprecated control/property, or superseded → `00/99`
+  4. Needs native JavaScript / CSS / HTML → `00/05`
+  5. Test / scaffolding app → `00/06`
+  6. Experimental / work-in-progress → `00/07`
+  7. Deprecated control/property, or superseded → `00/99`
+  8. Otherwise restricted, not fitting any category above → `00/00` ("extended")
 
 A sample qualifies for `src/01` **only if none** of the above restrictions
 apply: OpenUI5-compatible, ABAP-Cloud-ready, standalone, every control **and**
@@ -134,7 +130,7 @@ JS, not a test, finished and clean. "Old" is not enough (deprecated → `00/99`)
 
 ## 3. The two overview apps
 
-`z2ui5_cl_sample_app_000` and `z2ui5_cl_sample_app_001` are **overview apps** —
+`z2ui5_cl_sample_app_g01` and `z2ui5_cl_demo_app_g00` are **overview apps** —
 generated index pages that list all samples of an area. They are *not* Fiori
 Launchpad apps; do not confuse them with the launchpad samples in `src/00/03`,
 which are the demos that run inside a real Fiori Launchpad.
@@ -143,8 +139,8 @@ There is **one overview app per top-level package**, and they cross-link:
 
 | App class                | Lives in | Title                            | Mirrors     | Button → other |
 |--------------------------|----------|----------------------------------|-------------|----------------|
-| `z2ui5_cl_sample_app_001`| `src/01` | `abap2UI5 - Samples`             | `src/01/**` | "Extended Samples" → `sample_app_000` |
-| `z2ui5_cl_sample_app_000`| `src/00` | `abap2UI5 - Samples (restricted)`| `src/00/**` | "Basic Samples" → `sample_app_001` |
+| `z2ui5_cl_demo_app_g00`| `src/01` | `abap2UI5 - Samples`             | `src/01/**` | "Extended Samples" → `sample_app_g01` |
+| `z2ui5_cl_sample_app_g01`| `src/00` | `abap2UI5 - Samples (restricted)`| `src/00/**` | "Basic Samples" → `demo_app_g00` |
 
 Both are identical in shape: a `get_catalog( )` method returning a flat table of
 tiles, and a `view_display( )` that loops the catalog, emitting an H3 section
@@ -158,16 +154,24 @@ catalog correct.
 Within a group, `view_display( )` also inserts a **blank line between blocks**:
 consecutive tiles whose `header` shares the same base name form one block, and a
 new block (first row gets `sapUiSmallMarginTop`) starts when the base changes.
-The base is the header with a trailing Roman numeral removed (`header_base( )`),
-so `Binding`, `Binding I` … `Binding VIII` render as one block, then a gap, then
-the `Event` block, and so on. All links of a block share the same width — the
-estimated render width of the widest header in the block plus roughly one
-space, precomputed by `block_widths( )` / `header_width( )` — so the `sub`
-descriptions of a block line up exactly underneath each other in one column,
-directly next to the links.
+The base comes from `block_base( )`: in the **controls section** (groups whose
+CTEXT starts with `controls -`) it is the header's **first letter**, so a blank
+line separates letter groups only (`Button`, `ButtonGroup` render together, then
+a gap before `Carousel`); everywhere else it is the header with a trailing Roman
+numeral removed (`header_base( )`), so `Binding`, `Binding I` … `Binding VIII`
+render as one block, then a gap, then the `Event` block, and so on. All links of
+a block share the same width — the estimated render width of the widest header in
+the block plus roughly one space, precomputed by `block_widths( )` /
+`header_width( )` — so the `sub` descriptions of a block line up exactly
+underneath each other in one column, directly next to the links. This
+blank-line-between-blocks applies to the **basic** overview (`demo_app_g00`)
+only; the **extended** overview (`sample_app_g01`) lists every sample directly
+under the previous one (no inter-block blank line), keeping only the per-group
+H3 titles and the column alignment.
 
 `z2ui5_cl_demo_app_000` is the old "classic" overview app (now under `00/99`,
-obsolete); `sample_app_001` links to it via a message strip. Do not extend it.
+obsolete); `sample_app_g01` links to it from its info message strip. Do not
+extend it.
 
 ---
 
@@ -216,6 +220,11 @@ line:
   before is `header`, the part after is `sub` (which may itself contain ` - `).
 - No ` - ` at all → `header` = the whole DESCRIPT, `sub` = empty.
 - Unescape XML entities (`&amp;` → `&`, etc.) when copying into the ABAP literal.
+- **Controls section only** (groups whose CTEXT starts with `controls -`): the
+  generator drops the namespace prefix from `header` (`sap.m.Switch` → `Switch`
+  — the group heading already names the namespace) and truncates `sub` to one
+  line (`CONTROLS_SUB_MAX` characters, backed off to a word boundary, `+ " ..."`)
+  so the overview never wraps.
 
 When regenerating, **re-read every class's `<DESCRIPT>`** — the descriptions are
 maintained on the classes and change there, so never carry `header`/`sub` over
@@ -223,8 +232,8 @@ from the old catalog.
 
 ### Generation rules
 
-1. **One catalog per area.** Apps in `src/01/**` belong in `sample_app_001`; apps in
-   `src/00/**` belong in `sample_app_000`. Never list an app in the wrong overview app.
+1. **One catalog per area.** Apps in `src/01/**` belong in `demo_app_g00`; apps in
+   `src/00/**` belong in `sample_app_g01`. Never list an app in the wrong overview app.
 2. **Each app appears exactly once**, and every demo app physically present in an
    area is listed (no missing tiles) — **except hidden helper apps**: a class
    whose `<DESCRIPT>` header is `ZZZ` (e.g. `ZZZ - called by SubApp I`) is only
@@ -234,11 +243,11 @@ from the old catalog.
    every tile's `group` to match. A tile's group must equal the CTEXT of the
    folder the class physically lives in — never a neighbouring category.
 4. **Group blocks follow folder order.** Emit groups in ascending folder number
-   (`00/01` → `00/07` → `00/99`; `01/01` → `01/08/00` → `01/08/07`) so the
+   (`00/00` → `00/07` → `00/99`; `01/01` → `01/08/00` → `01/08/07`) so the
    on-screen order mirrors the tree; a nested subpackage forms its own group
    directly after its parent slot. When inserting a new group, place it at its
-   numeric slot (e.g. `use of z2ui5` = `00/04` goes **after**
-   `only with launchpad` (`00/03`) and **before**
+   numeric slot (e.g. `only with launchpad` = `00/03` goes **after**
+   `only non-openui5 or higher UI5 1.71` (`00/02`) and **before**
    `only with javascript and css and html` (`00/05`)).
 5. **Within a group, sort tiles alphabetically (case-insensitive) by `header`,
    then by `sub`.** Sorting by `header` first keeps numbered series together and
@@ -247,8 +256,8 @@ from the old catalog.
    untouched; only the tiles inside each group are ordered.
 6. **Moving a subpackage = moving its whole tile group** between the two
    catalogs, inserted at the correct numeric slot (moving a subpackage from
-   `src/01` to `src/00` lifts its entire tile group out of `sample_app_001`
-   and into `sample_app_000`).
+   `src/01` to `src/00` lifts its entire tile group out of `demo_app_g00`
+   and into `sample_app_g01`).
 7. After every change, verify: `get_catalog( )` and the folder tree agree —
    same apps, same group names (== CTEXT), same grouping, no app in the wrong
    overview, none missing. The safest way to regenerate is to rebuild each
@@ -302,6 +311,10 @@ All serialized files (`.abap`, `.xml`, and any other abapGit-managed file types)
 must conform to the abapGit file format:
 - **Encoding**: UTF-8 (with optional BOM: `xEF BB BF`)
 - **Line endings**: LF (`x0A`) only — never CRLF
+- **abapGit `*.clas.xml` sidecars start with the UTF-8 BOM** (`EF BB BF` before
+  `<?xml`) — abapGit writes them that way, and a BOM-less sidecar produces a
+  spurious diff on the next push from a system (human fixes 2026-07-18).
+  Copy an existing sidecar as template.
 - **Final newline**: every file must end with a single newline character after the last line
 - **Indentation**: 2 spaces — never tabs
 - **Line length**: max **255 characters** per `.abap` source line (hard ABAP
@@ -572,9 +585,30 @@ header_title->_generic(
         )->link( text = `Home` ).
 ```
 
+**Binding paths always come from a bind call — never hardcode them.** Every
+model value a view references must be registered through
+`client->_bind_edit( )` (use `_bind_edit`, not the one-way `_bind`): a
+hand-written path (`{/START_DATE}`, or `{ path: '/START_DATE', ... }` in a
+raw binding-info string) is NOT part of the serialized model — the frontend
+receives no data for it and typed/object properties crash on the missing
+value (human find 2026-07-18 in samples 456/457). Compose raw binding-info
+strings with the bare path from
+`client->_bind_edit( val = x path = abap_true )`.
+
 Key rules for `_generic( )`:
 - `_generic( name = ... ns = ... t_prop = ... )` adds one element and
   navigates **into** it; typed methods continue the chain below it.
+- **Navigation is per-method, not uniform — check `result =` in
+  `z2ui5_cl_xml_view` before chaining siblings.** Methods returning
+  `result = me` stay on the current node (leaf controls like `text`,
+  `button`, `object_number`, `search_field`, `standard_list_item`,
+  `message_strip`) — siblings chain directly. Methods returning
+  `result = _generic( ... )` navigate INTO the new element (all containers
+  and aggregations, but also child-less controls like `object_status`) —
+  a following sibling needs `->get_parent( )` first, or it silently nests
+  inside and UI5 fails view creation with "Cannot add direct child
+  without default aggregation" (bit sample 453: two chained
+  `object_status` cells).
 - Attributes go into `t_prop = VALUE #( ( n = `...` v = `...` ) ... )`.
 - `ns` is registered on the view automatically — only pass namespaces that
   are actually used.
@@ -713,3 +747,78 @@ CLASS z2ui5_cl_app_xxx IMPLEMENTATION.
 
 ENDCLASS.
 ```
+
+---
+
+## 12. Sample content conventions
+
+Learned while curating the `01/01` (Basic I) and `01/02` (Basic II) packages —
+follow these so new/edited samples stay consistent:
+
+- **Every sample opens with an intro `MessageStrip`.** As the **first control in
+  the page content** (right after the page is created, before the form/table),
+  add a short, specific English explanation of what the sample demonstrates:
+  ```abap
+  page->message_strip(
+      text     = `<one or two sentences: what this sample shows / does>`
+      type     = `Information`
+      showicon = abap_true
+      class    = `sapUiSmallMargin` ).
+  ```
+  Split a long `text` into `` `chunk ` && `` continuation lines (≤255 chars/line,
+  aligned under the first backtick). If the view is one uncaptured fluent chain,
+  capture the page first (`DATA(page) = <view>->shell( )->page( ... ).`).
+
+- **`01/02` DESCRIPTs carry a capability marker** appended to the `<DESCRIPT>`
+  (leading space), surfaced in the overview:
+  - `(C)` — uses an abap2UI5 **custom control** (`view->_z2ui5( )->…`, or the
+    `z2ui5` cc namespace: `_generic( … ns = `z2ui5` … )`, `z2ui5.cc`, `xmlns:z2ui5`).
+  - `(A)` — performs a **frontend action**: `client->_event_client( )`,
+    `client->follow_up_action( )` (including the `cs_event-control_by_id` /
+    `cs_event-control_global` / `cs_event-binding_call` events), or a
+    client-side interaction like drag-and-drop. The ubiquitous back-button
+    `client->_event_nav_app_leave( )` does **not** count.
+  - `(A,C)` — both. Regenerate the overviews after changing any DESCRIPT (§4).
+
+- **A read-only info form disables its inputs** (`enabled = abap_false`) — do not
+  leave display-only values in editable inputs (see `z2ui5_cl_demo_app_122`).
+
+- **No redundant footer Back button.** The `shell( )->page( )` already renders a
+  nav-back button (`navbuttonpress` / `shownavbutton`); do not add a second
+  `Back` button in the page footer (removed from the MessageBox / MessageToast
+  samples).
+
+- **Must run on OpenUI5 1.71 — watch for "phantom control" 404s.** A generic
+  aggregation-escape method that names an aggregation the parent does **not**
+  have makes UI5 resolve it as a *control class* and 404 with `failed to load
+  sap/<lib>/<name>.js` on 1.71, crashing the sample. Two real cases:
+  - `object_page_section( )->heading( `uxap` )` — `sap.uxap.ObjectPageSection`
+    has no `heading` aggregation. Put the section title in `title = `…`` and go
+    straight to `sub_sections( )`. (`heading( `f` )` **is** valid on a
+    `dynamic_page_title( )` — sap.f `DynamicPageTitle` has that aggregation.)
+  - `<footer>` on a popup `Dialog` — `sap.m.Dialog` only got a public `footer`
+    aggregation ~1.110; a `page( )->footer( )` is fine (sap.m.Page always had
+    one). Every control/property in `src/01` must exist since 1.71 (§2); when in
+    doubt check "available since" in the demo kit.
+
+- **`sap.m.SimpleForm` needs `editable = abap_true`** for its label/input pairs
+  to line up on one row — without it the form renders in display mode and the
+  first field is mislaid (fixed in `189`; compare `133`).
+
+- **`StandardListItem`: `info` right-aligns to the far edge** (a status/amount
+  slot). For a secondary attribute that belongs *with* the title (e.g. a
+  product's category) use `description` — a left-aligned subtitle — instead; the
+  far-right float looks disconnected on wide screens (fixed in `454`/`455`).
+
+- **The page title should carry the `<DESCRIPT>` text.** A user clicks a tile in
+  the overview (which shows the DESCRIPT) and the opened sample's
+  `page( title = … )` should name the same thing so it is recognisably the right
+  sample — e.g. `045` had a copy-pasted "Scroll Container" title on a "Backend
+  Filter" sample.
+
+- **Start every view from `view->shell( )->page( … )`** (not `view->page( … )`)
+  so all samples share the same outer frame (fixed in `143`).
+
+- **Give a `search_field` an explicit `placeholder`.** Without one UI5 shows its
+  locale default (German "Suchen" on a DE system), which clashes with the
+  otherwise-English samples.

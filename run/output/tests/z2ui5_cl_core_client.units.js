@@ -230,6 +230,16 @@ class ltcl_test_client {
     cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'popContainer', 'POPUP', 'to', 'popPage')`, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js[(2) - 1] });
   }
 
+  test_follow_up_action_ctrl() {
+    let li_client = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    li_client.follow_up_action({ val: z2ui5_if_client.cs_event.control_global, t_arg: [`MESSAGE_TOAST`, `show`, `Hello`] });
+    li_client.follow_up_action({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, ``, `setExpanded`, `X`] });
+    cl_abap_unit_assert.assert_equals({ exp: 2, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.length });
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_GLOBAL', 'MESSAGE_TOAST', 'show', 'Hello')`, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js[(1) - 1] });
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded', 'X')`, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js[(2) - 1] });
+  }
+
   test_check_on_init() {
     let li_app = null;
     li_app = z2ui5_cl_util.abap_cast(this.mo_action.mo_app.mo_app);
@@ -415,5 +425,5 @@ class ltcl_test_client {
 module.exports = {
   __main: "z2ui5_cl_core_client",
   __classes: { ltcl_test_app, ltcl_test_client },
-  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_dependent","test_message_box_type","test_message_toast","test_follow_up_action","test_follow_up_action_ev","test_follow_up_action_nav","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_set_nav_back","test_get_event_arg","test_set_app_state_active"]},
+  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_dependent","test_message_box_type","test_message_toast","test_follow_up_action","test_follow_up_action_ev","test_follow_up_action_nav","test_follow_up_action_ctrl","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_set_nav_back","test_get_event_arg","test_set_app_state_active"]},
 };

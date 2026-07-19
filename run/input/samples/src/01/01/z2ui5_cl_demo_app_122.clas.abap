@@ -67,53 +67,100 @@ CLASS Z2UI5_CL_DEMO_APP_122 IMPLEMENTATION.
   METHOD view_display.
 
     DATA(view) = z2ui5_cl_xml_view=>factory( ).
-    view->shell(
+
+    DATA(page) = view->shell(
         )->page(
             title          = `abap2UI5`
             navbuttonpress = client->_event_nav_app_leave( )
-            shownavbutton  = client->check_app_prev_stack( )
-            )->simple_form(
-                title    = `Information`
-                editable = abap_true
-                )->content( `form`
-                )->label( `device_browser`
-                )->input( client->_bind_edit( device_browser )
-                )->label( `device_browser_version`
-                )->input( client->_bind_edit( device_browser_version )
-                )->label( `device_os`
-                )->input( client->_bind_edit( device_os )
-                )->label( `device_os_version`
-                )->input( client->_bind_edit( device_os_version )
-                )->label( `device_systemtype`
-                )->input( client->_bind_edit( device_systemtype )
-                )->label( `device_orientation`
-                )->input( client->_bind_edit( device_orientation )
-                )->label( `device_height`
-                )->input( client->_bind_edit( device_height )
-                )->label( `device_width`
-                )->input( client->_bind_edit( device_width )
-                )->label( `device_phone`
-                )->input( client->_bind_edit( device_phone )
-                )->label( `device_desktop`
-                )->input( client->_bind_edit( device_desktop )
-                )->label( `device_tablet`
-                )->input( client->_bind_edit( device_tablet )
-                )->label( `device_combi`
-                )->input( client->_bind_edit( device_combi )
-                )->label( `device_touch`
-                )->input( client->_bind_edit( device_touch )
-                )->label( `device_pointer`
-                )->input( client->_bind_edit( device_pointer )
-                )->label( `device_retina`
-                )->input( client->_bind_edit( device_retina )
-                )->label( `ui5_version`
-                )->input( client->_bind_edit( ui5_version )
-                )->label( `ui5_theme`
-                )->input( client->_bind_edit( ui5_theme )
-                )->label( `ui5_gav`
-                )->input( client->_bind_edit( ui5_gav )
-                )->label( `ui5_build_timestamp`
-                )->input( client->_bind_edit( ui5_build_timestamp ) ).
+            shownavbutton  = client->check_app_prev_stack( ) ).
+
+    page->message_strip(
+        text     = `Reads frontend information from the client - UI5 version and theme plus device, ` &&
+                   `OS and browser details - and shows each value in a read-only form.`
+        type     = `Information`
+        showicon = abap_true
+        class    = `sapUiSmallMargin` ).
+
+    page->simple_form(
+        title    = `Information`
+        editable = abap_true
+        )->content( `form`
+        )->label( `device_browser`
+        )->input(
+            value   = client->_bind_edit( device_browser )
+            enabled = abap_false
+        )->label( `device_browser_version`
+        )->input(
+            value   = client->_bind_edit( device_browser_version )
+            enabled = abap_false
+        )->label( `device_os`
+        )->input(
+            value   = client->_bind_edit( device_os )
+            enabled = abap_false
+        )->label( `device_os_version`
+        )->input(
+            value   = client->_bind_edit( device_os_version )
+            enabled = abap_false
+        )->label( `device_systemtype`
+        )->input(
+            value   = client->_bind_edit( device_systemtype )
+            enabled = abap_false
+        )->label( `device_orientation`
+        )->input(
+            value   = client->_bind_edit( device_orientation )
+            enabled = abap_false
+        )->label( `device_height`
+        )->input(
+            value   = client->_bind_edit( device_height )
+            enabled = abap_false
+        )->label( `device_width`
+        )->input(
+            value   = client->_bind_edit( device_width )
+            enabled = abap_false
+        )->label( `device_phone`
+        )->input(
+            value   = client->_bind_edit( device_phone )
+            enabled = abap_false
+        )->label( `device_desktop`
+        )->input(
+            value   = client->_bind_edit( device_desktop )
+            enabled = abap_false
+        )->label( `device_tablet`
+        )->input(
+            value   = client->_bind_edit( device_tablet )
+            enabled = abap_false
+        )->label( `device_combi`
+        )->input(
+            value   = client->_bind_edit( device_combi )
+            enabled = abap_false
+        )->label( `device_touch`
+        )->input(
+            value   = client->_bind_edit( device_touch )
+            enabled = abap_false
+        )->label( `device_pointer`
+        )->input(
+            value   = client->_bind_edit( device_pointer )
+            enabled = abap_false
+        )->label( `device_retina`
+        )->input(
+            value   = client->_bind_edit( device_retina )
+            enabled = abap_false
+        )->label( `ui5_version`
+        )->input(
+            value   = client->_bind_edit( ui5_version )
+            enabled = abap_false
+        )->label( `ui5_theme`
+        )->input(
+            value   = client->_bind_edit( ui5_theme )
+            enabled = abap_false
+        )->label( `ui5_gav`
+        )->input(
+            value   = client->_bind_edit( ui5_gav )
+            enabled = abap_false
+        )->label( `ui5_build_timestamp`
+        )->input(
+            value   = client->_bind_edit( ui5_build_timestamp )
+            enabled = abap_false ).
     client->view_display( view->stringify( ) ).
 
   ENDMETHOD.

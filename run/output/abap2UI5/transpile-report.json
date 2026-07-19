@@ -117,6 +117,18 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_app_developertool_xml",
+    "path": "01/03/z2ui5_cl_app_developertool_xml.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_app_developertools_js",
+    "path": "01/03/z2ui5_cl_app_developertools_js.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_app_formatter_js",
     "path": "01/03/z2ui5_cl_app_formatter_js.js",
     "todos": 0,

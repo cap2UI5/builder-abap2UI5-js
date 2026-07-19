@@ -112,6 +112,18 @@ class ltcl_test {
     cl_abap_unit_assert.assert_true(temp11);
   }
 
+  event_empty_middle_arg() {
+    let lo_event = null;
+    lo_event = new z2ui5_cl_core_srv_event();
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded', 'X')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, ``, `setExpanded`, `X`] }) });
+  }
+
+  event_trailing_empty_arg() {
+    let lo_event = null;
+    lo_event = new z2ui5_cl_core_srv_event();
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, ``, `setExpanded`, ``] }) });
+  }
+
   event_multi_req() {
     let lo_event = null;
     let temp11 = { check_allow_multi_req: false };
@@ -149,5 +161,5 @@ class ltcl_test {
 module.exports = {
   __main: "z2ui5_cl_core_srv_event",
   __classes: { ltcl_test },
-  __tests: {"ltcl_test":["event","event_backend","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_multi_req","event_client_args","event_nav_container"]},
+  __tests: {"ltcl_test":["event","event_backend","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_empty_middle_arg","event_trailing_empty_arg","event_multi_req","event_client_args","event_nav_container"]},
 };

@@ -355,9 +355,13 @@ describe("z2ui5_cl_util_api", () => {
 //  z2ui5_if_client / z2ui5_if_exit / z2ui5_cl_exit
 // =============================================================
 describe("z2ui5_if_client", () => {
-  test("cs_event has the 31 upstream entries", () => {
-    expect(Object.keys(z2ui5_if_client.cs_event)).toHaveLength(31);
+  test("cs_event has the 34 upstream entries", () => {
+    expect(Object.keys(z2ui5_if_client.cs_event)).toHaveLength(34);
     expect(z2ui5_if_client.cs_event.popup_close).toBe("POPUP_CLOSE");
+    // the whitelisted control/binding call events (upstream #2438)
+    expect(z2ui5_if_client.cs_event.control_by_id).toBe("CONTROL_BY_ID");
+    expect(z2ui5_if_client.cs_event.control_global).toBe("CONTROL_GLOBAL");
+    expect(z2ui5_if_client.cs_event.binding_call).toBe("BINDING_CALL");
   });
 
   test("METHOD_NAMES covers all interface methods", () => {

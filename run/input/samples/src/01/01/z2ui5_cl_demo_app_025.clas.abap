@@ -50,9 +50,6 @@ CLASS z2ui5_cl_demo_app_025 IMPLEMENTATION.
       WHEN `BUTTON_RESTART`.
         client->nav_app_call( NEW z2ui5_cl_demo_app_025( ) ).
 
-      WHEN `BUTTON_CHANGE_APP`.
-        client->nav_app_call( NEW z2ui5_cl_demo_app_001( ) ).
-
       WHEN `BUTTON_READ_PREVIOUS`.
         DATA(app_024) = CAST z2ui5_cl_demo_app_024( client->get_app( client->get( )-s_draft-id_prev_app ) ).
         input_previous = app_024->input2.
@@ -79,6 +76,13 @@ CLASS z2ui5_cl_demo_app_025 IMPLEMENTATION.
             title          = `abap2UI5 - flow logic - APP 02`
             navbuttonpress = client->_event_nav_app_leave( )
             shownavbutton  = client->check_app_prev_stack( ) ).
+
+    page->message_strip(
+        text     = `The second app in the app-to-app flow: it reads the caller's data, returns to it ` &&
+                   `optionally raising an event, and switches between two views.`
+        type     = `Information`
+        showicon = abap_true
+        class    = `sapUiSmallMargin` ).
 
     CASE show_view.
 

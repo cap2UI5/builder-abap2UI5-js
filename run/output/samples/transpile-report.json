@@ -1,11 +1,5 @@
 [
   {
-    "class": "z2ui5_cl_demo_app_001",
-    "path": "01/01/z2ui5_cl_demo_app_001.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_004",
     "path": "01/01/z2ui5_cl_demo_app_004.js",
     "todos": 0,
@@ -221,14 +215,110 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_445",
+    "path": "01/01/z2ui5_cl_demo_app_445.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_446",
+    "path": "01/01/z2ui5_cl_demo_app_446.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_447",
+    "path": "01/01/z2ui5_cl_demo_app_447.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_450",
+    "path": "01/01/z2ui5_cl_demo_app_450.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_452",
     "path": "01/01/z2ui5_cl_demo_app_452.js",
     "todos": 0,
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_453",
+    "path": "01/01/z2ui5_cl_demo_app_453.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_456",
+    "path": "01/01/z2ui5_cl_demo_app_456.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_457",
+    "path": "01/01/z2ui5_cl_demo_app_457.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_458",
+    "path": "01/01/z2ui5_cl_demo_app_458.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_464",
+    "path": "01/01/z2ui5_cl_demo_app_464.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_006",
+    "path": "01/02/z2ui5_cl_demo_app_006.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_011",
+    "path": "01/02/z2ui5_cl_demo_app_011.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_019",
+    "path": "01/02/z2ui5_cl_demo_app_019.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_028",
     "path": "01/02/z2ui5_cl_demo_app_028.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_045",
+    "path": "01/02/z2ui5_cl_demo_app_045.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_048",
+    "path": "01/02/z2ui5_cl_demo_app_048.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_053",
+    "path": "01/02/z2ui5_cl_demo_app_053.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_059",
+    "path": "01/02/z2ui5_cl_demo_app_059.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -241,8 +331,40 @@
     ]
   },
   {
+    "class": "z2ui5_cl_demo_app_070",
+    "path": "01/02/z2ui5_cl_demo_app_070.js",
+    "todos": 1,
+    "todoDetails": [
+      "unsupported statement: DELETE mt_table."
+    ]
+  },
+  {
     "class": "z2ui5_cl_demo_app_073",
     "path": "01/02/z2ui5_cl_demo_app_073.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_074",
+    "path": "01/02/z2ui5_cl_demo_app_074.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_078",
+    "path": "01/02/z2ui5_cl_demo_app_078.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_088",
+    "path": "01/02/z2ui5_cl_demo_app_088.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_120",
+    "path": "01/02/z2ui5_cl_demo_app_120.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -259,8 +381,44 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_143",
+    "path": "01/02/z2ui5_cl_demo_app_143.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_160",
+    "path": "01/02/z2ui5_cl_demo_app_160.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_170",
+    "path": "01/02/z2ui5_cl_demo_app_170.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_189",
     "path": "01/02/z2ui5_cl_demo_app_189.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_202",
+    "path": "01/02/z2ui5_cl_demo_app_202.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_279",
+    "path": "01/02/z2ui5_cl_demo_app_279.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_306",
+    "path": "01/02/z2ui5_cl_demo_app_306.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -301,136 +459,60 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_383",
-    "path": "01/02/z2ui5_cl_demo_app_383.js",
+    "class": "z2ui5_cl_demo_app_448",
+    "path": "01/02/z2ui5_cl_demo_app_448.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_446",
-    "path": "01/02/z2ui5_cl_demo_app_446.js",
+    "class": "z2ui5_cl_demo_app_449",
+    "path": "01/02/z2ui5_cl_demo_app_449.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_447",
-    "path": "01/02/z2ui5_cl_demo_app_447.js",
+    "class": "z2ui5_cl_demo_app_454",
+    "path": "01/02/z2ui5_cl_demo_app_454.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_074",
-    "path": "01/05/z2ui5_cl_demo_app_074.js",
+    "class": "z2ui5_cl_demo_app_455",
+    "path": "01/02/z2ui5_cl_demo_app_455.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_078",
-    "path": "01/05/z2ui5_cl_demo_app_078.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_088",
-    "path": "01/05/z2ui5_cl_demo_app_088.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_120",
-    "path": "01/05/z2ui5_cl_demo_app_120.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_170",
-    "path": "01/05/z2ui5_cl_demo_app_170.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_202",
-    "path": "01/05/z2ui5_cl_demo_app_202.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_279",
-    "path": "01/05/z2ui5_cl_demo_app_279.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_306",
-    "path": "01/05/z2ui5_cl_demo_app_306.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_006",
-    "path": "01/06/z2ui5_cl_demo_app_006.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_011",
-    "path": "01/06/z2ui5_cl_demo_app_011.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_019",
-    "path": "01/06/z2ui5_cl_demo_app_019.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_045",
-    "path": "01/06/z2ui5_cl_demo_app_045.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_048",
-    "path": "01/06/z2ui5_cl_demo_app_048.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_053",
-    "path": "01/06/z2ui5_cl_demo_app_053.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_059",
-    "path": "01/06/z2ui5_cl_demo_app_059.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_070",
-    "path": "01/06/z2ui5_cl_demo_app_070.js",
+    "class": "z2ui5_cl_demo_app_459",
+    "path": "01/02/z2ui5_cl_demo_app_459.js",
     "todos": 1,
     "todoDetails": [
-      "unsupported statement: DELETE mt_table."
+      "unsupported statement: DELETE t_products INDEX lv_from."
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_143",
-    "path": "01/06/z2ui5_cl_demo_app_143.js",
+    "class": "z2ui5_cl_demo_app_460",
+    "path": "01/02/z2ui5_cl_demo_app_460.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_160",
-    "path": "01/06/z2ui5_cl_demo_app_160.js",
+    "class": "z2ui5_cl_demo_app_461",
+    "path": "01/02/z2ui5_cl_demo_app_461.js",
+    "todos": 1,
+    "todoDetails": [
+      "unsupported statement: DELETE <from>-nodes INDEX lv_from_child."
+    ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_462",
+    "path": "01/02/z2ui5_cl_demo_app_462.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_445",
-    "path": "01/06/z2ui5_cl_demo_app_445.js",
+    "class": "z2ui5_cl_demo_app_463",
+    "path": "01/02/z2ui5_cl_demo_app_463.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -1104,11 +1186,12 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_sample_app_001",
-    "path": "01/z2ui5_cl_sample_app_001.js",
-    "todos": 1,
+    "class": "z2ui5_cl_demo_app_g00",
+    "path": "01/z2ui5_cl_demo_app_g00.js",
+    "todos": 2,
     "todoDetails": [
-      "unsupported statement: DELETE words INDEX n."
+      "unsupported statement: DELETE words INDEX n.",
+      "CP pattern match approximated with includes()"
     ]
   },
   {
