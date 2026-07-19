@@ -27,3 +27,8 @@ jobs:
   build_core:
     needs: prepare
     uses: ./.github/workflows/build_core.yml
+  trigger_cap:
+    # idempotent: pushes only when core/ actually changed since the last trigger
+    needs: build_core
+    uses: ./.github/workflows/trigger_cap.yml
+    secrets: inherit

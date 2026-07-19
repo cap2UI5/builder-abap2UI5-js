@@ -4,8 +4,8 @@ name: build core
 # assemble → publish → jest — and commit the refreshed core/.
 # Step 3 of every update pipeline (backend / frontend / samples); replaces
 # the monorepo-era "* to CAP" workflows: the CAP app itself is now built
-# downstream in cap2UI5/builder-cap2UI5 (kick it via "trigger cap" after
-# core/ changed).
+# downstream in cap2UI5/builder-cap2UI5 — every update pipeline chains
+# "trigger cap" after this step, which kicks that build when core/ changed.
 
 on:
   workflow_dispatch:
