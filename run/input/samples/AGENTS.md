@@ -54,6 +54,7 @@ src/
     ├── 05/  only with javascript and css and html   needs native JS / CSS / HTML
     ├── 06/  only testing                 test / scaffolding apps, not demos
     ├── 07/  experimental, TODO           work-in-progress / not finished
+    ├── 08/  framework - new (beta)       needs framework features not yet in a stable release
     └── 99/  obsolete                     superseded, or built on a deprecated UI5 control
 ```
 
@@ -120,7 +121,8 @@ The split is driven directly by the CI builds:
   5. Needs native JavaScript / CSS / HTML → `00/05`
   6. Test / scaffolding app → `00/06`
   7. Experimental / work-in-progress → `00/07`
-  8. Deprecated control/property, or superseded → `00/99`
+  8. Needs framework features not yet in a stable release (beta) → `00/08`
+  9. Deprecated control/property, or superseded → `00/99`
 
 A sample qualifies for `src/01` **only if none** of the above restrictions
 apply: OpenUI5-compatible, ABAP-Cloud-ready, standalone, every control **and**
