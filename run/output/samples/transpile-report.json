@@ -221,6 +221,13 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_452",
+    "path": "01/01/z2ui5_cl_demo_app_452.js",
+    "todos": 0,
+    "parseError": "Unexpected identifier 'transporting'",
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_028",
     "path": "01/02/z2ui5_cl_demo_app_028.js",
     "todos": 0,
