@@ -3036,12 +3036,15 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       break;
     }
     case "Loop": {
-      // LOOP AT tab [INTO DATA(x)|REFERENCE INTO DATA(x)|ASSIGNING FIELD-SYMBOL(<x>)] [WHERE cond].
+      // LOOP AT tab [INTO DATA(x)|REFERENCE INTO DATA(x)|ASSIGNING FIELD-SYMBOL(<x>)
+      //             |TRANSPORTING NO FIELDS] [WHERE cond].
       const atIdx = toks.findIndex((t) => KW(t.str) === "AT");
       const intoIdx = toks.findIndex((t) => KW(t.str) === "INTO");
       const assignIdx = toks.findIndex((t) => KW(t.str) === "ASSIGNING");
       const whereIdx = toks.findIndex((t) => KW(t.str) === "WHERE");
-      const tabEnd = [intoIdx, assignIdx, whereIdx, toks.findIndex((t) => KW(t.str) === "REFERENCE")].filter((x) => x > 0);
+      // TRANSPORTING NO FIELDS carries no row target — the loop variable stays
+      // the synthetic `row` (only read by the WHERE condition, if any)
+      const tabEnd = [intoIdx, assignIdx, whereIdx, toks.findIndex((t) => KW(t.str) === "REFERENCE"), toks.findIndex((t) => KW(t.str) === "TRANSPORTING")].filter((x) => x > 0);
       const tabToks = toks.slice(atIdx + 1, tabEnd.length ? Math.min(...tabEnd) : toks.length);
       const tab = txExpr(tabToks, ctx);
       let rowVar = "row";

@@ -2,8 +2,11 @@
 /**
  * transpile-tree — transpiles ABAP classes from run/input/<name>/src into
  * run/output/<name>/ (folder structure mirrored 1:1) and writes a
- * transpile-report.json with the TODO count per class. The assemble step
- * (assemble-cap.js) uses that report as its safety gate.
+ * transpile-report.json with the TODO count per class (informational;
+ * assemble-core.js runs its own vm.Script parse check and does not read
+ * the report). Classes whose generated JS does not parse fail this step
+ * (exit 1) unless listed in transpile-parse-allow.json — a silent drop at
+ * assemble time is exactly what this gate exists to prevent.
  *
  *   node scripts/transpile-tree.js abap2UI5   → every class under src/
  *   node scripts/transpile-tree.js samples    → every class under src/
@@ -120,4 +123,15 @@ const unparseable = report.filter((r) => r.parseError);
 console.log(`run/output/${name}: ${report.length} classes transpiled (${clean} clean, ${report.length - clean} with TODOs, ${unparseable.length} with parse errors), ${failed.length} failed`);
 for (const r of unparseable) console.error(`  PARSE ERROR: ${r.path}: ${r.parseError}`);
 for (const f of failed) console.error(`  FAILED: ${f}`);
-if (failed.length) process.exit(1);
+
+// Parse-error gate: a class whose generated JS does not parse would be
+// silently dropped by assemble-core's own parse check — fail here instead,
+// so an upstream construct the transpiler cannot handle turns the pipeline
+// red rather than shrinking the published package. transpile-parse-allow.json
+// is the escape hatch for deliberately accepted losses (currently empty).
+const allowed = new Set(require("./transpile-parse-allow.json").map((c) => c.toLowerCase()));
+const blocked = unparseable.filter((r) => !allowed.has(r.class.toLowerCase()));
+if (blocked.length) {
+  console.error(`${blocked.length} class(es) with parse errors not in scripts/transpile-parse-allow.json — fix the transpiler (or allow-list a deliberate loss)`);
+}
+if (failed.length || blocked.length) process.exit(1);

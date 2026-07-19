@@ -6,13 +6,15 @@ name: trigger cap
 # (private half: secret ACTION_KEY_CAP here) — that push starts
 # builder-cap2UI5's "update cap" workflow, which mirrors the published
 # core/ from this repo and rebuilds + republishes the CAP app.
-# Same pattern as this repo's monorepo-era trigger_web. Manual only
-# (workflow_dispatch): run it whenever core/ changed — e.g. after a nightly
-# sync pipeline committed a new core build. If core/ is unchanged since the
-# last trigger, nothing is pushed and builder-cap2UI5 does not rebuild.
+# Same pattern as this repo's monorepo-era trigger_web. Runs automatically
+# at the end of every update pipeline (backend / frontend / samples, via
+# workflow_call) and stays manually runnable (workflow_dispatch). The push
+# is idempotent: if core/ is unchanged since the last trigger, nothing is
+# pushed and builder-cap2UI5 does not rebuild.
 
 on:
   workflow_dispatch:
+  workflow_call: # chained by update_backend / update_frontend / update_samples
 
 permissions:
   contents: read

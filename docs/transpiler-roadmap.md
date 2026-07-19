@@ -78,14 +78,16 @@ run-units.js        →  pass/fail per method          (AUnit semantics: fresh i
 upstream-units.test.js  →  diff vs test/upstream-units.known-failures.json  (the ratchet)
 ```
 
-The known-failures baseline IS the transpiler/port bug worklist (currently
-195 entries, 104 tests passing): a new failure is a regression (suite red), a
-fixed entry must be delisted (suite red), so the list only shrinks — and the
-nightly syncs re-arm it against fresh upstream sources. Burn-down method:
-cluster the reasons (`node scripts/run-units.js --json`), fix the emitter or
-port for the biggest cluster, regenerate the baseline, repeat. First two
-cluster fixes (NEW #( ) target-type inference, positional unit-assert args)
-took the failures from 196+stale to 195 with deeper test progression.
+The known-failures baseline IS the transpiler/port bug worklist (the entry
+count in `test/upstream-units.known-failures.json` is the live number — the
+burn-down took it from ~195 entries to the low twenties, mostly deliberate
+JS-limit entries): a new failure is a regression (suite red), a fixed entry
+must be delisted (suite red), so the list only shrinks — and the nightly
+syncs re-arm it against fresh upstream sources. Burn-down method: cluster
+the reasons (`node scripts/run-units.js --json`), fix the emitter or port
+for the biggest cluster, regenerate the baseline, repeat. First two cluster
+fixes (NEW #( ) target-type inference, positional unit-assert args) took the
+failures from 196+stale to 195 with deeper test progression.
 
 ## Backlog (prioritised)
 
