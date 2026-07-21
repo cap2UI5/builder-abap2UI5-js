@@ -90,18 +90,26 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `    // anything"). Scope: imperative methods that have no binding equivalent.` && |\n| &&
              `    // ------------------------------------------------------------------` && |\n| &&
              `` && |\n| &&
-             `    // control method -> kinds of its positional args.` && |\n| &&
+             `    // control method -> kinds of its positional args. Args beyond the` && |\n| &&
+             `    // declared kinds are dropped; trailing args the caller did not send are` && |\n| &&
+             `    // not passed at all (so ``open()`` stays a true no-arg call).` && |\n| &&
              `    const CONTROL_METHODS = {` && |\n| &&
-             `      to: ["controlId"],` && |\n| &&
+             `      to: ["controlId", "string"], // target page + optional transitionName` && |\n| &&
              `      back: [],` && |\n| &&
              `      focus: [],` && |\n| &&
              `      scrollToIndex: ["int"],` && |\n| &&
              `      scrollTo: ["int", "int"],` && |\n| &&
-             `      open: [],` && |\n| &&
+             `      open: ["string"], // optional page key (ViewSettingsDialog); PDFViewer/Dialog ignore it` && |\n| &&
              `      close: [],` && |\n| &&
              `      setExpanded: ["bool"],` && |\n| &&
              `      discardProgress: ["controlId"],` && |\n| &&
              `      setNextStep: ["controlId"],` && |\n| &&
+             `      goToStep: ["controlId", "bool"], // Wizard: target step + focus flag` && |\n| &&
+             `      openBy: ["domRef"], // DatePicker/TimePicker/Menu... anchored open` && |\n| &&
+             `      toggleBy: ["domRef"], // sap.m.Menu/Popover: open anchored if closed, close if open` && |\n| &&
+             `      setActivePage: ["controlId"], // sap.m.Carousel` && |\n| &&
+             `      expandToLevel: ["int"], // sap.m.Tree / sap.ui.table.TreeTable: expand to N levels` && |\n| &&
+             `      collapseAll: [], // sap.m.Tree / sap.ui.table.TreeTable: collapse every node` && |\n| &&
              `    };` && |\n| &&
              `` && |\n| &&
              `    // global object -> lazy getter + its allowed methods (with arg kinds).` && |\n| &&
@@ -147,6 +155,15 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `            (view && ViewSlots.byId(view.toUpperCase(), raw)) ||` && |\n| &&
              `            ViewSlots.resolveById(raw)` && |\n| &&
              `          );` && |\n| &&
+             `        case "domRef": {` && |\n| &&
+             `          // anchor argument for openBy-style methods: resolve the control id` && |\n| &&
+             `          // and hand over its DOM element (fallback: the control itself -` && |\n| &&
+             `          // every sap.m openBy accepts a control OR a DOM element)` && |\n| &&
+             `          const control =` && |\n| &&
+             `            (view && ViewSlots.byId(view.toUpperCase(), raw)) ||` && |\n| &&
+             `            ViewSlots.resolveById(raw);` && |\n| &&
+             `          return control?.getDomRef?.() ?? control;` && |\n| &&
+             `        }` && |\n| &&
              `        case "object":` && |\n| &&
              `          try {` && |\n| &&
              `            return JSON.parse(raw);` && |\n| &&
@@ -159,7 +176,11 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    function castArgs(kinds, rawArgs, view) {` && |\n| &&
-             `      return kinds.map((kind, i) => castArg(kind, rawArgs[i], view));` && |\n| &&
+             `      // only cast args the caller actually sent - padding missing trailing` && |\n| &&
+             `      // args would turn open() into open(undefined) and ints into NaN` && |\n| &&
+             `      return kinds` && |\n| &&
+             `        .slice(0, rawArgs.length)` && |\n| &&
+             `        .map((kind, i) => castArg(kind, rawArgs[i], view));` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    // args: [_, id, view, method, ...params]` && |\n| &&
@@ -173,6 +194,25 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `      const control = view` && |\n| &&
              `        ? ViewSlots.byId(view.toUpperCase(), id)` && |\n| &&
              `        : ViewSlots.resolveById(id);` && |\n| &&
+             `      // toggleBy is not a real control method: open the control anchored to` && |\n| &&
+             `      // the domRef if it is closed, close it if it is already open (mirrors` && |\n| &&
+             `      // openBy for a press-to-toggle button). The popup's open state lives` && |\n| &&
+             `      // client-side, so the decision stays here rather than round-tripping.` && |\n| &&
+             `      if (method === "toggleBy") {` && |\n| &&
+             `        if (!control || typeof control.openBy !== "function") {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``CONTROL_BY_ID: 'toggleBy' not callable on control '${id}'``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        const anchor = castArgs(kinds, args.slice(4), view)[0];` && |\n| &&
+             `        if (control.isOpen?.()) {` && |\n| &&
+             `          control.close();` && |\n| &&
+             `        } else {` && |\n| &&
+             `          control.openBy(anchor);` && |\n| &&
+             `        }` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
              `      if (!control || typeof control[method] !== "function") {` && |\n| &&
              `        Lib.logError(` && |\n| &&
              `          ``CONTROL_BY_ID: '${method}' not callable on control '${id}'``,` && |\n| &&
@@ -236,8 +276,64 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `    // The backend arg serializer keeps empty args between filled ones as ''` && |\n| &&
              `    // placeholders but trims trailing empties, so all optionals sit at the` && |\n| &&
              `    // end and may arrive as undefined.` && |\n| &&
+             `    // Compound form of the filter payload: ONE param carrying a JSON array` && |\n| &&
+             `    // of groups, each group an array of [path, operator, value1, value2?]` && |\n| &&
+             `    // rows - OR inside a group, AND across groups (the FacetFilter /` && |\n| &&
+             `    // ViewSettingsDialog multi-facet shape). Data only: paths, whitelisted` && |\n| &&
+             `    // operators and values - never code. An empty groups array clears.` && |\n| &&
+             `    function buildFilterGroups(binding, json) {` && |\n| &&
+             `      let groups;` && |\n| &&
+             `      try {` && |\n| &&
+             `        groups = JSON.parse(json);` && |\n| &&
+             `      } catch {` && |\n| &&
+             `        Lib.logError("BINDING_CALL: malformed filter groups JSON");` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      if (!Array.isArray(groups)) {` && |\n| &&
+             `        Lib.logError("BINDING_CALL: filter groups must be an array");` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      groups = groups.filter((g) => Array.isArray(g) && g.length);` && |\n| &&
+             `      if (!groups.length) {` && |\n| &&
+             `        binding.filter([]);` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      const outer = [];` && |\n| &&
+             `      for (const group of groups) {` && |\n| &&
+             `        const inner = [];` && |\n| &&
+             `        for (const row of group) {` && |\n| &&
+             `          const [path, operator, value1, value2] = Array.isArray(row)` && |\n| &&
+             `            ? row` && |\n| &&
+             `            : [];` && |\n| &&
+             `          if (typeof path !== "string" || !FILTER_OPERATORS.has(operator)) {` && |\n| &&
+             `            Lib.logError(` && |\n| &&
+             `              ``BINDING_CALL: bad filter row (path '${path}' / operator '${operator}')``,` && |\n| &&
+             `            );` && |\n| &&
+             `            return;` && |\n| &&
+             `          }` && |\n| &&
+             `          inner.push(` && |\n| &&
+             `            new Filter(path, FilterOperator[operator], value1, value2),` && |\n| &&
+             `          );` && |\n| &&
+             `        }` && |\n| &&
+             `        outer.push(new Filter(inner, false)); // OR inside the group` && |\n| &&
+             `      }` && |\n| &&
+             `      binding.filter([new Filter(outer, true)]); // AND across the groups` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
              `    const BINDING_METHODS = {` && |\n| &&
-             `      filter(binding, [path, operator, value1, value2]) {` && |\n| &&
+             `      filter(binding, params) {` && |\n| &&
+             `        const [path, operator, value1, value2] = params;` && |\n| &&
+             `        // A single param that starts with '[' is the compound groups JSON -` && |\n| &&
+             `        // a model path can never start with '[', so the sniff is` && |\n| &&
+             `        // unambiguous and the positional single-filter form stays as-is.` && |\n| &&
+             `        if (` && |\n| &&
+             `          params.length === 1 &&` && |\n| &&
+             `          typeof path === "string" &&` && |\n| &&
+             `          path.trimStart().startsWith("[")` && |\n| &&
+             `        ) {` && |\n| &&
+             `          buildFilterGroups(binding, path);` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
              `        // No filter values at all -> clear the filter (the demo kit search` && |\n| &&
              `        // pattern: an emptied search field). A one-sided range (empty` && |\n| &&
              `        // value1 but a set value2, e.g. BT with only an upper bound) is a` && |\n| &&
@@ -321,7 +417,8 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    function evCrossAppNavToPrevApp() {` && |\n| &&
-             `      withCrossAppNavigator((nav) => nav.backToPreviousApp());` && |\n| &&
+             `      withCrossAppNavigator((nav) => nav.backToPreviousApp());` && |\n|.
+    result = result &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    function evSetSizeLimit(oController, args) {` && |\n| &&
@@ -417,8 +514,7 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `        MessageBox.error(` && |\n| &&
              `          "Invalid redirect URL. Only relative URLs to the same domain are allowed.",` && |\n| &&
              `        );` && |\n| &&
-             `      }` && |\n|.
-    result = result &&
+             `      }` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    // SYSTEM_LOGOUT: prefer the launchpad logout when running inside the` && |\n| &&
@@ -722,7 +818,8 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `      }` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function evZ2ui5Custom(oController, args) {` && |\n| &&
+             `    function evZ2ui5Custom(oController, args) {` && |\n|.
+    result = result &&
              `      try {` && |\n| &&
              `        // Custom functions are registered by apps on the public z2ui5` && |\n| &&
              `        // global (js_loader popup), so resolve them via the facade.` && |\n| &&
@@ -818,8 +915,7 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    return { execute };` && |\n| &&
-             `  },` && |\n|.
-    result = result &&
+             `  },` && |\n| &&
              `);` && |\n| &&
              `` && |\n| &&
               ``.
