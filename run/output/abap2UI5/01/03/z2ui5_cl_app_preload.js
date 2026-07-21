@@ -12,6 +12,7 @@ class z2ui5_cl_app_preload {
 ` + `      "z2ui5/cc/History.js": function(){${z2ui5_cl_app_history_js.get()}},` + `
 ` + `      "z2ui5/cc/Info.js": function(){${z2ui5_cl_app_info_js.get()}},` + `
 ` + `      "z2ui5/cc/LPTitle.js": function(){${z2ui5_cl_app_lptitle_js.get()}},` + `
+` + `      "z2ui5/cc/MessageManager.js": function(){${z2ui5_cl_app_messagemanager_js.get()}},` + `
 ` + `      "z2ui5/cc/MultiInputExt.js": function(){${z2ui5_cl_app_multiinputext_js.get()}},` + `
 ` + `      "z2ui5/cc/Scrolling.js": function(){${z2ui5_cl_app_scrolling_js.get()}},` + `
 ` + `      "z2ui5/cc/SmartMultiInputExt.js": function(){${z2ui5_cl_app_smartmultiinpu_js.get()}},` + `
@@ -67,6 +68,7 @@ const z2ui5_cl_app_info_js = require("abap2UI5/z2ui5_cl_app_info_js");
 const z2ui5_cl_app_lib_js = require("abap2UI5/z2ui5_cl_app_lib_js");
 const z2ui5_cl_app_lptitle_js = require("abap2UI5/z2ui5_cl_app_lptitle_js");
 const z2ui5_cl_app_manifest_json = require("abap2UI5/z2ui5_cl_app_manifest_json");
+const z2ui5_cl_app_messagemanager_js = require("abap2UI5/z2ui5_cl_app_messagemanager_js");
 const z2ui5_cl_app_messages_js = require("abap2UI5/z2ui5_cl_app_messages_js");
 const z2ui5_cl_app_models_js = require("abap2UI5/z2ui5_cl_app_models_js");
 const z2ui5_cl_app_multiinputext_js = require("abap2UI5/z2ui5_cl_app_multiinputext_js");
