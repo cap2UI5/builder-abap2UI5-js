@@ -16,6 +16,7 @@ CLASS z2ui5_cl_demo_app_059 DEFINITION PUBLIC.
 
     DATA mt_table TYPE ty_t_table.
 
+    data mv_field type string.
   PROTECTED SECTION.
     DATA client TYPE REF TO z2ui5_if_client.
 
@@ -28,7 +29,7 @@ ENDCLASS.
 
 
 
-CLASS Z2UI5_CL_DEMO_APP_059 IMPLEMENTATION.
+CLASS z2ui5_cl_demo_app_059 IMPLEMENTATION.
 
 
   METHOD z2ui5_if_app~main.
@@ -54,7 +55,8 @@ CLASS Z2UI5_CL_DEMO_APP_059 IMPLEMENTATION.
       set_data( ).
       z2ui5_cl_sample_context=>itab_filter_by_val(
           EXPORTING
-              val = client->get_event_arg( )
+              val = mv_field
+*              val = client->get_event_arg( )
           CHANGING
               tab = mt_table ).
 
@@ -66,13 +68,18 @@ CLASS Z2UI5_CL_DEMO_APP_059 IMPLEMENTATION.
 
   METHOD set_data.
 
-    mt_table = VALUE #(
-        ( product = `table` create_date = `01.01.2023` create_by = `Peter` storage_location = `AREA_001` quantity = 400 )
-        ( product = `chair` create_date = `01.01.2022` create_by = `James` storage_location = `AREA_001` quantity = 123 )
-        ( product = `sofa` create_date = `01.05.2021` create_by = `Simone` storage_location = `AREA_001` quantity = 700 )
-        ( product = `computer` create_date = `27.01.2023` create_by = `Theo` storage_location = `AREA_001` quantity = 200 )
-        ( product = `printer` create_date = `01.01.2023` create_by = `Hannah` storage_location = `AREA_001` quantity = 90 )
-        ( product = `table2` create_date = `01.01.2023` create_by = `Julia` storage_location = `AREA_001` quantity = 110 ) ).
+    clear mt_table.
+    DO 1000 TIMES.
+      INSERT LINES OF VALUE ty_t_table(
+          ( product = `table` create_date = `01.01.2023` create_by = `Peter` storage_location = `AREA_001` quantity = 400 )
+          ( product = `chair` create_date = `01.01.2022` create_by = `James` storage_location = `AREA_001` quantity = 123 )
+          ( product = `sofa` create_date = `01.05.2021` create_by = `Simone` storage_location = `AREA_001` quantity = 700 )
+          ( product = `computer` create_date = `27.01.2023` create_by = `Theo` storage_location = `AREA_001` quantity = 200 )
+          ( product = `printer` create_date = `01.01.2023` create_by = `Hannah` storage_location = `AREA_001` quantity = 90 )
+          ( product = `table2` create_date = `01.01.2023` create_by = `Julia` storage_location = `AREA_001` quantity = 110 )
+          ) INTO TABLE mt_table.
+
+    ENDDO.
 
   ENDMETHOD.
 
@@ -87,20 +94,33 @@ CLASS Z2UI5_CL_DEMO_APP_059 IMPLEMENTATION.
             shownavbutton                  = client->check_app_prev_stack( ) ).
 
     page1->message_strip(
-        text     = `The search field's livechange event sends every keystroke to the backend (multiple ` &&
-                   `parallel requests allowed) to live-filter the table as the user types.`
+        text     = `In abap2UI5 only one backend request can be handled at the same time per default, the app is set Busy and all other requests are ignored until the processing is finished. IN some case eg search field (live search), paralle proces` &&
+`sing is needed beacause only the newest request is important and all older one can be ignored. you can set this up with the event in abap2UI5.`
         type     = `Information`
         showicon = abap_true
         class    = `sapUiSmallMargin` ).
 
-    DATA(lo_box) = page1->vbox( )->text( `Search`
+    DATA(lo_box) = page1->hbox( ).
+            lo_box->vbox( )->text( `Search disabled parallel (default)`
         )->search_field( width      = `17.5rem`
+                            value = client->_bind( mv_field )
                          livechange = client->_event(
-                         val        = `BUTTON_SEARCH`
-                         t_arg      = VALUE #( ( `${$source>/value}` ) )
-                         s_ctrl     = VALUE #( check_allow_multi_req = abap_true ) ) ).
+                            val        = `BUTTON_SEARCH`
+*                            t_arg      = VALUE #( ( `${$source>/value}` ) )
+*                         s_ctrl     = VALUE #( check_allow_multi_req = abap_true )
+                            ) ).
+     lo_box->vbox( )->text( `Search parallel`
+        )->search_field( width      = `17.5rem`
+                            value = client->_bind( mv_field )
+                         livechange = client->_event(
+                            val        = `BUTTON_SEARCH`
+*                            t_arg      = VALUE #( ( `${$source>/value}` ) )
+                         s_ctrl     = VALUE #( check_allow_multi_req = abap_true )
+                            ) ).
 
-    DATA(tab) = lo_box->table( client->_bind( mt_table ) ).
+
+
+    DATA(tab) = page1->table( client->_bind( mt_table ) ).
     DATA(lo_columns) = tab->columns( ).
     lo_columns->column( )->text( `Product` ).
     lo_columns->column( )->text( `Date` ).

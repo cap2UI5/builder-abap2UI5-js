@@ -76,10 +76,11 @@ CLASS z2ui5_cl_demo_app_467 IMPLEMENTATION.
                     ns     = `z2ui5`
                     t_prop = VALUE #( ( n = `items` v = client->_bind( t_messages ) ) ) ).
 
-    page->simple_form( title    = `Registration`
-                       editable = abap_true
-                       class    = `sapUiSmallMargin`
-        )->content(
+    page->vbox(
+*            title    = `Registration`
+*                       editable = abap_true
+*                       class    = `sapUiSmallMargin`
+*        )->content(
             )->label( `Name`
             )->input( client->_bind_edit( name ) ).
 
