@@ -275,6 +275,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_466",
+    "path": "01/01/z2ui5_cl_demo_app_466.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_006",
     "path": "01/02/z2ui5_cl_demo_app_006.js",
     "todos": 0,
@@ -459,6 +465,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_421",
+    "path": "01/02/z2ui5_cl_demo_app_421.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_448",
     "path": "01/02/z2ui5_cl_demo_app_448.js",
     "todos": 0,
@@ -519,12 +531,6 @@
   {
     "class": "z2ui5_cl_demo_app_465",
     "path": "01/02/z2ui5_cl_demo_app_465.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_466",
-    "path": "01/02/z2ui5_cl_demo_app_466.js",
     "todos": 0,
     "todoDetails": []
   },
