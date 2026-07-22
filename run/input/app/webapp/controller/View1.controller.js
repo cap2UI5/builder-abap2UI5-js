@@ -11,7 +11,6 @@ sap.ui.define(
     "sap/ui/core/BusyIndicator",
     "sap/m/MessageBox",
     "sap/ui/core/Fragment",
-    "sap/m/BusyDialog",
     "z2ui5/core/Server",
     "sap/ui/model/odata/v2/ODataModel",
     "sap/ui/core/routing/HashChanger",
@@ -27,7 +26,6 @@ sap.ui.define(
     BusyIndicator,
     MessageBox,
     Fragment,
-    BusyDialog,
     Server,
     ODataModel,
     HashChanger,
@@ -41,23 +39,20 @@ sap.ui.define(
     // Helpers reused across calls; kept as module-level singletons.
     const _hashChanger = HashChanger.getInstance();
 
-    // Single reusable BusyDialog flashed when the user clicks while a
-    // roundtrip is already in flight (created lazily, kept for reuse).
-    // The timestamp throttles the flash: rapid clicking during a slow
-    // roundtrip would otherwise run a full open/render/close cycle per
-    // click without adding any feedback.
-    let _busyDialog = null;
-    let _busyFlashUntil = 0;
-
     function applyStoredSizeLimit(viewKey, oModel) {
       if (!oModel) return;
-      const limit = AppState.state.viewSizeLimits[viewKey];
+      // For the root slots (MAIN/NEST/NEST2) this is the max limit across them,
+      // since they share this one model; popup/popover get their own limit.
+      const limit = Lib.effectiveSizeLimit(
+        AppState.state.viewSizeLimits,
+        viewKey,
+      );
       if (limit !== undefined) oModel.setSizeLimit(limit);
     }
 
     return Controller.extend("z2ui5.controller.View1", {
       // ------------------------------------------------------------------
-      // Model change tracking - remembers which /XX/ paths the user edited
+      // Model change tracking - remembers which model paths the user edited
       // so the next roundtrip only ships the delta.
       // ------------------------------------------------------------------
       _trackChanges(oModel) {
@@ -72,8 +67,8 @@ sap.ui.define(
           // Resolve relative paths against the binding context.
           const changedPath =
             ctx && !raw.startsWith("/") ? `${ctx.getPath()}/${raw}` : raw;
-          if (changedPath.startsWith("/XX/")) {
-            AppState.state.xxChangedPaths.add(changedPath);
+          if (changedPath.startsWith("/")) {
+            AppState.state.changedPaths.add(changedPath);
           }
         });
         return oModel;
@@ -255,19 +250,28 @@ sap.ui.define(
 
       async displayNestedView(xml, slotKey) {
         const paramKey = ViewSlots.paramByKey(slotKey);
-        const oModel = this._createViewModel();
-        applyStoredSizeLimit(slotKey, oModel);
+        // Nested views do NOT create their own model. They are inserted into
+        // the MAIN control tree below and inherit its default JSON model via
+        // UI5 model propagation, so every view binds against the same data with
+        // one change tracker and one refresh per roundtrip - no duplicate
+        // models pointing at the same data. The model passed to the XML
+        // preprocessor here only feeds {template>...} bindings at build time;
+        // it is the MAIN view's JSON model (the named "http" model when
+        // SWITCH_DEFAULT_MODEL_PATH moved OData into the default slot, otherwise
+        // the default model), mirroring displayView's template model.
+        const oMainView = ViewSlots.getView("MAIN");
+        const oTemplateModel =
+          oMainView?.getModel("http") ?? oMainView?.getModel();
         const oView = await XMLView.create({
           definition: xml,
           controller: ViewSlots.getController(slotKey),
-          preprocessors: { xml: { models: { template: oModel } } },
+          preprocessors: { xml: { models: { template: oTemplateModel } } },
         });
 
         if (!Lib.isAlive(AppState.state.oApp)) {
           oView.destroy();
           return;
         }
-        oView.setModel(oModel);
 
         const nestParams = AppState.state.oResponse?.PARAMS?.[paramKey];
         if (!nestParams) {
@@ -360,16 +364,15 @@ sap.ui.define(
           return;
         }
 
-        // If a roundtrip is already in flight, briefly show a BusyDialog so
-        // the user gets visual feedback instead of a silent click - at most
-        // once per second, further clicks inside that window are ignored.
+        // A roundtrip is already in flight and this event's keystroke/click is
+        // dropped. Surface the global busy indicator right away (0 delay)
+        // instead of a separate, transient BusyDialog: it is the exact same
+        // overlay the in-flight roundtrip hides on completion, so the user sees
+        // one steady indicator until the response lands - not a modal flashing
+        // in and straight back out over the (1s-delayed) global one. show() is
+        // idempotent, so repeated drops during the same roundtrip are cheap.
         if (AppState.state.isBusy && !ignoreBusy) {
-          if (Date.now() >= _busyFlashUntil) {
-            _busyFlashUntil = Date.now() + 1000;
-            if (!_busyDialog) _busyDialog = new BusyDialog();
-            _busyDialog.open();
-            queueMicrotask(() => _busyDialog.close());
-          }
+          BusyIndicator.show(0);
           return;
         }
 
@@ -387,25 +390,24 @@ sap.ui.define(
         // The request body is built locally and handed explicitly through
         // Server.roundtrip/readHttp. It is mirrored to AppState.state.oBody right
         // away so onBeforeRoundtrip hooks and the developer tools see it.
-        const oBody = { VIEWNAME: "MAIN" };
+        const oBody = {};
         AppState.state.oBody = oBody;
 
         // Decide which view's model holds the data we need to send back. The
         // mapping is: main app controller -> main view, popup controller ->
         // popup view, etc.
-        const oModel = this._pickModelForRoundtrip(useMainModel, oBody);
+        const oModel = this._pickModelForRoundtrip(useMainModel);
 
         Lib.runCallbacks(AppState.state.onBeforeRoundtrip);
 
-        // If the user edited /XX/ paths, send only the delta to keep the
+        // If the user edited model paths, send only the delta to keep the
         // payload small.
-        if (oModel && AppState.state.xxChangedPaths.size > 0) {
+        if (oModel && AppState.state.changedPaths.size > 0) {
           const data = oModel.getData();
-          const xx = data?.XX;
-          if (xx) {
-            oBody.XX = Lib.buildDeltaFromPaths(
-              AppState.state.xxChangedPaths,
-              xx,
+          if (data) {
+            oBody.MODEL = Lib.buildDeltaFromPaths(
+              AppState.state.changedPaths,
+              data,
             );
           }
         }
@@ -422,26 +424,35 @@ sap.ui.define(
         Lib.runCallbacks(AppState.state.onAfterRoundtrip);
       },
 
-      _pickModelForRoundtrip(useMainModel, oBody) {
+      // The framework-owned JSON model on a slot's view: the DEFAULT model
+      // normally, but the NAMED "http" model when SWITCH_DEFAULT_MODEL_PATH put
+      // an OData model in the default slot. Returns undefined when neither model
+      // is ours (marked by _z2ui5Tracked).
+      _resolveTrackedModel(oView) {
+        const isOurs = (m) => (m?._z2ui5Tracked ? m : undefined);
+        return isOurs(oView.getModel()) ?? isOurs(oView.getModel("http"));
+      },
+
+      _pickModelForRoundtrip(useMainModel) {
         // useMainModel forces use of the main view's model even when called
         // from a popup/popover controller.
         const slotKey = useMainModel ? "MAIN" : ViewSlots.keyOfController(this);
         if (!slotKey) return undefined;
 
-        if (slotKey === "MAIN") {
-          const sView = AppState.state.oResponse?.PARAMS?.S_VIEW;
-          if (sView?.SWITCH_DEFAULT_MODEL_PATH) {
-            return ViewSlots.getView("MAIN")?.getModel("http");
-          }
-          return ViewSlots.getView("MAIN")?.getModel();
+        const oView = ViewSlots.getView(slotKey);
+        if (!oView) return undefined;
+
+        // MAIN and its nested views (NEST/NEST2) share one framework-owned
+        // JSON model, so a nested-slot event must resolve the tracked model
+        // (not the propagated OData default, which has no getData()) or the
+        // edit is silently dropped. The data and changedPaths delta are shared
+        // across the root slots, so any of them yields the same model.
+        if (Lib.isRootModelSlot(slotKey)) {
+          return this._resolveTrackedModel(oView);
         }
 
-        // Nested views report their slot as VIEW in S_FRONT so the backend
-        // routes the event to the right app instance.
-        if (slotKey === "NEST" || slotKey === "NEST2") {
-          oBody.VIEWNAME = slotKey;
-        }
-        return ViewSlots.getView(slotKey)?.getModel();
+        // Popup/popover are standalone and return their own (default) model.
+        return oView.getModel();
       },
 
       // Refresh a slot's model when the response signals an update for it
@@ -460,16 +471,18 @@ sap.ui.define(
         // model + setModel() destroys and recreates every binding - measured
         // ~3x slower with all values changed and ~150x slower when little
         // changed (see node/tests-examples/modelUpdate.bench.spec.js).
-        // The framework-owned JSON model is the DEFAULT model normally, but
-        // the NAMED "http" model when SWITCH_DEFAULT_MODEL_PATH placed an
-        // OData model in the default slot - update whichever one is ours and
-        // never overwrite the OData default with a fresh JSON model.
-        const isOurs = (m) => (m?._z2ui5Tracked ? m : undefined);
-        const tracked =
-          isOurs(oView.getModel()) ?? isOurs(oView.getModel("http"));
+        // Never overwrite an OData default (switch mode) with a fresh JSON model.
+        const tracked = this._resolveTrackedModel(oView);
         if (tracked) {
           applyStoredSizeLimit(slotKey, tracked);
-          tracked.setData(AppState.state.oResponse?.OVIEWMODEL);
+          // MAIN and its nested views resolve to the SAME root model here, and
+          // the update loop calls this once per slot. setData replaces the
+          // model's data reference with OVIEWMODEL, so once the first root slot
+          // has swapped it in, the others already hold it - skip the redundant
+          // setData (and its full binding refresh) instead of running it once
+          // per shared slot.
+          const data = AppState.state.oResponse?.OVIEWMODEL;
+          if (tracked.getData() !== data) tracked.setData(data);
           return;
         }
 
@@ -481,7 +494,7 @@ sap.ui.define(
       },
 
       // Replace the main app view with the XML coming from the backend.
-      async displayView(xml, viewModel) {
+      async displayView(xml, viewModel, reqSeq) {
         const oViewModel = this._trackChanges(new JSONModel(viewModel));
 
         const sView = AppState.state.oResponse?.PARAMS?.S_VIEW;
@@ -510,6 +523,16 @@ sap.ui.define(
 
         // Guard against the app being destroyed during the await above.
         if (!Lib.isAlive(AppState.state.oApp)) {
+          oView.destroy();
+          if (switchPath) oModel.destroy();
+          return;
+        }
+
+        // A newer parallel request (check_allow_multi_req) superseded this one
+        // while XMLView.create was awaiting - discard this rebuild instead of
+        // letting an out-of-order resolve overwrite the newer view. Last-write
+        // wins by request order, not by which create() happened to resolve last.
+        if (reqSeq !== undefined && reqSeq !== Server._requestSeq) {
           oView.destroy();
           if (switchPath) oModel.destroy();
           return;
