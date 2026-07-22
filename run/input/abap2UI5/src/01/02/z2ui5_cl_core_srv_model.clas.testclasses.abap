@@ -1047,7 +1047,7 @@ CLASS ltcl_test_json_stringify IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr_simple->bind_type   = z2ui5_if_core_types=>cs_bind_type-one_way.
+    lr_simple->bind        = abap_true.
     lr_simple->name_client = `/MV_SIMPLE`.
 
     DATA(lv_json) = lo_model->main_json_stringify( ).
@@ -1063,7 +1063,7 @@ CLASS ltcl_test_json_stringify IMPLEMENTATION.
                                                   app   = lo_app ).
     lo_model->dissolve( ).
 
-    " No bind_type set on any attribute - stringify produces empty JSON object
+    " No binding set on any attribute - stringify produces empty JSON object
     DATA(lv_json) = lo_model->main_json_stringify( ).
     cl_abap_unit_assert=>assert_equals( exp = `{}`
                                         act = lv_json ).
@@ -1075,14 +1075,13 @@ ENDCLASS.
 CLASS ltcl_test_json_to_attri DEFINITION FINAL
   FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-    METHODS test_updates_two_way FOR TESTING RAISING cx_static_check.
-    METHODS test_skips_one_way   FOR TESTING RAISING cx_static_check.
-    METHODS test_view_filter     FOR TESTING RAISING cx_static_check.
+    METHODS test_updates_bound   FOR TESTING RAISING cx_static_check.
+    METHODS test_skips_unbound   FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 CLASS ltcl_test_json_to_attri IMPLEMENTATION.
 
-  METHOD test_updates_two_way.
+  METHOD test_updates_bound.
     DATA(lo_app) = NEW ltcl_app_complex( ).
     DATA lt_attri TYPE z2ui5_if_core_types=>ty_t_attri.
     DATA(lo_model) = NEW z2ui5_cl_core_srv_model( attri = REF #( lt_attri )
@@ -1093,8 +1092,7 @@ CLASS ltcl_test_json_to_attri IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr->view        = z2ui5_if_client=>cs_view-main.
+    lr->bind        = abap_true.
     lr->name_client = `/MV_SIMPLE`.
 
     DATA lo_model_json TYPE REF TO z2ui5_if_ajson.
@@ -1102,14 +1100,13 @@ CLASS ltcl_test_json_to_attri IMPLEMENTATION.
     lo_model_json->set( iv_path = `/MV_SIMPLE`
                         iv_val  = `updated` ).
 
-    lo_model->main_json_to_attri( view  = z2ui5_if_client=>cs_view-main
-                                  model = lo_model_json ).
+    lo_model->main_json_to_attri( lo_model_json ).
 
     cl_abap_unit_assert=>assert_equals( exp = `updated`
                                         act = lo_app->mv_simple ).
   ENDMETHOD.
 
-  METHOD test_skips_one_way.
+  METHOD test_skips_unbound.
     DATA(lo_app) = NEW ltcl_app_complex( ).
     DATA lt_attri TYPE z2ui5_if_core_types=>ty_t_attri.
     DATA(lo_model) = NEW z2ui5_cl_core_srv_model( attri = REF #( lt_attri )
@@ -1120,8 +1117,7 @@ CLASS ltcl_test_json_to_attri IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr->bind_type   = z2ui5_if_core_types=>cs_bind_type-one_way.
-    lr->view        = z2ui5_if_client=>cs_view-main.
+    lr->bind        = abap_false.
     lr->name_client = `/MV_SIMPLE`.
 
     DATA lo_model_json TYPE REF TO z2ui5_if_ajson.
@@ -1129,38 +1125,9 @@ CLASS ltcl_test_json_to_attri IMPLEMENTATION.
     lo_model_json->set( iv_path = `/MV_SIMPLE`
                         iv_val  = `should_not_update` ).
 
-    lo_model->main_json_to_attri( view  = z2ui5_if_client=>cs_view-main
-                                  model = lo_model_json ).
+    lo_model->main_json_to_attri( lo_model_json ).
 
-    " ONE_WAY binding - value must not be written back from frontend
-    cl_abap_unit_assert=>assert_equals( exp = ``
-                                        act = lo_app->mv_simple ).
-  ENDMETHOD.
-
-  METHOD test_view_filter.
-    DATA(lo_app) = NEW ltcl_app_complex( ).
-    DATA lt_attri TYPE z2ui5_if_core_types=>ty_t_attri.
-    DATA(lo_model) = NEW z2ui5_cl_core_srv_model( attri = REF #( lt_attri )
-                                                  app   = lo_app ).
-    lo_model->dissolve( ).
-
-    READ TABLE lt_attri REFERENCE INTO DATA(lr) WITH KEY name = `MV_SIMPLE`.
-    IF sy-subrc <> 0.
-      cl_abap_unit_assert=>abort( ).
-    ENDIF.
-    lr->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr->view        = z2ui5_if_client=>cs_view-popup.
-    lr->name_client = `/MV_SIMPLE`.
-
-    DATA lo_model_json TYPE REF TO z2ui5_if_ajson.
-    lo_model_json = z2ui5_cl_ajson=>create_empty( ).
-    lo_model_json->set( iv_path = `/MV_SIMPLE`
-                        iv_val  = `should_not_update` ).
-
-    " Attribute belongs to POPUP view, called with MAIN view - must not be updated
-    lo_model->main_json_to_attri( view  = z2ui5_if_client=>cs_view-main
-                                  model = lo_model_json ).
-
+    " unbound attribute - value must not be written back from frontend
     cl_abap_unit_assert=>assert_equals( exp = ``
                                         act = lo_app->mv_simple ).
   ENDMETHOD.
@@ -1188,20 +1155,17 @@ CLASS ltcl_test_attri_refresh IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr->name_client = `/XX/MV_SIMPLE`.
-    lr->view        = z2ui5_if_client=>cs_view-main.
+    lr->bind        = abap_true.
+    lr->name_client = `/MV_SIMPLE`.
 
     " Refresh clears and re-dissolves but must restore binding info
     lo_model->main_attri_refresh( ).
 
     DATA(ls_after) = VALUE #( lt_attri[ name = `MV_SIMPLE` ] OPTIONAL ).
-    cl_abap_unit_assert=>assert_equals( exp = z2ui5_if_core_types=>cs_bind_type-two_way
-                                        act = ls_after-bind_type ).
-    cl_abap_unit_assert=>assert_equals( exp = `/XX/MV_SIMPLE`
+    cl_abap_unit_assert=>assert_equals( exp = abap_true
+                                        act = ls_after-bind ).
+    cl_abap_unit_assert=>assert_equals( exp = `/MV_SIMPLE`
                                         act = ls_after-name_client ).
-    cl_abap_unit_assert=>assert_equals( exp = z2ui5_if_client=>cs_view-main
-                                        act = ls_after-view ).
   ENDMETHOD.
 
 ENDCLASS.
@@ -1617,8 +1581,7 @@ CLASS ltcl_test_deep_nesting IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr->view        = z2ui5_if_client=>cs_view-main.
+    lr->bind        = abap_true.
     lr->name_client = `/MS_NESTED-INNER-DEEP1`.
 
     DATA lo_model_json TYPE REF TO z2ui5_if_ajson.
@@ -1626,8 +1589,7 @@ CLASS ltcl_test_deep_nesting IMPLEMENTATION.
     lo_model_json->set( iv_path = `/MS_NESTED-INNER-DEEP1`
                         iv_val  = `deep_value` ).
 
-    lo_model->main_json_to_attri( view  = z2ui5_if_client=>cs_view-main
-                                  model = lo_model_json ).
+    lo_model->main_json_to_attri( lo_model_json ).
 
     cl_abap_unit_assert=>assert_equals( exp = `deep_value`
                                         act = lo_app->ms_nested-inner-deep1 ).
@@ -1651,8 +1613,7 @@ CLASS ltcl_test_deep_nesting IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr_inner->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr_inner->view        = z2ui5_if_client=>cs_view-main.
+    lr_inner->bind        = abap_true.
     lr_inner->name_client = `/MO_MID-MO_INNER-MV_INNER`.
 
     DATA lo_model_json TYPE REF TO z2ui5_if_ajson.
@@ -1660,8 +1621,7 @@ CLASS ltcl_test_deep_nesting IMPLEMENTATION.
     lo_model_json->set( iv_path = `/MO_MID-MO_INNER-MV_INNER`
                         iv_val  = `inner_value` ).
 
-    lo_model->main_json_to_attri( view  = z2ui5_if_client=>cs_view-main
-                                  model = lo_model_json ).
+    lo_model->main_json_to_attri( lo_model_json ).
 
     cl_abap_unit_assert=>assert_equals( exp = `inner_value`
                                         act = lo_app->mo_mid->mo_inner->mv_inner ).
@@ -1693,9 +1653,8 @@ CLASS ltcl_test_refresh_ext IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr->name_client = `/XX/MV_SIMPLE`.
-    lr->view        = z2ui5_if_client=>cs_view-main.
+    lr->bind        = abap_true.
+    lr->name_client = `/MV_SIMPLE`.
 
     " Now instantiate the previously-null oref and refresh
     lo_app->mo_mid = NEW #( ).
@@ -1707,9 +1666,9 @@ CLASS ltcl_test_refresh_ext IMPLEMENTATION.
 
     " The pre-existing MV_SIMPLE binding must be preserved
     DATA(ls_simple) = VALUE #( lt_attri[ name = `MV_SIMPLE` ] OPTIONAL ).
-    cl_abap_unit_assert=>assert_equals( exp = z2ui5_if_core_types=>cs_bind_type-two_way
-                                        act = ls_simple-bind_type ).
-    cl_abap_unit_assert=>assert_equals( exp = `/XX/MV_SIMPLE`
+    cl_abap_unit_assert=>assert_equals( exp = abap_true
+                                        act = ls_simple-bind ).
+    cl_abap_unit_assert=>assert_equals( exp = `/MV_SIMPLE`
                                         act = ls_simple-name_client ).
   ENDMETHOD.
 
@@ -1737,8 +1696,7 @@ CLASS ltcl_test_json_types IMPLEMENTATION.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr->view        = z2ui5_if_client=>cs_view-main.
+    lr->bind        = abap_true.
     lr->name_client = `/MV_INT`.
 
     DATA lo_model_json TYPE REF TO z2ui5_if_ajson.
@@ -1746,8 +1704,7 @@ CLASS ltcl_test_json_types IMPLEMENTATION.
     lo_model_json->set( iv_path = `/MV_INT`
                         iv_val  = 42 ).
 
-    lo_model->main_json_to_attri( view  = z2ui5_if_client=>cs_view-main
-                                  model = lo_model_json ).
+    lo_model->main_json_to_attri( lo_model_json ).
 
     cl_abap_unit_assert=>assert_equals( exp = 42
                                         act = lo_app->mv_int ).
@@ -1763,29 +1720,27 @@ CLASS ltcl_test_json_types IMPLEMENTATION.
                                                   app   = lo_app ).
     lo_model->dissolve( ).
 
-    " First entry: bind MV_SIMPLE as /XX/MV_SIMPLE
+    " First entry: bind MV_SIMPLE as /MV_SIMPLE
     READ TABLE lt_attri REFERENCE INTO DATA(lr1) WITH KEY name = `MV_SIMPLE`.
     IF sy-subrc <> 0.
       cl_abap_unit_assert=>abort( ).
     ENDIF.
-    lr1->bind_type   = z2ui5_if_core_types=>cs_bind_type-two_way.
-    lr1->view        = z2ui5_if_client=>cs_view-main.
-    lr1->name_client = `/XX/MV_SIMPLE`.
+    lr1->bind        = abap_true.
+    lr1->name_client = `/MV_SIMPLE`.
 
     " Second entry: a copy with a different name_client path, also two-way
     DATA ls_extra TYPE z2ui5_if_core_types=>ty_s_attri.
     ls_extra = lr1->*.
     ls_extra-name        = `MV_SIMPLE_ALIAS`.
-    ls_extra-name_client = `/XX/ALIAS`.
+    ls_extra-name_client = `/ALIAS`.
     INSERT ls_extra INTO TABLE lt_attri.
 
     DATA lo_model_json TYPE REF TO z2ui5_if_ajson.
     lo_model_json = z2ui5_cl_ajson=>create_empty( ).
-    lo_model_json->set( iv_path = `/XX/MV_SIMPLE`
+    lo_model_json->set( iv_path = `/MV_SIMPLE`
                         iv_val  = `first` ).
 
-    lo_model->main_json_to_attri( view  = z2ui5_if_client=>cs_view-main
-                                  model = lo_model_json ).
+    lo_model->main_json_to_attri( lo_model_json ).
 
     " Only the canonical path was present in JSON, so MV_SIMPLE gets 'first'
     cl_abap_unit_assert=>assert_equals( exp = `first`

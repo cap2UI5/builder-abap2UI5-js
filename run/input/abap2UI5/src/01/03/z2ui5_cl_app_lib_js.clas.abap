@@ -349,23 +349,23 @@ CLASS z2ui5_cl_app_lib_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    // Build the delta object sent to the backend. ``paths`` is the set of` && |\n| &&
-             `    // /XX/... paths that the user edited; ``xx`` is the full XX model data.` && |\n| &&
+             `    // model paths that the user edited; ``model`` is the full view model data.` && |\n| &&
              `    // Table edits become (recursively nested) __delta structures, so a cell` && |\n| &&
              `    // edit in a nested/tree table ships only the changed cell instead of` && |\n| &&
              `    // the whole outer table.` && |\n| &&
-             `    function buildDeltaFromPaths(paths, xx) {` && |\n| &&
+             `    function buildDeltaFromPaths(paths, modelData) {` && |\n| &&
              `      const delta = {};` && |\n| &&
              `      for (const path of paths) {` && |\n| &&
-             `        // path looks like "/XX/<attr>" or "/XX/<attr>/<row>/<field>" with` && |\n| &&
+             `        // path looks like "/<attr>" or "/<attr>/<row>/<field>" with` && |\n| &&
              `        // arbitrarily deep <row>/<subtable> repetitions for nested tables` && |\n| &&
-             `        const parts = path.slice(4).split("/");` && |\n| &&
+             `        const parts = path.slice(1).split("/");` && |\n| &&
              `        const attr = parts[0];` && |\n| &&
              `        const steps = parseDeltaSteps(parts.slice(1));` && |\n| &&
              `        if (!steps) {` && |\n| &&
              `          // Scalar or unrecognized shape -> ship the whole attribute. The` && |\n| &&
              `          // full value always wins over any queued delta: both read the` && |\n| &&
              `          // same current model data, so it is a superset of every delta.` && |\n| &&
-             `          delta[attr] = xx[attr];` && |\n| &&
+             `          delta[attr] = modelData[attr];` && |\n| &&
              `          continue;` && |\n| &&
              `        }` && |\n| &&
              `        // A full attribute queued by another path already carries every` && |\n| &&
@@ -374,7 +374,7 @@ CLASS z2ui5_cl_app_lib_js IMPLEMENTATION.
              `        if (attr in delta && !delta[attr]?.__delta) continue;` && |\n| &&
              `        if (!delta[attr]?.__delta) delta[attr] = { __delta: {} };` && |\n| &&
              `        let node = delta[attr];` && |\n| &&
-             `        let model = xx[attr];` && |\n| &&
+             `        let model = modelData[attr];` && |\n| &&
              `        for (const { row, field, leaf } of steps) {` && |\n| &&
              `          const rows = node.__delta;` && |\n| &&
              `          if (!rows[row]) rows[row] = {};` && |\n| &&
@@ -426,6 +426,44 @@ CLASS z2ui5_cl_app_lib_js IMPLEMENTATION.
              `      return _sanitizeEl.innerHTML;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
+             `    // The MAIN view and its two nested views (NEST, NEST2) share ONE JSON` && |\n| &&
+             `    // model: the nested views are inserted into the MAIN control tree and` && |\n| &&
+             `    // inherit its default model through UI5 model propagation instead of each` && |\n| &&
+             `    // creating their own. Popup and popover are opened standalone (outside the` && |\n| &&
+             `    // MAIN tree) and keep their own model.` && |\n| &&
+             `    const ROOT_MODEL_SLOTS = ["MAIN", "NEST", "NEST2"];` && |\n| &&
+             `` && |\n| &&
+             `    function isRootModelSlot(slotKey) {` && |\n| &&
+             `      return ROOT_MODEL_SLOTS.includes(slotKey);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // Effective JSONModel size limit for a slot. Because the root slots share a` && |\n| &&
+             `    // single model, a per-view limit collapses onto it - the largest requested` && |\n| &&
+             `    // limit across MAIN/NEST/NEST2 wins. Popup/popover keep their own limit.` && |\n| &&
+             `    // Returns undefined when nothing is stored, so callers keep the UI5 default.` && |\n| &&
+             `    function effectiveSizeLimit(viewSizeLimits, slotKey) {` && |\n| &&
+             `      if (!isRootModelSlot(slotKey)) return viewSizeLimits[slotKey];` && |\n| &&
+             `      let max;` && |\n| &&
+             `      for (const key of ROOT_MODEL_SLOTS) {` && |\n| &&
+             `        const limit = viewSizeLimits[key];` && |\n| &&
+             `        if (limit !== undefined && (max === undefined || limit > max)) {` && |\n| &&
+             `          max = limit;` && |\n| &&
+             `        }` && |\n| &&
+             `      }` && |\n| &&
+             `      return max;` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // Render the invisible <span> placeholder shared by every marker custom` && |\n| &&
+             `    // control (Focus, Timer, Scrolling, Tree, Info, Geolocation, Storage): the` && |\n| &&
+             `    // real work happens in onAfterRendering (see the module header), so the` && |\n| &&
+             `    // renderer only needs a cheap hidden DOM anchor. apiVersion-2 renderer.` && |\n| &&
+             `    function renderInvisibleSpan(oRm, oControl) {` && |\n| &&
+             `      oRm.openStart("span", oControl);` && |\n| &&
+             `      oRm.style("display", "none");` && |\n| &&
+             `      oRm.openEnd();` && |\n| &&
+             `      oRm.close("span");` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
              `    return {` && |\n| &&
              `      logError,` && |\n| &&
              `      isDestroyed,` && |\n| &&
@@ -448,6 +486,9 @@ CLASS z2ui5_cl_app_lib_js IMPLEMENTATION.
              `      getElementById,` && |\n| &&
              `      getMessaging,` && |\n| &&
              `      hasMessagingModule,` && |\n| &&
+             `      isRootModelSlot,` && |\n| &&
+             `      effectiveSizeLimit,` && |\n| &&
+             `      renderInvisibleSpan,` && |\n| &&
              `    };` && |\n| &&
              `  },` && |\n| &&
              `);` && |\n| &&

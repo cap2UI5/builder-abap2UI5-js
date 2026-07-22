@@ -31,7 +31,6 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `    "sap/ui/core/BusyIndicator",` && |\n| &&
              `    "sap/m/MessageBox",` && |\n| &&
              `    "sap/ui/core/Fragment",` && |\n| &&
-             `    "sap/m/BusyDialog",` && |\n| &&
              `    "z2ui5/core/Server",` && |\n| &&
              `    "sap/ui/model/odata/v2/ODataModel",` && |\n| &&
              `    "sap/ui/core/routing/HashChanger",` && |\n| &&
@@ -47,7 +46,6 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `    BusyIndicator,` && |\n| &&
              `    MessageBox,` && |\n| &&
              `    Fragment,` && |\n| &&
-             `    BusyDialog,` && |\n| &&
              `    Server,` && |\n| &&
              `    ODataModel,` && |\n| &&
              `    HashChanger,` && |\n| &&
@@ -61,23 +59,20 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `    // Helpers reused across calls; kept as module-level singletons.` && |\n| &&
              `    const _hashChanger = HashChanger.getInstance();` && |\n| &&
              `` && |\n| &&
-             `    // Single reusable BusyDialog flashed when the user clicks while a` && |\n| &&
-             `    // roundtrip is already in flight (created lazily, kept for reuse).` && |\n| &&
-             `    // The timestamp throttles the flash: rapid clicking during a slow` && |\n| &&
-             `    // roundtrip would otherwise run a full open/render/close cycle per` && |\n| &&
-             `    // click without adding any feedback.` && |\n| &&
-             `    let _busyDialog = null;` && |\n| &&
-             `    let _busyFlashUntil = 0;` && |\n| &&
-             `` && |\n| &&
              `    function applyStoredSizeLimit(viewKey, oModel) {` && |\n| &&
              `      if (!oModel) return;` && |\n| &&
-             `      const limit = AppState.state.viewSizeLimits[viewKey];` && |\n| &&
+             `      // For the root slots (MAIN/NEST/NEST2) this is the max limit across them,` && |\n| &&
+             `      // since they share this one model; popup/popover get their own limit.` && |\n| &&
+             `      const limit = Lib.effectiveSizeLimit(` && |\n| &&
+             `        AppState.state.viewSizeLimits,` && |\n| &&
+             `        viewKey,` && |\n| &&
+             `      );` && |\n| &&
              `      if (limit !== undefined) oModel.setSizeLimit(limit);` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    return Controller.extend("z2ui5.controller.View1", {` && |\n| &&
              `      // ------------------------------------------------------------------` && |\n| &&
-             `      // Model change tracking - remembers which /XX/ paths the user edited` && |\n| &&
+             `      // Model change tracking - remembers which model paths the user edited` && |\n| &&
              `      // so the next roundtrip only ships the delta.` && |\n| &&
              `      // ------------------------------------------------------------------` && |\n| &&
              `      _trackChanges(oModel) {` && |\n| &&
@@ -92,8 +87,8 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `          // Resolve relative paths against the binding context.` && |\n| &&
              `          const changedPath =` && |\n| &&
              `            ctx && !raw.startsWith("/") ? ``${ctx.getPath()}/${raw}`` : raw;` && |\n| &&
-             `          if (changedPath.startsWith("/XX/")) {` && |\n| &&
-             `            AppState.state.xxChangedPaths.add(changedPath);` && |\n| &&
+             `          if (changedPath.startsWith("/")) {` && |\n| &&
+             `            AppState.state.changedPaths.add(changedPath);` && |\n| &&
              `          }` && |\n| &&
              `        });` && |\n| &&
              `        return oModel;` && |\n| &&
@@ -275,19 +270,28 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `` && |\n| &&
              `      async displayNestedView(xml, slotKey) {` && |\n| &&
              `        const paramKey = ViewSlots.paramByKey(slotKey);` && |\n| &&
-             `        const oModel = this._createViewModel();` && |\n| &&
-             `        applyStoredSizeLimit(slotKey, oModel);` && |\n| &&
+             `        // Nested views do NOT create their own model. They are inserted into` && |\n| &&
+             `        // the MAIN control tree below and inherit its default JSON model via` && |\n| &&
+             `        // UI5 model propagation, so every view binds against the same data with` && |\n| &&
+             `        // one change tracker and one refresh per roundtrip - no duplicate` && |\n| &&
+             `        // models pointing at the same data. The model passed to the XML` && |\n| &&
+             `        // preprocessor here only feeds {template>...} bindings at build time;` && |\n| &&
+             `        // it is the MAIN view's JSON model (the named "http" model when` && |\n| &&
+             `        // SWITCH_DEFAULT_MODEL_PATH moved OData into the default slot, otherwise` && |\n| &&
+             `        // the default model), mirroring displayView's template model.` && |\n| &&
+             `        const oMainView = ViewSlots.getView("MAIN");` && |\n| &&
+             `        const oTemplateModel =` && |\n| &&
+             `          oMainView?.getModel("http") ?? oMainView?.getModel();` && |\n| &&
              `        const oView = await XMLView.create({` && |\n| &&
              `          definition: xml,` && |\n| &&
              `          controller: ViewSlots.getController(slotKey),` && |\n| &&
-             `          preprocessors: { xml: { models: { template: oModel } } },` && |\n| &&
+             `          preprocessors: { xml: { models: { template: oTemplateModel } } },` && |\n| &&
              `        });` && |\n| &&
              `` && |\n| &&
              `        if (!Lib.isAlive(AppState.state.oApp)) {` && |\n| &&
              `          oView.destroy();` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&
-             `        oView.setModel(oModel);` && |\n| &&
              `` && |\n| &&
              `        const nestParams = AppState.state.oResponse?.PARAMS?.[paramKey];` && |\n| &&
              `        if (!nestParams) {` && |\n| &&
@@ -380,16 +384,15 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `          return;` && |\n| &&
              `        }` && |\n| &&
              `` && |\n| &&
-             `        // If a roundtrip is already in flight, briefly show a BusyDialog so` && |\n| &&
-             `        // the user gets visual feedback instead of a silent click - at most` && |\n| &&
-             `        // once per second, further clicks inside that window are ignored.` && |\n| &&
+             `        // A roundtrip is already in flight and this event's keystroke/click is` && |\n| &&
+             `        // dropped. Surface the global busy indicator right away (0 delay)` && |\n| &&
+             `        // instead of a separate, transient BusyDialog: it is the exact same` && |\n| &&
+             `        // overlay the in-flight roundtrip hides on completion, so the user sees` && |\n| &&
+             `        // one steady indicator until the response lands - not a modal flashing` && |\n| &&
+             `        // in and straight back out over the (1s-delayed) global one. show() is` && |\n| &&
+             `        // idempotent, so repeated drops during the same roundtrip are cheap.` && |\n| &&
              `        if (AppState.state.isBusy && !ignoreBusy) {` && |\n| &&
-             `          if (Date.now() >= _busyFlashUntil) {` && |\n| &&
-             `            _busyFlashUntil = Date.now() + 1000;` && |\n| &&
-             `            if (!_busyDialog) _busyDialog = new BusyDialog();` && |\n| &&
-             `            _busyDialog.open();` && |\n| &&
-             `            queueMicrotask(() => _busyDialog.close());` && |\n| &&
-             `          }` && |\n| &&
+             `          BusyIndicator.show(0);` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&
              `` && |\n| &&
@@ -407,26 +410,25 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `        // The request body is built locally and handed explicitly through` && |\n| &&
              `        // Server.roundtrip/readHttp. It is mirrored to AppState.state.oBody right` && |\n| &&
              `        // away so onBeforeRoundtrip hooks and the developer tools see it.` && |\n| &&
-             `        const oBody = { VIEWNAME: "MAIN" };` && |\n| &&
+             `        const oBody = {};` && |\n| &&
              `        AppState.state.oBody = oBody;` && |\n| &&
              `` && |\n| &&
              `        // Decide which view's model holds the data we need to send back. The` && |\n| &&
              `        // mapping is: main app controller -> main view, popup controller ->` && |\n| &&
              `        // popup view, etc.` && |\n| &&
-             `        const oModel = this._pickModelForRoundtrip(useMainModel, oBody);` && |\n| &&
-             `` && |\n| &&
+             `        const oModel = this._pickModelForRoundtrip(useMainModel);` && |\n| &&
+             `` && |\n|.
+    result = result &&
              `        Lib.runCallbacks(AppState.state.onBeforeRoundtrip);` && |\n| &&
              `` && |\n| &&
-             `        // If the user edited /XX/ paths, send only the delta to keep the` && |\n|.
-    result = result &&
+             `        // If the user edited model paths, send only the delta to keep the` && |\n| &&
              `        // payload small.` && |\n| &&
-             `        if (oModel && AppState.state.xxChangedPaths.size > 0) {` && |\n| &&
+             `        if (oModel && AppState.state.changedPaths.size > 0) {` && |\n| &&
              `          const data = oModel.getData();` && |\n| &&
-             `          const xx = data?.XX;` && |\n| &&
-             `          if (xx) {` && |\n| &&
-             `            oBody.XX = Lib.buildDeltaFromPaths(` && |\n| &&
-             `              AppState.state.xxChangedPaths,` && |\n| &&
-             `              xx,` && |\n| &&
+             `          if (data) {` && |\n| &&
+             `            oBody.MODEL = Lib.buildDeltaFromPaths(` && |\n| &&
+             `              AppState.state.changedPaths,` && |\n| &&
+             `              data,` && |\n| &&
              `            );` && |\n| &&
              `          }` && |\n| &&
              `        }` && |\n| &&
@@ -443,26 +445,35 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `        Lib.runCallbacks(AppState.state.onAfterRoundtrip);` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
-             `      _pickModelForRoundtrip(useMainModel, oBody) {` && |\n| &&
+             `      // The framework-owned JSON model on a slot's view: the DEFAULT model` && |\n| &&
+             `      // normally, but the NAMED "http" model when SWITCH_DEFAULT_MODEL_PATH put` && |\n| &&
+             `      // an OData model in the default slot. Returns undefined when neither model` && |\n| &&
+             `      // is ours (marked by _z2ui5Tracked).` && |\n| &&
+             `      _resolveTrackedModel(oView) {` && |\n| &&
+             `        const isOurs = (m) => (m?._z2ui5Tracked ? m : undefined);` && |\n| &&
+             `        return isOurs(oView.getModel()) ?? isOurs(oView.getModel("http"));` && |\n| &&
+             `      },` && |\n| &&
+             `` && |\n| &&
+             `      _pickModelForRoundtrip(useMainModel) {` && |\n| &&
              `        // useMainModel forces use of the main view's model even when called` && |\n| &&
              `        // from a popup/popover controller.` && |\n| &&
              `        const slotKey = useMainModel ? "MAIN" : ViewSlots.keyOfController(this);` && |\n| &&
              `        if (!slotKey) return undefined;` && |\n| &&
              `` && |\n| &&
-             `        if (slotKey === "MAIN") {` && |\n| &&
-             `          const sView = AppState.state.oResponse?.PARAMS?.S_VIEW;` && |\n| &&
-             `          if (sView?.SWITCH_DEFAULT_MODEL_PATH) {` && |\n| &&
-             `            return ViewSlots.getView("MAIN")?.getModel("http");` && |\n| &&
-             `          }` && |\n| &&
-             `          return ViewSlots.getView("MAIN")?.getModel();` && |\n| &&
+             `        const oView = ViewSlots.getView(slotKey);` && |\n| &&
+             `        if (!oView) return undefined;` && |\n| &&
+             `` && |\n| &&
+             `        // MAIN and its nested views (NEST/NEST2) share one framework-owned` && |\n| &&
+             `        // JSON model, so a nested-slot event must resolve the tracked model` && |\n| &&
+             `        // (not the propagated OData default, which has no getData()) or the` && |\n| &&
+             `        // edit is silently dropped. The data and changedPaths delta are shared` && |\n| &&
+             `        // across the root slots, so any of them yields the same model.` && |\n| &&
+             `        if (Lib.isRootModelSlot(slotKey)) {` && |\n| &&
+             `          return this._resolveTrackedModel(oView);` && |\n| &&
              `        }` && |\n| &&
              `` && |\n| &&
-             `        // Nested views report their slot as VIEW in S_FRONT so the backend` && |\n| &&
-             `        // routes the event to the right app instance.` && |\n| &&
-             `        if (slotKey === "NEST" || slotKey === "NEST2") {` && |\n| &&
-             `          oBody.VIEWNAME = slotKey;` && |\n| &&
-             `        }` && |\n| &&
-             `        return ViewSlots.getView(slotKey)?.getModel();` && |\n| &&
+             `        // Popup/popover are standalone and return their own (default) model.` && |\n| &&
+             `        return oView.getModel();` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
              `      // Refresh a slot's model when the response signals an update for it` && |\n| &&
@@ -481,16 +492,18 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `        // model + setModel() destroys and recreates every binding - measured` && |\n| &&
              `        // ~3x slower with all values changed and ~150x slower when little` && |\n| &&
              `        // changed (see node/tests-examples/modelUpdate.bench.spec.js).` && |\n| &&
-             `        // The framework-owned JSON model is the DEFAULT model normally, but` && |\n| &&
-             `        // the NAMED "http" model when SWITCH_DEFAULT_MODEL_PATH placed an` && |\n| &&
-             `        // OData model in the default slot - update whichever one is ours and` && |\n| &&
-             `        // never overwrite the OData default with a fresh JSON model.` && |\n| &&
-             `        const isOurs = (m) => (m?._z2ui5Tracked ? m : undefined);` && |\n| &&
-             `        const tracked =` && |\n| &&
-             `          isOurs(oView.getModel()) ?? isOurs(oView.getModel("http"));` && |\n| &&
+             `        // Never overwrite an OData default (switch mode) with a fresh JSON model.` && |\n| &&
+             `        const tracked = this._resolveTrackedModel(oView);` && |\n| &&
              `        if (tracked) {` && |\n| &&
              `          applyStoredSizeLimit(slotKey, tracked);` && |\n| &&
-             `          tracked.setData(AppState.state.oResponse?.OVIEWMODEL);` && |\n| &&
+             `          // MAIN and its nested views resolve to the SAME root model here, and` && |\n| &&
+             `          // the update loop calls this once per slot. setData replaces the` && |\n| &&
+             `          // model's data reference with OVIEWMODEL, so once the first root slot` && |\n| &&
+             `          // has swapped it in, the others already hold it - skip the redundant` && |\n| &&
+             `          // setData (and its full binding refresh) instead of running it once` && |\n| &&
+             `          // per shared slot.` && |\n| &&
+             `          const data = AppState.state.oResponse?.OVIEWMODEL;` && |\n| &&
+             `          if (tracked.getData() !== data) tracked.setData(data);` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&
              `` && |\n| &&
@@ -502,7 +515,7 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `      },` && |\n| &&
              `` && |\n| &&
              `      // Replace the main app view with the XML coming from the backend.` && |\n| &&
-             `      async displayView(xml, viewModel) {` && |\n| &&
+             `      async displayView(xml, viewModel, reqSeq) {` && |\n| &&
              `        const oViewModel = this._trackChanges(new JSONModel(viewModel));` && |\n| &&
              `` && |\n| &&
              `        const sView = AppState.state.oResponse?.PARAMS?.S_VIEW;` && |\n| &&
@@ -531,6 +544,16 @@ CLASS z2ui5_cl_app_view1_js IMPLEMENTATION.
              `` && |\n| &&
              `        // Guard against the app being destroyed during the await above.` && |\n| &&
              `        if (!Lib.isAlive(AppState.state.oApp)) {` && |\n| &&
+             `          oView.destroy();` && |\n| &&
+             `          if (switchPath) oModel.destroy();` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `` && |\n| &&
+             `        // A newer parallel request (check_allow_multi_req) superseded this one` && |\n| &&
+             `        // while XMLView.create was awaiting - discard this rebuild instead of` && |\n| &&
+             `        // letting an out-of-order resolve overwrite the newer view. Last-write` && |\n| &&
+             `        // wins by request order, not by which create() happened to resolve last.` && |\n| &&
+             `        if (reqSeq !== undefined && reqSeq !== Server._requestSeq) {` && |\n| &&
              `          oView.destroy();` && |\n| &&
              `          if (switchPath) oModel.destroy();` && |\n| &&
              `          return;` && |\n| &&

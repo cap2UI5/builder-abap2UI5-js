@@ -64,11 +64,9 @@ CLASS z2ui5_cl_core_action IMPLEMENTATION.
 
     result->mo_app->ms_draft-id      = z2ui5_cl_a2ui5_context=>uuid_get_c32( ).
     result->mo_app->ms_draft-id_prev = mo_http_post->ms_request-s_front-id.
-    result->ms_actual-view           = mo_http_post->ms_request-s_front-view.
 
     IF mo_http_post->ms_request-o_model->is_empty( ) = abap_false.
-      result->mo_app->model_json_parse( iv_view  = mo_http_post->ms_request-s_front-view
-                                        io_model = mo_http_post->ms_request-o_model ).
+      result->mo_app->model_json_parse( mo_http_post->ms_request-o_model ).
     ENDIF.
 
     result->ms_actual-event       = mo_http_post->ms_request-s_front-event.
@@ -84,8 +82,7 @@ CLASS z2ui5_cl_core_action IMPLEMENTATION.
         IF mo_http_post->ms_request-s_control-app_start_draft IS NOT INITIAL.
           TRY.
 
-              DATA(lo_app) = z2ui5_cl_core_app=>db_load( mo_http_post->ms_request-s_control-app_start_draft ).
-              result->mo_app = lo_app.
+              result->mo_app = z2ui5_cl_core_app=>db_load( mo_http_post->ms_request-s_control-app_start_draft ).
               result->ms_actual-check_on_navigated = abap_true.
               result->ms_next-s_set-set_app_state_active = abap_true.
               result->mo_app->ms_draft-id_prev_app_stack = ``.
@@ -109,9 +106,13 @@ CLASS z2ui5_cl_core_action IMPLEMENTATION.
         result->ms_actual-check_on_navigated = abap_true.
 
       CATCH cx_root INTO DATA(x).
+        " a wrong/mistyped app name in the URL lands here (CREATE OBJECT of a
+        " non-existent class). Just raise with a readable text - the single
+        " top-level catch in z2ui5_cl_http_handler=>_main( ) turns it into a
+        " 500 whose body carries this message for the frontend to display
         RAISE EXCEPTION TYPE z2ui5_cx_a2ui5_error
           EXPORTING
-            val      = |App with name { mo_http_post->ms_request-s_control-app_start } not found...|
+            val      = |The app '{ mo_http_post->ms_request-s_control-app_start }' does not exist in the system.|
             previous = x.
     ENDTRY.
 

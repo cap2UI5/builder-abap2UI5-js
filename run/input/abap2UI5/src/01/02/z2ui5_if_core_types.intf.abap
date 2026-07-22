@@ -5,16 +5,9 @@ INTERFACE z2ui5_if_core_types
     BEGIN OF cs_ui5,
       event_backend_function  TYPE string VALUE `.eB`,
       event_frontend_function TYPE string VALUE `.eF`,
-      two_way_model           TYPE string VALUE `XX`,
     END OF cs_ui5.
 
   CONSTANTS cs_event_nav_app_leave TYPE string VALUE `___ZZZ_NAL`.
-
-  CONSTANTS:
-    BEGIN OF cs_bind_type,
-      one_way  TYPE string VALUE `ONE_WAY`,
-      two_way  TYPE string VALUE `TWO_WAY`,
-    END OF cs_bind_type.
 
   " single source of truth for the five view slots in ty_s_next_frontend -
   " consumers SPLIT at the comma and access the components dynamically
@@ -35,7 +28,6 @@ INTERFACE z2ui5_if_core_types
   TYPES:
     BEGIN OF ty_s_bind_config,
       path_only            TYPE abap_bool,
-*      view                 TYPE string,
       custom_mapper        TYPE REF TO z2ui5_if_ajson_mapping,
       custom_mapper_back   TYPE REF TO z2ui5_if_ajson_mapping,
       custom_filter        TYPE REF TO z2ui5_if_ajson_filter,
@@ -51,10 +43,9 @@ INTERFACE z2ui5_if_core_types
       name_client        TYPE string,
       name_parent        TYPE string,
       name_ref           TYPE string,
-      bind_type          TYPE string,
+      bind               TYPE abap_bool,
       srtti_data         TYPE string,
       check_dissolved    TYPE abap_bool,
-      view               TYPE string,
       custom_filter      TYPE REF TO z2ui5_if_ajson_filter,
       custom_filter_back TYPE REF TO z2ui5_if_ajson_filter,
       custom_mapper      TYPE REF TO z2ui5_if_ajson_mapping,
@@ -169,7 +160,6 @@ INTERFACE z2ui5_if_core_types
       o_model TYPE REF TO z2ui5_if_ajson,
       BEGIN OF s_front,
         id          TYPE string,
-        view        TYPE string,
         t_event_arg TYPE string_table,
         event       TYPE string,
         o_comp_data TYPE REF TO z2ui5_if_ajson,
@@ -265,7 +255,6 @@ INTERFACE z2ui5_if_core_types
       event              TYPE string,
       t_event_arg        TYPE string_table,
       check_on_navigated TYPE abap_bool,
-      view               TYPE string,
       s_draft            TYPE ty_s_draft,
       s_config           TYPE ty_s_config,
       r_data             TYPE REF TO data,
