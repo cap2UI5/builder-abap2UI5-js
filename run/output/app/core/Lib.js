@@ -329,23 +329,23 @@ sap.ui.define(
     }
 
     // Build the delta object sent to the backend. `paths` is the set of
-    // /XX/... paths that the user edited; `xx` is the full XX model data.
+    // model paths that the user edited; `model` is the full view model data.
     // Table edits become (recursively nested) __delta structures, so a cell
     // edit in a nested/tree table ships only the changed cell instead of
     // the whole outer table.
-    function buildDeltaFromPaths(paths, xx) {
+    function buildDeltaFromPaths(paths, modelData) {
       const delta = {};
       for (const path of paths) {
-        // path looks like "/XX/<attr>" or "/XX/<attr>/<row>/<field>" with
+        // path looks like "/<attr>" or "/<attr>/<row>/<field>" with
         // arbitrarily deep <row>/<subtable> repetitions for nested tables
-        const parts = path.slice(4).split("/");
+        const parts = path.slice(1).split("/");
         const attr = parts[0];
         const steps = parseDeltaSteps(parts.slice(1));
         if (!steps) {
           // Scalar or unrecognized shape -> ship the whole attribute. The
           // full value always wins over any queued delta: both read the
           // same current model data, so it is a superset of every delta.
-          delta[attr] = xx[attr];
+          delta[attr] = modelData[attr];
           continue;
         }
         // A full attribute queued by another path already carries every
@@ -354,7 +354,7 @@ sap.ui.define(
         if (attr in delta && !delta[attr]?.__delta) continue;
         if (!delta[attr]?.__delta) delta[attr] = { __delta: {} };
         let node = delta[attr];
-        let model = xx[attr];
+        let model = modelData[attr];
         for (const { row, field, leaf } of steps) {
           const rows = node.__delta;
           if (!rows[row]) rows[row] = {};
@@ -405,6 +405,44 @@ sap.ui.define(
       return _sanitizeEl.innerHTML;
     }
 
+    // The MAIN view and its two nested views (NEST, NEST2) share ONE JSON
+    // model: the nested views are inserted into the MAIN control tree and
+    // inherit its default model through UI5 model propagation instead of each
+    // creating their own. Popup and popover are opened standalone (outside the
+    // MAIN tree) and keep their own model.
+    const ROOT_MODEL_SLOTS = ["MAIN", "NEST", "NEST2"];
+
+    function isRootModelSlot(slotKey) {
+      return ROOT_MODEL_SLOTS.includes(slotKey);
+    }
+
+    // Effective JSONModel size limit for a slot. Because the root slots share a
+    // single model, a per-view limit collapses onto it - the largest requested
+    // limit across MAIN/NEST/NEST2 wins. Popup/popover keep their own limit.
+    // Returns undefined when nothing is stored, so callers keep the UI5 default.
+    function effectiveSizeLimit(viewSizeLimits, slotKey) {
+      if (!isRootModelSlot(slotKey)) return viewSizeLimits[slotKey];
+      let max;
+      for (const key of ROOT_MODEL_SLOTS) {
+        const limit = viewSizeLimits[key];
+        if (limit !== undefined && (max === undefined || limit > max)) {
+          max = limit;
+        }
+      }
+      return max;
+    }
+
+    // Render the invisible <span> placeholder shared by every marker custom
+    // control (Focus, Timer, Scrolling, Tree, Info, Geolocation, Storage): the
+    // real work happens in onAfterRendering (see the module header), so the
+    // renderer only needs a cheap hidden DOM anchor. apiVersion-2 renderer.
+    function renderInvisibleSpan(oRm, oControl) {
+      oRm.openStart("span", oControl);
+      oRm.style("display", "none");
+      oRm.openEnd();
+      oRm.close("span");
+    }
+
     return {
       logError,
       isDestroyed,
@@ -427,6 +465,9 @@ sap.ui.define(
       getElementById,
       getMessaging,
       hasMessagingModule,
+      isRootModelSlot,
+      effectiveSizeLimit,
+      renderInvisibleSpan,
     };
   },
 );
