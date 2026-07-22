@@ -77,7 +77,7 @@ class z2ui5_cl_app_formatter_js {
 ` + `    weightState(measure, unit) {` + `
 ` + `      let adjusted = parseFloat(measure);` + `
 ` + `      if (isNaN(adjusted)) return "None";` + `
-` + `      if (unit === "G") adjusted = measure / 1000;` + `
+` + `      if (unit === "G") adjusted = adjusted / 1000;` + `
 ` + `      if (adjusted < 0) return "None";` + `
 ` + `      if (adjusted < 1) return "Success";` + `
 ` + `      if (adjusted < 5) return "Warning";` + `

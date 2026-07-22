@@ -651,7 +651,7 @@ class z2ui5_cl_a2ui5_context {
   static msg_get({ val, val2 } = {}) {
     let result = {};
     const lt_msg = z2ui5_cl_a2ui5_context.msg_get_t({ val, val2 });
-    result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(lt_msg[(1) - 1]));
+    result = (() => { try { return lt_msg[(1) - 1] ?? null; } catch { return null; } })();
     return result;
   }
 
