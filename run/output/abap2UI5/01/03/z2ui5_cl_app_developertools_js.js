@@ -332,7 +332,9 @@ class z2ui5_cl_app_developertools_js {
 ` + `      // skipped. Every source is guarded (a throwing one can never blank the` + `
 ` + `      // whole export) and each section is capped, because the SYSTEM global can` + `
 ` + `      // serialize to several MB - a value that large blanks a sap.m.TextArea.` + `
-` + `      buildExport() {` + `
+` + `      // \`abapSource\` is the running app's ABAP class source, fetched` + `
+` + `      // asynchronously by onExport (empty when it could not be retrieved).` + `
+` + `      buildExport(abapSource) {` + `
 ` + `        // Max characters per section; long ones (mainly SYSTEM) are truncated` + `
 ` + `        // so the popup's TextArea still renders.` + `
 ` + `        const MAX_SECTION = 100000;` + `
@@ -370,6 +372,10 @@ class z2ui5_cl_app_developertools_js {
 ` + `` + `
 ` + `        if (AppState.state.lastError) push("ERROR", text(formatLastError));` + `
 ` + `        push("LOG", text(formatErrorLog));` + `
+` + `        // The running app's ABAP class source (fetched by onExport). Placed` + `
+` + `        // high up because it is usually the most useful context when sharing` + `
+` + `        // an error - a reader can see the class that produced it.` + `
+` + `        push("ABAP SOURCE", abapSource);` + `
 ` + `        push(` + `
 ` + `          "RESPONSE",` + `
 ` + `          json(() => jsonSources.PLAIN()),` + `
@@ -396,14 +402,14 @@ class z2ui5_cl_app_developertools_js {
 ` + `            json(() => jsonSources.POPUP_MODEL()),` + `
 ` + `          );` + `
 ` + `        }` + `
-` + `        if (getResponseXml("S_POPOVER")) {` + `
+`;
+    result = result + `        if (getResponseXml("S_POPOVER")) {` + `
 ` + `          push(` + `
 ` + `            "POPOVER",` + `
 ` + `            xml(() => xmlSources.POPOVER().xml),` + `
 ` + `          );` + `
 ` + `          push(` + `
-`;
-    result = result + `            "POPOVER MODEL",` + `
+` + `            "POPOVER MODEL",` + `
 ` + `            json(() => jsonSources.POPOVER_MODEL()),` + `
 ` + `          );` + `
 ` + `        }` + `
@@ -437,12 +443,36 @@ class z2ui5_cl_app_developertools_js {
 ` + `        return sections.join("\\n\\n") || "(nothing to export)";` + `
 ` + `      },` + `
 ` + `` + `
+` + `      // Fetch the running app's ABAP class source via the ADT REST endpoint,` + `
+` + `      // so the export can include the class that produced the current state.` + `
+` + `      // Returns the raw source text, or "" when the class name is unknown or` + `
+` + `      // the request fails (the endpoint needs an authenticated, ADT-enabled` + `
+` + `      // session, which is not always available - the export must still work` + `
+` + `      // without it). Never throws: the export must succeed regardless.` + `
+` + `      async fetchAbapSource() {` + `
+` + `        const url = this.getAbapSourceUrl();` + `
+` + `        if (!url) return "";` + `
+` + `        try {` + `
+` + `          const response = await fetch(url, {` + `
+` + `            headers: { Accept: "text/plain" },` + `
+` + `            credentials: "same-origin",` + `
+` + `          });` + `
+` + `          if (!response.ok) return "";` + `
+` + `          return await response.text();` + `
+` + `        } catch {` + `
+` + `          return "";` + `
+` + `        }` + `
+` + `      },` + `
+` + `` + `
 ` + `      // Show the whole export in a stretched popup with a read-through TextArea` + `
-` + `      // (selectable for manual copy) and a one-click "Copy to Clipboard".` + `
-` + `      onExport() {` + `
+` + `      // (selectable for manual copy) and a one-click "Copy to Clipboard". The` + `
+` + `      // ABAP class source is fetched first (asynchronously) so it can be part` + `
+` + `      // of the exported / copied blob.` + `
+` + `      async onExport() {` + `
 ` + `        let text;` + `
 ` + `        try {` + `
-` + `          text = this.buildExport();` + `
+` + `          const abapSource = await this.fetchAbapSource();` + `
+` + `          text = this.buildExport(abapSource);` + `
 ` + `        } catch (e) {` + `
 ` + `          text = \`(export failed: \${e?.message || e})\`;` + `
 ` + `        }` + `
