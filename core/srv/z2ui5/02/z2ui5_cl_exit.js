@@ -83,7 +83,11 @@ class z2ui5_cl_exit {
   static get_user_exit_class() {
     try {
       const exits = z2ui5_cl_util.rtti_get_classes_impl_intf(z2ui5_if_exit)
-        .filter((e) => e.classname?.toLowerCase() !== `z2ui5_cl_exit`);
+        .filter((e) => e.classname?.toLowerCase() !== `z2ui5_cl_exit`)
+        // The chosen exit controls the CSP and all security headers, so the
+        // winner must not depend on filesystem walk order when more than one
+        // exists — pick deterministically by name.
+        .sort((a, b) => String(a.classname).localeCompare(String(b.classname)));
       return exits[0]?.classname || ``;
     } catch {
       return ``;
