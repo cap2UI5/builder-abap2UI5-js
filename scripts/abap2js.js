@@ -700,8 +700,17 @@ let _clientSig;
 function clientSignature() {
   if (_clientSig !== undefined) return _clientSig;
   _clientSig = null;
-  const p = path.join(__dirname, "..", "core", "srv", "z2ui5", "01", "02", "z2ui5_cl_core_client.js");
-  if (!fs.existsSync(p)) return _clientSig;
+  // Read the hand-written client port from src/ (the current source of truth),
+  // not from core/. core/ is produced by assemble_core, which runs AFTER the
+  // transpile step, so reading it here would compile every app against the
+  // PREVIOUS publish's client signature — a silent one-build lag. Fall back to
+  // core/ only when src/ is unavailable (e.g. a standalone core checkout).
+  const candidates = [
+    path.join(__dirname, "..", "src", "srv", "z2ui5", "01", "02", "z2ui5_cl_core_client.js"),
+    path.join(__dirname, "..", "core", "srv", "z2ui5", "01", "02", "z2ui5_cl_core_client.js"),
+  ];
+  const p = candidates.find((c) => fs.existsSync(c));
+  if (!p) return _clientSig;
   _clientSig = new Map();
   const src = fs.readFileSync(p, "utf8");
   // signatures may span multiple lines (e.g. message_box_display)

@@ -40,19 +40,23 @@
     "reason": "assertion failed — expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"6\"},{\"path\":\"/\",\"name\":\"d\",\"type\":\"str\",\"value\":\"2022-04-01\",\"index\":\"\",\"childre [JS limit: RTTI type precision — typed DATS/TIMS/timestamp components serialize as plain strings/numbers]"
   },
   {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_one_way",
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_attri_named_xx",
+    "reason": "assertion failed — expected \"{/XX}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
+  },
+  {
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_bind::test_bind_path",
     "reason": "assertion failed — expected \"{/MV_VALUE}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev2",
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_bind_lev2",
     "reason": "assertion failed — expected \"{/MS_STRUC/S_02/INPUT}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev3",
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_bind_lev3",
     "reason": "assertion failed — expected \"{/MS_STRUC/S_02/S_03/INPUT}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
-    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_one_way_lev4_long_name",
+    "name": "z2ui5_cl_core_srv_bind::ltcl_test_main_structure::test_bind_lev4_long_name",
     "reason": "assertion failed — expected \"{/MS_STRUC/S_02/S_03/S_04/INPUT}\", got \"{/MS_STRUC/INPUT}\" [JS limit: scalar references — identical initial scalars cannot be told apart without REF identity, search hits the first match]"
   },
   {
@@ -86,6 +90,10 @@
   {
     "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_http_post_ok",
     "reason": "assertion failed — expected 200, got undefined [JS async boundary: the POST roundtrip awaits app main()/draft store — result is a Promise, the sync ABAP test cannot await it]"
+  },
+  {
+    "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_post_no_app",
+    "reason": "assertion failed — expected 500, got undefined [JS async boundary: the POST roundtrip awaits app main()/draft store — result is a Promise, the sync ABAP test cannot await it]"
   },
   {
     "name": "z2ui5_cl_http_handler::ltcl_test_http_handler::test_main_post_routing",

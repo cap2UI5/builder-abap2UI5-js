@@ -234,24 +234,26 @@ class ltcl_test_client {
     let li_client = null;
     li_client = z2ui5_cl_util.abap_cast(this.mo_client);
     li_client.follow_up_action({ val: z2ui5_if_client.cs_event.control_global, t_arg: [`MESSAGE_TOAST`, `show`, `Hello`] });
-    li_client.follow_up_action({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, ``, `setExpanded`, `X`] });
-    cl_abap_unit_assert.assert_equals({ exp: 2, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.length });
+    li_client.follow_up_action({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, `setExpanded`, `X`] });
+    li_client.follow_up_action({ val: z2ui5_if_client.cs_event.control_by_id, view: z2ui5_if_client.cs_view.popover, t_arg: [`demoPanel`, `setExpanded`, `X`] });
+    cl_abap_unit_assert.assert_equals({ exp: 3, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js.length });
     cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_GLOBAL', 'MESSAGE_TOAST', 'show', 'Hello')`, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js[(1) - 1] });
     cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded', 'X')`, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js[(2) - 1] });
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', 'POPOVER', 'setExpanded', 'X')`, act: this.mo_action.ms_next.s_set.s_follow_up_action.custom_js[(3) - 1] });
   }
 
   test_check_on_init() {
     let li_app = null;
     li_app = z2ui5_cl_util.abap_cast(this.mo_action.mo_app.mo_app);
     li_app.check_initialized = false;
-    cl_abap_unit_assert.assert_equals({ exp: false, act: li_app.check_initialized });
+    cl_abap_unit_assert.assert_equals({ exp: true, act: this.mo_client.check_on_init() });
   }
 
   test_check_on_init_done() {
     let li_app = null;
     li_app = z2ui5_cl_util.abap_cast(this.mo_action.mo_app.mo_app);
     li_app.check_initialized = true;
-    cl_abap_unit_assert.assert_equals({ exp: true, act: li_app.check_initialized });
+    cl_abap_unit_assert.assert_equals({ exp: false, act: this.mo_client.check_on_init() });
   }
 
   test_check_on_event() {

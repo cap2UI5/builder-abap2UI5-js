@@ -66,6 +66,20 @@ class ltcl_test_http_handler {
     cl_abap_unit_assert.assert_true(lv_raised);
   }
 
+  test_main_post_no_app() {
+    let sy_sysid = "";
+    let ls_req = { method: ``, body: ``, path: ``, t_params: [] };
+    let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
+    if (sy_sysid === `ABC`) {
+      return;
+    }
+    ls_req.method = `POST`;
+    ls_req.body = `{"value":{"S_FRONT":{"ORIGIN":"O","PATHNAME":"/p","SEARCH":"?app_start=Z2UI5_CL_APP_DOES_NOT_EXIST"}}}`;
+    ls_result = z2ui5_cl_http_handler._main(ls_req);
+    cl_abap_unit_assert.assert_equals({ exp: 500, act: ls_result.status_code });
+    cl_abap_unit_assert.assert_char_cp({ act: ls_result.body, exp: `*Z2UI5_CL_APP_DOES_NOT_EXIST*does not exist*` });
+  }
+
   test_main_get_routing() {
     let ls_req = { method: ``, body: ``, path: ``, t_params: [] };
     let ls_result = { body: ``, status_code: 0, status_reason: ``, t_header: [], s_stateful: { active: 0, switched: false } };
@@ -98,5 +112,5 @@ class ltcl_test_http_handler {
 module.exports = {
   __main: "z2ui5_cl_http_handler",
   __classes: { ltcl_test_http_handler },
-  __tests: {"ltcl_test_http_handler":["test_http_get_status","test_http_get_html","test_http_get_ui5_boot","test_http_post_ok","test_http_post_error","test_main_get_routing","test_main_post_routing"]},
+  __tests: {"ltcl_test_http_handler":["test_http_get_status","test_http_get_html","test_http_get_ui5_boot","test_http_post_ok","test_http_post_error","test_main_post_no_app","test_main_get_routing","test_main_post_routing"]},
 };

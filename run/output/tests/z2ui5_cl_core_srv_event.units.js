@@ -14,7 +14,7 @@ class ltcl_test {
     cl_abap_unit_assert.assert_equals({ exp: `.eB(['POST'])`, act: lv_event });
   }
 
-  event_backend() {
+  event_client() {
     let lo_event = null;
     let lv_event = ``;
     lo_event = new z2ui5_cl_core_srv_event();
@@ -115,13 +115,20 @@ class ltcl_test {
   event_empty_middle_arg() {
     let lo_event = null;
     lo_event = new z2ui5_cl_core_srv_event();
-    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded', 'X')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, ``, `setExpanded`, `X`] }) });
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded', 'X')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, `setExpanded`, `X`] }) });
   }
 
   event_trailing_empty_arg() {
     let lo_event = null;
     lo_event = new z2ui5_cl_core_srv_event();
-    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, ``, `setExpanded`, ``] }) });
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, t_arg: [`demoPanel`, `setExpanded`, ``] }) });
+  }
+
+  event_view_param() {
+    let lo_event = null;
+    lo_event = new z2ui5_cl_core_srv_event();
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', 'POPOVER', 'setExpanded', 'X')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, view: z2ui5_if_client.cs_view.popover, t_arg: [`demoPanel`, `setExpanded`, `X`] }) });
+    cl_abap_unit_assert.assert_equals({ exp: `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded', 'X')`, act: lo_event.get_event_client({ val: z2ui5_if_client.cs_event.control_by_id, view: z2ui5_if_client.cs_view.main, t_arg: [`demoPanel`, `setExpanded`, `X`] }) });
   }
 
   event_multi_req() {
@@ -152,6 +159,21 @@ class ltcl_test {
     temp14 = (String(lv_event).toLowerCase().includes(String(`'param1'`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp14);
   }
+
+  event_quote_escaped() {
+    const lo_event = new z2ui5_cl_core_srv_event();
+    const lt_arg = [`Value changed to '{0}'`];
+    const lv_event = lo_event.get_event({ val: `EVT`, t_arg: lt_arg });
+    cl_abap_unit_assert.assert_true((String(lv_event).toLowerCase().includes(String(`'Value changed to \\'{0}\\''`).toLowerCase())));
+  }
+
+  event_placeholder_quoted() {
+    const lo_event = new z2ui5_cl_core_srv_event();
+    const lv_plain = lo_event.get_event({ val: `EVT`, t_arg: [`{0} Pressed`] });
+    cl_abap_unit_assert.assert_true((String(lv_plain).toLowerCase().includes(String(`'{0} Pressed'`).toLowerCase())));
+    const lv_cond = lo_event.get_event({ val: `EVT`, t_arg: [`{0?Pressed:Unpressed}`] });
+    cl_abap_unit_assert.assert_true((String(lv_cond).toLowerCase().includes(String(`'{0?Pressed:Unpressed}'`).toLowerCase())));
+  }
 }
 
 
@@ -161,5 +183,5 @@ class ltcl_test {
 module.exports = {
   __main: "z2ui5_cl_core_srv_event",
   __classes: { ltcl_test },
-  __tests: {"ltcl_test":["event","event_backend","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_empty_middle_arg","event_trailing_empty_arg","event_multi_req","event_client_args","event_nav_container"]},
+  __tests: {"ltcl_test":["event","event_client","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_empty_middle_arg","event_trailing_empty_arg","event_view_param","event_multi_req","event_client_args","event_nav_container","event_quote_escaped","event_placeholder_quoted"]},
 };

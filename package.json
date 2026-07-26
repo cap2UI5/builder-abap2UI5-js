@@ -2,12 +2,13 @@
   "name": "builder-abap2ui5-js",
   "version": "1.0.0",
   "private": true,
-  "description": "abap2UI5 ported to JavaScript \u2014 the ABAP\u2192JS transpiler, sync scripts and jest suite that generate the platform-neutral core package in core/ (consumed by the adapters and, downstream, the cap2UI5 CAP app)",
+  "description": "abap2UI5 ported to JavaScript — the ABAP→JS transpiler, sync scripts and jest suite that generate the platform-neutral core package in core/ (consumed by the adapters and, downstream, the cap2UI5 CAP app)",
   "license": "MIT",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
+    "lint": "eslint .",
     "test": "jest --config jest.config.js --verbose",
     "test:watch": "jest --config jest.config.js --watch",
     "transpile": "node scripts/abap2js.js",
@@ -25,6 +26,8 @@
   },
   "devDependencies": {
     "@abaplint/core": "^2.119.56",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
     "jest": "^30.2.0"
   },
   "repository": "github:cap2UI5/builder-abap2UI5-js"
