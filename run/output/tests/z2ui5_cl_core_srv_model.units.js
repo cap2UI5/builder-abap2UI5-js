@@ -6,8 +6,6 @@ const z2ui5_cl_ajson = require("abap2UI5/z2ui5_cl_ajson");
 const z2ui5_cl_core_srv_model = require("abap2UI5/z2ui5_cl_core_srv_model");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
-const z2ui5_if_client = require("abap2UI5/z2ui5_if_client");
-const z2ui5_if_core_types = require("abap2UI5/z2ui5_if_core_types");
 
 
 class ltcl_test_dissolve {
@@ -609,7 +607,7 @@ class ltcl_test_json_stringify {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr_simple.bind_type = z2ui5_cl_util.abap_tab_assign(lr_simple.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.one_way));
+    lr_simple.bind = true;
     lr_simple.name_client = `/MV_SIMPLE`;
     const lv_json = lo_model.main_json_stringify();
     const lo_result = z2ui5_cl_ajson.parse(lv_json);
@@ -631,7 +629,7 @@ class ltcl_test_json_stringify {
 
 
 class ltcl_test_json_to_attri {
-  test_updates_two_way() {
+  test_updates_bound() {
     let sy_subrc = 0;
     const lo_app = new ltcl_app_complex();
     let lt_attri = [];
@@ -647,17 +645,16 @@ class ltcl_test_json_to_attri {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lr.bind = true;
     lr.name_client = `/MV_SIMPLE`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
     lo_model_json.set({ iv_path: `/MV_SIMPLE`, iv_val: `updated` });
-    lo_model.main_json_to_attri({ view: z2ui5_if_client.cs_view.main, model: lo_model_json });
+    lo_model.main_json_to_attri(lo_model_json);
     cl_abap_unit_assert.assert_equals({ exp: `updated`, act: lo_app.mv_simple });
   }
 
-  test_skips_one_way() {
+  test_skips_unbound() {
     let sy_subrc = 0;
     const lo_app = new ltcl_app_complex();
     let lt_attri = [];
@@ -673,39 +670,12 @@ class ltcl_test_json_to_attri {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.one_way));
-    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lr.bind = false;
     lr.name_client = `/MV_SIMPLE`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
     lo_model_json.set({ iv_path: `/MV_SIMPLE`, iv_val: `should_not_update` });
-    lo_model.main_json_to_attri({ view: z2ui5_if_client.cs_view.main, model: lo_model_json });
-    cl_abap_unit_assert.assert_equals({ exp: ``, act: lo_app.mv_simple });
-  }
-
-  test_view_filter() {
-    let sy_subrc = 0;
-    const lo_app = new ltcl_app_complex();
-    let lt_attri = [];
-    const lo_model = new z2ui5_cl_core_srv_model({ attri: (lt_attri), app: lo_app });
-    lo_model.dissolve();
-    let lr = {};
-    {
-      const _t = lt_attri;
-      const _i = _t.findIndex((_r) => _r.name === `MV_SIMPLE`);
-      sy_subrc = _i >= 0 && _i < _t.length ? 0 : 4;
-      if (sy_subrc === 0) lr = _t[_i];
-    }
-    if (sy_subrc !== 0) {
-      cl_abap_unit_assert.abort();
-    }
-    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.popup));
-    lr.name_client = `/MV_SIMPLE`;
-    let lo_model_json = null;
-    lo_model_json = z2ui5_cl_ajson.create_empty();
-    lo_model_json.set({ iv_path: `/MV_SIMPLE`, iv_val: `should_not_update` });
-    lo_model.main_json_to_attri({ view: z2ui5_if_client.cs_view.main, model: lo_model_json });
+    lo_model.main_json_to_attri(lo_model_json);
     cl_abap_unit_assert.assert_equals({ exp: ``, act: lo_app.mv_simple });
   }
 }
@@ -731,14 +701,12 @@ class ltcl_test_attri_refresh {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr.name_client = `/XX/MV_SIMPLE`;
-    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lr.bind = true;
+    lr.name_client = `/MV_SIMPLE`;
     lo_model.main_attri_refresh();
     const ls_after = (() => { try { return lt_attri.find((row) => row.name === `MV_SIMPLE`) ?? null; } catch { return null; } })();
-    cl_abap_unit_assert.assert_equals({ exp: z2ui5_if_core_types.cs_bind_type.two_way, act: ls_after.bind_type });
-    cl_abap_unit_assert.assert_equals({ exp: `/XX/MV_SIMPLE`, act: ls_after.name_client });
-    cl_abap_unit_assert.assert_equals({ exp: z2ui5_if_client.cs_view.main, act: ls_after.view });
+    cl_abap_unit_assert.assert_equals({ exp: true, act: ls_after.bind });
+    cl_abap_unit_assert.assert_equals({ exp: `/MV_SIMPLE`, act: ls_after.name_client });
   }
 }
 
@@ -970,13 +938,12 @@ class ltcl_test_deep_nesting {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lr.bind = true;
     lr.name_client = `/MS_NESTED-INNER-DEEP1`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
     lo_model_json.set({ iv_path: `/MS_NESTED-INNER-DEEP1`, iv_val: `deep_value` });
-    lo_model.main_json_to_attri({ view: z2ui5_if_client.cs_view.main, model: lo_model_json });
+    lo_model.main_json_to_attri(lo_model_json);
     cl_abap_unit_assert.assert_equals({ exp: `deep_value`, act: lo_app.ms_nested.inner.deep1 });
   }
 
@@ -1000,13 +967,12 @@ class ltcl_test_deep_nesting {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr_inner.bind_type = z2ui5_cl_util.abap_tab_assign(lr_inner.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr_inner.view = z2ui5_cl_util.abap_tab_assign(lr_inner.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lr_inner.bind = true;
     lr_inner.name_client = `/MO_MID-MO_INNER-MV_INNER`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
     lo_model_json.set({ iv_path: `/MO_MID-MO_INNER-MV_INNER`, iv_val: `inner_value` });
-    lo_model.main_json_to_attri({ view: z2ui5_if_client.cs_view.main, model: lo_model_json });
+    lo_model.main_json_to_attri(lo_model_json);
     cl_abap_unit_assert.assert_equals({ exp: `inner_value`, act: lo_app.mo_mid.mo_inner.mv_inner });
   }
 }
@@ -1032,15 +998,14 @@ class ltcl_test_refresh_ext {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr.name_client = `/XX/MV_SIMPLE`;
-    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lr.bind = true;
+    lr.name_client = `/MV_SIMPLE`;
     lo_app.mo_mid = new ltcl_app_middle();
     lo_model.main_attri_refresh();
     cl_abap_unit_assert.assert_not_initial((() => { try { return lt_attri.find((row) => row.name === `MO_MID->MV_MID`) ?? null; } catch { return null; } })());
     const ls_simple = (() => { try { return lt_attri.find((row) => row.name === `MV_SIMPLE`) ?? null; } catch { return null; } })();
-    cl_abap_unit_assert.assert_equals({ exp: z2ui5_if_core_types.cs_bind_type.two_way, act: ls_simple.bind_type });
-    cl_abap_unit_assert.assert_equals({ exp: `/XX/MV_SIMPLE`, act: ls_simple.name_client });
+    cl_abap_unit_assert.assert_equals({ exp: true, act: ls_simple.bind });
+    cl_abap_unit_assert.assert_equals({ exp: `/MV_SIMPLE`, act: ls_simple.name_client });
   }
 }
 
@@ -1065,13 +1030,12 @@ class ltcl_test_json_types {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr.bind_type = z2ui5_cl_util.abap_tab_assign(lr.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr.view = z2ui5_cl_util.abap_tab_assign(lr.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
+    lr.bind = true;
     lr.name_client = `/MV_INT`;
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
     lo_model_json.set({ iv_path: `/MV_INT`, iv_val: 42 });
-    lo_model.main_json_to_attri({ view: z2ui5_if_client.cs_view.main, model: lo_model_json });
+    lo_model.main_json_to_attri(lo_model_json);
     cl_abap_unit_assert.assert_equals({ exp: 42, act: lo_app.mv_int });
   }
 
@@ -1091,18 +1055,17 @@ class ltcl_test_json_types {
     if (sy_subrc !== 0) {
       cl_abap_unit_assert.abort();
     }
-    lr1.bind_type = z2ui5_cl_util.abap_tab_assign(lr1.bind_type, z2ui5_cl_util.abap_copy(z2ui5_if_core_types.cs_bind_type.two_way));
-    lr1.view = z2ui5_cl_util.abap_tab_assign(lr1.view, z2ui5_cl_util.abap_copy(z2ui5_if_client.cs_view.main));
-    lr1.name_client = `/XX/MV_SIMPLE`;
-    let ls_extra = { name: ``, name_client: ``, name_parent: ``, name_ref: ``, bind_type: ``, srtti_data: ``, check_dissolved: false, view: ``, custom_filter: null, custom_filter_back: null, custom_mapper: null, custom_mapper_back: null, o_typedescr: null, type_kind: ``, kind: `` };
+    lr1.bind = true;
+    lr1.name_client = `/MV_SIMPLE`;
+    let ls_extra = { name: ``, name_client: ``, name_parent: ``, name_ref: ``, bind: false, srtti_data: ``, check_dissolved: false, custom_filter: null, custom_filter_back: null, custom_mapper: null, custom_mapper_back: null, o_typedescr: null, type_kind: ``, kind: `` };
     ls_extra = z2ui5_cl_util.abap_tab_assign(ls_extra, z2ui5_cl_util.abap_copy(lr1));
     ls_extra.name = `MV_SIMPLE_ALIAS`;
-    ls_extra.name_client = `/XX/ALIAS`;
+    ls_extra.name_client = `/ALIAS`;
     lt_attri.push(z2ui5_cl_util.abap_copy(ls_extra));
     let lo_model_json = null;
     lo_model_json = z2ui5_cl_ajson.create_empty();
-    lo_model_json.set({ iv_path: `/XX/MV_SIMPLE`, iv_val: `first` });
-    lo_model.main_json_to_attri({ view: z2ui5_if_client.cs_view.main, model: lo_model_json });
+    lo_model_json.set({ iv_path: `/MV_SIMPLE`, iv_val: `first` });
+    lo_model.main_json_to_attri(lo_model_json);
     cl_abap_unit_assert.assert_equals({ exp: `first`, act: lo_app.mv_simple });
   }
 }
@@ -1114,5 +1077,5 @@ class ltcl_test_json_types {
 module.exports = {
   __main: "z2ui5_cl_core_srv_model",
   __classes: { ltcl_test_dissolve, ltcl_test_app_sub, ltcl_test_app3, ltcl_test_get_attri, ltcl_test_app_root_attri, ltcl_test_app_root, ltcl_test_app_root_attri2, ltcl_test_app_root2, ltcl_test_app_root4, ltcl_app_inner, ltcl_app_middle, ltcl_app_complex, ltcl_test_diss_complex, ltcl_app_inner_335, ltcl_app_root_335, ltcl_test_sample335, ltcl_test_attri_create, ltcl_test_json_stringify, ltcl_test_json_to_attri, ltcl_test_attri_refresh, ltcl_test_entry_refs_children, ltcl_app_tree, ltcl_test_delta_apply, ltcl_app_two_tab_drefs, ltcl_test_two_tab_refs, ltcl_test_deep_nesting, ltcl_test_refresh_ext, ltcl_test_json_types },
-  __tests: {"ltcl_test_dissolve":["test_init","test_struc","test_dref","test_struc_dref","test_oref","test_oref_dref_struc","test_oref_dref","test_dref_struc"],"ltcl_test_get_attri":["test_first","test_second","third_test","test4"],"ltcl_test_app_root_attri":["test_obj_tab_ref"],"ltcl_test_app_root_attri2":["test_obj_struc_ref"],"ltcl_test_app_root4":["test_tab_ref_gen"],"ltcl_test_diss_complex":["test_table","test_nested_struc","test_oref_chain","test_table_in_dref","test_mixed_types","test_dissolve_idempotent","test_search_table","test_search_nested_struc","test_name_parent_chain"],"ltcl_test_sample335":["test_two_drefs_to_same_struc"],"ltcl_test_attri_create":["test_string_type_kind","test_table_type_kind","test_oref_type_kind","test_int_kind"],"ltcl_test_json_stringify":["test_simple_string","test_empty_no_bind"],"ltcl_test_json_to_attri":["test_updates_two_way","test_skips_one_way","test_view_filter"],"ltcl_test_attri_refresh":["test_bindings_preserved"],"ltcl_test_entry_refs_children":["test_dref_children_name_ref","test_second_dref_children"],"ltcl_test_delta_apply":["test_update_first_row","test_update_second_row","test_out_of_range","test_nested_cell","test_nested_mixed","test_struct_component","test_subtable_replace"],"ltcl_test_two_tab_refs":["test_both_get_name_ref","test_canonical_search"],"ltcl_test_deep_nesting":["test_deep_struct_writeback","test_deep_oref_writeback"],"ltcl_test_refresh_ext":["test_oref_after_null_refresh"],"ltcl_test_json_types":["test_updates_integer","test_multiple_attrs_same_var"]},
+  __tests: {"ltcl_test_dissolve":["test_init","test_struc","test_dref","test_struc_dref","test_oref","test_oref_dref_struc","test_oref_dref","test_dref_struc"],"ltcl_test_get_attri":["test_first","test_second","third_test","test4"],"ltcl_test_app_root_attri":["test_obj_tab_ref"],"ltcl_test_app_root_attri2":["test_obj_struc_ref"],"ltcl_test_app_root4":["test_tab_ref_gen"],"ltcl_test_diss_complex":["test_table","test_nested_struc","test_oref_chain","test_table_in_dref","test_mixed_types","test_dissolve_idempotent","test_search_table","test_search_nested_struc","test_name_parent_chain"],"ltcl_test_sample335":["test_two_drefs_to_same_struc"],"ltcl_test_attri_create":["test_string_type_kind","test_table_type_kind","test_oref_type_kind","test_int_kind"],"ltcl_test_json_stringify":["test_simple_string","test_empty_no_bind"],"ltcl_test_json_to_attri":["test_updates_bound","test_skips_unbound"],"ltcl_test_attri_refresh":["test_bindings_preserved"],"ltcl_test_entry_refs_children":["test_dref_children_name_ref","test_second_dref_children"],"ltcl_test_delta_apply":["test_update_first_row","test_update_second_row","test_out_of_range","test_nested_cell","test_nested_mixed","test_struct_component","test_subtable_replace"],"ltcl_test_two_tab_refs":["test_both_get_name_ref","test_canonical_search"],"ltcl_test_deep_nesting":["test_deep_struct_writeback","test_deep_oref_writeback"],"ltcl_test_refresh_ext":["test_oref_after_null_refresh"],"ltcl_test_json_types":["test_updates_integer","test_multiple_attrs_same_var"]},
 };
