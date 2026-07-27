@@ -57,6 +57,15 @@ CLASS z2ui5_cl_core_handler DEFINITION PUBLIC FINAL.
       RAISING
         z2ui5_cx_ajson_error.
 
+    METHODS slice_to_abap
+      IMPORTING
+        io_json TYPE REF TO z2ui5_if_ajson
+        iv_path TYPE string
+      CHANGING
+        cs_data TYPE any
+      RAISING
+        z2ui5_cx_ajson_error.
+
     METHODS request_parse_event_args
       IMPORTING
         io_front          TYPE REF TO z2ui5_if_ajson
@@ -80,6 +89,24 @@ CLASS z2ui5_cl_core_handler DEFINITION PUBLIC FINAL.
         iv_hash       TYPE string
       RETURNING
         VALUE(result) TYPE string.
+
+    METHODS request_app_start_route
+      IMPORTING
+        iv_hash       TYPE string
+      RETURNING
+        VALUE(result) TYPE string.
+
+    METHODS request_app_start_route_draft
+      IMPORTING
+        iv_hash       TYPE string
+      RETURNING
+        VALUE(result) TYPE string.
+
+    METHODS parse_app_route_rest
+      IMPORTING
+        iv_hash       TYPE string
+      RETURNING
+        VALUE(result) TYPE string.
 ENDCLASS.
 
 
@@ -93,11 +120,24 @@ CLASS z2ui5_cl_core_handler IMPLEMENTATION.
           RETURN.
         ENDIF.
 
-        result-s_control-app_start =
-          request_app_start( iv_search    = result-s_front-search
-                             io_comp_data = result-s_front-o_comp_data ).
-        result-s_control-app_start_draft =
-          request_app_start_draft( result-s_front-hash ).
+        " Hash-based app routing (UI5 Router style) takes precedence: once a
+        " session runs with routing on, the live hash '#/app/<CLASS>/<DRAFTID>'
+        " is the navigation state (browser Back/Forward, bookmark, reload),
+        " while the '?app_start=' query is only the initial boot value and would
+        " otherwise always win over it. The route's <DRAFTID> segment restores
+        " the exact preserved app state; when it is absent or expired the app
+        " starts fresh from <CLASS>. Fall back to the query / legacy app-state
+        " hash when the hash carries no app route (normal boot / non-routing).
+        DATA(lv_route_class) = request_app_start_route( result-s_front-hash ).
+        IF lv_route_class IS NOT INITIAL.
+          result-s_control-app_start       = lv_route_class.
+          result-s_control-app_start_draft = request_app_start_route_draft( result-s_front-hash ).
+        ELSE.
+          result-s_control-app_start       =
+            request_app_start( iv_search    = result-s_front-search
+                               io_comp_data = result-s_front-o_comp_data ).
+          result-s_control-app_start_draft = request_app_start_draft( result-s_front-hash ).
+        ENDIF.
 
       CATCH cx_root INTO DATA(x).
         RAISE EXCEPTION TYPE z2ui5_cx_a2ui5_error
@@ -143,21 +183,15 @@ CLASS z2ui5_cl_core_handler IMPLEMENTATION.
 
       result-s_front-o_comp_data = lo_config->slice( `/ComponentData` ).
 
-      DATA(lo_device) = lo_config->slice( `/S_DEVICE` ).
-      IF lo_device IS BOUND.
-        lo_device->to_abap( EXPORTING iv_corresponding = abap_true
-                            IMPORTING ev_container     = result-s_front-s_device ).
-      ENDIF.
-      DATA(lo_focus) = lo_config->slice( `/S_FOCUS` ).
-      IF lo_focus IS BOUND.
-        lo_focus->to_abap( EXPORTING iv_corresponding = abap_true
-                           IMPORTING ev_container     = result-s_front-s_focus ).
-      ENDIF.
-      DATA(lo_scroll) = lo_config->slice( `/S_SCROLL` ).
-      IF lo_scroll IS BOUND.
-        lo_scroll->to_abap( EXPORTING iv_corresponding = abap_true
-                            IMPORTING ev_container     = result-s_front-s_scroll ).
-      ENDIF.
+      slice_to_abap( EXPORTING io_json = lo_config
+                               iv_path = `/S_DEVICE`
+                     CHANGING  cs_data = result-s_front-s_device ).
+      slice_to_abap( EXPORTING io_json = lo_config
+                               iv_path = `/S_FOCUS`
+                     CHANGING  cs_data = result-s_front-s_focus ).
+      slice_to_abap( EXPORTING io_json = lo_config
+                               iv_path = `/S_SCROLL`
+                     CHANGING  cs_data = result-s_front-s_scroll ).
 
       result-s_front-s_ui5-version         = lo_config->get_string( `/S_UI5/VERSION` ).
       result-s_front-s_ui5-build_timestamp = lo_config->get_string( `/S_UI5/BUILDTIMESTAMP` ).
@@ -172,14 +206,25 @@ CLASS z2ui5_cl_core_handler IMPLEMENTATION.
         OR result-s_front-pathname CS `test/flpSandbox` ).
   ENDMETHOD.
 
+  METHOD slice_to_abap.
+    " Slice one optional sub-container out of a parsed JSON node and write it
+    " into the ABAP target. A missing node leaves the target untouched. Shared
+    " by request_parse_body for the S_DEVICE / S_FOCUS / S_SCROLL sub-structures.
+    DATA(lo_slice) = io_json->slice( iv_path ).
+    IF lo_slice IS BOUND.
+      lo_slice->to_abap( EXPORTING iv_corresponding = abap_true
+                         IMPORTING ev_container     = cs_data ).
+    ENDIF.
+  ENDMETHOD.
+
   METHOD request_parse_event_args.
 
     " object event arguments arrive as raw JSON - the frontend sends them
     " unserialized so the request body is only encoded once - and to_abap
     " cannot place them in a string table, so they are serialized here and
     " apps keep receiving every argument as a string
-    CLEAR et_event_arg.
-    CLEAR ev_check_override.
+    CLEAR: et_event_arg,
+           ev_check_override.
 
     DATA(lv_arg_index) = 1.
     DO.
@@ -238,6 +283,68 @@ CLASS z2ui5_cl_core_handler IMPLEMENTATION.
         result = z2ui5_cl_a2ui5_context=>c_trim_upper(
             z2ui5_cl_a2ui5_context=>url_param_get( val = `z2ui5-xapp-state`
                                           url          = lv_hash ) ).
+      CATCH cx_root ##NO_HANDLER.
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD parse_app_route_rest.
+    " Shared prologue for request_app_start_route / _route_draft: return the
+    " hash remainder after 'app/' when the hash is a real app route
+    " ('#/app/...'), or empty when it carries no route (normal boot, or an
+    " 'app/' occurring mid-hash). Only accept 'app/' as the route start -
+    " everything before it must be just the hash markers '#' and '/'.
+    DATA(lv_off) = find( val = iv_hash
+                         sub = `app/` ).
+    IF lv_off < 0.
+      RETURN.
+    ENDIF.
+    DATA(lv_prefix) = substring( val = iv_hash
+                                 len = lv_off ).
+    REPLACE ALL OCCURRENCES OF `#` IN lv_prefix WITH ``.
+    REPLACE ALL OCCURRENCES OF `/` IN lv_prefix WITH ``.
+    IF lv_prefix IS NOT INITIAL.
+      RETURN.
+    ENDIF.
+    result = substring( val = iv_hash
+                        off = lv_off + 4 ).
+  ENDMETHOD.
+
+  METHOD request_app_start_route.
+    " Parse the app class from a hash route '#/app/<CLASS>' (UI5 Router style).
+    " Returns empty when the hash carries no app route, so a normal boot or an
+    " app that manages its own hash falls through to the '?app_start=' query.
+    TRY.
+        DATA(lv_rest) = parse_app_route_rest( iv_hash ).
+        IF lv_rest IS INITIAL.
+          RETURN.
+        ENDIF.
+        " the class token ends at the next route / query separator
+        SPLIT lv_rest AT `/` INTO lv_rest DATA(lv_dummy).
+        SPLIT lv_rest AT `&` INTO lv_rest lv_dummy.
+        SPLIT lv_rest AT `?` INTO lv_rest lv_dummy.
+        result = z2ui5_cl_a2ui5_context=>c_trim_upper( lv_rest ).
+      CATCH cx_root ##NO_HANDLER.
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD request_app_start_route_draft.
+    " Parse the draft id (app state) from a hash route
+    " '#/app/<CLASS>/<DRAFTID>'. Returns empty when the route carries no draft
+    " segment (fresh navigation / bookmark without state), so the app starts
+    " fresh from <CLASS>.
+    TRY.
+        DATA(lv_rest) = parse_app_route_rest( iv_hash ).
+        IF lv_rest IS INITIAL.
+          RETURN.
+        ENDIF.
+        " cut off a trailing query / fragment, then take the 2nd path segment
+        " (the 1st is the class, discarded into lv_dummy)
+        SPLIT lv_rest AT `&` INTO lv_rest DATA(lv_dummy).
+        SPLIT lv_rest AT `?` INTO lv_rest lv_dummy.
+        SPLIT lv_rest AT `/` INTO lv_dummy DATA(lv_draft).
+        " a draft id has no further separators; guard against a stray tail
+        SPLIT lv_draft AT `/` INTO lv_draft lv_dummy.
+        result = z2ui5_cl_a2ui5_context=>c_trim_upper( lv_draft ).
       CATCH cx_root ##NO_HANDLER.
     ENDTRY.
   ENDMETHOD.
