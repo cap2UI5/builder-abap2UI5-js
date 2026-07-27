@@ -54,6 +54,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_028",
+    "path": "01/01/z2ui5_cl_demo_app_028.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_047",
     "path": "01/01/z2ui5_cl_demo_app_047.js",
     "todos": 0,
@@ -72,6 +78,14 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_064",
+    "path": "01/01/z2ui5_cl_demo_app_064.js",
+    "todos": 1,
+    "todoDetails": [
+      "unsupported statement: WAIT UP TO 2 SECONDS."
+    ]
+  },
+  {
     "class": "z2ui5_cl_demo_app_065",
     "path": "01/01/z2ui5_cl_demo_app_065.js",
     "todos": 0,
@@ -86,6 +100,12 @@
   {
     "class": "z2ui5_cl_demo_app_071",
     "path": "01/01/z2ui5_cl_demo_app_071.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_073",
+    "path": "01/01/z2ui5_cl_demo_app_073.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -138,6 +158,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_125",
+    "path": "01/01/z2ui5_cl_demo_app_125.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_126",
     "path": "01/01/z2ui5_cl_demo_app_126.js",
     "todos": 6,
@@ -149,6 +175,12 @@
       "CREATE DATA: CREATE DATA ms_table_row TYPE HANDLE new_struct_desc.",
       "unsupported statement: SELECT * FROM z2ui5_t_01 INTO CORRESPONDING FIELDS OF TABLE @<table> UP TO 3 ROWS."
     ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_133",
+    "path": "01/01/z2ui5_cl_demo_app_133.js",
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_144",
@@ -193,6 +225,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_189",
+    "path": "01/01/z2ui5_cl_demo_app_189.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_197",
     "path": "01/01/z2ui5_cl_demo_app_197.js",
     "todos": 3,
@@ -203,6 +241,48 @@
     ]
   },
   {
+    "class": "z2ui5_cl_demo_app_315",
+    "path": "01/01/z2ui5_cl_demo_app_315.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_316",
+    "path": "01/01/z2ui5_cl_demo_app_316.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_325",
+    "path": "01/01/z2ui5_cl_demo_app_325.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_352",
+    "path": "01/01/z2ui5_cl_demo_app_352.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_361",
+    "path": "01/01/z2ui5_cl_demo_app_361.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_362",
+    "path": "01/01/z2ui5_cl_demo_app_362.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_363",
+    "path": "01/01/z2ui5_cl_demo_app_363.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_381",
     "path": "01/01/z2ui5_cl_demo_app_381.js",
     "todos": 0,
@@ -211,6 +291,12 @@
   {
     "class": "z2ui5_cl_demo_app_382",
     "path": "01/01/z2ui5_cl_demo_app_382.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_421",
+    "path": "01/01/z2ui5_cl_demo_app_421.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -281,6 +367,24 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_467",
+    "path": "01/01/z2ui5_cl_demo_app_467.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_469",
+    "path": "01/01/z2ui5_cl_demo_app_469.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_470",
+    "path": "01/01/z2ui5_cl_demo_app_470.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_006",
     "path": "01/02/z2ui5_cl_demo_app_006.js",
     "todos": 0,
@@ -295,12 +399,6 @@
   {
     "class": "z2ui5_cl_demo_app_019",
     "path": "01/02/z2ui5_cl_demo_app_019.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_028",
-    "path": "01/02/z2ui5_cl_demo_app_028.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -329,26 +427,12 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_064",
-    "path": "01/02/z2ui5_cl_demo_app_064.js",
-    "todos": 1,
-    "todoDetails": [
-      "unsupported statement: WAIT UP TO 2 SECONDS."
-    ]
-  },
-  {
     "class": "z2ui5_cl_demo_app_070",
     "path": "01/02/z2ui5_cl_demo_app_070.js",
     "todos": 1,
     "todoDetails": [
       "unsupported statement: DELETE mt_table."
     ]
-  },
-  {
-    "class": "z2ui5_cl_demo_app_073",
-    "path": "01/02/z2ui5_cl_demo_app_073.js",
-    "todos": 0,
-    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_074",
@@ -375,18 +459,6 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_125",
-    "path": "01/02/z2ui5_cl_demo_app_125.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_133",
-    "path": "01/02/z2ui5_cl_demo_app_133.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_143",
     "path": "01/02/z2ui5_cl_demo_app_143.js",
     "todos": 0,
@@ -405,12 +477,6 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_189",
-    "path": "01/02/z2ui5_cl_demo_app_189.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_202",
     "path": "01/02/z2ui5_cl_demo_app_202.js",
     "todos": 0,
@@ -425,48 +491,6 @@
   {
     "class": "z2ui5_cl_demo_app_306",
     "path": "01/02/z2ui5_cl_demo_app_306.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_316",
-    "path": "01/02/z2ui5_cl_demo_app_316.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_325",
-    "path": "01/02/z2ui5_cl_demo_app_325.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_352",
-    "path": "01/02/z2ui5_cl_demo_app_352.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_361",
-    "path": "01/02/z2ui5_cl_demo_app_361.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_362",
-    "path": "01/02/z2ui5_cl_demo_app_362.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_363",
-    "path": "01/02/z2ui5_cl_demo_app_363.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_421",
-    "path": "01/02/z2ui5_cl_demo_app_421.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -531,12 +555,6 @@
   {
     "class": "z2ui5_cl_demo_app_465",
     "path": "01/02/z2ui5_cl_demo_app_465.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_467",
-    "path": "01/02/z2ui5_cl_demo_app_467.js",
     "todos": 0,
     "todoDetails": []
   },
