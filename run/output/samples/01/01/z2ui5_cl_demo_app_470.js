@@ -24,7 +24,8 @@ class z2ui5_cl_demo_app_470 extends z2ui5_if_app {
 
   view_display() {
     const view = z2ui5_cl_xml_view.factory();
-    const page = view.shell().page(`abap2UI5 - Aggregation binding on a popup`);
+    const page = view.shell()
+      .page({ title: `abap2UI5 - Aggregation binding on a popup`, navbuttonpress: this.client._event_nav_app_leave(), shownavbutton: this.client.check_app_prev_stack() });
     page.message_strip({ text: `The table is bound to the product aggregation. Press a row's "components" button - the ` + `popup is element-bound to that product, so its relative bindings (incl. the component ` + `list's aggregation binding) resolve without copying any data into event args.`, type: `Information`, showicon: true, class: `sapUiSmallMargin` });
     const tab = page.table(this.client._bind(this.t_product));
     tab.columns()
