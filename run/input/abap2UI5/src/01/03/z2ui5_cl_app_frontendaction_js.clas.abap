@@ -66,6 +66,13 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `    // instant jump. Shared by every scroll path in evScrollTo.` && |\n| &&
              `    const SMOOTH_SCROLL_MS = 300;` && |\n| &&
              `` && |\n| &&
+             `    // SMART_VARIANT_INIT waits for the smart controls to register themselves at` && |\n| &&
+             `    // the SmartVariantManagement - that happens once their OData metadata has` && |\n| &&
+             `    // loaded, so the wait has to survive a slow service (5s) but must not run` && |\n| &&
+             `    // forever when no smart control is there at all.` && |\n| &&
+             `    const SMART_VARIANT_INIT_TRIES = 50;` && |\n| &&
+             `    const SMART_VARIANT_INIT_DELAY = 100;` && |\n| &&
+             `` && |\n| &&
              `    // ------------------------------------------------------------------` && |\n| &&
              `    // Launchpad helpers` && |\n| &&
              `    // ------------------------------------------------------------------` && |\n| &&
@@ -127,7 +134,30 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `      addStyleClass: ["string"], // sap.ui.core.Control: add a CSS style class` && |\n| &&
              `      removeStyleClass: ["string"], // sap.ui.core.Control: remove a CSS style class` && |\n| &&
              `      toggleStyleClass: ["string"], // sap.ui.core.Control: toggle a CSS style class` && |\n| &&
+             `      setAsyncURLHandler: ["string"], // sap.m.MessagePopover: name of a URL_POLICY below` && |\n| &&
              `    };` && |\n| &&
+             `` && |\n| &&
+             `    // sap.m.MessagePopover.setAsyncURLHandler expects a live JS callback that` && |\n| &&
+             `    // resolves a promise per message link - a shape no backend payload can` && |\n| &&
+             `    // carry, and one round-trip per link would be the wrong ergonomics anyway.` && |\n| &&
+             `    // The backend names one of these built-in policies instead, so the` && |\n| &&
+             `    // link-gating stays declarative data on the wire (see rule "the frontend is` && |\n| &&
+             `    // a thin, data-driven executor").` && |\n| &&
+             `    const URL_POLICIES = {` && |\n| &&
+             `      ALLOW_ALL: () => true,` && |\n| &&
+             `      // the sap.m MessagePopover demo case: in-app links (#/x, /path, ?q=) may` && |\n| &&
+             `      // be followed, anything that leaves the app (http:, mailto:, //host) is` && |\n| &&
+             `      // disabled in the popover.` && |\n| &&
+             `      RELATIVE_ONLY: (url) => !isAbsoluteUrl(url),` && |\n| &&
+             `      DENY_ALL: () => false,` && |\n| &&
+             `    };` && |\n| &&
+             `` && |\n| &&
+             `    function isAbsoluteUrl(url) {` && |\n| &&
+             `      const s = String(url ?? "").trim();` && |\n| &&
+             `      // a scheme ("http:", "mailto:", "javascript:") or a protocol-relative` && |\n| &&
+             `      // "//host" - everything else resolves against the app's own origin` && |\n| &&
+             `      return /^[a-z][a-z0-9+.-]*:/i.test(s) || s.startsWith("//");` && |\n| &&
+             `    }` && |\n| &&
              `` && |\n| &&
              `    // A method LISTED above carries explicit arg kinds (and some, like openBy/` && |\n| &&
              `    // toggleBy, get special handling). A method NOT listed is still callable as` && |\n| &&
@@ -286,6 +316,34 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `        });` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&
+             `      // setAsyncURLHandler takes a FUNCTION, so the argument names a policy` && |\n| &&
+             `      // (see URL_POLICIES) and the client installs the matching built-in` && |\n| &&
+             `      // validator - the wire still carries data, never code.` && |\n| &&
+             `      if (method === "setAsyncURLHandler") {` && |\n| &&
+             `        const policy = String(args[4] ?? "").toUpperCase();` && |\n| &&
+             `        const isAllowed = URL_POLICIES[policy];` && |\n| &&
+             `        if (!isAllowed) {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``CONTROL_BY_ID: unknown URL policy '${args[4]}' (allowed: ${Object.keys(URL_POLICIES).join(", ")})``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        if (!control || typeof control.setAsyncURLHandler !== "function") {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``CONTROL_BY_ID: 'setAsyncURLHandler' not callable on control '${id}'``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        control.setAsyncURLHandler((config) => {` && |\n| &&
+             `          // the control hands over { url, id, promise }; the promise's` && |\n| &&
+             `          // resolve() decides whether the link stays clickable` && |\n| &&
+             `          config?.promise?.resolve({` && |\n| &&
+             `            allowed: isAllowed(config.url),` && |\n| &&
+             `            id: config.id,` && |\n| &&
+             `          });` && |\n| &&
+             `        });` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
              `      // openBy is handled BEFORE the generic callable check: a control` && |\n| &&
              `      // without an own openBy (sap.ui.unified.Menu) still supports the` && |\n| &&
              `      // anchored open via its open(bWithKeyboard, opener, my, at, of)` && |\n| &&
@@ -359,7 +417,8 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `        /\{(\d+)(?:\?([^:}]*):([^}]*))?\}/g,` && |\n| &&
              `        (m, i, tText, fText) => {` && |\n| &&
              `          const n = Number(i);` && |\n| &&
-             `          if (n >= values.length) return m;` && |\n| &&
+             `          if (n >= values.length) return m;` && |\n|.
+    result = result &&
              `          const v = String(values[n]);` && |\n| &&
              `          if (tText === undefined) return v;` && |\n| &&
              `          const truthy = v !== "" && !/^(false|0|undefined|null)$/i.test(v);` && |\n| &&
@@ -417,8 +476,7 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `        groups = JSON.parse(json);` && |\n| &&
              `      } catch {` && |\n| &&
              `        Lib.logError("BINDING_CALL: malformed filter groups JSON");` && |\n| &&
-             `        return;` && |\n|.
-    result = result &&
+             `        return;` && |\n| &&
              `      }` && |\n| &&
              `      if (!Array.isArray(groups)) {` && |\n| &&
              `        Lib.logError("BINDING_CALL: filter groups must be an array");` && |\n| &&
@@ -760,7 +818,8 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    // BIND_ELEMENT: element-bind a whole view slot (popup / popover / main) to` && |\n| &&
-             `    // a row of a registered table, so the fragment's relative bindings ({Name},` && |\n| &&
+             `    // a row of a registered table, so the fragment's relative bindings ({Name},` && |\n|.
+    result = result &&
              `    // {ProductPicUrl}, ...) resolve against that row - the abap2UI5 equivalent of` && |\n| &&
              `    // oControl.bindElement(oCtx.getPath()). args = [slot, index, path]; the path` && |\n| &&
              `    // comes from client->_bind( table ) (braces already stripped server-side and` && |\n| &&
@@ -778,6 +837,279 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `        return;` && |\n| &&
              `      }` && |\n| &&
              `      view.bindElement(``${path}/${args[2]}``);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // The anchor. setPersControler() is sap.ui.comp's own setter and does` && |\n| &&
+             `    // more than assign the field: it also creates the control promise that` && |\n| &&
+             `    // initialise() insists on. A page variant never gets that call -` && |\n| &&
+             `    // addPersonalizableControl() returns early for isPageVariant() and only` && |\n| &&
+             `    // the single-control case reaches setPersControler() - which is exactly` && |\n| &&
+             `    // why a controller-less app ends up with no anchor and no promise.` && |\n| &&
+             `    function anchorPersoControl(oSVM, target) {` && |\n| &&
+             `      if (oSVM._oPersoControl) {` && |\n| &&
+             `        // a runtime that anchors the control itself is left alone` && |\n| &&
+             `      } else if (typeof oSVM.setPersControler === "function") {` && |\n| &&
+             `        oSVM.setPersControler(target);` && |\n| &&
+             `      } else {` && |\n| &&
+             `        // older runtimes without the setter: the field alone still carries` && |\n| &&
+             `        // the write path (saving), which is better than nothing` && |\n| &&
+             `        oSVM._oPersoControl = target;` && |\n| &&
+             `      }` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // With the anchor in place the load flow still has to be started once.` && |\n| &&
+             `    // A smart control does that itself when it registers - but only then,` && |\n| &&
+             `    // and it may already have tried (and aborted) before the anchor existed.` && |\n| &&
+             `    // So wait for the control's wrapper and initialise it if nobody has:` && |\n| &&
+             `    // a wrapper is required (initialise answers "unknown control" without` && |\n| &&
+             `    // one) and an initialised wrapper must be left alone ("already executed").` && |\n| &&
+             `    function ensureInitialised(oSVM, target, attempt, fnCallback) {` && |\n| &&
+             `      if (Lib.isDestroyed(oSVM)) return;` && |\n| &&
+             `      const wrapper = oSVM._getControlWrapper` && |\n| &&
+             `        ? oSVM._getControlWrapper(target)` && |\n| &&
+             `        : null;` && |\n| &&
+             `      if (!wrapper) {` && |\n| &&
+             `        if (attempt < SMART_VARIANT_INIT_TRIES) {` && |\n| &&
+             `          setTimeout(` && |\n| &&
+             `            () => ensureInitialised(oSVM, target, attempt + 1, fnCallback),` && |\n| &&
+             `            SMART_VARIANT_INIT_DELAY,` && |\n| &&
+             `          );` && |\n| &&
+             `        }` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      if (wrapper.bInitialized) return;` && |\n| &&
+             `      oSVM.initialise(fnCallback || (() => {}), target);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // SMART_VARIANT_INIT: place the anchor sap.ui.comp variant management needs` && |\n| &&
+             `    // and that only an app controller would otherwise set - the personalizable` && |\n| &&
+             `    // control the SmartVariantManagement works against (_oPersoControl).` && |\n| &&
+             `    // args = [_, svmId, controlId?].` && |\n| &&
+             `    //` && |\n| &&
+             `    // Why an anchor and not a call: SmartVariantManagement.initialise(fn, control)` && |\n| &&
+             `    // aborts its load flow when ``_oPersoControl`` is missing ("no personalizable` && |\n| &&
+             `    // component available") and marks that control's wrapper as done - a second` && |\n| &&
+             `    // call answers "already executed". The smart controls call initialise on` && |\n| &&
+             `    // themselves as soon as their metadata arrives, so an anchor set too late` && |\n| &&
+             `    // buys nothing: saving works (it only reads the field) but stored variants` && |\n| &&
+             `    // are never loaded. Hence: set the field as EARLY as the control exists, and` && |\n| &&
+             `    // leave the initialise call to the smart control, which then finds the` && |\n| &&
+             `    // anchor in place. Only when no control id was given does this wait for the` && |\n| &&
+             `    // registration list and call initialise itself (nobody else will).` && |\n| &&
+             `    function evSmartVariantInit(oController, args) {` && |\n| &&
+             `      const [, svmId, controlId] = args;` && |\n| &&
+             `      let tries = 0;` && |\n| &&
+             `      const run = () => {` && |\n| &&
+             `        const oSVM = ViewSlots.resolveById(svmId);` && |\n| &&
+             `        const control = controlId ? ViewSlots.resolveById(controlId) : null;` && |\n| &&
+             `        if (!oSVM || (controlId && !control)) {` && |\n| &&
+             `          // the view may still be building - wait for both controls to exist` && |\n| &&
+             `          if (tries++ < SMART_VARIANT_INIT_TRIES) {` && |\n| &&
+             `            setTimeout(run, SMART_VARIANT_INIT_DELAY);` && |\n| &&
+             `            return;` && |\n| &&
+             `          }` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``SMART_VARIANT_INIT: '${controlId ? ``${svmId}' / '${controlId}`` : svmId}' not found``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        if (Lib.isDestroyed(oSVM) || typeof oSVM.initialise !== "function") {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``SMART_VARIANT_INIT: no SmartVariantManagement for id '${svmId}'``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        let target = control;` && |\n| &&
+             `        if (!target) {` && |\n| &&
+             `          // no control named: fall back to the first one that registered, which` && |\n| &&
+             `          // means waiting for that registration (it follows the metadata load)` && |\n| &&
+             `          const registered = oSVM.getPersonalizableControls` && |\n| &&
+             `            ? oSVM.getPersonalizableControls()` && |\n| &&
+             `            : [];` && |\n| &&
+             `          if (!registered.length) {` && |\n| &&
+             `            if (tries++ < SMART_VARIANT_INIT_TRIES) {` && |\n| &&
+             `              setTimeout(run, SMART_VARIANT_INIT_DELAY);` && |\n| &&
+             `              return;` && |\n| &&
+             `            }` && |\n| &&
+             `            Lib.logError(` && |\n| &&
+             `              ``SMART_VARIANT_INIT: no personalizable control registered at '${svmId}'``,` && |\n| &&
+             `            );` && |\n| &&
+             `            return;` && |\n| &&
+             `          }` && |\n| &&
+             `          target = ViewSlots.resolveById(registered[0].getControl());` && |\n| &&
+             `          if (!target) return;` && |\n| &&
+             `        }` && |\n| &&
+             `        anchorPersoControl(oSVM, target);` && |\n| &&
+             `        ensureInitialised(oSVM, target, 0);` && |\n| &&
+             `      };` && |\n| &&
+             `` && |\n| &&
+             `      run();` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // ------------------------------------------------------------------` && |\n| &&
+             `    // FILTER_BAR_VARIANT_INIT: wire a CLASSIC sap.ui.comp.filterbar.FilterBar` && |\n| &&
+             `    // to a SmartVariantManagement. args = [_, svmId, filterBarId].` && |\n| &&
+             `    //` && |\n| &&
+             `    // A SmartFilterBar registers itself at the variant management (it knows its` && |\n| &&
+             `    // fields from the OData metadata), so SMART_VARIANT_INIT above only has to` && |\n| &&
+             `    // place the anchor. A classic FilterBar knows nothing about variants: every` && |\n| &&
+             `    // list-report controller hand-writes the same three callbacks` && |\n| &&
+             `    // (registerFetchData / registerApplyData / registerGetFiltersWithValues),` && |\n| &&
+             `    // adds a PersonalizableInfo and marks the variant dirty on each filter` && |\n| &&
+             `    // change. That is boilerplate over the bar's own filter items - data, not` && |\n| &&
+             `    // app logic - so the framework owns it and the app needs no JavaScript.` && |\n| &&
+             `    // ------------------------------------------------------------------` && |\n| &&
+             `` && |\n| &&
+             `    // marker so a re-sent action cannot stack a second set of callbacks and` && |\n| &&
+             `    // change handlers on the same bar (a rebuilt view reuses the ids, but it` && |\n| &&
+             `    // builds NEW control instances, which arrive here unmarked)` && |\n| &&
+             `    const FILTER_BAR_WIRED = "_z2ui5FilterBarVariantWired";` && |\n| &&
+             `` && |\n| &&
+             `    function filterItemControl(item) {` && |\n| &&
+             `      return item && typeof item.getControl === "function"` && |\n| &&
+             `        ? item.getControl()` && |\n| &&
+             `        : null;` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    function filterItemValue(item) {` && |\n| &&
+             `      const control = filterItemControl(item);` && |\n| &&
+             `      return control && typeof control.getValue === "function"` && |\n| &&
+             `        ? control.getValue()` && |\n| &&
+             `        : "";` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // what a variant stores, how it is put back, and which filters count as` && |\n| &&
+             `    // "assigned" for the bar's own summary text` && |\n| &&
+             `    function registerFilterBarCallbacks(oFilterBar) {` && |\n| &&
+             `      oFilterBar.registerFetchData(() =>` && |\n| &&
+             `        oFilterBar.getAllFilterItems().map((item) => ({` && |\n| &&
+             `          groupName: item.getGroupName(),` && |\n| &&
+             `          fieldName: item.getName(),` && |\n| &&
+             `          fieldData: filterItemValue(item),` && |\n| &&
+             `        })),` && |\n| &&
+             `      );` && |\n| &&
+             `      oFilterBar.registerApplyData((data) => {` && |\n| &&
+             `        (data || []).forEach((entry) => {` && |\n| &&
+             `          const control = oFilterBar.determineControlByName(` && |\n| &&
+             `            entry.fieldName,` && |\n| &&
+             `            entry.groupName,` && |\n| &&
+             `          );` && |\n| &&
+             `          // setValue, not a model write: the two-way binding abap2UI5 put on` && |\n| &&
+             `          // the property carries the restored value back to the backend on the` && |\n| &&
+             `          // next roundtrip, so selecting a variant needs none of its own` && |\n| &&
+             `          if (control && typeof control.setValue === "function") {` && |\n| &&
+             `            control.setValue(entry.fieldData);` && |\n| &&
+             `          }` && |\n| &&
+             `        });` && |\n| &&
+             `      });` && |\n| &&
+             `      oFilterBar.registerGetFiltersWithValues(() =>` && |\n| &&
+             `        oFilterBar` && |\n| &&
+             `          .getFilterGroupItems()` && |\n| &&
+             `          .filter((item) => String(filterItemValue(item)).length > 0),` && |\n| &&
+             `      );` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // every filter change makes the current variant dirty (the "*" next to the` && |\n| &&
+             `    // variant title) and refreshes the bar's assigned-filters summary` && |\n| &&
+             `    function attachFilterBarChange(oSVM, oFilterBar) {` && |\n| &&
+             `      oFilterBar.getAllFilterItems().forEach((item) => {` && |\n| &&
+             `        const control = filterItemControl(item);` && |\n| &&
+             `        if (!control || typeof control.attachChange !== "function") return;` && |\n| &&
+             `        control.attachChange((oEvent) => {` && |\n| &&
+             `          if (typeof oSVM.currentVariantSetModified === "function") {` && |\n| &&
+             `            oSVM.currentVariantSetModified(true);` && |\n| &&
+             `          }` && |\n| &&
+             `          if (typeof oFilterBar.fireFilterChange === "function") {` && |\n| &&
+             `            oFilterBar.fireFilterChange(oEvent);` && |\n| &&
+             `          }` && |\n| &&
+             `        });` && |\n| &&
+             `      });` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // sap.ui.comp is SAPUI5-only, so PersonalizableInfo must never be a hard` && |\n| &&
+             `    // dependency of this file (it 404s on OpenUI5 and would kill the component` && |\n| &&
+             `    // load). Resolve it at call time: synchronously when the SmartVariant-` && |\n| &&
+             `    // Management already pulled it in, asynchronously otherwise.` && |\n| &&
+             `    function withPersonalizableInfo(callback) {` && |\n| &&
+             `      const name = "sap/ui/comp/smartvariants/PersonalizableInfo";` && |\n| &&
+             `      if (` && |\n| &&
+             `        typeof sap === "undefined" ||` && |\n| &&
+             `        !sap.ui ||` && |\n| &&
+             `        typeof sap.ui.require !== "function"` && |\n| &&
+             `      ) {` && |\n| &&
+             `        Lib.logError("FILTER_BAR_VARIANT_INIT: sap.ui.require not available");` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      const loaded = sap.ui.require(name);` && |\n| &&
+             `      if (loaded) {` && |\n| &&
+             `        callback(loaded);` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      sap.ui.require([name], callback, () =>` && |\n| &&
+             `        Lib.logError(` && |\n| &&
+             `          "FILTER_BAR_VARIANT_INIT: sap.ui.comp.smartvariants not available",` && |\n| &&
+             `        ),` && |\n| &&
+             `      );` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    function evFilterBarVariantInit(oController, args) {` && |\n| &&
+             `      const [, svmId, filterBarId] = args;` && |\n| &&
+             `      let tries = 0;` && |\n| &&
+             `      const run = () => {` && |\n| &&
+             `        const oSVM = ViewSlots.resolveById(svmId);` && |\n| &&
+             `        const oFilterBar = ViewSlots.resolveById(filterBarId);` && |\n| &&
+             `        if (!oSVM || !oFilterBar) {` && |\n| &&
+             `          // the view may still be building - wait for both controls to exist` && |\n| &&
+             `          if (tries++ < SMART_VARIANT_INIT_TRIES) {` && |\n| &&
+             `            setTimeout(run, SMART_VARIANT_INIT_DELAY);` && |\n| &&
+             `            return;` && |\n| &&
+             `          }` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``FILTER_BAR_VARIANT_INIT: '${svmId}' / '${filterBarId}' not found``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        if (` && |\n| &&
+             `          Lib.isDestroyed(oSVM) ||` && |\n| &&
+             `          typeof oSVM.addPersonalizableControl !== "function"` && |\n| &&
+             `        ) {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``FILTER_BAR_VARIANT_INIT: no SmartVariantManagement for id '${svmId}'``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        if (typeof oFilterBar.registerFetchData !== "function") {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``FILTER_BAR_VARIANT_INIT: no FilterBar for id '${filterBarId}'``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        if (oFilterBar[FILTER_BAR_WIRED]) return;` && |\n| &&
+             `        oFilterBar[FILTER_BAR_WIRED] = true;` && |\n| &&
+             `` && |\n| &&
+             `        registerFilterBarCallbacks(oFilterBar);` && |\n| &&
+             `        attachFilterBarChange(oSVM, oFilterBar);` && |\n| &&
+             `        withPersonalizableInfo((PersonalizableInfo) => {` && |\n| &&
+             `          oSVM.addPersonalizableControl(` && |\n| &&
+             `            new PersonalizableInfo({` && |\n| &&
+             `              type: "filterBar",` && |\n| &&
+             `              keyName: "persistencyKey",` && |\n| &&
+             `              dataSource: "",` && |\n| &&
+             `              control: oFilterBar,` && |\n| &&
+             `            }),` && |\n| &&
+             `          );` && |\n| &&
+             `          anchorPersoControl(oSVM, oFilterBar);` && |\n| &&
+             `          // the load flow ends in registerApplyData, so the bar is clean again` && |\n| &&
+             `          // right after it - drop the "*" the restored values would leave` && |\n| &&
+             `          ensureInitialised(oSVM, oFilterBar, 0, () => {` && |\n| &&
+             `            if (typeof oSVM.currentVariantSetModified === "function") {` && |\n| &&
+             `              oSVM.currentVariantSetModified(false);` && |\n| &&
+             `            }` && |\n| &&
+             `          });` && |\n| &&
+             `        });` && |\n| &&
+             `      };` && |\n| &&
+             `` && |\n| &&
+             `      run();` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    function evUrlHelper(oController, args) {` && |\n| &&
@@ -818,8 +1150,7 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `        const editor = ViewSlots.byId("POPUP", "imageEditor");` && |\n| &&
              `        if (editor) image = editor.getImagePngDataURL();` && |\n| &&
              `      } catch (e) {` && |\n| &&
-             `        Lib.logError("IMAGE_EDITOR_POPUP_CLOSE: getImagePngDataURL failed", e);` && |\n|.
-    result = result &&
+             `        Lib.logError("IMAGE_EDITOR_POPUP_CLOSE: getImagePngDataURL failed", e);` && |\n| &&
              `      }` && |\n| &&
              `      ViewSlots.destroy("POPUP");` && |\n| &&
              `      oController.eB(["SAVE"], image);` && |\n| &&
@@ -839,6 +1170,105 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `        delete timers[timerKey];` && |\n| &&
              `        oController.eB([callbackEvent]);` && |\n| &&
              `      }, delay);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // ------------------------------------------------------------------` && |\n| &&
+             `    // KEYBOARD_SHORTCUT: bind a key combination to a NAMED BACKEND EVENT -` && |\n| &&
+             `    // the declarative equivalent of a sap.ui.core.CommandExecution shortcut` && |\n| &&
+             `    // (which needs a controller method and therefore has no place in a` && |\n| &&
+             `    // controller-less app). The backend registers "combo -> event" pairs as` && |\n| &&
+             `    // data; the document listener below is installed once and always reads` && |\n| &&
+             `    // the CURRENT registry, so an app switch (which resets AppState) starts` && |\n| &&
+             `    // from an empty set without touching the listener.` && |\n| &&
+             `    // ------------------------------------------------------------------` && |\n| &&
+             `` && |\n| &&
+             `    // in the order they are emitted into a normalized combo, so registration` && |\n| &&
+             `    // and keydown produce the same string for any spelling` && |\n| &&
+             `    const SHORTCUT_MODIFIERS = ["ctrl", "shift", "alt", "meta"];` && |\n| &&
+             `` && |\n| &&
+             `    // spellings apps/UI5 use for the same modifier or key` && |\n| &&
+             `    const SHORTCUT_ALIASES = {` && |\n| &&
+             `      control: "ctrl",` && |\n| &&
+             `      cmd: "meta",` && |\n| &&
+             `      command: "meta",` && |\n| &&
+             `      option: "alt",` && |\n| &&
+             `      esc: "escape",` && |\n| &&
+             `      del: "delete",` && |\n| &&
+             `      ins: "insert",` && |\n| &&
+             `      return: "enter",` && |\n| &&
+             `      space: " ",` && |\n| &&
+             `    };` && |\n| &&
+             `` && |\n| &&
+             `    function shortcutToken(part) {` && |\n| &&
+             `      const t = part.trim().toLowerCase();` && |\n| &&
+             `      return SHORTCUT_ALIASES[t] ?? t;` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // "Ctrl+Shift+S" / "shift + CTRL + s" -> "ctrl+shift+s". Returns an empty` && |\n| &&
+             `    // string when no actual key (only modifiers) is named.` && |\n| &&
+             `    function normalizeShortcut(combo) {` && |\n| &&
+             `      const parts = String(combo ?? "")` && |\n| &&
+             `        .split("+")` && |\n| &&
+             `        .map(shortcutToken)` && |\n| &&
+             `        .filter((p) => p !== "");` && |\n| &&
+             `      const mods = SHORTCUT_MODIFIERS.filter((m) => parts.includes(m));` && |\n| &&
+             `      const keys = parts.filter((p) => !SHORTCUT_MODIFIERS.includes(p));` && |\n| &&
+             `      if (keys.length === 0) return "";` && |\n| &&
+             `      return [...mods, keys[keys.length - 1]].join("+");` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // the same normalized form for an actual keydown event` && |\n| &&
+             `    function shortcutFromEvent(oEvent) {` && |\n| &&
+             `      const key = String(oEvent.key ?? "").toLowerCase();` && |\n|.
+    result = result &&
+             `      // a bare modifier press is not a shortcut` && |\n| &&
+             `      if (key === "" || SHORTCUT_MODIFIERS.includes(shortcutToken(key)))` && |\n| &&
+             `        return "";` && |\n| &&
+             `      const mods = [];` && |\n| &&
+             `      if (oEvent.ctrlKey) mods.push("ctrl");` && |\n| &&
+             `      if (oEvent.shiftKey) mods.push("shift");` && |\n| &&
+             `      if (oEvent.altKey) mods.push("alt");` && |\n| &&
+             `      if (oEvent.metaKey) mods.push("meta");` && |\n| &&
+             `      return [...mods, key].join("+");` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    let shortcutListener = null;` && |\n| &&
+             `` && |\n| &&
+             `    function installShortcutListener() {` && |\n| &&
+             `      if (shortcutListener || typeof document === "undefined") return;` && |\n| &&
+             `      shortcutListener = (oEvent) => {` && |\n| &&
+             `        try {` && |\n| &&
+             `          const entry = AppState.state.shortcuts[shortcutFromEvent(oEvent)];` && |\n| &&
+             `          if (!entry) return;` && |\n| &&
+             `          // the browser's own default for the combo (Ctrl+S saves the page,` && |\n| &&
+             `          // Ctrl+D bookmarks it) must not fire alongside the app command` && |\n| &&
+             `          oEvent.preventDefault();` && |\n| &&
+             `          entry.controller.eB([entry.event]);` && |\n| &&
+             `        } catch (e) {` && |\n| &&
+             `          Lib.logError("KEYBOARD_SHORTCUT: dispatch failed", e);` && |\n| &&
+             `        }` && |\n| &&
+             `      };` && |\n| &&
+             `      document.addEventListener("keydown", shortcutListener);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // args: [_, combo, eventName] - an empty event name unregisters the combo` && |\n| &&
+             `    function evKeyboardShortcut(oController, args) {` && |\n| &&
+             `      const combo = normalizeShortcut(args[1]);` && |\n| &&
+             `      if (!combo) {` && |\n| &&
+             `        Lib.logError(` && |\n| &&
+             `          ``KEYBOARD_SHORTCUT: '${args[1]}' names no key to bind (modifiers only?)``,` && |\n| &&
+             `        );` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      const shortcuts = AppState.state.shortcuts;` && |\n| &&
+             `      if (!args[2]) {` && |\n| &&
+             `        delete shortcuts[combo];` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      // re-registering a combo replaces it, so the backend can rebind a` && |\n| &&
+             `      // shortcut without unregistering it first` && |\n| &&
+             `      shortcuts[combo] = { event: args[2], controller: oController };` && |\n| &&
+             `      installShortcutListener();` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    function evSetInputMode(oController, args) {` && |\n| &&
@@ -1066,9 +1496,12 @@ CLASS z2ui5_cl_app_frontendaction_js IMPLEMENTATION.
              `      SCROLL_INTO_VIEW: evScrollIntoView,` && |\n| &&
              `      START_TIMER: evStartTimer,` && |\n| &&
              `      KEYBOARD_SET_MODE: evSetInputMode,` && |\n| &&
+             `      KEYBOARD_SHORTCUT: evKeyboardShortcut,` && |\n| &&
              `      Z2UI5: evZ2ui5Custom,` && |\n| &&
              `      WIZARD_SET_NEXT_STEP: evWizardSetNextStep,` && |\n| &&
              `      PLAY_AUDIO: evPlayAudio,` && |\n| &&
+             `      SMART_VARIANT_INIT: evSmartVariantInit,` && |\n| &&
+             `      FILTER_BAR_VARIANT_INIT: evFilterBarVariantInit,` && |\n| &&
              `      CONTROL_BY_ID: evControlCallById,` && |\n| &&
              `      CONTROL_GLOBAL: evControlCall,` && |\n| &&
              `      BINDING_CALL: evBindingCall,` && |\n| &&
