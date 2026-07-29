@@ -93,6 +93,30 @@ RTTI-typed conversions, sync-over-async) — reasons live in the baseline.
   `ACTION_KEY_CAP`) to kick the downstream CAP build. Idempotent — pushes
   only when that sha changed.
 
+## History growth of the committed build trees — recorded policy
+
+Every nightly sync lands as bot commits of full generated trees
+(`run/input/*`, `run/output/*`, `core/`) — typically four commits per
+night. That is deliberate: committed trees make upstream changes
+reviewable as plain diffs, keep builds reproducible without artifact
+storage, and let downstream repos mirror from a normal git checkout. The
+cost is a git history that grows linearly forever, while a bot commit
+loses all value the moment it is superseded. Recorded here (2026-07,
+while the decision is still cheap) so nobody has to re-derive it later:
+
+- Keep committing the trees — do **not** switch to CI-artifact transport
+  without a maintainer decision; the diff-reviewability is load-bearing.
+- Bot-commit **history is disposable**. Once clone size becomes a real
+  nuisance (rule of thumb: `.git` beyond a few hundred MB), a maintainer
+  may squash bot commits older than the current baseline into one
+  baseline commit (history rewrite + coordinated force push), preserving
+  all hand-written commits (`src/`, `scripts/`, `test/`, workflows).
+- Therefore never build anything that resolves **old commits of this
+  repo**: cross-repo references (`UPSTREAM_COMMIT` files, the
+  `UPSTREAM_HEAD` trigger slot in builder-cap2UI5) are change-detection
+  tokens and upstream-repo shas — they must stay that, and must never be
+  resolved against this repo's history.
+
 ## Rules
 
 - Never hand-edit `core/` or anything under `run/` — edit `src/` (or the
