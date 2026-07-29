@@ -125,7 +125,7 @@ module.exports._http_get = function _http_get() {
   }
   let preload = ``;
   try {
-    const pre = require("./z2ui5_cl_app_preload");
+    const pre = require("../01/03/z2ui5_cl_app_preload");
     if (typeof pre.get === `function`) preload = pre.get({ styles_css: styles, custom_js: cfg.custom_js || `` });
   } catch { /* optional — the webapp is served statically on JS platforms */ }
 
