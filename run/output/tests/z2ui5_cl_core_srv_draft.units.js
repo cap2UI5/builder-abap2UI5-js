@@ -1,6 +1,7 @@
 // GENERATED from run/input/abap2UI5/src/01/01/z2ui5_cl_core_srv_draft.clas.testclasses.abap — do not edit
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
 const z2ui5_cl_core_srv_draft = require("abap2UI5/z2ui5_cl_core_srv_draft");
+const z2ui5_port = require("abap2UI5/z2ui5_port");
 
 
 class ltcl_test {
@@ -78,6 +79,28 @@ class ltcl_test {
     ls_db = lo_draft.read_draft(`TEST_OW`);
     cl_abap_unit_assert.assert_equals({ exp: `updated`, act: ls_db.data });
   }
+
+  test_owner_binding() {
+    let sy_subrc = 0;
+    let sy_uname = "";
+    let ls_db = [];
+    ls_db.id = `TEST_OWNER`;
+    ls_db.uname = `${sy_uname}_OTHER`;
+    ls_db.data = `secret state`;
+    z2ui5_port.db({ op: `modify`, table: `z2ui5_t_01`, row: ls_db });
+    sy_subrc = z2ui5_port.sy_subrc;
+    z2ui5_port.db({ op: `commit` });
+    let lo_draft = null;
+    lo_draft = new z2ui5_cl_core_srv_draft();
+    let lv_raised = false;
+    try {
+      lo_draft.read_draft(`TEST_OWNER`);
+    } catch (error) {
+      lv_raised = true;
+    }
+    cl_abap_unit_assert.assert_true(lv_raised);
+    cl_abap_unit_assert.assert_false(lo_draft.check_exists(`TEST_OWNER`));
+  }
 }
 
 
@@ -87,5 +110,5 @@ class ltcl_test {
 module.exports = {
   __main: "z2ui5_cl_core_srv_draft",
   __classes: { ltcl_test },
-  __tests: {"ltcl_test":["test_create","test_create_and_read","test_read_info","test_buffer","test_overwrite"]},
+  __tests: {"ltcl_test":["test_create","test_create_and_read","test_read_info","test_buffer","test_overwrite","test_owner_binding"]},
 };

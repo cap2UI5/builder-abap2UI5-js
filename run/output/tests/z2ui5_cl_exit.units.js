@@ -31,7 +31,7 @@ class ltcl_test {
 
   test_set_config_http_post() {
     const li_exit = z2ui5_cl_exit.get_instance();
-    let ls_config = { draft_exp_time_in_hours: 0, check_hide_error_details: false };
+    let ls_config = { draft_exp_time_in_hours: 0, check_hide_error_details: false, check_csrf_active: false };
     const _out0 = { cs_config: ls_config };
     li_exit.set_config_http_post(_out0);
     if ("cs_config" in _out0) ls_config = _out0.cs_config;
@@ -40,7 +40,7 @@ class ltcl_test {
 
   test_post_default_exp_time() {
     const li_exit = z2ui5_cl_exit.get_instance();
-    let ls_config = { draft_exp_time_in_hours: 0, check_hide_error_details: false };
+    let ls_config = { draft_exp_time_in_hours: 0, check_hide_error_details: false, check_csrf_active: false };
     ls_config.draft_exp_time_in_hours = - 1;
     const _out0 = { cs_config: ls_config };
     li_exit.set_config_http_post(_out0);

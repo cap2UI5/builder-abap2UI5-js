@@ -133,15 +133,29 @@ class ltcl_test {
 
   event_multi_req() {
     let lo_event = null;
-    let temp11 = { check_allow_multi_req: false };
+    let temp11 = { check_allow_multi_req: false, check_prevent_default: false };
     let lv_event = ``;
     let temp12 = false;
     lo_event = new z2ui5_cl_core_srv_event();
-    temp11 = { check_allow_multi_req: false };
+    temp11 = { check_allow_multi_req: false, check_prevent_default: false };
     temp11.check_allow_multi_req = true;
     lv_event = lo_event.get_event({ val: `EVT`, s_cnt: temp11 });
     temp12 = (String(lv_event).toLowerCase().includes(String(`false,true`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp12);
+  }
+
+  event_prevent_default() {
+    let lo_event = null;
+    let ls_ctrl = { check_allow_multi_req: false, check_prevent_default: false };
+    lo_event = new z2ui5_cl_core_srv_event();
+    ls_ctrl = { check_allow_multi_req: false, check_prevent_default: false };
+    ls_ctrl.check_prevent_default = true;
+    cl_abap_unit_assert.assert_equals({ exp: `.eBP($event,['ITEM_PRESS'])`, act: lo_event.get_event({ val: `ITEM_PRESS`, s_cnt: ls_ctrl }) });
+    cl_abap_unit_assert.assert_equals({ exp: `.eBP($event,['ITEM_PRESS'], $event.oSource.sId)`, act: lo_event.get_event({ val: `ITEM_PRESS`, t_arg: [`$event.oSource.sId`], s_cnt: ls_ctrl }) });
+    ls_ctrl.check_allow_multi_req = true;
+    cl_abap_unit_assert.assert_equals({ exp: `.eBP($event,['ITEM_PRESS',false,true])`, act: lo_event.get_event({ val: `ITEM_PRESS`, s_cnt: ls_ctrl }) });
+    ls_ctrl = { check_allow_multi_req: false, check_prevent_default: false };
+    cl_abap_unit_assert.assert_equals({ exp: `.eB(['ITEM_PRESS'])`, act: lo_event.get_event({ val: `ITEM_PRESS`, s_cnt: ls_ctrl }) });
   }
 
   event_client_args() {
@@ -183,5 +197,5 @@ class ltcl_test {
 module.exports = {
   __main: "z2ui5_cl_core_srv_event",
   __classes: { ltcl_test },
-  __tests: {"ltcl_test":["event","event_client","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_empty_middle_arg","event_trailing_empty_arg","event_view_param","event_multi_req","event_client_args","event_nav_container","event_quote_escaped","event_placeholder_quoted"]},
+  __tests: {"ltcl_test":["event","event_client","event_with_args","event_multi_args","event_dollar_arg","event_binding_arg","event_empty_arg","event_empty_middle_arg","event_trailing_empty_arg","event_view_param","event_multi_req","event_prevent_default","event_client_args","event_nav_container","event_quote_escaped","event_placeholder_quoted"]},
 };

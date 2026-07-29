@@ -151,6 +151,7 @@ class ltcl_test {
     let lo_action = null;
     let lo_new_app = null;
     let lo_result = null;
+    let lo_chained = null;
     if (sy_sysid === `ABC`) {
       return;
     }
@@ -174,6 +175,13 @@ class ltcl_test {
     cl_abap_unit_assert.assert_equals({ exp: true, act: lo_result.ms_next.s_set.s_popup.check_destroy });
     cl_abap_unit_assert.assert_initial(lo_result.ms_next.s_set.s_popup.xml);
     cl_abap_unit_assert.assert_equals({ exp: `<popover/>`, act: lo_result.ms_next.s_set.s_popover.xml });
+    cl_abap_unit_assert.assert_equals({ exp: true, act: lo_result.ms_next.s_set.check_nav_app_call });
+    cl_abap_unit_assert.assert_equals({ exp: `CURRENT_DRAFT`, act: lo_result.ms_next.s_set.nav_app_call_prev_id });
+    cl_abap_unit_assert.assert_not_initial(lo_result.ms_next.s_set.nav_app_call_prev_app);
+    lo_result.ms_next.o_app_call = new ltcl_test_app();
+    lo_result.mo_app.ms_draft.id = `SECOND_DRAFT`;
+    lo_chained = lo_result.factory_stack_call();
+    cl_abap_unit_assert.assert_equals({ exp: `CURRENT_DRAFT`, act: lo_chained.ms_next.s_set.nav_app_call_prev_id });
   }
 
   test_stack_leave() {
