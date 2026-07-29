@@ -2292,8 +2292,9 @@ function emitMethod(model, body, lines, requires, todos) {
   }
 
   // sy-subrc — declared once per method when read anywhere or set by a
-  // supported statement (ASSIGN / READ TABLE)
-  if (body.statements.some((x) => x.type === "Assign" || x.type === "ReadTable" || /\bsy-subrc\b/i.test(x.src))) {
+  // supported statement (ASSIGN / READ TABLE / OpenSQL — the db lowerings
+  // emit `sy_subrc = z2ui5_port.sy_subrc` after every op)
+  if (body.statements.some((x) => ["Assign", "ReadTable", "Select", "ModifyDatabase", "DeleteDatabase"].includes(x.type) || /\bsy-subrc\b/i.test(x.src))) {
     ctx.locals.add("sy_subrc");
     push(`let sy_subrc = 0;`);
   }

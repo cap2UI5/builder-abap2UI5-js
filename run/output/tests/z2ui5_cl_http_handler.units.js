@@ -103,6 +103,31 @@ class ltcl_test_http_handler {
     ls_result = z2ui5_cl_http_handler._main(ls_req);
     cl_abap_unit_assert.assert_equals({ exp: 200, act: ls_result.status_code });
   }
+
+  test_csrf_inactive() {
+    const lv_rejected = z2ui5_cl_http_handler._check_csrf_rejected({ active: false, origin: `https://evil.example.com`, referer: ``, host: `app.corp:44300` });
+    cl_abap_unit_assert.assert_false(lv_rejected);
+  }
+
+  test_csrf_same_origin() {
+    const lv_rejected = z2ui5_cl_http_handler._check_csrf_rejected({ active: true, origin: `https://App.Corp:44300`, referer: ``, host: `app.corp:44300` });
+    cl_abap_unit_assert.assert_false(lv_rejected);
+  }
+
+  test_csrf_cross_origin() {
+    const lv_rejected = z2ui5_cl_http_handler._check_csrf_rejected({ active: true, origin: `https://evil.example.com`, referer: ``, host: `app.corp:44300` });
+    cl_abap_unit_assert.assert_true(lv_rejected);
+  }
+
+  test_csrf_no_headers() {
+    const lv_rejected = z2ui5_cl_http_handler._check_csrf_rejected({ active: true, origin: ``, referer: ``, host: `app.corp:44300` });
+    cl_abap_unit_assert.assert_false(lv_rejected);
+  }
+
+  test_csrf_referer() {
+    const lv_rejected = z2ui5_cl_http_handler._check_csrf_rejected({ active: true, origin: ``, referer: `https://evil.example.com/attack?x=1`, host: `app.corp:44300` });
+    cl_abap_unit_assert.assert_true(lv_rejected);
+  }
 }
 
 
@@ -112,5 +137,5 @@ class ltcl_test_http_handler {
 module.exports = {
   __main: "z2ui5_cl_http_handler",
   __classes: { ltcl_test_http_handler },
-  __tests: {"ltcl_test_http_handler":["test_http_get_status","test_http_get_html","test_http_get_ui5_boot","test_http_post_ok","test_http_post_error","test_main_post_no_app","test_main_get_routing","test_main_post_routing"]},
+  __tests: {"ltcl_test_http_handler":["test_http_get_status","test_http_get_html","test_http_get_ui5_boot","test_http_post_ok","test_http_post_error","test_main_post_no_app","test_main_get_routing","test_main_post_routing","test_csrf_inactive","test_csrf_same_origin","test_csrf_cross_origin","test_csrf_no_headers","test_csrf_referer"]},
 };
