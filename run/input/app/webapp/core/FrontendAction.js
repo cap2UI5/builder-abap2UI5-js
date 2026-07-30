@@ -9,7 +9,7 @@ sap.ui.define(
     "sap/ui/model/Sorter",
     "sap/m/library",
     "sap/ui/util/Storage",
-    "sap/ui/core/routing/HashChanger",
+    "z2ui5/core/Router",
     "z2ui5/core/Lib",
     "z2ui5/core/ViewSlots",
     "z2ui5/core/AppState",
@@ -24,7 +24,7 @@ sap.ui.define(
     Sorter,
     mobileLibrary,
     Storage,
-    HashChanger,
+    Router,
     Lib,
     ViewSlots,
     AppState,
@@ -149,8 +149,47 @@ sap.ui.define(
     // drives the render lifecycle by hand. (The backend is the trusted driver, so
     // this is a footgun guard, not a security boundary - and control[method] is
     // still checked to be a function before the call, so a typo just no-ops.)
-    const CONTROL_METHOD_DENY =
-      /^(_|destroy|bind|unbind|attach|detach|removeAll|addDependent|placeAt|rerender|invalidate|applySettings|clone|setModel|setBindingContext|setParent|setBinding|setAssociation)/;
+    // Named setters/mutators (setVisible, addItem, removeItem, ...) stay
+    // allowed - they are the API the backend legitimately drives. Denied are
+    // the framework-hostile methods: teardown/reparenting (destroy*, exit,
+    // setParent, addDependent, placeAt), model/binding swaps (setModel,
+    // setBinding*, bind*/unbind*), event-handler tampering (attach*/detach*,
+    // fireEvent), the render lifecycle (rerender, invalidate) and the GENERIC
+    // reflection aggregation mutators (setAggregation/add/insert/remove* and
+    // removeAll*) which reparent tracked controls behind the framework's back
+    // (the named per-aggregation methods above remain allowed).
+    // Built from a list (not one long literal) so no single source line is too
+    // long once embedded into the ABAP string constant (trans2abap.js caps
+    // generated lines at 255 chars). Each entry is a method-name PREFIX.
+    const CONTROL_METHOD_DENY_PREFIXES = [
+      "_",
+      "destroy",
+      "bind",
+      "unbind",
+      "attach",
+      "detach",
+      "fireEvent",
+      "exit",
+      "removeAll",
+      "removeAggregation",
+      "addAggregation",
+      "insertAggregation",
+      "setAggregation",
+      "addDependent",
+      "placeAt",
+      "rerender",
+      "invalidate",
+      "applySettings",
+      "clone",
+      "setModel",
+      "setBindingContext",
+      "setParent",
+      "setBinding",
+      "setAssociation",
+    ];
+    const CONTROL_METHOD_DENY = new RegExp(
+      "^(" + CONTROL_METHOD_DENY_PREFIXES.join("|") + ")",
+    );
     function isSafeControlMethod(method) {
       return (
         typeof method === "string" &&
@@ -556,13 +595,12 @@ sap.ui.define(
     function evNavToRoute(oController, args) {
       // Navigate to another app by setting the hash route - the UI5 navTo
       // equivalent. args[1] is the target app class (or a full "app/<CLASS>"
-      // route). setHash adds a browser history entry, so Back returns to the
-      // current app; the HashChanger listener (Server.onHashChange) then starts
-      // the target app. No-op unless the session enabled routing.
+      // route). The push adds a browser history entry, so Back returns to the
+      // current app; the router's hashChanged handler then starts the target
+      // app. No-op unless the app enabled routing.
       const raw = Lib.toText(args[1]);
       if (!raw) return;
-      const cls = Lib.appOfRoute(raw) || raw;
-      HashChanger.getInstance().setHash(Lib.routeForApp(cls));
+      Router.navToApp(raw);
     }
 
     function evClipboardCopy(oController, args) {
@@ -573,10 +611,11 @@ sap.ui.define(
       // Guard against a missing response so the copied link never carries
       // the literal "undefined" as its state id.
       const id = AppState.state.oResponse?.ID || "";
-      // Strip any existing hash (e.g. an active app-state) so the copied
-      // link carries only the fresh state id.
-      const base = window.location.href.split("#")[0];
-      Lib.copyToClipboard(`${base}#/z2ui5-xapp-state=${id}`);
+      // Router.hrefFor drops the current app hash (e.g. an active app-state)
+      // so the link carries only the fresh state id, but KEEPS the FLP shell
+      // hash - without it the recipient lands on the launchpad home page
+      // instead of this app.
+      Lib.copyToClipboard(Router.hrefFor(`/z2ui5-xapp-state=${id}`));
     }
 
     function evDownloadB64File(oController, args) {
@@ -584,11 +623,24 @@ sap.ui.define(
         Lib.logError("DOWNLOAD_B64_FILE: blocked unsafe URL");
         return;
       }
+      // A data: URL carrying active HTML combined with an attacker-chosen
+      // .html/.hta filename is a known drive-by vector; block executable data:
+      // MIME types outright (real downloads are octet-stream, images, pdf, ...).
+      if (
+        /^data:(text\/html|application\/xhtml|text\/xml|image\/svg)/i.test(
+          args[1],
+        )
+      ) {
+        Lib.logError("DOWNLOAD_B64_FILE: blocked active data: MIME type");
+        return;
+      }
       const a = document.createElement("a");
       a.href = args[1];
       // Fall back to an empty download attribute when the backend omits the
-      // filename, so the anchor never carries the literal "undefined".
-      a.download = args[2] || "";
+      // filename, so the anchor never carries the literal "undefined". Strip
+      // path separators and control characters so the filename cannot escape
+      // the download directory or carry a misleading name.
+      a.download = String(args[2] || "").replace(/[\\/:*?"<>|\x00-\x1f]/g, "_");
       // Firefox only triggers a programmatic download click when the anchor
       // is part of the document, so attach it briefly and remove it again.
       document.body.appendChild(a);
@@ -1010,6 +1062,11 @@ sap.ui.define(
     // Management already pulled it in, asynchronously otherwise.
     function withPersonalizableInfo(callback) {
       const name = "sap/ui/comp/smartvariants/PersonalizableInfo";
+      /* ui5lint-disable no-globals --
+       the guard has to read the global sap.ui itself: the point of this
+       function is to load a module that must NOT be a declared dependency
+       (sap.ui.comp is SAPUI5-only and 404s on OpenUI5), so sap.ui.require is
+       the only entry point and there is no injected equivalent to probe. */
       if (
         typeof sap === "undefined" ||
         !sap.ui ||
@@ -1028,6 +1085,7 @@ sap.ui.define(
           "FILTER_BAR_VARIANT_INIT: sap.ui.comp.smartvariants not available",
         ),
       );
+      /* ui5lint-enable no-globals */
     }
 
     function evFilterBarVariantInit(oController, args) {
@@ -1092,6 +1150,14 @@ sap.ui.define(
 
     function evUrlHelper(oController, args) {
       const params = args[2] ?? {};
+      // mailto:/sms:/tel: targets are handed to URLHelper as-is; a CR/LF in a
+      // recipient/subject can inject extra headers in some mail clients. Reject
+      // any control character in the string params up front.
+      const hasControlChar = (v) => typeof v === "string" && /[\r\n]/.test(v);
+      if (Object.values(params).some(hasControlChar)) {
+        Lib.logError("URLHELPER: blocked control character in parameters");
+        return;
+      }
       const actions = {
         REDIRECT: () => {
           if (!Lib.isSafeRedirectProtocol(params.URL)) {
@@ -1431,6 +1497,13 @@ sap.ui.define(
     }
 
     function evPlayAudio(oController, args) {
+      // Only http(s)/data:/blob: sources are meaningful for Audio; validating
+      // the protocol keeps this consistent with the other URL-consuming
+      // actions and blocks odd schemes early.
+      if (!Lib.isSafeDownloadURL(args[1])) {
+        Lib.logError("PLAY_AUDIO: blocked unsafe audio URL");
+        return;
+      }
       try {
         const playing = new Audio(args[1]).play();
         // play() returns a Promise; a rejection (e.g. blocked by the
