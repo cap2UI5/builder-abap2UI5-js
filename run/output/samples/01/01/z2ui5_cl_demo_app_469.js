@@ -7,6 +7,8 @@ class z2ui5_cl_demo_app_469 extends z2ui5_if_app {
     this.client = client;
     if (client.check_on_init()) {
       this.view_display();
+    } else if (client.check_on_navigated()) {
+      this.view_display();
     }
   }
 
@@ -14,7 +16,7 @@ class z2ui5_cl_demo_app_469 extends z2ui5_if_app {
     const view = z2ui5_cl_xml_view.factory();
     const page = view.shell()
       .page({ title: `abap2UI5 - Navigation - Detail Page`, navbuttonpress: this.client._event_nav_app_leave(), shownavbutton: this.client.check_app_prev_stack() });
-    page.message_strip({ text: `You navigated here from the routing-modes hub via nav_app_call. Now press your ` + `BROWSER Back button and watch the hub: keep restores its state, fresh restarts it ` + `empty, default leaves the app (use the in-app Back button then).`, type: `Information`, showicon: true, class: `sapUiSmallMargin` });
+    page.message_strip({ text: `You navigated here from a routing-mode hub via nav_app_call. Now press your ` + `BROWSER Back button and watch the hub: mode keep restores its state, mode fresh ` + `restarts it empty.`, type: `Information`, showicon: true, class: `sapUiSmallMargin` });
     page.button({ text: `back (in-app)`, icon: `sap-icon://nav-back`, press: this.client._event_nav_app_leave(), class: `sapUiSmallMargin` });
     this.client.view_display(view.stringify());
   }

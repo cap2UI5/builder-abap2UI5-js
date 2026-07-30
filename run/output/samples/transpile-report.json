@@ -66,6 +66,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_050",
+    "path": "01/01/z2ui5_cl_demo_app_050.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_052",
     "path": "01/01/z2ui5_cl_demo_app_052.js",
     "todos": 0,
@@ -225,6 +231,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_186",
+    "path": "01/01/z2ui5_cl_demo_app_186.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_189",
     "path": "01/01/z2ui5_cl_demo_app_189.js",
     "todos": 0,
@@ -239,6 +251,18 @@
       "unsupported statement: DELETE mt_table.",
       "unsupported statement: DELETE ADJACENT DUPLICATES FROM mt_table_products COMPARING product."
     ]
+  },
+  {
+    "class": "z2ui5_cl_demo_app_255",
+    "path": "01/01/z2ui5_cl_demo_app_255.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_305",
+    "path": "01/01/z2ui5_cl_demo_app_305.js",
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_demo_app_315",
@@ -361,6 +385,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_465",
+    "path": "01/01/z2ui5_cl_demo_app_465.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_466",
     "path": "01/01/z2ui5_cl_demo_app_466.js",
     "todos": 0,
@@ -373,6 +403,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_demo_app_468",
+    "path": "01/01/z2ui5_cl_demo_app_468.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_demo_app_469",
     "path": "01/01/z2ui5_cl_demo_app_469.js",
     "todos": 0,
@@ -381,6 +417,24 @@
   {
     "class": "z2ui5_cl_demo_app_470",
     "path": "01/01/z2ui5_cl_demo_app_470.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_472",
+    "path": "01/01/z2ui5_cl_demo_app_472.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_473",
+    "path": "01/01/z2ui5_cl_demo_app_473.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_demo_app_480",
+    "path": "01/01/z2ui5_cl_demo_app_480.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -553,26 +607,8 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_465",
-    "path": "01/02/z2ui5_cl_demo_app_465.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_471",
     "path": "01/02/z2ui5_cl_demo_app_471.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_472",
-    "path": "01/02/z2ui5_cl_demo_app_472.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_473",
-    "path": "01/02/z2ui5_cl_demo_app_473.js",
     "todos": 0,
     "todoDetails": []
   },
