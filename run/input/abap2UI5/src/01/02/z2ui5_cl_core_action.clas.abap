@@ -109,10 +109,16 @@ CLASS z2ui5_cl_core_action IMPLEMENTATION.
         " a wrong/mistyped app name in the URL lands here (CREATE OBJECT of a
         " non-existent class). Just raise with a readable text - the single
         " top-level catch in z2ui5_cl_http_handler=>_main( ) turns it into a
-        " 500 whose body carries this message for the frontend to display
+        " 500 whose body carries this message for the frontend to display.
+        " app_start is client-controlled, so strip it down to class-name-safe
+        " characters before reflecting it into the error text - a real typo
+        " still shows for diagnostics, but a crafted value cannot smuggle
+        " markup/script into the response body.
+        DATA(lv_app_name) = CONV string( mo_http_post->ms_request-s_control-app_start ).
+        REPLACE ALL OCCURRENCES OF REGEX `[^A-Za-z0-9_/]` IN lv_app_name WITH ``.
         RAISE EXCEPTION TYPE z2ui5_cx_a2ui5_error
           EXPORTING
-            val      = |The app '{ mo_http_post->ms_request-s_control-app_start }' does not exist in the system.|
+            val      = |The app '{ lv_app_name }' does not exist in the system.|
             previous = x.
     ENDTRY.
 
@@ -217,6 +223,13 @@ CLASS z2ui5_cl_core_action IMPLEMENTATION.
       CATCH cx_root.
         result->mo_app->mo_app = val.
     ENDTRY.
+
+    " routing is inherited by the app being navigated to, unless it already
+    " chose a mode of its own - so enabling it once in the entry app is enough
+    " for the whole app stack (see z2ui5_cl_core_app=>mv_nav_mode)
+    IF result->mo_app->mv_nav_mode IS INITIAL.
+      result->mo_app->mv_nav_mode = mo_app->mv_nav_mode.
+    ENDIF.
 
     result->mo_app->ms_draft-id          = val->id_draft.
 

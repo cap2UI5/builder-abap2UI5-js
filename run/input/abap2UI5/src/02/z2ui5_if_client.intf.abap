@@ -53,7 +53,7 @@ INTERFACE z2ui5_if_client
       smart_variant_init        TYPE string VALUE `SMART_VARIANT_INIT`,
       filter_bar_variant_init   TYPE string VALUE `FILTER_BAR_VARIANT_INIT`,
 
-      "obsolet?
+      "obsolete?
       image_editor_popup_close  TYPE string VALUE `IMAGE_EDITOR_POPUP_CLOSE`,
       nav_container_to          TYPE string VALUE `NAV_CONTAINER_TO`,
       nest_nav_container_to     TYPE string VALUE `NEST_NAV_CONTAINER_TO`,
@@ -116,13 +116,24 @@ INTERFACE z2ui5_if_client
     IMPORTING
       val TYPE abap_bool DEFAULT abap_true.
 
-  "! Enable hash-based app routing for this session (UI5 Router style). Once
+  "! Enable hash-based app routing for this app (UI5 Router style). Once
   "! enabled, the URL hash mirrors the running app as a bookmarkable route, and
   "! the browser Back/Forward buttons navigate between apps via that hash. A
   "! forward navigation to another app (client->nav_app_call) pushes a new route
   "! history entry, so the browser Back button returns to the calling app - the
-  "! routing equivalent of a UI5 navTo. Call once (e.g. in the launcher app's
-  "! check_on_init).
+  "! routing equivalent of a UI5 navTo.
+  "!
+  "! Call it ONCE, in check_on_init - the way a UI5 app configures routing once
+  "! in its manifest. The mode is remembered on the app (it travels in the
+  "! draft) and re-sent with every response, so it does not have to be
+  "! re-asserted on every render; an app called via nav_app_call inherits it,
+  "! and an app the user navigates back to keeps its own mode even when the app
+  "! in between ran with a different one.
+  "!
+  "! Works inside the SAP Fiori Launchpad as well: the route is written as the
+  "! app (inner) hash behind the shell hash, so the FLP back button returns to
+  "! the previous app instead of the launchpad home page, and the shell hash
+  "! survives every hash update.
   "!
   "! The mode (see cs_nav_mode) decides what Back/Forward/reload/bookmark
   "! restore: keep (default) restores the exact preserved state via a draft id
@@ -276,7 +287,7 @@ INTERFACE z2ui5_if_client
     IMPORTING
       val                  TYPE data
       path                 TYPE abap_bool                     DEFAULT abap_false
-      "obsolet - inaktiv, wird intern nicht weitergegeben
+      "obsolete - inactive, not passed on internally
       view                 TYPE clike                         DEFAULT cs_view-main
       custom_mapper        TYPE REF TO z2ui5_if_ajson_mapping OPTIONAL
 *      custom_mapper_back   TYPE REF TO z2ui5_if_ajson_mapping OPTIONAL
@@ -288,12 +299,12 @@ INTERFACE z2ui5_if_client
     RETURNING
       VALUE(result)        TYPE string.
 
-  "! obsolet - identisch zu _bind (beide two-way), bitte _bind verwenden
+  "! obsolete - identical to _bind (both two-way), please use _bind
   METHODS _bind_edit
     IMPORTING
       val                  TYPE data
       path                 TYPE abap_bool                     DEFAULT abap_false
-      "obsolet - inaktiv, wird intern nicht weitergegeben
+      "obsolete - inactive, not passed on internally
       view                 TYPE clike                         DEFAULT cs_view-main
       custom_mapper        TYPE REF TO z2ui5_if_ajson_mapping OPTIONAL
       custom_mapper_back   TYPE REF TO z2ui5_if_ajson_mapping OPTIONAL
@@ -309,10 +320,12 @@ INTERFACE z2ui5_if_client
   "! Two ways to call it: pass a frontend event as val (e.g. cs_event-set_title)
   "! with its arguments in t_arg and the framework builds the event call; or pass
   "! a raw JavaScript expression as val (without t_arg) to run it as-is.
-  "! The whitelisted control/binding calls are frontend events too; their t_arg
+  "! The control/binding calls are frontend events too; their t_arg
   "! is positional (an empty argument between filled ones keeps its slot as ``):
-  "! cs_event-control_by_id - call a whitelisted method on a control resolved
-  "! by id: t_arg = id, method, params. The view is passed as the separate
+  "! cs_event-control_by_id - call a method on a control resolved by id:
+  "! t_arg = id, method, params. Any public control method works unless it is
+  "! on the frontend denylist (methods that would break framework invariants).
+  "! The view is passed as the separate
   "! view parameter (default cs_view-main resolves the id across all open
   "! views; pass cs_view-popup/popover/... to scope the lookup to that view).
   "! cs_event-control_global - call a whitelisted method on a global object
