@@ -408,18 +408,21 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `          "VIEW MODEL",` && |\n| &&
              `          json(() => jsonSources.MODEL()),` && |\n| &&
              `        );` && |\n| &&
-             `        if (getResponseXml("S_POPUP")) {` && |\n| &&
+             `        // gate on the live slot too - the response only carries the XML in` && |\n| &&
+             `        // the roundtrip that opened the popup/popover, but the live model is` && |\n| &&
+             `        // exportable for as long as one is open` && |\n| &&
+             `        if (getResponseXml("S_POPUP") || ViewSlots.getView("POPUP")) {` && |\n| &&
              `          push(` && |\n| &&
              `            "POPUP",` && |\n| &&
              `            xml(() => xmlSources.POPUP().xml),` && |\n| &&
              `          );` && |\n| &&
              `          push(` && |\n| &&
-             `            "POPUP MODEL",` && |\n| &&
+             `            "POPUP MODEL",` && |\n|.
+    result = result &&
              `            json(() => jsonSources.POPUP_MODEL()),` && |\n| &&
              `          );` && |\n| &&
-             `        }` && |\n|.
-    result = result &&
-             `        if (getResponseXml("S_POPOVER")) {` && |\n| &&
+             `        }` && |\n| &&
+             `        if (getResponseXml("S_POPOVER") || ViewSlots.getView("POPOVER")) {` && |\n| &&
              `          push(` && |\n| &&
              `            "POPOVER",` && |\n| &&
              `            xml(() => xmlSources.POPOVER().xml),` && |\n| &&
@@ -539,7 +542,6 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `              }),` && |\n| &&
              `              afterClose: () => dialog.destroy(),` && |\n| &&
              `            });` && |\n| &&
-             `            dialog.addStyleClass("dbg-ltr");` && |\n| &&
              `            dialog.open();` && |\n| &&
              `          },` && |\n| &&
              `        );` && |\n| &&
@@ -628,8 +630,6 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `        const modelData = oModel.getData();` && |\n| &&
              `        modelData.editor_visible = false;` && |\n| &&
              `        modelData.source_visible = true;` && |\n| &&
-             `        // Drives the "Open in ABAP Development Tools" link's visibility.` && |\n| &&
-             `        modelData.hasSource = Boolean(url);` && |\n| &&
              `        oModel.refresh();` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
@@ -641,6 +641,8 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `        modelData.editor_visible = true;` && |\n| &&
              `        modelData.source_visible = false;` && |\n| &&
              `        modelData.isTemplating = Boolean(content?.includes("xmlns:template"));` && |\n| &&
+             `        // the toggle always starts on the original source for this tab` && |\n| &&
+             `        modelData.templatingSource = false;` && |\n| &&
              `        modelData.value = content;` && |\n| &&
              `        modelData.previousValue = content;` && |\n| &&
              `        modelData.xContent = xcontent;` && |\n| &&
@@ -704,7 +706,6 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `            type: "json",` && |\n| &&
              `            source_visible: false,` && |\n| &&
              `            editor_visible: true,` && |\n| &&
-             `            hasSource: false,` && |\n| &&
              `            hasError: Boolean(AppState.state.lastError),` && |\n| &&
              `            hasRetry: typeof AppState.state.lastError?.onRetry === "function",` && |\n| &&
              `            value: value,` && |\n| &&
@@ -714,13 +715,19 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `            templatingSource: false,` && |\n| &&
              `            activeNest1: Boolean(getViewContent(ViewSlots.getView("NEST"))),` && |\n| &&
              `            activeNest2: Boolean(getViewContent(ViewSlots.getView("NEST2"))),` && |\n| &&
-             `            activePopup: Boolean(getResponseXml("S_POPUP")),` && |\n| &&
-             `            activePopover: Boolean(getResponseXml("S_POPOVER")),` && |\n| &&
+             `            // The response only carries the fragment XML in the roundtrip` && |\n| &&
+             `            // that opened the popup/popover - also check the live slot so` && |\n| &&
+             `            // the tabs stay usable while one is open after later roundtrips.` && |\n| &&
+             `            activePopup: Boolean(` && |\n| &&
+             `              getResponseXml("S_POPUP") || ViewSlots.getView("POPUP"),` && |\n| &&
+             `            ),` && |\n| &&
+             `            activePopover: Boolean(` && |\n| &&
+             `              getResponseXml("S_POPOVER") || ViewSlots.getView("POPOVER"),` && |\n| &&
+             `            ),` && |\n| &&
              `          };` && |\n| &&
              `` && |\n| &&
              `          const oModel = new JSONModel(oData);` && |\n| &&
              `          const oDialog = this.oDialog;` && |\n| &&
-             `          oDialog.addStyleClass("dbg-ltr");` && |\n| &&
              `          oDialog.setModel(oModel);` && |\n| &&
              `          // Render the requested tab's content (the default "PLAIN" already` && |\n| &&
              `          // matches the JSON response seeded above, so only re-render when a` && |\n| &&

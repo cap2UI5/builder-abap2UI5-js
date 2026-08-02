@@ -45,12 +45,23 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `` && |\n| &&
              `    const _MSG_TYPES = Object.freeze(["S_MSG_TOAST", "S_MSG_BOX"]);` && |\n| &&
              `` && |\n| &&
-             `    // Quote characters recognised by the eF( ) argument parser below. The` && |\n| &&
-             `    // single quote is built from its char code on purpose: keeping a literal` && |\n| &&
-             `    // single-quote character out of this file avoids confusing the ABAP` && |\n| &&
-             `    // source generator, which ships this module as an ABAP string literal.` && |\n| &&
+             `    // Quote characters recognised by the eF( ) argument parser below, built` && |\n| &&
+             `    // from char codes so both quote kinds are declared symmetrically and` && |\n| &&
+             `    // stand out from the surrounding string literals.` && |\n| &&
              `    const CH_SQUOTE = String.fromCharCode(39);` && |\n| &&
              `    const CH_DQUOTE = String.fromCharCode(34);` && |\n| &&
+             `` && |\n| &&
+             `    // Undo the escapes the backend applies to a single-quoted argument` && |\n| &&
+             `    // (z2ui5_cl_core_srv_event=>escape_js_string): backslash, quote AND the` && |\n| &&
+             `    // line breaks it rewrites to \n / \r - a raw newline would be a syntax` && |\n| &&
+             `    // error inside a JS string literal, so a multi-line argument only ever` && |\n| &&
+             `    // travels escaped. Decoding them in one pass keeps the order right: a` && |\n| &&
+             `    // literal backslash-n ("\\n" on the wire) stays text instead of turning` && |\n| &&
+             `    // into a line break.` && |\n| &&
+             `    const EF_UNESCAPE = { n: "\n", r: "\r" };` && |\n| &&
+             `    function unescapeEfString(body) {` && |\n| &&
+             `      return body.replace(/\\(.)/g, (match, ch) => EF_UNESCAPE[ch] ?? ch);` && |\n| &&
+             `    }` && |\n| &&
              `` && |\n| &&
              `    // Convert a single JS-literal argument (as produced by the backend` && |\n| &&
              `    // get_t_arg) into a value WITHOUT eval: single- or double-quoted strings,` && |\n| &&
@@ -59,7 +70,7 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `      if (token === "") return undefined;` && |\n| &&
              `      const first = token[0];` && |\n| &&
              `      if (first === CH_SQUOTE) {` && |\n| &&
-             `        return token.slice(1, -1).replace(/\\([\x27\\])/g, "$1");` && |\n| &&
+             `        return unescapeEfString(token.slice(1, -1));` && |\n| &&
              `      }` && |\n| &&
              `      if (first === CH_DQUOTE || first === "{" || first === "[") {` && |\n| &&
              `        try {` && |\n| &&
@@ -132,7 +143,8 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `    // The request body travels through the steps as a parameter; it is` && |\n| &&
              `    // mirrored to z2ui5.oBody so onBeforeRoundtrip hooks and the developer tools` && |\n| &&
              `    // can inspect it. Only the response side still crosses an async boundary` && |\n| &&
-             `    // (the rendering) via the globals oResponse and pendingCustomJs.` && |\n| &&
+             `    // (the rendering) via the oResponse global; the follow-up JS snippets` && |\n| &&
+             `    // travel on the response record itself (_pendingCustomJs).` && |\n| &&
              `    //` && |\n| &&
              `    // Wire format - request (POST body; ARGUMENTS is folded into` && |\n| &&
              `    // S_FRONT before sending, empty fields are removed):` && |\n| &&
@@ -160,7 +172,7 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `    //         "S_VIEW_NEST", "S_VIEW_NEST2", "S_POPUP", "S_POPOVER": same,` && |\n| &&
              `    //         "S_MSG_TOAST": { "TEXT": "...", ... },` && |\n| &&
              `    //         "S_MSG_BOX":   { "TEXT": "...", "TYPE": "error", ... },` && |\n| &&
-             `    //         "S_FOLLOW_UP_ACTION": { "CUSTOM_JS": ["eF('SET_FOCUS','id1')"] },` && |\n| &&
+             `    //         "S_FOLLOW_UP_ACTION": { "CUSTOM_JS": ["[\"SET_FOCUS\",\"id1\"]"] },` && |\n| &&
              `    //         "SET_PUSH_STATE": "", "SET_APP_STATE_ACTIVE": "",` && |\n| &&
              `    //         "SET_NAV_BACK": ""           // browser/history follow-ups` && |\n| &&
              `    //       }` && |\n| &&
@@ -181,6 +193,11 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `      // request aborts them all - it supersedes them, so there is no point` && |\n| &&
              `      // letting the backend finish work whose response would be dropped anyway.` && |\n| &&
              `      _inflight: new Set(),` && |\n| &&
+             `` && |\n| &&
+             `      // Chain that serializes full MAIN-view rebuilds (see responseSuccess):` && |\n| &&
+             `      // XMLView.create claims the fixed "mainView" id synchronously, so two` && |\n| &&
+             `      // overlapping builds would throw "duplicate id".` && |\n| &&
+             `      _viewBuild: null,` && |\n| &&
              `` && |\n| &&
              `      endSession() {` && |\n| &&
              `        if (!Lib.isValidContextId(AppState.state.contextId)) return;` && |\n| &&
@@ -363,6 +380,12 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `      // read the target class + draft from the hash it receives` && |\n| &&
              `      // (request_app_start_route[_draft]).` && |\n| &&
              `      restoreFromRoute() {` && |\n| &&
+             `        // Participate in the normal busy protocol: without it the app looks` && |\n| &&
+             `        // idle during the restore, and an ordinary click would dispatch a` && |\n| &&
+             `        // request that aborts the Back/Forward navigation without any` && |\n| &&
+             `        // feedback. _processAfterRendering / responseError clear it again.` && |\n| &&
+             `        AppState.state.isBusy = true;` && |\n| &&
+             `        BusyIndicator.show(0);` && |\n| &&
              `        this.roundtrip({});` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
@@ -394,7 +417,8 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `          // try/catch).` && |\n| &&
              `          if (!entry.dom.isConnected || !Lib.isAlive(entry.control)) {` && |\n| &&
              `            delete store[slot.key];` && |\n| &&
-             `            continue;` && |\n| &&
+             `            continue;` && |\n|.
+    result = result &&
              `          }` && |\n| &&
              `` && |\n| &&
              `          const id = this._stripViewPrefix(` && |\n| &&
@@ -417,8 +441,7 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `        state.checkNestAfter2 = false;` && |\n| &&
              `` && |\n| &&
              `        // Keep the shared record in sync (developer tools "Previous Request",` && |\n| &&
-             `        // app hooks); the parameter stays the working object. Calls without` && |\n|.
-    result = result &&
+             `        // app hooks); the parameter stays the working object. Calls without` && |\n| &&
              `        // a body (initial roundtrip, route changes) start from scratch.` && |\n| &&
              `        state.oBody = oBody;` && |\n| &&
              `` && |\n| &&
@@ -515,7 +538,15 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `        // A network blip or timeout may mean the request never reached the` && |\n| &&
              `        // server, so the error overlay offers a retry that re-sends the` && |\n| &&
              `        // exact same request body instead of forcing a full app restart.` && |\n| &&
-             `        const oRetry = { onRetry: () => this.readHttp(oBody) };` && |\n| &&
+             `        // Re-arm the busy state first - responseError cleared it, and an` && |\n| &&
+             `        // unguarded click during the retry would abort it silently.` && |\n| &&
+             `        const oRetry = {` && |\n| &&
+             `          onRetry: () => {` && |\n| &&
+             `            AppState.state.isBusy = true;` && |\n| &&
+             `            BusyIndicator.show(0);` && |\n| &&
+             `            this.readHttp(oBody);` && |\n| &&
+             `          },` && |\n| &&
+             `        };` && |\n| &&
              `` && |\n| &&
              `        // Stamp this request and treat its response as stale once a newer` && |\n| &&
              `        // request has been dispatched. With parallel requests allowed` && |\n| &&
@@ -654,27 +685,44 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `` && |\n| &&
              `          if (sView?.CHECK_DESTROY) ViewSlots.destroy("MAIN");` && |\n| &&
              `` && |\n| &&
-             `          // The backend can send small JS snippets to run after the response.` && |\n| &&
-             `          // Each snippet is either a literal expression or an "eF(...)" call` && |\n| &&
-             `          // whose arguments are wrapped in single quotes. They are stashed` && |\n| &&
+             `          // The backend can send follow-up actions to run after the response.` && |\n| &&
+             `          // Each entry is a JSON array ["EVENT", ...args] (framework actions,` && |\n| &&
+             `          // pure data), a legacy "eF(...)" call string, or a raw JS` && |\n| &&
+             `          // expression - see _runCustomJs. They are stashed` && |\n| &&
              `          // here and executed at the end of _processAfterRendering, i.e. once` && |\n| &&
              `          // the (possibly freshly built) view is actually rendered. Running` && |\n| &&
              `          // them earlier would break render-dependent actions such as` && |\n| &&
              `          // SET_FOCUS on the initial view, where the target control does not` && |\n| &&
              `          // exist in the DOM yet.` && |\n| &&
              `          const followUp = params?.S_FOLLOW_UP_ACTION;` && |\n| &&
-             `          AppState.state.pendingCustomJs = followUp?.CUSTOM_JS || null;` && |\n| &&
+             `          // carried on the response record, not on shared state: with` && |\n| &&
+             `          // parallel responses a single global would let the older render` && |\n| &&
+             `          // consume the newer response's snippets (and lose its own)` && |\n| &&
+             `          response._pendingCustomJs = followUp?.CUSTOM_JS || null;` && |\n| &&
              `` && |\n| &&
              `          for (const t of _MSG_TYPES) Messages.show(t, params, oController);` && |\n| &&
              `` && |\n| &&
              `          // Full view replacement -> destroy & rebuild, nothing more to do.` && |\n| &&
+             `          // Builds are serialized through _viewBuild: XMLView.create claims` && |\n| &&
+             `          // the fixed "mainView" id synchronously, so two overlapping builds` && |\n| &&
+             `          // (slow library load + a parallel/multi-req response) would throw` && |\n| &&
+             `          // "duplicate id". Each queued build re-checks that it has not been` && |\n| &&
+             `          // superseded before tearing down the current view.` && |\n| &&
              `          if (sView?.XML) {` && |\n| &&
-             `            ViewSlots.destroy("MAIN");` && |\n| &&
-             `            await oController.displayView(` && |\n| &&
-             `              sView.XML,` && |\n| &&
-             `              response.OVIEWMODEL,` && |\n| &&
-             `              reqSeq,` && |\n| &&
-             `            );` && |\n| &&
+             `            this._viewBuild = Promise.resolve(this._viewBuild)` && |\n| &&
+             `              .catch(() => {})` && |\n| &&
+             `              .then(() => {` && |\n| &&
+             `                if (reqSeq !== undefined && reqSeq !== this._requestSeq) {` && |\n| &&
+             `                  return;` && |\n| &&
+             `                }` && |\n| &&
+             `                ViewSlots.destroy("MAIN");` && |\n| &&
+             `                return oController.displayView(` && |\n| &&
+             `                  sView.XML,` && |\n| &&
+             `                  response.OVIEWMODEL,` && |\n| &&
+             `                  reqSeq,` && |\n| &&
+             `                );` && |\n| &&
+             `              });` && |\n| &&
+             `            await this._viewBuild;` && |\n| &&
              `            return;` && |\n| &&
              `          }` && |\n| &&
              `` && |\n| &&
@@ -728,16 +776,37 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `        this.responseError(err);` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
-             `      // Executes a single custom-JS snippet from the backend.` && |\n| &&
-             `      // Format A:  a raw expression such as alert(123) - needs a CSP that` && |\n| &&
+             `      // Executes a single follow-up action / custom-JS snippet from the backend.` && |\n| &&
+             `      // Format A:  a JSON array ["EVENT", ...args] - the structured form the` && |\n| &&
+             `      //            backend (z2ui5_cl_core_srv_event=>get_event_client_json)` && |\n| &&
+             `      //            emits for every framework follow-up action. Pure data,` && |\n| &&
+             `      //            serialized and escaped entirely in ABAP; dispatched via` && |\n| &&
+             `      //            oController.eF( ) after a single JSON.parse - no code is` && |\n| &&
+             `      //            parsed or evaluated on this path.` && |\n| &&
+             `      // Format B:  a structured eF( ) frontend-event call - the legacy wire` && |\n| &&
+             `      //            format, still produced by apps that pass raw "eF(...)"` && |\n| &&
+             `      //            strings to follow_up_action. Its argument list is parsed` && |\n| &&
+             `      //            manually (no eval / Function) so it runs under a strict` && |\n| &&
+             `      //            CSP while keeping object / array / string arguments intact.` && |\n| &&
+             `      // Format C:  a raw expression such as alert(123) - needs a CSP that` && |\n| &&
              `      //            allows unsafe-eval, otherwise it is a no-op.` && |\n| &&
-             `      // Format B:  a structured eF( ) frontend-event call - dispatched via` && |\n| &&
-             `      //            oController.eF( ). Its argument list is parsed manually` && |\n| &&
-             `      //            (no eval / Function) so it runs under a strict CSP while` && |\n| &&
-             `      //            keeping object / array / string arguments intact.` && |\n| &&
              `      _runCustomJs(item, oController) {` && |\n| &&
              `        try {` && |\n| &&
              `          const snippet = item.trim();` && |\n| &&
+             `          if (snippet.startsWith("[")) {` && |\n| &&
+             `            // JSON array -> structured follow-up action. A raw-JS expression` && |\n| &&
+             `            // that merely starts with "[" is no JSON array, so it fails the` && |\n| &&
+             `            // parse and falls through to the legacy formats below.` && |\n| &&
+             `            try {` && |\n| &&
+             `              const args = JSON.parse(snippet);` && |\n| &&
+             `              if (Array.isArray(args)) {` && |\n| &&
+             `                oController.eF(...args);` && |\n| &&
+             `                return;` && |\n| &&
+             `              }` && |\n| &&
+             `            } catch {` && |\n| &&
+             `              // not JSON - keep going with the legacy formats` && |\n| &&
+             `            }` && |\n| &&
+             `          }` && |\n| &&
              `          const match = /^\.?eF\s*\(([\s\S]*)\)\s*;?$/.exec(snippet);` && |\n| &&
              `          if (match) {` && |\n| &&
              `            oController.eF(...parseEfArgs(match[1]));` && |\n| &&
@@ -749,7 +818,8 @@ CLASS z2ui5_cl_app_server_js IMPLEMENTATION.
              `          }` && |\n| &&
              `        } catch (e) {` && |\n| &&
              `          Lib.logError("customJs: execution failed", e);` && |\n| &&
-             `        }` && |\n| &&
+             `        }` && |\n|.
+    result = result &&
              `      },` && |\n| &&
              `` && |\n| &&
              `      // Terminate the roundtrip in an unrecoverable state: clear the busy` && |\n| &&

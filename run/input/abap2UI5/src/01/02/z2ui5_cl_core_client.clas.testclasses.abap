@@ -196,10 +196,16 @@ CLASS ltcl_test_client IMPLEMENTATION.
     temp8 ?= mo_client.
 
     li_client = temp8.
+    li_client->popover_display( xml   = `<Popover/>`
+                                by_id = `btn1` ).
     li_client->popover_destroy( ).
 
     cl_abap_unit_assert=>assert_equals( exp = abap_true
                                         act = mo_action->ms_next-s_set-s_popover-check_destroy ).
+    " destroy after display in the same roundtrip wipes the slot - otherwise
+    " the frontend would destroy and then re-open the popover
+    cl_abap_unit_assert=>assert_initial( mo_action->ms_next-s_set-s_popover-xml ).
+    cl_abap_unit_assert=>assert_initial( mo_action->ms_next-s_set-s_popover-open_by_id ).
 
   ENDMETHOD.
 
@@ -224,6 +230,7 @@ CLASS ltcl_test_client IMPLEMENTATION.
     temp10 ?= mo_client.
 
     li_client = temp10.
+    li_client->nest_view_destroy( ).
     li_client->nest_view_display( val            = `<NestView/>`
                                   id             = `nest1`
                                   method_insert  = `addMidColumnPage`
@@ -235,6 +242,9 @@ CLASS ltcl_test_client IMPLEMENTATION.
                                         act = mo_action->ms_next-s_set-s_view_nest-id ).
     cl_abap_unit_assert=>assert_equals( exp = `addMidColumnPage`
                                         act = mo_action->ms_next-s_set-s_view_nest-method_insert ).
+    " display after destroy in the same roundtrip cancels the destroy
+    cl_abap_unit_assert=>assert_equals( exp = abap_false
+                                        act = mo_action->ms_next-s_set-s_view_nest-check_destroy ).
 
   ENDMETHOD.
 
@@ -245,10 +255,15 @@ CLASS ltcl_test_client IMPLEMENTATION.
     temp11 ?= mo_client.
 
     li_client = temp11.
+    li_client->nest_view_display( val           = `<NestView/>`
+                                  id            = `nest1`
+                                  method_insert = `addMidColumnPage` ).
     li_client->nest_view_destroy( ).
 
     cl_abap_unit_assert=>assert_equals( exp = abap_true
                                         act = mo_action->ms_next-s_set-s_view_nest-check_destroy ).
+    " destroy after display in the same roundtrip wipes the slot
+    cl_abap_unit_assert=>assert_initial( mo_action->ms_next-s_set-s_view_nest-xml ).
 
   ENDMETHOD.
 
@@ -373,11 +388,13 @@ CLASS ltcl_test_client IMPLEMENTATION.
                                  t_arg = VALUE #( ( `My Title` ) ) ).
     li_client->follow_up_action( z2ui5_if_client=>cs_event-history_back ).
 
+    " framework events travel as pure data - a JSON array serialized in ABAP
+    " (get_event_client_json), not as an executable eF( ) JS snippet
     cl_abap_unit_assert=>assert_equals( exp = 2
                                         act = lines( mo_action->ms_next-s_set-s_follow_up_action-custom_js ) ).
-    cl_abap_unit_assert=>assert_equals( exp = `.eF('SET_TITLE', 'My Title')`
+    cl_abap_unit_assert=>assert_equals( exp = `["SET_TITLE","My Title"]`
                                         act = mo_action->ms_next-s_set-s_follow_up_action-custom_js[ 1 ] ).
-    cl_abap_unit_assert=>assert_equals( exp = `.eF('HISTORY_BACK')`
+    cl_abap_unit_assert=>assert_equals( exp = `["HISTORY_BACK"]`
                                         act = mo_action->ms_next-s_set-s_follow_up_action-custom_js[ 2 ] ).
 
   ENDMETHOD.
@@ -397,10 +414,10 @@ CLASS ltcl_test_client IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals( exp = 2
                                         act = lines( mo_action->ms_next-s_set-s_follow_up_action-custom_js ) ).
     cl_abap_unit_assert=>assert_equals(
-        exp = `.eF('CONTROL_BY_ID', 'myContainer', 'MAIN', 'to', 'myPage')`
+        exp = `["CONTROL_BY_ID","myContainer","MAIN","to","myPage"]`
         act = mo_action->ms_next-s_set-s_follow_up_action-custom_js[ 1 ] ).
     cl_abap_unit_assert=>assert_equals(
-        exp = `.eF('CONTROL_BY_ID', 'popContainer', 'POPUP', 'to', 'popPage')`
+        exp = `["CONTROL_BY_ID","popContainer","POPUP","to","popPage"]`
         act = mo_action->ms_next-s_set-s_follow_up_action-custom_js[ 2 ] ).
 
   ENDMETHOD.
@@ -425,13 +442,13 @@ CLASS ltcl_test_client IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals( exp = 3
                                         act = lines( mo_action->ms_next-s_set-s_follow_up_action-custom_js ) ).
     cl_abap_unit_assert=>assert_equals(
-        exp = `.eF('CONTROL_GLOBAL', 'MESSAGE_TOAST', 'show', 'Hello')`
+        exp = `["CONTROL_GLOBAL","MESSAGE_TOAST","show","Hello"]`
         act = mo_action->ms_next-s_set-s_follow_up_action-custom_js[ 1 ] ).
     cl_abap_unit_assert=>assert_equals(
-        exp = `.eF('CONTROL_BY_ID', 'demoPanel', '', 'setExpanded', 'X')`
+        exp = `["CONTROL_BY_ID","demoPanel","","setExpanded","X"]`
         act = mo_action->ms_next-s_set-s_follow_up_action-custom_js[ 2 ] ).
     cl_abap_unit_assert=>assert_equals(
-        exp = `.eF('CONTROL_BY_ID', 'demoPanel', 'POPOVER', 'setExpanded', 'X')`
+        exp = `["CONTROL_BY_ID","demoPanel","POPOVER","setExpanded","X"]`
         act = mo_action->ms_next-s_set-s_follow_up_action-custom_js[ 3 ] ).
 
   ENDMETHOD.

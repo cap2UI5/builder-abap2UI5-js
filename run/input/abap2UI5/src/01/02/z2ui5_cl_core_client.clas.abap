@@ -46,9 +46,12 @@ CLASS z2ui5_cl_core_client IMPLEMENTATION.
 
     IF val IS NOT INITIAL
         AND val CO `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_`.
-      lv_js = mo_srv_event->get_event_client( val   = val
-                                              view  = view
-                                              t_arg = t_arg ).
+      " a framework event travels as pure data - a JSON array serialized and
+      " escaped entirely in ABAP (get_event_client_json); only a raw JS
+      " expression passed by the app keeps the code form
+      lv_js = mo_srv_event->get_event_client_json( val   = val
+                                                   view  = view
+                                                   t_arg = t_arg ).
     ENDIF.
 
     INSERT lv_js INTO TABLE mo_action->ms_next-s_set-s_follow_up_action-custom_js.
@@ -249,13 +252,18 @@ CLASS z2ui5_cl_core_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~nest2_view_destroy.
 
-    mo_action->ms_next-s_set-s_view_nest2-check_destroy = abap_true.
+    " wipe the whole slot (like popup_destroy) so a display( ) queued earlier
+    " in the same roundtrip does not resurrect the view after the destroy
+    mo_action->ms_next-s_set-s_view_nest2 = VALUE #( check_destroy = abap_true ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~nest2_view_display.
 
+    " like popup_display/popover_display: displaying cancels a destroy
+    " queued earlier in the same roundtrip
+    mo_action->ms_next-s_set-s_view_nest2-check_destroy  = abap_false.
     mo_action->ms_next-s_set-s_view_nest2-xml            = val.
     mo_action->ms_next-s_set-s_view_nest2-id             = id.
     mo_action->ms_next-s_set-s_view_nest2-method_destroy = method_destroy.
@@ -273,13 +281,18 @@ CLASS z2ui5_cl_core_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~nest_view_destroy.
 
-    mo_action->ms_next-s_set-s_view_nest-check_destroy = abap_true.
+    " wipe the whole slot (like popup_destroy) so a display( ) queued earlier
+    " in the same roundtrip does not resurrect the view after the destroy
+    mo_action->ms_next-s_set-s_view_nest = VALUE #( check_destroy = abap_true ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~nest_view_display.
 
+    " like popup_display/popover_display: displaying cancels a destroy
+    " queued earlier in the same roundtrip
+    mo_action->ms_next-s_set-s_view_nest-check_destroy  = abap_false.
     mo_action->ms_next-s_set-s_view_nest-xml            = val.
     mo_action->ms_next-s_set-s_view_nest-id             = id.
     mo_action->ms_next-s_set-s_view_nest-method_destroy = method_destroy.
@@ -297,7 +310,10 @@ CLASS z2ui5_cl_core_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~popover_destroy.
 
-    mo_action->ms_next-s_set-s_popover-check_destroy = abap_true.
+    " wipe the whole slot (like popup_destroy) - a plain flag would leave the
+    " xml of a popover_display( ) from the same roundtrip in place and the
+    " frontend would destroy and then re-open the popover
+    mo_action->ms_next-s_set-s_popover = VALUE #( check_destroy = abap_true ).
 
   ENDMETHOD.
 
@@ -349,6 +365,9 @@ CLASS z2ui5_cl_core_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~view_display.
 
+    " like popup_display/popover_display: displaying cancels a destroy
+    " queued earlier in the same roundtrip
+    mo_action->ms_next-s_set-s_view-check_destroy = abap_false.
     mo_action->ms_next-s_set-s_view-xml = val.
     mo_action->ms_next-s_set-s_view-switchdefaultmodelannouri = switch_default_model_anno_uri.
     mo_action->ms_next-s_set-s_view-switch_default_model_path = switch_default_model_path.
@@ -365,39 +384,39 @@ CLASS z2ui5_cl_core_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~_bind.
 
-    result = mo_srv_bind->main( val = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( val )
-                            config  = VALUE #(
-                                              path_only            = path
-                                              custom_filter        = custom_filter
-                                              custom_mapper        = custom_mapper
-                                              tab                  = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( tab )
-                                              tab_index            = tab_index
-                                              switch_default_model = switch_default_model ) ).
+    result = mo_srv_bind->main( val    = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( val )
+                                config = VALUE #(
+                                    path_only            = path
+                                    custom_filter        = custom_filter
+                                    custom_mapper        = custom_mapper
+                                    tab                  = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( tab )
+                                    tab_index            = tab_index
+                                    switch_default_model = switch_default_model ) ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~_bind_edit.
 
-    result = mo_srv_bind->main( val = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( val )
-                            config  = VALUE #(
-                                              path_only            = path
-                                              custom_filter        = custom_filter
-                                              custom_filter_back   = custom_filter_back
-                                              custom_mapper        = custom_mapper
-                                              custom_mapper_back   = custom_mapper_back
-                                              tab                  = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( tab )
-                                              tab_index            = tab_index
-                                              switch_default_model = switch_default_model ) ).
+    result = mo_srv_bind->main( val    = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( val )
+                                config = VALUE #(
+                                    path_only            = path
+                                    custom_filter        = custom_filter
+                                    custom_filter_back   = custom_filter_back
+                                    custom_mapper        = custom_mapper
+                                    custom_mapper_back   = custom_mapper_back
+                                    tab                  = z2ui5_cl_a2ui5_context=>conv_get_as_data_ref( tab )
+                                    tab_index            = tab_index
+                                    switch_default_model = switch_default_model ) ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~_event.
 
-    result = mo_srv_event->get_event( val = val
-                                t_arg     = t_arg
-                                s_cnt     = s_ctrl ).
+    result = mo_srv_event->get_event( val   = val
+                                      t_arg = t_arg
+                                      s_cnt = s_ctrl ).
 
     IF r_data IS NOT INITIAL.
       mo_action->ms_next-r_data = z2ui5_cl_a2ui5_context=>conv_copy_ref_data( r_data ).
