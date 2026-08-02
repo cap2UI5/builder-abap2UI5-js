@@ -388,7 +388,10 @@ sap.ui.define(
           "VIEW MODEL",
           json(() => jsonSources.MODEL()),
         );
-        if (getResponseXml("S_POPUP")) {
+        // gate on the live slot too - the response only carries the XML in
+        // the roundtrip that opened the popup/popover, but the live model is
+        // exportable for as long as one is open
+        if (getResponseXml("S_POPUP") || ViewSlots.getView("POPUP")) {
           push(
             "POPUP",
             xml(() => xmlSources.POPUP().xml),
@@ -398,7 +401,7 @@ sap.ui.define(
             json(() => jsonSources.POPUP_MODEL()),
           );
         }
-        if (getResponseXml("S_POPOVER")) {
+        if (getResponseXml("S_POPOVER") || ViewSlots.getView("POPOVER")) {
           push(
             "POPOVER",
             xml(() => xmlSources.POPOVER().xml),
@@ -518,7 +521,6 @@ sap.ui.define(
               }),
               afterClose: () => dialog.destroy(),
             });
-            dialog.addStyleClass("dbg-ltr");
             dialog.open();
           },
         );
@@ -607,8 +609,6 @@ sap.ui.define(
         const modelData = oModel.getData();
         modelData.editor_visible = false;
         modelData.source_visible = true;
-        // Drives the "Open in ABAP Development Tools" link's visibility.
-        modelData.hasSource = Boolean(url);
         oModel.refresh();
       },
 
@@ -620,6 +620,8 @@ sap.ui.define(
         modelData.editor_visible = true;
         modelData.source_visible = false;
         modelData.isTemplating = Boolean(content?.includes("xmlns:template"));
+        // the toggle always starts on the original source for this tab
+        modelData.templatingSource = false;
         modelData.value = content;
         modelData.previousValue = content;
         modelData.xContent = xcontent;
@@ -683,7 +685,6 @@ sap.ui.define(
             type: "json",
             source_visible: false,
             editor_visible: true,
-            hasSource: false,
             hasError: Boolean(AppState.state.lastError),
             hasRetry: typeof AppState.state.lastError?.onRetry === "function",
             value: value,
@@ -693,13 +694,19 @@ sap.ui.define(
             templatingSource: false,
             activeNest1: Boolean(getViewContent(ViewSlots.getView("NEST"))),
             activeNest2: Boolean(getViewContent(ViewSlots.getView("NEST2"))),
-            activePopup: Boolean(getResponseXml("S_POPUP")),
-            activePopover: Boolean(getResponseXml("S_POPOVER")),
+            // The response only carries the fragment XML in the roundtrip
+            // that opened the popup/popover - also check the live slot so
+            // the tabs stay usable while one is open after later roundtrips.
+            activePopup: Boolean(
+              getResponseXml("S_POPUP") || ViewSlots.getView("POPUP"),
+            ),
+            activePopover: Boolean(
+              getResponseXml("S_POPOVER") || ViewSlots.getView("POPOVER"),
+            ),
           };
 
           const oModel = new JSONModel(oData);
           const oDialog = this.oDialog;
-          oDialog.addStyleClass("dbg-ltr");
           oDialog.setModel(oModel);
           // Render the requested tab's content (the default "PLAIN" already
           // matches the JSON response seeded above, so only re-render when a
