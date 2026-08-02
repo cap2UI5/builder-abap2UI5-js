@@ -25,12 +25,23 @@ sap.ui.define(
 
     const _MSG_TYPES = Object.freeze(["S_MSG_TOAST", "S_MSG_BOX"]);
 
-    // Quote characters recognised by the eF( ) argument parser below. The
-    // single quote is built from its char code on purpose: keeping a literal
-    // single-quote character out of this file avoids confusing the ABAP
-    // source generator, which ships this module as an ABAP string literal.
+    // Quote characters recognised by the eF( ) argument parser below, built
+    // from char codes so both quote kinds are declared symmetrically and
+    // stand out from the surrounding string literals.
     const CH_SQUOTE = String.fromCharCode(39);
     const CH_DQUOTE = String.fromCharCode(34);
+
+    // Undo the escapes the backend applies to a single-quoted argument
+    // (z2ui5_cl_core_srv_event=>escape_js_string): backslash, quote AND the
+    // line breaks it rewrites to \n / \r - a raw newline would be a syntax
+    // error inside a JS string literal, so a multi-line argument only ever
+    // travels escaped. Decoding them in one pass keeps the order right: a
+    // literal backslash-n ("\\n" on the wire) stays text instead of turning
+    // into a line break.
+    const EF_UNESCAPE = { n: "\n", r: "\r" };
+    function unescapeEfString(body) {
+      return body.replace(/\\(.)/g, (match, ch) => EF_UNESCAPE[ch] ?? ch);
+    }
 
     // Convert a single JS-literal argument (as produced by the backend
     // get_t_arg) into a value WITHOUT eval: single- or double-quoted strings,
@@ -39,7 +50,7 @@ sap.ui.define(
       if (token === "") return undefined;
       const first = token[0];
       if (first === CH_SQUOTE) {
-        return token.slice(1, -1).replace(/\\([\x27\\])/g, "$1");
+        return unescapeEfString(token.slice(1, -1));
       }
       if (first === CH_DQUOTE || first === "{" || first === "[") {
         try {
@@ -112,7 +123,8 @@ sap.ui.define(
     // The request body travels through the steps as a parameter; it is
     // mirrored to z2ui5.oBody so onBeforeRoundtrip hooks and the developer tools
     // can inspect it. Only the response side still crosses an async boundary
-    // (the rendering) via the globals oResponse and pendingCustomJs.
+    // (the rendering) via the oResponse global; the follow-up JS snippets
+    // travel on the response record itself (_pendingCustomJs).
     //
     // Wire format - request (POST body; ARGUMENTS is folded into
     // S_FRONT before sending, empty fields are removed):
@@ -140,7 +152,7 @@ sap.ui.define(
     //         "S_VIEW_NEST", "S_VIEW_NEST2", "S_POPUP", "S_POPOVER": same,
     //         "S_MSG_TOAST": { "TEXT": "...", ... },
     //         "S_MSG_BOX":   { "TEXT": "...", "TYPE": "error", ... },
-    //         "S_FOLLOW_UP_ACTION": { "CUSTOM_JS": ["eF('SET_FOCUS','id1')"] },
+    //         "S_FOLLOW_UP_ACTION": { "CUSTOM_JS": ["[\"SET_FOCUS\",\"id1\"]"] },
     //         "SET_PUSH_STATE": "", "SET_APP_STATE_ACTIVE": "",
     //         "SET_NAV_BACK": ""           // browser/history follow-ups
     //       }
@@ -161,6 +173,11 @@ sap.ui.define(
       // request aborts them all - it supersedes them, so there is no point
       // letting the backend finish work whose response would be dropped anyway.
       _inflight: new Set(),
+
+      // Chain that serializes full MAIN-view rebuilds (see responseSuccess):
+      // XMLView.create claims the fixed "mainView" id synchronously, so two
+      // overlapping builds would throw "duplicate id".
+      _viewBuild: null,
 
       endSession() {
         if (!Lib.isValidContextId(AppState.state.contextId)) return;
@@ -343,6 +360,12 @@ sap.ui.define(
       // read the target class + draft from the hash it receives
       // (request_app_start_route[_draft]).
       restoreFromRoute() {
+        // Participate in the normal busy protocol: without it the app looks
+        // idle during the restore, and an ordinary click would dispatch a
+        // request that aborts the Back/Forward navigation without any
+        // feedback. _processAfterRendering / responseError clear it again.
+        AppState.state.isBusy = true;
+        BusyIndicator.show(0);
         this.roundtrip({});
       },
 
@@ -494,7 +517,15 @@ sap.ui.define(
         // A network blip or timeout may mean the request never reached the
         // server, so the error overlay offers a retry that re-sends the
         // exact same request body instead of forcing a full app restart.
-        const oRetry = { onRetry: () => this.readHttp(oBody) };
+        // Re-arm the busy state first - responseError cleared it, and an
+        // unguarded click during the retry would abort it silently.
+        const oRetry = {
+          onRetry: () => {
+            AppState.state.isBusy = true;
+            BusyIndicator.show(0);
+            this.readHttp(oBody);
+          },
+        };
 
         // Stamp this request and treat its response as stale once a newer
         // request has been dispatched. With parallel requests allowed
@@ -633,27 +664,44 @@ sap.ui.define(
 
           if (sView?.CHECK_DESTROY) ViewSlots.destroy("MAIN");
 
-          // The backend can send small JS snippets to run after the response.
-          // Each snippet is either a literal expression or an "eF(...)" call
-          // whose arguments are wrapped in single quotes. They are stashed
+          // The backend can send follow-up actions to run after the response.
+          // Each entry is a JSON array ["EVENT", ...args] (framework actions,
+          // pure data), a legacy "eF(...)" call string, or a raw JS
+          // expression - see _runCustomJs. They are stashed
           // here and executed at the end of _processAfterRendering, i.e. once
           // the (possibly freshly built) view is actually rendered. Running
           // them earlier would break render-dependent actions such as
           // SET_FOCUS on the initial view, where the target control does not
           // exist in the DOM yet.
           const followUp = params?.S_FOLLOW_UP_ACTION;
-          AppState.state.pendingCustomJs = followUp?.CUSTOM_JS || null;
+          // carried on the response record, not on shared state: with
+          // parallel responses a single global would let the older render
+          // consume the newer response's snippets (and lose its own)
+          response._pendingCustomJs = followUp?.CUSTOM_JS || null;
 
           for (const t of _MSG_TYPES) Messages.show(t, params, oController);
 
           // Full view replacement -> destroy & rebuild, nothing more to do.
+          // Builds are serialized through _viewBuild: XMLView.create claims
+          // the fixed "mainView" id synchronously, so two overlapping builds
+          // (slow library load + a parallel/multi-req response) would throw
+          // "duplicate id". Each queued build re-checks that it has not been
+          // superseded before tearing down the current view.
           if (sView?.XML) {
-            ViewSlots.destroy("MAIN");
-            await oController.displayView(
-              sView.XML,
-              response.OVIEWMODEL,
-              reqSeq,
-            );
+            this._viewBuild = Promise.resolve(this._viewBuild)
+              .catch(() => {})
+              .then(() => {
+                if (reqSeq !== undefined && reqSeq !== this._requestSeq) {
+                  return;
+                }
+                ViewSlots.destroy("MAIN");
+                return oController.displayView(
+                  sView.XML,
+                  response.OVIEWMODEL,
+                  reqSeq,
+                );
+              });
+            await this._viewBuild;
             return;
           }
 
@@ -707,16 +755,37 @@ sap.ui.define(
         this.responseError(err);
       },
 
-      // Executes a single custom-JS snippet from the backend.
-      // Format A:  a raw expression such as alert(123) - needs a CSP that
+      // Executes a single follow-up action / custom-JS snippet from the backend.
+      // Format A:  a JSON array ["EVENT", ...args] - the structured form the
+      //            backend (z2ui5_cl_core_srv_event=>get_event_client_json)
+      //            emits for every framework follow-up action. Pure data,
+      //            serialized and escaped entirely in ABAP; dispatched via
+      //            oController.eF( ) after a single JSON.parse - no code is
+      //            parsed or evaluated on this path.
+      // Format B:  a structured eF( ) frontend-event call - the legacy wire
+      //            format, still produced by apps that pass raw "eF(...)"
+      //            strings to follow_up_action. Its argument list is parsed
+      //            manually (no eval / Function) so it runs under a strict
+      //            CSP while keeping object / array / string arguments intact.
+      // Format C:  a raw expression such as alert(123) - needs a CSP that
       //            allows unsafe-eval, otherwise it is a no-op.
-      // Format B:  a structured eF( ) frontend-event call - dispatched via
-      //            oController.eF( ). Its argument list is parsed manually
-      //            (no eval / Function) so it runs under a strict CSP while
-      //            keeping object / array / string arguments intact.
       _runCustomJs(item, oController) {
         try {
           const snippet = item.trim();
+          if (snippet.startsWith("[")) {
+            // JSON array -> structured follow-up action. A raw-JS expression
+            // that merely starts with "[" is no JSON array, so it fails the
+            // parse and falls through to the legacy formats below.
+            try {
+              const args = JSON.parse(snippet);
+              if (Array.isArray(args)) {
+                oController.eF(...args);
+                return;
+              }
+            } catch {
+              // not JSON - keep going with the legacy formats
+            }
+          }
           const match = /^\.?eF\s*\(([\s\S]*)\)\s*;?$/.exec(snippet);
           if (match) {
             oController.eF(...parseEfArgs(match[1]));
