@@ -49,11 +49,6 @@ CLASS ltcl_test IMPLEMENTATION.
     DATA lo_action TYPE REF TO z2ui5_cl_core_action.
     DATA lo_result TYPE REF TO z2ui5_cl_core_action.
 
-    IF sy-sysid = `ABC`.
-      RETURN.
-    ENDIF.
-
-
     lo_http = NEW #( val = `` ).
 
     lo_action = NEW #( val = lo_http ).
@@ -74,11 +69,6 @@ CLASS ltcl_test IMPLEMENTATION.
     DATA lo_http TYPE REF TO z2ui5_cl_core_handler.
     DATA lo_action TYPE REF TO z2ui5_cl_core_action.
     DATA lo_result TYPE REF TO z2ui5_cl_core_action.
-
-    IF sy-sysid = `ABC`.
-      RETURN.
-    ENDIF.
-
 
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"O","PATHNAME":"/p","SEARCH":"?app_start=Z2UI5_CL_APP_HELLO_WORLD"}}}`.
 
@@ -103,10 +93,6 @@ CLASS ltcl_test IMPLEMENTATION.
     DATA lo_http TYPE REF TO z2ui5_cl_core_handler.
     DATA lo_action TYPE REF TO z2ui5_cl_core_action.
     DATA lo_result TYPE REF TO z2ui5_cl_core_action.
-
-    IF sy-sysid = `ABC`.
-      RETURN.
-    ENDIF.
 
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"O","PATHNAME":"/p","SEARCH":"?app_start=Z2UI5_CL_APP_HELLO_WORLD"}}}`.
 
@@ -157,11 +143,6 @@ CLASS ltcl_test IMPLEMENTATION.
     DATA lo_http TYPE REF TO z2ui5_cl_core_handler.
     DATA lo_action TYPE REF TO z2ui5_cl_core_action.
     DATA lo_result TYPE REF TO z2ui5_cl_core_action.
-
-    IF sy-sysid = `ABC`.
-      RETURN.
-    ENDIF.
-
 
     lv_payload = `{"value":{"S_FRONT":{"ORIGIN":"O","PATHNAME":"/p","SEARCH":""}}}`.
 
@@ -225,11 +206,6 @@ CLASS ltcl_test IMPLEMENTATION.
     DATA lo_result TYPE REF TO z2ui5_cl_core_action.
     DATA lo_chained TYPE REF TO z2ui5_cl_core_action.
 
-    IF sy-sysid = `ABC`.
-      RETURN.
-    ENDIF.
-
-
     lo_http = NEW #( val = `` ).
 
     lo_action = NEW #( val = lo_http ).
@@ -264,9 +240,11 @@ CLASS ltcl_test IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals( exp = abap_true
                                         act = lo_result->ms_next-s_set-s_popup-check_destroy ).
     cl_abap_unit_assert=>assert_initial( lo_result->ms_next-s_set-s_popup-xml ).
-    " popovers are carried across the app stack
-    cl_abap_unit_assert=>assert_equals( exp = `<popover/>`
-                                        act = lo_result->ms_next-s_set-s_popover-xml ).
+    " a popover is destroyed on navigation just like a popup - the XML of the
+    " calling app must not leak into the called app
+    cl_abap_unit_assert=>assert_equals( exp = abap_true
+                                        act = lo_result->ms_next-s_set-s_popover-check_destroy ).
+    cl_abap_unit_assert=>assert_initial( lo_result->ms_next-s_set-s_popover-xml ).
 
     " the frontend is told to push a route entry for the called app, and where
     " the CALLING app was just saved - it repoints the caller's history entry at
@@ -295,10 +273,6 @@ CLASS ltcl_test IMPLEMENTATION.
     DATA lo_action TYPE REF TO z2ui5_cl_core_action.
     DATA lo_called TYPE REF TO z2ui5_cl_core_action.
     DATA lo_own TYPE REF TO z2ui5_cl_core_action.
-
-    IF sy-sysid = `ABC`.
-      RETURN.
-    ENDIF.
 
     " an app enables routing once ( check_on_init ); every app it navigates to
     " inherits the mode, so a whole app stack is routed after a single opt-in
@@ -334,11 +308,6 @@ CLASS ltcl_test IMPLEMENTATION.
     DATA lo_prev_app TYPE REF TO ltcl_test_app.
     DATA lo_result TYPE REF TO z2ui5_cl_core_action.
 
-    IF sy-sysid = `ABC`.
-      RETURN.
-    ENDIF.
-
-
     lo_http = NEW #( val = `` ).
 
     lo_action = NEW #( val = lo_http ).
@@ -370,9 +339,10 @@ CLASS ltcl_test IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals( exp = abap_true
                                         act = lo_result->ms_next-s_set-s_popup-check_destroy ).
     cl_abap_unit_assert=>assert_initial( lo_result->ms_next-s_set-s_popup-xml ).
-    " popovers are carried across the app stack
-    cl_abap_unit_assert=>assert_equals( exp = `<popover/>`
-                                        act = lo_result->ms_next-s_set-s_popover-xml ).
+    " a popover is destroyed on leave as well, for the same reason
+    cl_abap_unit_assert=>assert_equals( exp = abap_true
+                                        act = lo_result->ms_next-s_set-s_popover-check_destroy ).
+    cl_abap_unit_assert=>assert_initial( lo_result->ms_next-s_set-s_popover-xml ).
 
   ENDMETHOD.
 
