@@ -253,7 +253,22 @@ CLASS z2ui5_cl_http_handler IMPLEMENTATION.
                                         custom_js  = ls_config-custom_js ) &&
              |    \});| && |\n| &&
              |    sap.ui.require(["sap/ui/core/ComponentSupport"], function(ComponentSupport)\{| && |\n| &&
-             |     window.z2ui5 = \{ checkLocal : true \}; ComponentSupport.run();| && |\n| &&
+             " Custom controls live in their own BSP, which the frontend finds
+             " through the reserved resourceRoot in manifest.json
+             " ("z2ui5cc": "../z2ui5cc/"). That path is a sibling of the
+             " FRONTEND BSP, so it is only correct when the app is served from
+             " it. Here the component base is this ICF node and the same
+             " relative path resolves next to /sap/bc/, where nothing is.
+             "
+             " Hand the absolute BSP path to the frontend instead. It cannot be
+             " applied here: the manifest registers its own value during
+             " component creation, which happens after everything this page can
+             " run, so it would win. Component.js applies the field in init( ),
+             " after manifest processing. AppState~initGlobal keeps fields that
+             " are already on the global when checkLocal is true, so it
+             " survives the component start. In BSP and Launchpad mode the
+             " field is absent and the manifest entry stands.
+             |     window.z2ui5 = \{ checkLocal : true, ccResourceRoot : "/sap/bc/ui5_ui5/sap/z2ui5cc" \}; ComponentSupport.run();| && |\n| &&
              |    \});| && |\n| &&
              |  \}| && |\n| &&
              |</script>| && |\n| &&

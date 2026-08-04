@@ -35,8 +35,6 @@ INTERFACE z2ui5_if_client
       "Control Action
       wizard_set_next_step      TYPE string VALUE `WIZARD_SET_NEXT_STEP`,
 
-
-
       download_b64_file         TYPE string VALUE `DOWNLOAD_B64_FILE`,
       urlhelper                 TYPE string VALUE `URLHELPER`,
       history_back              TYPE string VALUE `HISTORY_BACK`,
@@ -139,7 +137,7 @@ INTERFACE z2ui5_if_client
   "! restore: keep (default) restores the exact preserved state via a draft id
   "! in the route '#/app/&lt;CLASS&gt;/&lt;DRAFT&gt;'; fresh routes by class only
   "! '#/app/&lt;CLASS&gt;' and always starts the app fresh; default disables routing
-  "! (framework behaviour as before this feature).
+  "! (framework behavior as before this feature).
   "!
   "! In keep mode the calling app's route entry is advanced to the draft saved
   "! for it during the nav_app_call, so Back restores it as the user LEFT it -
@@ -290,9 +288,7 @@ INTERFACE z2ui5_if_client
       "obsolete - inactive, not passed on internally
       view                 TYPE clike                         DEFAULT cs_view-main
       custom_mapper        TYPE REF TO z2ui5_if_ajson_mapping OPTIONAL
-*      custom_mapper_back   TYPE REF TO z2ui5_if_ajson_mapping OPTIONAL
       custom_filter        TYPE REF TO z2ui5_if_ajson_filter  OPTIONAL
-*      custom_filter_back   TYPE REF TO z2ui5_if_ajson_filter  OPTIONAL
       tab                  TYPE data                          OPTIONAL
       tab_index            TYPE i                             OPTIONAL
       switch_default_model TYPE abap_bool                     DEFAULT abap_false
@@ -331,8 +327,11 @@ INTERFACE z2ui5_if_client
   "! view parameter (default cs_view-main resolves the id across all open
   "! views; pass cs_view-popup/popover/... to scope the lookup to that view).
   "! cs_event-control_global - call a whitelisted method on a global object
-  "! (MESSAGE_TOAST, MESSAGE_BOX, BUSY_INDICATOR, THEMING):
+  "! (MESSAGE_TOAST, MESSAGE_BOX, BUSY_INDICATOR, THEMING, POPUP):
   "! t_arg = object, method, params.
+  "! POPUP-setWithinArea confines every popup to the control whose id is
+  "! passed (sap.ui.core.Popup.setWithinArea, needs UI5 &gt;= 1.89) instead of
+  "! to the window; an EMPTY argument releases the restriction again.
   "! cs_event-smart_variant_init - run the initialise( ) handshake sap.ui.comp
   "! variant management needs (a controller would call
   "! oSmartVariantManagement.initialise( fnCallback, oPersonalizableControl )).
