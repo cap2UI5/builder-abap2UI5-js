@@ -40,11 +40,11 @@ class z2ui5_cl_demo_app_472 extends z2ui5_if_app {
     page.message_strip({ text: `A sap.m.Link normally follows its href when pressed. Registered with ` + `s_ctrl-check_prevent_default the event cancels that built-in default ` + `(oEvent.preventDefault()) before the roundtrip - the event still reaches the ` + `backend, so the app decides what happens instead. Flip the switch to compare.`, type: `Information`, showicon: true, class: `sapUiSmallMargin` });
     const form = page.simple_form({ title: `Link with a cancelled default`, editable: true }).content(`form`);
     form.label(`Cancel the browser navigation`)
-      .switch({ state: this.client._bind_edit(this.block_navigation), change: this.client._event(`TOGGLE`) })
+      .switch({ state: this.client._bind(this.block_navigation), change: this.client._event(`TOGGLE`) })
       .label(`Link`)
       .link({ text: `Open abap2ui5.org`, href: `https://abap2ui5.org`, target: `_blank`, press: this.client._event(`LINK_PRESS`, undefined, { check_prevent_default: this.block_navigation }) })
       .label(`Result`)
-      .text(this.client._bind_edit(this.last_press));
+      .text(this.client._bind(this.last_press));
     this.client.view_display(view.stringify());
   }
 }

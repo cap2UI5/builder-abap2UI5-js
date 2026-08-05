@@ -36,7 +36,7 @@ class z2ui5_cl_demo_app_468 extends z2ui5_if_app {
     page.message_strip({ text: `Add some state (type / raise the counter), open the detail page, then press your ` + `BROWSER Back button and watch this page.`, type: `Information`, showicon: true, class: `sapUiSmallMargin` });
     const form = page.grid(`L6 M12 S12`).content(`layout`).simple_form(`Routing mode fresh`).content(`form`);
     form.label(`1. Some state - type here`);
-    form.input(this.client._bind_edit(this.input));
+    form.input(this.client._bind(this.input));
     form.label(`and raise a counter`);
     form.button({ text: `increment (${this.counter})`, press: this.client._event(`INC`) });
     form.label(`2. Navigate forward`);

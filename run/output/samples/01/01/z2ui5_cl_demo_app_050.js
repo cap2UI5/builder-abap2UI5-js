@@ -46,7 +46,7 @@ class z2ui5_cl_demo_app_050 extends z2ui5_if_app {
 ` + `
 ` + `.sapMInputBaseInner::placeholder {` + `
 ` + `    font-size: 1.4rem !important;` + `
-` + `}`).get_parent().button({ text: `post`, press: client._event(`BUTTON_POST`), class: `mySuperRedButton` }).input({ value: client._bind_edit(this.quantity) }).simple_form({ title: `Form Title`, editable: true }).content(`form`).title(`Input`).label(`quantity`).input({ value: client._bind_edit(this.quantity) }).label(`product`).input({ value: this.product, enabled: false }).button({ text: `post`, press: client._event(`BUTTON_POST`) }).stringify());
+` + `}`).get_parent().button({ text: `post`, press: client._event(`BUTTON_POST`), class: `mySuperRedButton` }).input({ value: client._bind(this.quantity) }).simple_form({ title: `Form Title`, editable: true }).content(`form`).title(`Input`).label(`quantity`).input({ value: client._bind(this.quantity) }).label(`product`).input({ value: this.product, enabled: false }).button({ text: `post`, press: client._event(`BUTTON_POST`) }).stringify());
   }
 }
 

@@ -10,7 +10,7 @@ class z2ui5_cl_demo_app_305 extends z2ui5_if_app {
       .page({ title: `abap2UI5 - Tables and cell colors`, navbuttonpress: this.client._event_nav_app_leave(), shownavbutton: this.client.check_app_prev_stack() });
     page._generic({ name: `style`, ns: `html` })
       ._cc_plain_xml(`td:has([data-color="red"]){ ` + `    background-color: red;` + `}` + `` + `td:has([data-color="green"]){` + `    background-color: green;` + `}` + `` + `td:has([data-color="blue"]){` + `    background-color: blue;` + `}` + `` + `td:has([data-color="orange"]){` + `    background-color: orange;` + `}` + `` + `td:has([data-color="grey"]){` + `    background-color: grey;` + `}` + `` + `td:has([data-color="yellow"]){` + `    background-color: yellow;` + `}`);
-    const tab = page.table({ items: this.client._bind_edit(this.t_tab), mode: `MultiSelect` })
+    const tab = page.table({ items: this.client._bind(this.t_tab), mode: `MultiSelect` })
       .header_toolbar()
       .overflow_toolbar()
       .title(`change cell color`)

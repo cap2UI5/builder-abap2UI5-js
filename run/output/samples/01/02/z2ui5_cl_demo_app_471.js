@@ -65,7 +65,7 @@ class z2ui5_cl_demo_app_471 extends z2ui5_if_app {
       .button({ text: `Save (Ctrl+S)`, type: `Emphasized`, class: `sapUiTinyMarginBegin`, press: this.client._event(`SAVE`) })
       .button({ text: `Delete (Ctrl+D)`, class: `sapUiTinyMarginBegin`, press: this.client._event(`DELETE`) })
       .button({ text: `Clear log`, class: `sapUiTinyMarginBegin`, press: this.client._event(`CLEAR`) });
-    page.list({ headertext: `Triggered events`, items: this.client._bind_edit(this.t_log) })
+    page.list({ headertext: `Triggered events`, items: this.client._bind(this.t_log) })
       .standard_list_item({ title: `{ENTRY}` });
     this.client.view_display(view.stringify());
   }

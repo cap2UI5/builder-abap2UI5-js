@@ -26,11 +26,11 @@ class z2ui5_cl_demo_app_186 extends z2ui5_if_app {
     page.flex_box({ width: `100%`, height: `600px`, alignitems: `Center`, justifycontent: `SpaceAround` })
       .vbox()
       .text(`Base64 String:`)
-      .text_area({ value: this.client._bind_edit(this.file_content_64), rows: `20`, width: `800px`, wrapping: true })
+      .text_area({ value: this.client._bind(this.file_content_64), rows: `20`, width: `800px`, wrapping: true })
       .get_parent()
       .vbox({ justifycontent: `Center`, alignitems: `Center` })
       .text(`fill filename:`)
-      .input({ value: this.client._bind_edit(this.file_name), class: `sapUiLargeMarginBottom`, width: `15rem` })
+      .input({ value: this.client._bind(this.file_name), class: `sapUiLargeMarginBottom`, width: `15rem` })
       .button({ type: `Emphasized`, text: `Open Download Popup`, press: this.client._event(`BUTTON_DOWNLOAD`) });
     this.client.view_display(page.stringify());
   }

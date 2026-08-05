@@ -1,13 +1,17 @@
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
 
 class z2ui5_cl_demo_app_450 extends z2ui5_if_app {
-  t_products = [];
+  dats = ``;
+  tims = ``;
+  dats_initial = ``;
   client = null;
 
   async main(client) {
     this.client = client;
     if (client.check_on_init()) {
-      this.t_products = z2ui5_cl_util.abap_tab_assign(this.t_products, [{ name: `Comfort Easy`, measure: `0.2`, unit: `KG` }, { name: `Notebook Basic 15`, measure: `4.2`, unit: `KG` }, { name: `Ergo Screen E-I`, measure: `21`, unit: `KG` }]);
+      this.dats = `20260720`;
+      this.tims = `134501`;
+      this.dats_initial = `00000000`;
       this.view_display();
     }
   }
@@ -16,21 +20,21 @@ class z2ui5_cl_demo_app_450 extends z2ui5_if_app {
     const view = z2ui5_cl_xml_view.factory();
     view._generic_property({ n: `core:require`, v: `{Formatter: 'z2ui5/model/formatter'}` });
     const page = view.shell()
-      .page({ title: `abap2UI5 - Formatter - weightState via core:require`, navbuttonpress: this.client._event_nav_app_leave(), shownavbutton: this.client.check_app_prev_stack() });
-    page.message_strip({ text: `The Weight column's state is formatted client-side by ` + `Formatter.weightState from z2ui5/model/formatter, wired via core:require.`, type: `Information`, showicon: true, class: `sapUiSmallMargin` });
-    const tab = page.table({ id: `productTable`, items: this.client._bind(this.t_products) });
-    tab.columns().column().text(`Product`).get_parent().column().text(`Weight`).get_parent();
-    tab.items()
-      .column_list_item()
-      .cells()
-      .text(`{NAME}`)
-      .object_number({ number: `{MEASURE}`, unit: `{UNIT}`, state: `{ parts: [{path: 'MEASURE'}, {path: 'UNIT'}], formatter: 'Formatter.weightState' }` });
+      .page({ title: `abap2UI5 - Formatter - ABAP date strings`, navbuttonpress: this.client._event_nav_app_leave(), shownavbutton: this.client.check_app_prev_stack() });
+    page.message_strip({ text: `The model carries the plain ABAP strings 20260720 / 134501; the curated formatter ` + `converts them at the binding. An initial DATS (00000000) yields null, so the field ` + `stays empty instead of rendering a wrong 1899 date.`, type: `Information`, showicon: true, class: `sapUiSmallMargin` });
+    page.simple_form({ title: `DATS / TIMS strings as date objects`, editable: true })
+      .content(`form`)
+      .label(`DATS 20260720`)
+      .date_picker({ displayformat: `long`, editable: false, datevalue: `{ path: '${this.client._bind(this.dats, { path: true })}', ` + `formatter: 'Formatter.DateAbapDateToDateObject' }` })
+      .label(`DATS 00000000 (initial)`)
+      .date_picker({ displayformat: `long`, editable: false, placeholder: `no date`, datevalue: `{ path: '${this.client._bind(this.dats_initial, { path: true })}', ` + `formatter: 'Formatter.DateAbapDateToDateObject' }` })
+      .label(`DATS 20260720 + TIMS 134501`)
+      ._generic({ name: `DateTimePicker`, t_prop: [{ n: `editable`, v: `false` }, { n: `dateValue`, v: `{ parts: [{path: '${this.client._bind(this.dats, { path: true })}'}, ` + `{path: '${this.client._bind(this.tims, { path: true })}'}], ` + `formatter: 'Formatter.DateAbapDateTimeToDateObject' }` }] });
     this.client.view_display(view.stringify());
   }
 }
 
 module.exports = z2ui5_cl_demo_app_450;
 
-const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_cl_xml_view = require("abap2UI5/z2ui5_cl_xml_view");
 

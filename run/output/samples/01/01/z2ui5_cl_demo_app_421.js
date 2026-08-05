@@ -58,9 +58,9 @@ class z2ui5_cl_demo_app_421 extends z2ui5_if_app {
       .title(this.client._bind(this.focusid))
       .toolbar_spacer()
       .label(`Column Id`)
-      .input({ value: this.client._bind_edit(this.focuscolumn), submit: this.client._event(`FOCUS`), placeholder: `Column`, width: `8rem` })
+      .input({ value: this.client._bind(this.focuscolumn), submit: this.client._event(`FOCUS`), placeholder: `Column`, width: `8rem` })
       .label(`Row Index`)
-      .input({ value: this.client._bind_edit(this.focusrow), submit: this.client._event(`FOCUS`), placeholder: `Row`, type: `Number`, width: `6rem` })
+      .input({ value: this.client._bind(this.focusrow), submit: this.client._event(`FOCUS`), placeholder: `Row`, type: `Number`, width: `6rem` })
       .button({ text: `Set Focus`, press: this.client._event(`FOCUS`) })
       .button({ text: `Next Focus`, press: this.client._event(`NEXT`) })
       .button({ text: `Reset Focus`, press: this.client._event(`RESET`) })
@@ -84,7 +84,7 @@ class z2ui5_cl_demo_app_421 extends z2ui5_if_app {
       .get_parent()
       .column()
       .text(`Description`);
-    const path = this.client._bind_edit(this.t_tab, { path: true });
+    const path = this.client._bind(this.t_tab, { path: true });
     const items = tab.items();
     sy_tabix = 0;
     for (const row of this.t_tab) {
