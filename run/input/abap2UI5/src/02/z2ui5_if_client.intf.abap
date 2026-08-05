@@ -18,6 +18,7 @@ INTERFACE z2ui5_if_client
       "Actions base
       clipboard_copy            TYPE string VALUE `CLIPBOARD_COPY`,
       set_title                 TYPE string VALUE `SET_TITLE`,
+      set_favicon               TYPE string VALUE `SET_FAVICON`,
       set_focus                 TYPE string VALUE `SET_FOCUS`,
       scroll_to                 TYPE string VALUE `SCROLL_TO`,
       scroll_into_view          TYPE string VALUE `SCROLL_INTO_VIEW`,
@@ -155,7 +156,8 @@ INTERFACE z2ui5_if_client
       method_destroy TYPE clike OPTIONAL.
 
   METHODS nest_view_destroy.
-  "! obsolete - main and nested views share one model now, use view_model_update instead
+  "! obsolete - a nested view inherits the MAIN view's model, so this just
+  "! delegates to view_model_update( ); call that one directly
   METHODS nest_view_model_update.
 
   METHODS nest2_view_display
@@ -166,7 +168,8 @@ INTERFACE z2ui5_if_client
       method_destroy TYPE clike OPTIONAL.
 
   METHODS nest2_view_destroy.
-  "! obsolete - main and nested views share one model now, use view_model_update instead
+  "! obsolete - a nested view inherits the MAIN view's model, so this just
+  "! delegates to view_model_update( ); call that one directly
   METHODS nest2_view_model_update.
 
   METHODS popup_display
