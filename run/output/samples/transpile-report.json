@@ -1,29 +1,5 @@
 [
   {
-    "class": "z2ui5_cl_demo_app_004",
-    "path": "01/01/z2ui5_cl_demo_app_004.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_008",
-    "path": "01/01/z2ui5_cl_demo_app_008.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_009",
-    "path": "01/01/z2ui5_cl_demo_app_009.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_012",
-    "path": "01/01/z2ui5_cl_demo_app_012.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_demo_app_020",
     "path": "01/01/z2ui5_cl_demo_app_020.js",
     "todos": 0,
@@ -439,14 +415,26 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_006",
-    "path": "01/02/z2ui5_cl_demo_app_006.js",
+    "class": "z2ui5_cl_smp_app_004",
+    "path": "01/01/z2ui5_cl_smp_app_004.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_011",
-    "path": "01/02/z2ui5_cl_demo_app_011.js",
+    "class": "z2ui5_cl_smp_app_008",
+    "path": "01/01/z2ui5_cl_smp_app_008.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_smp_app_009",
+    "path": "01/01/z2ui5_cl_smp_app_009.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_smp_app_012",
+    "path": "01/01/z2ui5_cl_smp_app_012.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -619,8 +607,14 @@
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_005",
-    "path": "01/08/00/z2ui5_cl_demo_app_005.js",
+    "class": "z2ui5_cl_smp_app_006",
+    "path": "01/02/z2ui5_cl_smp_app_006.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_smp_app_011",
+    "path": "01/02/z2ui5_cl_smp_app_011.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -1174,6 +1168,12 @@
   {
     "class": "z2ui5_cl_demo_app_379",
     "path": "01/08/00/z2ui5_cl_demo_app_379.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_smp_app_005",
+    "path": "01/08/00/z2ui5_cl_smp_app_005.js",
     "todos": 0,
     "todoDetails": []
   },

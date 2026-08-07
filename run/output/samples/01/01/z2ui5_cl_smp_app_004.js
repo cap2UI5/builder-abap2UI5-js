@@ -1,6 +1,6 @@
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
 
-class z2ui5_cl_demo_app_004 extends z2ui5_if_app {
+class z2ui5_cl_smp_app_004 extends z2ui5_if_app {
   client = null;
   view_main = ``;
 
@@ -25,7 +25,7 @@ class z2ui5_cl_demo_app_004 extends z2ui5_if_app {
         this.client.message_box_display(`server-client roundtrip, method on_event of the abap controller was called`);
         break;
       case `BUTTON_RESTART`:
-        this.client.nav_app_leave(new z2ui5_cl_demo_app_004());
+        this.client.nav_app_leave(new z2ui5_cl_smp_app_004());
         break;
       case `BUTTON_CHANGE_VIEW`:
         switch (this.view_main) {
@@ -79,7 +79,7 @@ class z2ui5_cl_demo_app_004 extends z2ui5_if_app {
   }
 }
 
-module.exports = z2ui5_cl_demo_app_004;
+module.exports = z2ui5_cl_smp_app_004;
 
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_cl_xml_view = require("abap2UI5/z2ui5_cl_xml_view");

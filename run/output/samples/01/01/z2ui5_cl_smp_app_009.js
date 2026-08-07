@@ -1,6 +1,6 @@
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
 
-class z2ui5_cl_demo_app_009 extends z2ui5_if_app {
+class z2ui5_cl_smp_app_009 extends z2ui5_if_app {
   s_screen = { color_01: ``, color_02: ``, color_03: ``, city: ``, name: ``, lastname: ``, quantity: ``, unit: `` };
   t_suggestion = [];
   t_suggestion_sel = [];
@@ -152,7 +152,7 @@ class z2ui5_cl_demo_app_009 extends z2ui5_if_app {
   }
 }
 
-module.exports = z2ui5_cl_demo_app_009;
+module.exports = z2ui5_cl_smp_app_009;
 
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_cl_xml_view = require("abap2UI5/z2ui5_cl_xml_view");

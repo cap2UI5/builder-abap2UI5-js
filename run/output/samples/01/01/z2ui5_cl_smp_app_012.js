@@ -1,6 +1,6 @@
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
 
-class z2ui5_cl_demo_app_012 extends z2ui5_if_app {
+class z2ui5_cl_smp_app_012 extends z2ui5_if_app {
   check_popup = false;
   client = null;
 
@@ -115,7 +115,7 @@ class z2ui5_cl_demo_app_012 extends z2ui5_if_app {
   }
 }
 
-module.exports = z2ui5_cl_demo_app_012;
+module.exports = z2ui5_cl_smp_app_012;
 
 const z2ui5_cl_demo_app_020 = require("./z2ui5_cl_demo_app_020");
 const z2ui5_cl_xml_view = require("abap2UI5/z2ui5_cl_xml_view");
