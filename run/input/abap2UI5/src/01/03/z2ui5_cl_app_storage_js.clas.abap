@@ -34,6 +34,33 @@ CLASS z2ui5_cl_app_storage_js IMPLEMENTATION.
              `  (Control, Storage, Lib) => {` && |\n| &&
              `    "use strict";` && |\n| &&
              `` && |\n| &&
+             `    // Value equality for the stored payload. ``value`` is typed ``any``: a plain` && |\n| &&
+             `    // string for the common case, a structure or a table once an app binds` && |\n| &&
+             `    // one. A reference comparison reports EVERY object as different, because` && |\n| &&
+             `    // sap/ui/util/Storage JSON-round-trips what it stores and therefore hands` && |\n| &&
+             `    // back a fresh object on every read - the control would fire ``finished``` && |\n| &&
+             `    // on each render, the backend would answer with a re-render, and that` && |\n| &&
+             `    // fires again: an endless round-trip loop that made a structured value` && |\n| &&
+             `    // unusable. Compare by value instead. Key order is not significant (the` && |\n| &&
+             `    // stored copy went through JSON, the bound one comes from the model), and` && |\n| &&
+             `    // the payload is JSON by construction, so this covers every shape that` && |\n| &&
+             `    // can reach the property.` && |\n| &&
+             `    function isSameValue(a, b) {` && |\n| &&
+             `      if (a === b) return true;` && |\n| &&
+             `      if (a === null || b === null) return false;` && |\n| &&
+             `      if (typeof a !== "object" || typeof b !== "object") return false;` && |\n| &&
+             `      if (Array.isArray(a) !== Array.isArray(b)) return false;` && |\n| &&
+             `      if (Array.isArray(a)) {` && |\n| &&
+             `        return a.length === b.length && a.every((v, i) => isSameValue(v, b[i]));` && |\n| &&
+             `      }` && |\n| &&
+             `      const keys = Object.keys(a);` && |\n| &&
+             `      if (keys.length !== Object.keys(b).length) return false;` && |\n| &&
+             `      return keys.every(` && |\n| &&
+             `        (k) =>` && |\n| &&
+             `          Object.prototype.hasOwnProperty.call(b, k) && isSameValue(a[k], b[k]),` && |\n| &&
+             `      );` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
              `    return Control.extend("z2ui5.cc.Storage", {` && |\n| &&
              `      metadata: {` && |\n| &&
              `        properties: {` && |\n| &&
@@ -90,15 +117,24 @@ CLASS z2ui5_cl_app_storage_js IMPLEMENTATION.
              `        try {` && |\n| &&
              `          const storageType = Storage.Type[type] || Storage.Type.session;` && |\n| &&
              `          const storage = new Storage(storageType, prefix);` && |\n| &&
-             `          stored = storage.get(key) ?? "";` && |\n| &&
+             `          stored = storage.get(key);` && |\n| &&
              `        } catch (e) {` && |\n| &&
              `          Lib.logError(``Storage: read failed for key '${key}'``, e);` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&
              `` && |\n| &&
+             `        // A key that holds nothing must leave the bound field ALONE. Reporting` && |\n| &&
+             `        // the empty string for it used to overwrite whatever the app had -` && |\n| &&
+             `        // and, worse, its TYPE: an app binding a structure got a plain "" on` && |\n| &&
+             `        // the very first render, which the next roundtrip could not parse back` && |\n| &&
+             `        // ("JSON_PARSING_ERROR ... Unsupported target for value [v]", because` && |\n| &&
+             `        // a string cannot land on a deep ABAP target). "Nothing is stored" is` && |\n| &&
+             `        // not a value, so there is nothing to report.` && |\n| &&
+             `        if (stored === null || stored === undefined) return;` && |\n| &&
+             `` && |\n| &&
              `        // Only fire "finished" when the stored value differs from the` && |\n| &&
              `        // current property to avoid feedback loops.` && |\n| &&
-             `        if (stored !== value) {` && |\n| &&
+             `        if (!isSameValue(stored, value)) {` && |\n| &&
              `          this.setProperty("value", stored, true);` && |\n| &&
              `          this.fireFinished({ type, prefix, key, value: stored });` && |\n| &&
              `        }` && |\n| &&
