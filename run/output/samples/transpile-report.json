@@ -1,153 +1,185 @@
 [
   {
-    "class": "z2ui5_cl_demo_app_020",
-    "path": "01/01/z2ui5_cl_demo_app_020.js",
+    "class": "z2ui5_cl_smp_app_004",
+    "path": "02/01/z2ui5_cl_smp_app_004.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_024",
-    "path": "01/01/z2ui5_cl_demo_app_024.js",
+    "class": "z2ui5_cl_smp_app_008",
+    "path": "02/01/z2ui5_cl_smp_app_008.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_009",
+    "path": "02/01/z2ui5_cl_smp_app_009.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_025",
-    "path": "01/01/z2ui5_cl_demo_app_025.js",
+    "class": "z2ui5_cl_smp_app_012",
+    "path": "02/01/z2ui5_cl_smp_app_012.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_app_020"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_020",
+    "path": "02/01/z2ui5_cl_smp_app_020.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_026",
-    "path": "01/01/z2ui5_cl_demo_app_026.js",
+    "class": "z2ui5_cl_smp_app_024",
+    "path": "02/01/z2ui5_cl_smp_app_024.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_app_025"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_025",
+    "path": "02/01/z2ui5_cl_smp_app_025.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_027",
-    "path": "01/01/z2ui5_cl_demo_app_027.js",
+    "class": "z2ui5_cl_smp_app_026",
+    "path": "02/01/z2ui5_cl_smp_app_026.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_028",
-    "path": "01/01/z2ui5_cl_demo_app_028.js",
+    "class": "z2ui5_cl_smp_app_027",
+    "path": "02/01/z2ui5_cl_smp_app_027.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_047",
-    "path": "01/01/z2ui5_cl_demo_app_047.js",
+    "class": "z2ui5_cl_smp_app_028",
+    "path": "02/01/z2ui5_cl_smp_app_028.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_050",
-    "path": "01/01/z2ui5_cl_demo_app_050.js",
+    "class": "z2ui5_cl_smp_app_047",
+    "path": "02/01/z2ui5_cl_smp_app_047.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_052",
-    "path": "01/01/z2ui5_cl_demo_app_052.js",
+    "class": "z2ui5_cl_smp_app_050",
+    "path": "02/01/z2ui5_cl_smp_app_050.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_061",
-    "path": "01/01/z2ui5_cl_demo_app_061.js",
+    "class": "z2ui5_cl_smp_app_052",
+    "path": "02/01/z2ui5_cl_smp_app_052.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_064",
-    "path": "01/01/z2ui5_cl_demo_app_064.js",
+    "class": "z2ui5_cl_smp_app_061",
+    "path": "02/01/z2ui5_cl_smp_app_061.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_smp_app_064",
+    "path": "02/01/z2ui5_cl_smp_app_064.js",
     "todos": 1,
     "todoDetails": [
       "unsupported statement: WAIT UP TO 2 SECONDS."
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_065",
-    "path": "01/01/z2ui5_cl_demo_app_065.js",
+    "class": "z2ui5_cl_smp_app_065",
+    "path": "02/01/z2ui5_cl_smp_app_065.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_067",
-    "path": "01/01/z2ui5_cl_demo_app_067.js",
+    "class": "z2ui5_cl_smp_app_067",
+    "path": "02/01/z2ui5_cl_smp_app_067.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_071",
-    "path": "01/01/z2ui5_cl_demo_app_071.js",
+    "class": "z2ui5_cl_smp_app_071",
+    "path": "02/01/z2ui5_cl_smp_app_071.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_073",
-    "path": "01/01/z2ui5_cl_demo_app_073.js",
+    "class": "z2ui5_cl_smp_app_073",
+    "path": "02/01/z2ui5_cl_smp_app_073.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_081",
-    "path": "01/01/z2ui5_cl_demo_app_081.js",
+    "class": "z2ui5_cl_smp_app_081",
+    "path": "02/01/z2ui5_cl_smp_app_081.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_097",
-    "path": "01/01/z2ui5_cl_demo_app_097.js",
+    "class": "z2ui5_cl_smp_app_097",
+    "path": "02/01/z2ui5_cl_smp_app_097.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_098",
+    "path": "02/01/z2ui5_cl_smp_app_098.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_098",
-    "path": "01/01/z2ui5_cl_demo_app_098.js",
+    "class": "z2ui5_cl_smp_app_104",
+    "path": "02/01/z2ui5_cl_smp_app_104.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_104",
-    "path": "01/01/z2ui5_cl_demo_app_104.js",
+    "class": "z2ui5_cl_smp_app_105",
+    "path": "02/01/z2ui5_cl_smp_app_105.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_105",
-    "path": "01/01/z2ui5_cl_demo_app_105.js",
+    "class": "z2ui5_cl_smp_app_109",
+    "path": "02/01/z2ui5_cl_smp_app_109.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_109",
-    "path": "01/01/z2ui5_cl_demo_app_109.js",
+    "class": "z2ui5_cl_smp_app_112",
+    "path": "02/01/z2ui5_cl_smp_app_112.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_112",
-    "path": "01/01/z2ui5_cl_demo_app_112.js",
+    "class": "z2ui5_cl_smp_app_122",
+    "path": "02/01/z2ui5_cl_smp_app_122.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_122",
-    "path": "01/01/z2ui5_cl_demo_app_122.js",
+    "class": "z2ui5_cl_smp_app_125",
+    "path": "02/01/z2ui5_cl_smp_app_125.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_125",
-    "path": "01/01/z2ui5_cl_demo_app_125.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_126",
-    "path": "01/01/z2ui5_cl_demo_app_126.js",
+    "class": "z2ui5_cl_smp_app_126",
+    "path": "02/01/z2ui5_cl_smp_app_126.js",
     "todos": 6,
     "todoDetails": [
       "unsupported statement: cl_abap_typedescr=>describe_by_name( EXPORTING p_name = `Z2UI5_T_UTIL_01` RECEIVING p_descr_ref = DATA(typedesc) EXCEPTI",
@@ -159,68 +191,68 @@
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_133",
-    "path": "01/01/z2ui5_cl_demo_app_133.js",
+    "class": "z2ui5_cl_smp_app_133",
+    "path": "02/01/z2ui5_cl_smp_app_133.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_144",
-    "path": "01/01/z2ui5_cl_demo_app_144.js",
+    "class": "z2ui5_cl_smp_app_144",
+    "path": "02/01/z2ui5_cl_smp_app_144.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_161",
-    "path": "01/01/z2ui5_cl_demo_app_161.js",
+    "class": "z2ui5_cl_smp_app_161",
+    "path": "02/01/z2ui5_cl_smp_app_161.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_163",
-    "path": "01/01/z2ui5_cl_demo_app_163.js",
+    "class": "z2ui5_cl_smp_app_163",
+    "path": "02/01/z2ui5_cl_smp_app_163.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_166",
-    "path": "01/01/z2ui5_cl_demo_app_166.js",
+    "class": "z2ui5_cl_smp_app_166",
+    "path": "02/01/z2ui5_cl_smp_app_166.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_167",
-    "path": "01/01/z2ui5_cl_demo_app_167.js",
+    "class": "z2ui5_cl_smp_app_167",
+    "path": "02/01/z2ui5_cl_smp_app_167.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_173",
-    "path": "01/01/z2ui5_cl_demo_app_173.js",
+    "class": "z2ui5_cl_smp_app_173",
+    "path": "02/01/z2ui5_cl_smp_app_173.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_176",
-    "path": "01/01/z2ui5_cl_demo_app_176.js",
+    "class": "z2ui5_cl_smp_app_176",
+    "path": "02/01/z2ui5_cl_smp_app_176.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_186",
-    "path": "01/01/z2ui5_cl_demo_app_186.js",
+    "class": "z2ui5_cl_smp_app_186",
+    "path": "02/01/z2ui5_cl_smp_app_186.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_189",
-    "path": "01/01/z2ui5_cl_demo_app_189.js",
+    "class": "z2ui5_cl_smp_app_189",
+    "path": "02/01/z2ui5_cl_smp_app_189.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_197",
-    "path": "01/01/z2ui5_cl_demo_app_197.js",
+    "class": "z2ui5_cl_smp_app_197",
+    "path": "02/01/z2ui5_cl_smp_app_197.js",
     "todos": 3,
     "todoDetails": [
       "IN range-table check approximated (sign E ignored)",
@@ -229,422 +261,426 @@
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_255",
-    "path": "01/01/z2ui5_cl_demo_app_255.js",
+    "class": "z2ui5_cl_smp_app_255",
+    "path": "02/01/z2ui5_cl_smp_app_255.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_305",
-    "path": "01/01/z2ui5_cl_demo_app_305.js",
+    "class": "z2ui5_cl_smp_app_305",
+    "path": "02/01/z2ui5_cl_smp_app_305.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_315",
-    "path": "01/01/z2ui5_cl_demo_app_315.js",
+    "class": "z2ui5_cl_smp_app_315",
+    "path": "02/01/z2ui5_cl_smp_app_315.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_316",
-    "path": "01/01/z2ui5_cl_demo_app_316.js",
+    "class": "z2ui5_cl_smp_app_316",
+    "path": "02/01/z2ui5_cl_smp_app_316.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_325",
-    "path": "01/01/z2ui5_cl_demo_app_325.js",
+    "class": "z2ui5_cl_smp_app_325",
+    "path": "02/01/z2ui5_cl_smp_app_325.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_352",
-    "path": "01/01/z2ui5_cl_demo_app_352.js",
+    "class": "z2ui5_cl_smp_app_352",
+    "path": "02/01/z2ui5_cl_smp_app_352.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_361",
-    "path": "01/01/z2ui5_cl_demo_app_361.js",
+    "class": "z2ui5_cl_smp_app_361",
+    "path": "02/01/z2ui5_cl_smp_app_361.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_362",
-    "path": "01/01/z2ui5_cl_demo_app_362.js",
+    "class": "z2ui5_cl_smp_app_362",
+    "path": "02/01/z2ui5_cl_smp_app_362.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_363",
-    "path": "01/01/z2ui5_cl_demo_app_363.js",
+    "class": "z2ui5_cl_smp_app_363",
+    "path": "02/01/z2ui5_cl_smp_app_363.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_381",
-    "path": "01/01/z2ui5_cl_demo_app_381.js",
+    "class": "z2ui5_cl_smp_app_381",
+    "path": "02/01/z2ui5_cl_smp_app_381.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_382",
-    "path": "01/01/z2ui5_cl_demo_app_382.js",
+    "class": "z2ui5_cl_smp_app_382",
+    "path": "02/01/z2ui5_cl_smp_app_382.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_421",
-    "path": "01/01/z2ui5_cl_demo_app_421.js",
+    "class": "z2ui5_cl_smp_app_421",
+    "path": "02/01/z2ui5_cl_smp_app_421.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_445",
-    "path": "01/01/z2ui5_cl_demo_app_445.js",
+    "class": "z2ui5_cl_smp_app_445",
+    "path": "02/01/z2ui5_cl_smp_app_445.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_446",
-    "path": "01/01/z2ui5_cl_demo_app_446.js",
+    "class": "z2ui5_cl_smp_app_446",
+    "path": "02/01/z2ui5_cl_smp_app_446.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_447",
-    "path": "01/01/z2ui5_cl_demo_app_447.js",
+    "class": "z2ui5_cl_smp_app_447",
+    "path": "02/01/z2ui5_cl_smp_app_447.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_450",
-    "path": "01/01/z2ui5_cl_demo_app_450.js",
+    "class": "z2ui5_cl_smp_app_450",
+    "path": "02/01/z2ui5_cl_smp_app_450.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_452",
-    "path": "01/01/z2ui5_cl_demo_app_452.js",
+    "class": "z2ui5_cl_smp_app_452",
+    "path": "02/01/z2ui5_cl_smp_app_452.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_453",
-    "path": "01/01/z2ui5_cl_demo_app_453.js",
+    "class": "z2ui5_cl_smp_app_453",
+    "path": "02/01/z2ui5_cl_smp_app_453.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_456",
-    "path": "01/01/z2ui5_cl_demo_app_456.js",
+    "class": "z2ui5_cl_smp_app_456",
+    "path": "02/01/z2ui5_cl_smp_app_456.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_457",
-    "path": "01/01/z2ui5_cl_demo_app_457.js",
+    "class": "z2ui5_cl_smp_app_457",
+    "path": "02/01/z2ui5_cl_smp_app_457.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_458",
-    "path": "01/01/z2ui5_cl_demo_app_458.js",
+    "class": "z2ui5_cl_smp_app_458",
+    "path": "02/01/z2ui5_cl_smp_app_458.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_464",
-    "path": "01/01/z2ui5_cl_demo_app_464.js",
+    "class": "z2ui5_cl_smp_app_464",
+    "path": "02/01/z2ui5_cl_smp_app_464.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cx_smp_error"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_465",
+    "path": "02/01/z2ui5_cl_smp_app_465.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_465",
-    "path": "01/01/z2ui5_cl_demo_app_465.js",
+    "class": "z2ui5_cl_smp_app_466",
+    "path": "02/01/z2ui5_cl_smp_app_466.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_466",
-    "path": "01/01/z2ui5_cl_demo_app_466.js",
+    "class": "z2ui5_cl_smp_app_467",
+    "path": "02/01/z2ui5_cl_smp_app_467.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_467",
-    "path": "01/01/z2ui5_cl_demo_app_467.js",
+    "class": "z2ui5_cl_smp_app_468",
+    "path": "02/01/z2ui5_cl_smp_app_468.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_app_469"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_469",
+    "path": "02/01/z2ui5_cl_smp_app_469.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_468",
-    "path": "01/01/z2ui5_cl_demo_app_468.js",
+    "class": "z2ui5_cl_smp_app_470",
+    "path": "02/01/z2ui5_cl_smp_app_470.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_469",
-    "path": "01/01/z2ui5_cl_demo_app_469.js",
+    "class": "z2ui5_cl_smp_app_472",
+    "path": "02/01/z2ui5_cl_smp_app_472.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_470",
-    "path": "01/01/z2ui5_cl_demo_app_470.js",
+    "class": "z2ui5_cl_smp_app_473",
+    "path": "02/01/z2ui5_cl_smp_app_473.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_472",
-    "path": "01/01/z2ui5_cl_demo_app_472.js",
+    "class": "z2ui5_cl_smp_app_480",
+    "path": "02/01/z2ui5_cl_smp_app_480.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_app_469"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_006",
+    "path": "02/02/z2ui5_cl_smp_app_006.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_473",
-    "path": "01/01/z2ui5_cl_demo_app_473.js",
+    "class": "z2ui5_cl_smp_app_011",
+    "path": "02/02/z2ui5_cl_smp_app_011.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_480",
-    "path": "01/01/z2ui5_cl_demo_app_480.js",
+    "class": "z2ui5_cl_smp_app_019",
+    "path": "02/02/z2ui5_cl_smp_app_019.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_smp_app_004",
-    "path": "01/01/z2ui5_cl_smp_app_004.js",
+    "class": "z2ui5_cl_smp_app_045",
+    "path": "02/02/z2ui5_cl_smp_app_045.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_smp_app_008",
-    "path": "01/01/z2ui5_cl_smp_app_008.js",
+    "class": "z2ui5_cl_smp_app_048",
+    "path": "02/02/z2ui5_cl_smp_app_048.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_smp_app_009",
-    "path": "01/01/z2ui5_cl_smp_app_009.js",
-    "todos": 0,
-    "todoDetails": []
+    "class": "z2ui5_cl_smp_app_053",
+    "path": "02/02/z2ui5_cl_smp_app_053.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
   },
   {
-    "class": "z2ui5_cl_smp_app_012",
-    "path": "01/01/z2ui5_cl_smp_app_012.js",
-    "todos": 0,
-    "todoDetails": []
+    "class": "z2ui5_cl_smp_app_059",
+    "path": "02/02/z2ui5_cl_smp_app_059.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
   },
   {
-    "class": "z2ui5_cl_demo_app_019",
-    "path": "01/02/z2ui5_cl_demo_app_019.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_045",
-    "path": "01/02/z2ui5_cl_demo_app_045.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_048",
-    "path": "01/02/z2ui5_cl_demo_app_048.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_053",
-    "path": "01/02/z2ui5_cl_demo_app_053.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_059",
-    "path": "01/02/z2ui5_cl_demo_app_059.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_070",
-    "path": "01/02/z2ui5_cl_demo_app_070.js",
+    "class": "z2ui5_cl_smp_app_070",
+    "path": "02/02/z2ui5_cl_smp_app_070.js",
     "todos": 1,
     "todoDetails": [
       "unsupported statement: DELETE mt_table."
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_074",
-    "path": "01/02/z2ui5_cl_demo_app_074.js",
+    "class": "z2ui5_cl_smp_app_074",
+    "path": "02/02/z2ui5_cl_smp_app_074.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_078",
+    "path": "02/02/z2ui5_cl_smp_app_078.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_078",
-    "path": "01/02/z2ui5_cl_demo_app_078.js",
+    "class": "z2ui5_cl_smp_app_088",
+    "path": "02/02/z2ui5_cl_smp_app_088.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_088",
-    "path": "01/02/z2ui5_cl_demo_app_088.js",
+    "class": "z2ui5_cl_smp_app_120",
+    "path": "02/02/z2ui5_cl_smp_app_120.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_120",
-    "path": "01/02/z2ui5_cl_demo_app_120.js",
+    "class": "z2ui5_cl_smp_app_143",
+    "path": "02/02/z2ui5_cl_smp_app_143.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_143",
-    "path": "01/02/z2ui5_cl_demo_app_143.js",
+    "class": "z2ui5_cl_smp_app_160",
+    "path": "02/02/z2ui5_cl_smp_app_160.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_170",
+    "path": "02/02/z2ui5_cl_smp_app_170.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_160",
-    "path": "01/02/z2ui5_cl_demo_app_160.js",
+    "class": "z2ui5_cl_smp_app_202",
+    "path": "02/02/z2ui5_cl_smp_app_202.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_170",
-    "path": "01/02/z2ui5_cl_demo_app_170.js",
+    "class": "z2ui5_cl_smp_app_279",
+    "path": "02/02/z2ui5_cl_smp_app_279.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_202",
-    "path": "01/02/z2ui5_cl_demo_app_202.js",
+    "class": "z2ui5_cl_smp_app_306",
+    "path": "02/02/z2ui5_cl_smp_app_306.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_279",
-    "path": "01/02/z2ui5_cl_demo_app_279.js",
+    "class": "z2ui5_cl_smp_app_327",
+    "path": "02/02/z2ui5_cl_smp_app_327.js",
+    "todos": 1,
+    "todoDetails": [
+      "unsupported statement: z2ui5_cl_ajson=>parse( client->get_event_arg( 4 ) )->to_abap_corresponding_only( )->to_abap( IMPORTING ev_container = s_"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_448",
+    "path": "02/02/z2ui5_cl_smp_app_448.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_306",
-    "path": "01/02/z2ui5_cl_demo_app_306.js",
+    "class": "z2ui5_cl_smp_app_449",
+    "path": "02/02/z2ui5_cl_smp_app_449.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_448",
-    "path": "01/02/z2ui5_cl_demo_app_448.js",
+    "class": "z2ui5_cl_smp_app_454",
+    "path": "02/02/z2ui5_cl_smp_app_454.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_449",
-    "path": "01/02/z2ui5_cl_demo_app_449.js",
+    "class": "z2ui5_cl_smp_app_455",
+    "path": "02/02/z2ui5_cl_smp_app_455.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_454",
-    "path": "01/02/z2ui5_cl_demo_app_454.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_455",
-    "path": "01/02/z2ui5_cl_demo_app_455.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_459",
-    "path": "01/02/z2ui5_cl_demo_app_459.js",
+    "class": "z2ui5_cl_smp_app_459",
+    "path": "02/02/z2ui5_cl_smp_app_459.js",
     "todos": 1,
     "todoDetails": [
       "unsupported statement: DELETE t_products INDEX lv_from."
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_460",
-    "path": "01/02/z2ui5_cl_demo_app_460.js",
+    "class": "z2ui5_cl_smp_app_460",
+    "path": "02/02/z2ui5_cl_smp_app_460.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_461",
-    "path": "01/02/z2ui5_cl_demo_app_461.js",
+    "class": "z2ui5_cl_smp_app_461",
+    "path": "02/02/z2ui5_cl_smp_app_461.js",
     "todos": 1,
     "todoDetails": [
       "unsupported statement: DELETE <from>-nodes INDEX lv_from_child."
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_462",
-    "path": "01/02/z2ui5_cl_demo_app_462.js",
+    "class": "z2ui5_cl_smp_app_462",
+    "path": "02/02/z2ui5_cl_smp_app_462.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_463",
-    "path": "01/02/z2ui5_cl_demo_app_463.js",
+    "class": "z2ui5_cl_smp_app_463",
+    "path": "02/02/z2ui5_cl_smp_app_463.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_471",
-    "path": "01/02/z2ui5_cl_demo_app_471.js",
+    "class": "z2ui5_cl_smp_app_471",
+    "path": "02/02/z2ui5_cl_smp_app_471.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_474",
-    "path": "01/02/z2ui5_cl_demo_app_474.js",
+    "class": "z2ui5_cl_smp_app_474",
+    "path": "02/02/z2ui5_cl_smp_app_474.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_smp_app_006",
-    "path": "01/02/z2ui5_cl_smp_app_006.js",
+    "class": "z2ui5_cl_smp_app_005",
+    "path": "02/03/01/z2ui5_cl_smp_app_005.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_smp_app_011",
-    "path": "01/02/z2ui5_cl_smp_app_011.js",
+    "class": "z2ui5_cl_smp_app_015",
+    "path": "02/03/01/z2ui5_cl_smp_app_015.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_015",
-    "path": "01/08/00/z2ui5_cl_demo_app_015.js",
+    "class": "z2ui5_cl_smp_app_022",
+    "path": "02/03/01/z2ui5_cl_smp_app_022.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_022",
-    "path": "01/08/00/z2ui5_cl_demo_app_022.js",
+    "class": "z2ui5_cl_smp_app_038",
+    "path": "02/03/01/z2ui5_cl_smp_app_038.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_038",
-    "path": "01/08/00/z2ui5_cl_demo_app_038.js",
+    "class": "z2ui5_cl_smp_app_051",
+    "path": "02/03/01/z2ui5_cl_smp_app_051.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_051",
-    "path": "01/08/00/z2ui5_cl_demo_app_051.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_101",
-    "path": "01/08/00/z2ui5_cl_demo_app_101.js",
+    "class": "z2ui5_cl_smp_app_101",
+    "path": "02/03/01/z2ui5_cl_smp_app_101.js",
     "todos": 2,
     "todoDetails": [
       "format option dropped in template: sy - datum DATE = ISO",
@@ -652,464 +688,464 @@
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_110",
-    "path": "01/08/00/z2ui5_cl_demo_app_110.js",
+    "class": "z2ui5_cl_smp_app_110",
+    "path": "02/03/01/z2ui5_cl_smp_app_110.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_114",
-    "path": "01/08/00/z2ui5_cl_demo_app_114.js",
+    "class": "z2ui5_cl_smp_app_114",
+    "path": "02/03/01/z2ui5_cl_smp_app_114.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_140",
-    "path": "01/08/00/z2ui5_cl_demo_app_140.js",
+    "class": "z2ui5_cl_smp_app_140",
+    "path": "02/03/01/z2ui5_cl_smp_app_140.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_205",
-    "path": "01/08/00/z2ui5_cl_demo_app_205.js",
+    "class": "z2ui5_cl_smp_app_205",
+    "path": "02/03/01/z2ui5_cl_smp_app_205.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_206",
-    "path": "01/08/00/z2ui5_cl_demo_app_206.js",
+    "class": "z2ui5_cl_smp_app_206",
+    "path": "02/03/01/z2ui5_cl_smp_app_206.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_207",
-    "path": "01/08/00/z2ui5_cl_demo_app_207.js",
+    "class": "z2ui5_cl_smp_app_207",
+    "path": "02/03/01/z2ui5_cl_smp_app_207.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_208",
-    "path": "01/08/00/z2ui5_cl_demo_app_208.js",
+    "class": "z2ui5_cl_smp_app_208",
+    "path": "02/03/01/z2ui5_cl_smp_app_208.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_210",
-    "path": "01/08/00/z2ui5_cl_demo_app_210.js",
+    "class": "z2ui5_cl_smp_app_210",
+    "path": "02/03/01/z2ui5_cl_smp_app_210.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_213",
-    "path": "01/08/00/z2ui5_cl_demo_app_213.js",
+    "class": "z2ui5_cl_smp_app_213",
+    "path": "02/03/01/z2ui5_cl_smp_app_213.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_214",
-    "path": "01/08/00/z2ui5_cl_demo_app_214.js",
+    "class": "z2ui5_cl_smp_app_214",
+    "path": "02/03/01/z2ui5_cl_smp_app_214.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_215",
-    "path": "01/08/00/z2ui5_cl_demo_app_215.js",
+    "class": "z2ui5_cl_smp_app_215",
+    "path": "02/03/01/z2ui5_cl_smp_app_215.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_216",
-    "path": "01/08/00/z2ui5_cl_demo_app_216.js",
+    "class": "z2ui5_cl_smp_app_216",
+    "path": "02/03/01/z2ui5_cl_smp_app_216.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_217",
-    "path": "01/08/00/z2ui5_cl_demo_app_217.js",
+    "class": "z2ui5_cl_smp_app_217",
+    "path": "02/03/01/z2ui5_cl_smp_app_217.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_218",
-    "path": "01/08/00/z2ui5_cl_demo_app_218.js",
+    "class": "z2ui5_cl_smp_app_218",
+    "path": "02/03/01/z2ui5_cl_smp_app_218.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_219",
-    "path": "01/08/00/z2ui5_cl_demo_app_219.js",
+    "class": "z2ui5_cl_smp_app_219",
+    "path": "02/03/01/z2ui5_cl_smp_app_219.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_220",
-    "path": "01/08/00/z2ui5_cl_demo_app_220.js",
+    "class": "z2ui5_cl_smp_app_220",
+    "path": "02/03/01/z2ui5_cl_smp_app_220.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_221",
-    "path": "01/08/00/z2ui5_cl_demo_app_221.js",
+    "class": "z2ui5_cl_smp_app_221",
+    "path": "02/03/01/z2ui5_cl_smp_app_221.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_222",
-    "path": "01/08/00/z2ui5_cl_demo_app_222.js",
+    "class": "z2ui5_cl_smp_app_222",
+    "path": "02/03/01/z2ui5_cl_smp_app_222.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_223",
-    "path": "01/08/00/z2ui5_cl_demo_app_223.js",
+    "class": "z2ui5_cl_smp_app_223",
+    "path": "02/03/01/z2ui5_cl_smp_app_223.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_224",
-    "path": "01/08/00/z2ui5_cl_demo_app_224.js",
+    "class": "z2ui5_cl_smp_app_224",
+    "path": "02/03/01/z2ui5_cl_smp_app_224.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_225",
-    "path": "01/08/00/z2ui5_cl_demo_app_225.js",
+    "class": "z2ui5_cl_smp_app_225",
+    "path": "02/03/01/z2ui5_cl_smp_app_225.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_226",
-    "path": "01/08/00/z2ui5_cl_demo_app_226.js",
+    "class": "z2ui5_cl_smp_app_226",
+    "path": "02/03/01/z2ui5_cl_smp_app_226.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_227",
-    "path": "01/08/00/z2ui5_cl_demo_app_227.js",
+    "class": "z2ui5_cl_smp_app_227",
+    "path": "02/03/01/z2ui5_cl_smp_app_227.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_228",
-    "path": "01/08/00/z2ui5_cl_demo_app_228.js",
+    "class": "z2ui5_cl_smp_app_228",
+    "path": "02/03/01/z2ui5_cl_smp_app_228.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_229",
-    "path": "01/08/00/z2ui5_cl_demo_app_229.js",
+    "class": "z2ui5_cl_smp_app_229",
+    "path": "02/03/01/z2ui5_cl_smp_app_229.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_230",
-    "path": "01/08/00/z2ui5_cl_demo_app_230.js",
+    "class": "z2ui5_cl_smp_app_230",
+    "path": "02/03/01/z2ui5_cl_smp_app_230.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_232",
-    "path": "01/08/00/z2ui5_cl_demo_app_232.js",
+    "class": "z2ui5_cl_smp_app_232",
+    "path": "02/03/01/z2ui5_cl_smp_app_232.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_233",
-    "path": "01/08/00/z2ui5_cl_demo_app_233.js",
+    "class": "z2ui5_cl_smp_app_233",
+    "path": "02/03/01/z2ui5_cl_smp_app_233.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_234",
-    "path": "01/08/00/z2ui5_cl_demo_app_234.js",
+    "class": "z2ui5_cl_smp_app_234",
+    "path": "02/03/01/z2ui5_cl_smp_app_234.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_235",
-    "path": "01/08/00/z2ui5_cl_demo_app_235.js",
+    "class": "z2ui5_cl_smp_app_235",
+    "path": "02/03/01/z2ui5_cl_smp_app_235.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_236",
-    "path": "01/08/00/z2ui5_cl_demo_app_236.js",
+    "class": "z2ui5_cl_smp_app_236",
+    "path": "02/03/01/z2ui5_cl_smp_app_236.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_237",
-    "path": "01/08/00/z2ui5_cl_demo_app_237.js",
+    "class": "z2ui5_cl_smp_app_237",
+    "path": "02/03/01/z2ui5_cl_smp_app_237.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_238",
-    "path": "01/08/00/z2ui5_cl_demo_app_238.js",
+    "class": "z2ui5_cl_smp_app_238",
+    "path": "02/03/01/z2ui5_cl_smp_app_238.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_239",
-    "path": "01/08/00/z2ui5_cl_demo_app_239.js",
+    "class": "z2ui5_cl_smp_app_239",
+    "path": "02/03/01/z2ui5_cl_smp_app_239.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_240",
-    "path": "01/08/00/z2ui5_cl_demo_app_240.js",
+    "class": "z2ui5_cl_smp_app_240",
+    "path": "02/03/01/z2ui5_cl_smp_app_240.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_241",
-    "path": "01/08/00/z2ui5_cl_demo_app_241.js",
+    "class": "z2ui5_cl_smp_app_241",
+    "path": "02/03/01/z2ui5_cl_smp_app_241.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_243",
-    "path": "01/08/00/z2ui5_cl_demo_app_243.js",
+    "class": "z2ui5_cl_smp_app_243",
+    "path": "02/03/01/z2ui5_cl_smp_app_243.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_245",
-    "path": "01/08/00/z2ui5_cl_demo_app_245.js",
+    "class": "z2ui5_cl_smp_app_245",
+    "path": "02/03/01/z2ui5_cl_smp_app_245.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_246",
-    "path": "01/08/00/z2ui5_cl_demo_app_246.js",
+    "class": "z2ui5_cl_smp_app_246",
+    "path": "02/03/01/z2ui5_cl_smp_app_246.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_250",
-    "path": "01/08/00/z2ui5_cl_demo_app_250.js",
+    "class": "z2ui5_cl_smp_app_250",
+    "path": "02/03/01/z2ui5_cl_smp_app_250.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_251",
-    "path": "01/08/00/z2ui5_cl_demo_app_251.js",
+    "class": "z2ui5_cl_smp_app_251",
+    "path": "02/03/01/z2ui5_cl_smp_app_251.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_252",
-    "path": "01/08/00/z2ui5_cl_demo_app_252.js",
+    "class": "z2ui5_cl_smp_app_252",
+    "path": "02/03/01/z2ui5_cl_smp_app_252.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_257",
-    "path": "01/08/00/z2ui5_cl_demo_app_257.js",
+    "class": "z2ui5_cl_smp_app_257",
+    "path": "02/03/01/z2ui5_cl_smp_app_257.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_259",
-    "path": "01/08/00/z2ui5_cl_demo_app_259.js",
+    "class": "z2ui5_cl_smp_app_259",
+    "path": "02/03/01/z2ui5_cl_smp_app_259.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_261",
-    "path": "01/08/00/z2ui5_cl_demo_app_261.js",
+    "class": "z2ui5_cl_smp_app_261",
+    "path": "02/03/01/z2ui5_cl_smp_app_261.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_262",
-    "path": "01/08/00/z2ui5_cl_demo_app_262.js",
+    "class": "z2ui5_cl_smp_app_262",
+    "path": "02/03/01/z2ui5_cl_smp_app_262.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_263",
-    "path": "01/08/00/z2ui5_cl_demo_app_263.js",
+    "class": "z2ui5_cl_smp_app_263",
+    "path": "02/03/01/z2ui5_cl_smp_app_263.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_264",
-    "path": "01/08/00/z2ui5_cl_demo_app_264.js",
+    "class": "z2ui5_cl_smp_app_264",
+    "path": "02/03/01/z2ui5_cl_smp_app_264.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_266",
-    "path": "01/08/00/z2ui5_cl_demo_app_266.js",
+    "class": "z2ui5_cl_smp_app_266",
+    "path": "02/03/01/z2ui5_cl_smp_app_266.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_267",
-    "path": "01/08/00/z2ui5_cl_demo_app_267.js",
+    "class": "z2ui5_cl_smp_app_267",
+    "path": "02/03/01/z2ui5_cl_smp_app_267.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_271",
-    "path": "01/08/00/z2ui5_cl_demo_app_271.js",
+    "class": "z2ui5_cl_smp_app_271",
+    "path": "02/03/01/z2ui5_cl_smp_app_271.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_272",
-    "path": "01/08/00/z2ui5_cl_demo_app_272.js",
+    "class": "z2ui5_cl_smp_app_272",
+    "path": "02/03/01/z2ui5_cl_smp_app_272.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_273",
-    "path": "01/08/00/z2ui5_cl_demo_app_273.js",
+    "class": "z2ui5_cl_smp_app_273",
+    "path": "02/03/01/z2ui5_cl_smp_app_273.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_274",
-    "path": "01/08/00/z2ui5_cl_demo_app_274.js",
+    "class": "z2ui5_cl_smp_app_274",
+    "path": "02/03/01/z2ui5_cl_smp_app_274.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_275",
-    "path": "01/08/00/z2ui5_cl_demo_app_275.js",
+    "class": "z2ui5_cl_smp_app_275",
+    "path": "02/03/01/z2ui5_cl_smp_app_275.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_276",
-    "path": "01/08/00/z2ui5_cl_demo_app_276.js",
+    "class": "z2ui5_cl_smp_app_276",
+    "path": "02/03/01/z2ui5_cl_smp_app_276.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_278",
-    "path": "01/08/00/z2ui5_cl_demo_app_278.js",
+    "class": "z2ui5_cl_smp_app_278",
+    "path": "02/03/01/z2ui5_cl_smp_app_278.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_280",
-    "path": "01/08/00/z2ui5_cl_demo_app_280.js",
+    "class": "z2ui5_cl_smp_app_280",
+    "path": "02/03/01/z2ui5_cl_smp_app_280.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_281",
-    "path": "01/08/00/z2ui5_cl_demo_app_281.js",
+    "class": "z2ui5_cl_smp_app_281",
+    "path": "02/03/01/z2ui5_cl_smp_app_281.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_283",
-    "path": "01/08/00/z2ui5_cl_demo_app_283.js",
+    "class": "z2ui5_cl_smp_app_283",
+    "path": "02/03/01/z2ui5_cl_smp_app_283.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_287",
-    "path": "01/08/00/z2ui5_cl_demo_app_287.js",
+    "class": "z2ui5_cl_smp_app_287",
+    "path": "02/03/01/z2ui5_cl_smp_app_287.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_288",
-    "path": "01/08/00/z2ui5_cl_demo_app_288.js",
+    "class": "z2ui5_cl_smp_app_288",
+    "path": "02/03/01/z2ui5_cl_smp_app_288.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_289",
-    "path": "01/08/00/z2ui5_cl_demo_app_289.js",
+    "class": "z2ui5_cl_smp_app_289",
+    "path": "02/03/01/z2ui5_cl_smp_app_289.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_290",
-    "path": "01/08/00/z2ui5_cl_demo_app_290.js",
+    "class": "z2ui5_cl_smp_app_290",
+    "path": "02/03/01/z2ui5_cl_smp_app_290.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_291",
-    "path": "01/08/00/z2ui5_cl_demo_app_291.js",
+    "class": "z2ui5_cl_smp_app_291",
+    "path": "02/03/01/z2ui5_cl_smp_app_291.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_292",
-    "path": "01/08/00/z2ui5_cl_demo_app_292.js",
+    "class": "z2ui5_cl_smp_app_292",
+    "path": "02/03/01/z2ui5_cl_smp_app_292.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_293",
-    "path": "01/08/00/z2ui5_cl_demo_app_293.js",
+    "class": "z2ui5_cl_smp_app_293",
+    "path": "02/03/01/z2ui5_cl_smp_app_293.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_294",
-    "path": "01/08/00/z2ui5_cl_demo_app_294.js",
+    "class": "z2ui5_cl_smp_app_294",
+    "path": "02/03/01/z2ui5_cl_smp_app_294.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_295",
-    "path": "01/08/00/z2ui5_cl_demo_app_295.js",
+    "class": "z2ui5_cl_smp_app_295",
+    "path": "02/03/01/z2ui5_cl_smp_app_295.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_296",
-    "path": "01/08/00/z2ui5_cl_demo_app_296.js",
+    "class": "z2ui5_cl_smp_app_296",
+    "path": "02/03/01/z2ui5_cl_smp_app_296.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_297",
-    "path": "01/08/00/z2ui5_cl_demo_app_297.js",
+    "class": "z2ui5_cl_smp_app_297",
+    "path": "02/03/01/z2ui5_cl_smp_app_297.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_298",
-    "path": "01/08/00/z2ui5_cl_demo_app_298.js",
+    "class": "z2ui5_cl_smp_app_298",
+    "path": "02/03/01/z2ui5_cl_smp_app_298.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_299",
-    "path": "01/08/00/z2ui5_cl_demo_app_299.js",
+    "class": "z2ui5_cl_smp_app_299",
+    "path": "02/03/01/z2ui5_cl_smp_app_299.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_300",
-    "path": "01/08/00/z2ui5_cl_demo_app_300.js",
+    "class": "z2ui5_cl_smp_app_300",
+    "path": "02/03/01/z2ui5_cl_smp_app_300.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_302",
-    "path": "01/08/00/z2ui5_cl_demo_app_302.js",
+    "class": "z2ui5_cl_smp_app_302",
+    "path": "02/03/01/z2ui5_cl_smp_app_302.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_366",
-    "path": "01/08/00/z2ui5_cl_demo_app_366.js",
+    "class": "z2ui5_cl_smp_app_366",
+    "path": "02/03/01/z2ui5_cl_smp_app_366.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_368",
-    "path": "01/08/00/z2ui5_cl_demo_app_368.js",
+    "class": "z2ui5_cl_smp_app_368",
+    "path": "02/03/01/z2ui5_cl_smp_app_368.js",
     "todos": 3,
     "todoDetails": [
       "REDUCE #( ) not supported",
@@ -1118,178 +1154,174 @@
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_369",
-    "path": "01/08/00/z2ui5_cl_demo_app_369.js",
+    "class": "z2ui5_cl_smp_app_369",
+    "path": "02/03/01/z2ui5_cl_smp_app_369.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_371",
-    "path": "01/08/00/z2ui5_cl_demo_app_371.js",
+    "class": "z2ui5_cl_smp_app_371",
+    "path": "02/03/01/z2ui5_cl_smp_app_371.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_372",
-    "path": "01/08/00/z2ui5_cl_demo_app_372.js",
+    "class": "z2ui5_cl_smp_app_372",
+    "path": "02/03/01/z2ui5_cl_smp_app_372.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_374",
-    "path": "01/08/00/z2ui5_cl_demo_app_374.js",
+    "class": "z2ui5_cl_smp_app_374",
+    "path": "02/03/01/z2ui5_cl_smp_app_374.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_375",
-    "path": "01/08/00/z2ui5_cl_demo_app_375.js",
+    "class": "z2ui5_cl_smp_app_375",
+    "path": "02/03/01/z2ui5_cl_smp_app_375.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_376",
-    "path": "01/08/00/z2ui5_cl_demo_app_376.js",
+    "class": "z2ui5_cl_smp_app_376",
+    "path": "02/03/01/z2ui5_cl_smp_app_376.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_377",
-    "path": "01/08/00/z2ui5_cl_demo_app_377.js",
+    "class": "z2ui5_cl_smp_app_377",
+    "path": "02/03/01/z2ui5_cl_smp_app_377.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_378",
-    "path": "01/08/00/z2ui5_cl_demo_app_378.js",
+    "class": "z2ui5_cl_smp_app_378",
+    "path": "02/03/01/z2ui5_cl_smp_app_378.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_379",
-    "path": "01/08/00/z2ui5_cl_demo_app_379.js",
+    "class": "z2ui5_cl_smp_app_379",
+    "path": "02/03/01/z2ui5_cl_smp_app_379.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_smp_app_005",
-    "path": "01/08/00/z2ui5_cl_smp_app_005.js",
+    "class": "z2ui5_cl_smp_app_017",
+    "path": "02/03/02/z2ui5_cl_smp_app_017.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_017",
-    "path": "01/08/01/z2ui5_cl_demo_app_017.js",
+    "class": "z2ui5_cl_smp_app_303",
+    "path": "02/03/02/z2ui5_cl_smp_app_303.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_303",
-    "path": "01/08/01/z2ui5_cl_demo_app_303.js",
+    "class": "z2ui5_cl_smp_app_330",
+    "path": "02/03/02/z2ui5_cl_smp_app_330.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_330",
-    "path": "01/08/01/z2ui5_cl_demo_app_330.js",
+    "class": "z2ui5_cl_smp_app_030",
+    "path": "02/03/03/z2ui5_cl_smp_app_030.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_030",
-    "path": "01/08/02/z2ui5_cl_demo_app_030.js",
+    "class": "z2ui5_cl_smp_app_181",
+    "path": "02/03/03/z2ui5_cl_smp_app_181.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_181",
-    "path": "01/08/02/z2ui5_cl_demo_app_181.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_307",
-    "path": "01/08/02/z2ui5_cl_demo_app_307.js",
+    "class": "z2ui5_cl_smp_app_307",
+    "path": "02/03/03/z2ui5_cl_smp_app_307.js",
     "todos": 1,
     "todoDetails": [
       "unsupported statement: DELETE items INDEX drag_position."
     ]
   },
   {
-    "class": "z2ui5_cl_demo_app_242",
-    "path": "01/08/03/z2ui5_cl_demo_app_242.js",
+    "class": "z2ui5_cl_smp_app_242",
+    "path": "02/03/04/z2ui5_cl_smp_app_242.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_282",
-    "path": "01/08/03/z2ui5_cl_demo_app_282.js",
+    "class": "z2ui5_cl_smp_app_282",
+    "path": "02/03/04/z2ui5_cl_smp_app_282.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_103",
-    "path": "01/08/04/z2ui5_cl_demo_app_103.js",
+    "class": "z2ui5_cl_smp_app_103",
+    "path": "02/03/05/z2ui5_cl_smp_app_103.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
+  },
+  {
+    "class": "z2ui5_cl_smp_app_247",
+    "path": "02/03/05/z2ui5_cl_smp_app_247.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_247",
-    "path": "01/08/04/z2ui5_cl_demo_app_247.js",
+    "class": "z2ui5_cl_smp_app_248",
+    "path": "02/03/05/z2ui5_cl_smp_app_248.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_248",
-    "path": "01/08/04/z2ui5_cl_demo_app_248.js",
+    "class": "z2ui5_cl_smp_app_249",
+    "path": "02/03/05/z2ui5_cl_smp_app_249.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_249",
-    "path": "01/08/04/z2ui5_cl_demo_app_249.js",
+    "class": "z2ui5_cl_smp_app_260",
+    "path": "02/03/05/z2ui5_cl_smp_app_260.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_260",
-    "path": "01/08/04/z2ui5_cl_demo_app_260.js",
+    "class": "z2ui5_cl_smp_app_367",
+    "path": "02/03/05/z2ui5_cl_smp_app_367.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_367",
-    "path": "01/08/04/z2ui5_cl_demo_app_367.js",
+    "class": "z2ui5_cl_smp_app_209",
+    "path": "02/03/06/z2ui5_cl_smp_app_209.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_209",
-    "path": "01/08/05/z2ui5_cl_demo_app_209.js",
+    "class": "z2ui5_cl_smp_app_258",
+    "path": "02/03/06/z2ui5_cl_smp_app_258.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_258",
-    "path": "01/08/05/z2ui5_cl_demo_app_258.js",
+    "class": "z2ui5_cl_smp_app_265",
+    "path": "02/03/07/z2ui5_cl_smp_app_265.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_265",
-    "path": "01/08/06/z2ui5_cl_demo_app_265.js",
+    "class": "z2ui5_cl_smp_app_270",
+    "path": "02/03/08/z2ui5_cl_smp_app_270.js",
     "todos": 0,
     "todoDetails": []
   },
   {
-    "class": "z2ui5_cl_demo_app_270",
-    "path": "01/08/07/z2ui5_cl_demo_app_270.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
-    "class": "z2ui5_cl_demo_app_g00",
-    "path": "01/z2ui5_cl_demo_app_g00.js",
+    "class": "z2ui5_cl_smp_app_000",
+    "path": "02/z2ui5_cl_smp_app_000.js",
     "todos": 2,
     "todoDetails": [
       "unsupported statement: DELETE words INDEX n.",
@@ -1297,9 +1329,9 @@
     ]
   },
   {
-    "class": "z2ui5_cl_sample_context",
-    "path": "01/z2ui5_cl_sample_context.js",
-    "todos": 38,
+    "class": "z2ui5_cl_smp_context",
+    "path": "02/z2ui5_cl_smp_context.js",
+    "todos": 39,
     "todoDetails": [
       "builtin shift_left( ) not mapped",
       "builtin shift_left( ) not mapped",
@@ -1338,13 +1370,16 @@
       "CREATE DATA: CREATE DATA lr_ddfields TYPE (workaround).",
       "unsupported statement: MESSAGE ID ls_result-id TYPE `I` NUMBER ls_result-no WITH ls_result-v1 ls_result-v2 ls_result-v3 ls_result-v4 INTO ls_re",
       "CREATE DATA: CREATE DATA lr_tab TYPE (`if_bali_log=>ty_item_table`).",
-      "CREATE DATA: CREATE DATA lr_tab TYPE (`BAPIRETTAB`)."
+      "CREATE DATA: CREATE DATA lr_tab TYPE (`BAPIRETTAB`).",
+      "unresolved class reference: z2ui5_cx_smp_error"
     ]
   },
   {
-    "class": "z2ui5_cx_sample_error",
-    "path": "01/z2ui5_cx_sample_error.js",
-    "todos": 0,
-    "todoDetails": []
+    "class": "z2ui5_cx_smp_error",
+    "path": "02/z2ui5_cx_smp_error.js",
+    "todos": 1,
+    "todoDetails": [
+      "unresolved class reference: z2ui5_cl_smp_context"
+    ]
   }
 ]
