@@ -44,6 +44,44 @@ INTERFACE z2ui5_if_client
       store_data                TYPE string VALUE `STORE_DATA`,
       play_audio                TYPE string VALUE `PLAY_AUDIO`,
 
+      "! Enable hash-based app routing for this app (UI5 Router style):
+      "! follow_up_action( val = cs_event-set_nav_routing t_arg = ( mode ) ).
+      "! Once enabled, the URL hash mirrors the running app as a bookmarkable
+      "! route, and the browser Back/Forward buttons navigate between apps via
+      "! that hash. A forward navigation to another app (nav_app_call) pushes a
+      "! new route history entry, so Back returns to the calling app - the
+      "! routing equivalent of a UI5 navTo.
+      "!
+      "! Queue it ONCE, in check_on_init - the way a UI5 app configures routing
+      "! once in its manifest. The mode is remembered on the app (it travels in
+      "! the draft) and re-sent whenever the frontend may not still hold it -
+      "! page load, Back/Forward restore, a navigation hop, a mode change - so
+      "! it does not have to be re-asserted; an app called via nav_app_call inherits
+      "! it, and an app the user navigates back to keeps its own mode even when
+      "! the app in between ran with a different one.
+      "!
+      "! Works inside the SAP Fiori Launchpad as well: the route is written as
+      "! the app (inner) hash behind the shell hash, so the FLP back button
+      "! returns to the previous app instead of the launchpad home page.
+      "!
+      "! The mode (see cs_nav_mode) decides what Back/Forward/reload/bookmark
+      "! restore: keep restores the exact preserved state via a draft id in the
+      "! route '#/app/&lt;CLASS&gt;/&lt;DRAFT&gt;'; fresh routes by class only
+      "! '#/app/&lt;CLASS&gt;' and always starts the app fresh; default disables
+      "! routing. An empty t_arg means keep.
+      set_nav_routing           TYPE string VALUE `SET_NAV_ROUTING`,
+
+      "! Push an app-owned hash suffix onto the browser URL:
+      "! follow_up_action( val = cs_event-set_push_state t_arg = ( suffix ) ).
+      "! client->set_push_state( ) is the same call.
+      set_push_state            TYPE string VALUE `SET_PUSH_STATE`,
+
+      "! Carry the app-state id in the URL so the state can be bookmarked and
+      "! restored: follow_up_action( cs_event-set_app_state_active ). An empty
+      "! t_arg switches it on; pass a single space to switch it off again.
+      "! client->set_app_state_active( ) is the same call.
+      set_app_state_active      TYPE string VALUE `SET_APP_STATE_ACTIVE`,
+
       "Control
       control_by_id             TYPE string VALUE `CONTROL_BY_ID`,
       control_global            TYPE string VALUE `CONTROL_GLOBAL`,
@@ -52,7 +90,9 @@ INTERFACE z2ui5_if_client
       smart_variant_init        TYPE string VALUE `SMART_VARIANT_INIT`,
       filter_bar_variant_init   TYPE string VALUE `FILTER_BAR_VARIANT_INIT`,
 
-      "obsolete?
+      " legacy event names - still supported: the *nav_container_to variants
+      " are remapped to the generic control_by_id call (z2ui5_cl_core_srv_event),
+      " the others have dedicated frontend handlers
       image_editor_popup_close  TYPE string VALUE `IMAGE_EDITOR_POPUP_CLOSE`,
       nav_container_to          TYPE string VALUE `NAV_CONTAINER_TO`,
       nest_nav_container_to     TYPE string VALUE `NEST_NAV_CONTAINER_TO`,
@@ -91,6 +131,9 @@ INTERFACE z2ui5_if_client
 
   METHODS view_destroy.
 
+  "! Display the MAIN view. A new main view is a new screen, so an open
+  "! popup and popover go with it - re-open one in the same roundtrip if it
+  "! is meant to survive ( the frontend builds MAIN first, then the popup ).
   METHODS view_display
     IMPORTING
       val                           TYPE clike
@@ -118,42 +161,6 @@ INTERFACE z2ui5_if_client
     IMPORTING
       val TYPE string OPTIONAL.
 
-  METHODS set_nav_back
-    IMPORTING
-      val TYPE abap_bool DEFAULT abap_true.
-
-  "! Enable hash-based app routing for this app (UI5 Router style). Once
-  "! enabled, the URL hash mirrors the running app as a bookmarkable route, and
-  "! the browser Back/Forward buttons navigate between apps via that hash. A
-  "! forward navigation to another app (client->nav_app_call) pushes a new route
-  "! history entry, so the browser Back button returns to the calling app - the
-  "! routing equivalent of a UI5 navTo.
-  "!
-  "! Call it ONCE, in check_on_init - the way a UI5 app configures routing once
-  "! in its manifest. The mode is remembered on the app (it travels in the
-  "! draft) and re-sent with every response, so it does not have to be
-  "! re-asserted on every render; an app called via nav_app_call inherits it,
-  "! and an app the user navigates back to keeps its own mode even when the app
-  "! in between ran with a different one.
-  "!
-  "! Works inside the SAP Fiori Launchpad as well: the route is written as the
-  "! app (inner) hash behind the shell hash, so the FLP back button returns to
-  "! the previous app instead of the launchpad home page, and the shell hash
-  "! survives every hash update.
-  "!
-  "! The mode (see cs_nav_mode) decides what Back/Forward/reload/bookmark
-  "! restore: keep (default) restores the exact preserved state via a draft id
-  "! in the route '#/app/&lt;CLASS&gt;/&lt;DRAFT&gt;'; fresh routes by class only
-  "! '#/app/&lt;CLASS&gt;' and always starts the app fresh; default disables routing
-  "! (framework behavior as before this feature).
-  "!
-  "! In keep mode the calling app's route entry is advanced to the draft saved
-  "! for it during the nav_app_call, so Back restores it as the user LEFT it -
-  "! including everything two-way bound that changed on the client since it
-  "! last rendered and travelled to the backend with the triggering event.
-  METHODS set_nav_routing
-    IMPORTING
-      mode TYPE string DEFAULT cs_nav_mode-keep.
 
   METHODS nest_view_display
     IMPORTING
@@ -203,6 +210,13 @@ INTERFACE z2ui5_if_client
   METHODS get
     RETURNING
       VALUE(result) TYPE z2ui5_if_types=>ty_s_get.
+
+  "! The name of the event that triggered this roundtrip - empty when no
+  "! event is being handled (e.g. on the initial call). Shortcut for
+  "! get( )-event, made for the dispatcher idiom CASE client->get_event( ).
+  METHODS get_event
+    RETURNING
+      VALUE(result) TYPE string.
 
   METHODS get_event_arg
     IMPORTING
@@ -291,6 +305,23 @@ INTERFACE z2ui5_if_client
     RETURNING
       VALUE(result) TYPE string.
 
+  "! obsolete - use follow_up_action( ), which is the same call in the same
+  "! position now. Since follow_up_action( ) has a RETURNING parameter, a call
+  "! whose result is CONSUMED - the view-attribute form
+  "! `v = client->follow_up_action( val = ... t_arg = ... )` - takes its
+  "! IF result IS SUPPLIED branch straight to get_event_client( ), which is
+  "! this method's entire body: the identical roundtrip-free wire, byte for
+  "! byte. One method therefore both schedules a frontend action and wires
+  "! one, and this one is a second name for half of it.
+  "!
+  "! The one difference is follow_up_action( )'s leading CASE, which claims
+  "! cs_event-set_nav_routing / set_push_state / set_app_state_active before
+  "! that branch. Those three are backend-side navigation options rather than
+  "! frontend handlers, so wiring one into a view attribute never dispatched
+  "! anything here either.
+  "!
+  "! It stays in the interface so existing apps keep compiling - rename the
+  "! calls at your leisure.
   METHODS _event_client
     IMPORTING
       val           TYPE clike
@@ -458,8 +489,11 @@ INTERFACE z2ui5_if_client
   "! t_arg = id, aggregation, method, params. method `filter`: params = path,
   "! operator, value1, value2 (empty values clear the filter); method `sort`:
   "! params = path, descending, group (abap_bool as `X`/``).
-  "! Each of these events also works roundtrip-free when wired in the view via
-  "! _event_client with the same t_arg (and view).
+  "! Each of these events also works roundtrip-free when WIRED IN THE VIEW:
+  "! write the same call where its result is consumed
+  "! (`)->a( n = `press` v = client->follow_up_action( val = ... t_arg = ... ) )`)
+  "! and the action runs in the browser without a server call. That is what
+  "! the obsolete _event_client( ) did, and the only thing it did.
   METHODS follow_up_action
     IMPORTING
       val           TYPE string

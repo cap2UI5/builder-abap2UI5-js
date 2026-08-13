@@ -42,44 +42,8 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `    // used to resolve controls by their id instead of by content position.` && |\n| &&
              `    const FRAGMENT_ID = "z2ui5DeveloperTools";` && |\n| &&
              `` && |\n| &&
-             `    // toJson() pretty-prints with this many spaces per nesting level, so a` && |\n| &&
-             `    // line's leading-space count divided by it gives that line's JSON depth.` && |\n| &&
+             `    // toJson() pretty-prints with this many spaces per nesting level.` && |\n| &&
              `    const INDENT_UNIT = 3;` && |\n| &&
-             `` && |\n| &&
-             `    // The System tab shows the whole (deeply nested) z2ui5 global; open only` && |\n| &&
-             `    // the first two levels so it is readable - the rest can be unfolded by` && |\n| &&
-             `    // hand in the editor.` && |\n| &&
-             `    const SYSTEM_OPEN_LEVELS = 2;` && |\n| &&
-             `` && |\n| &&
-             `    // Leading-space matcher, hoisted so the per-line fold loop below does not` && |\n| &&
-             `    // recompile it on every row of a large JSON dump.` && |\n| &&
-             `    const LEADING_SPACES = /^ */;` && |\n| &&
-             `` && |\n| &&
-             `    // JSON nesting depth of a pretty-printed line, read from its indentation.` && |\n| &&
-             `    function indentLevel(line, unit) {` && |\n| &&
-             `      return Math.floor(LEADING_SPACES.exec(line)[0].length / unit);` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
-             `    // Fold every foldable block in the ACE edit session that sits at or below` && |\n| &&
-             `    // ``keepLevels`` nesting levels, leaving the outer levels open. Uses only the` && |\n| &&
-             `    // public EditSession folding API (unfold / getFoldWidget /` && |\n| &&
-             `    // getFoldWidgetRange / addFold), so it works with any CodeEditor build; a` && |\n| &&
-             `    // block's depth is read from its line indentation. Skipping to the folded` && |\n| &&
-             `    // block's end row keeps us from descending into (already hidden) children.` && |\n| &&
-             `    function foldSessionToLevel(session, keepLevels, unit) {` && |\n| &&
-             `      session.unfold();` && |\n| &&
-             `      const rowCount = session.getLength();` && |\n| &&
-             `      for (let row = 0; row < rowCount; row++) {` && |\n| &&
-             `        if (session.getFoldWidget(row) !== "start") continue;` && |\n| &&
-             `        if (indentLevel(session.getLine(row) || "", unit) < keepLevels)` && |\n| &&
-             `          continue;` && |\n| &&
-             `        const range = session.getFoldWidgetRange(row);` && |\n| &&
-             `        if (range && range.isMultiLine()) {` && |\n| &&
-             `          session.addFold("...", range);` && |\n| &&
-             `          row = range.end.row;` && |\n| &&
-             `        }` && |\n| &&
-             `      }` && |\n| &&
-             `    }` && |\n| &&
              `` && |\n| &&
              `    // Pretty-print any value (object, array, primitive) as indented JSON.` && |\n| &&
              `    // ``null`` is used as a fallback so undefined values still produce output.` && |\n| &&
@@ -156,6 +120,14 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `      return model?.getData();` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
+             `    // A model tab is only worth opening when the slot's model carries DATA -` && |\n| &&
+             `    // an app without bound attributes serves an empty object, and a greyed` && |\n| &&
+             `    // tab says "nothing here" more clearly than rendering {}.` && |\n| &&
+             `    function hasModelData(oView) {` && |\n| &&
+             `      const data = getModelJson(oView);` && |\n| &&
+             `      return Boolean(data) && Object.keys(data).length > 0;` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
              `    function getViewContent(view) {` && |\n| &&
              `      // Private member access (developer tools only): XMLView keeps the raw XML` && |\n| &&
              `      // string as a pseudo property in mProperties, but does not declare it` && |\n| &&
@@ -188,10 +160,23 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `      return err.title ? ``${err.title}\n\n${err.text}`` : err.text;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function getResponseXml(key) {` && |\n| &&
-             `      const params = AppState.state.oResponse?.PARAMS;` && |\n| &&
-             `      const slot = params?.[key];` && |\n| &&
-             `      return slot?.XML;` && |\n| &&
+             `    // The view XML a slot currently holds: the live view's own viewContent` && |\n| &&
+             `    // when UI5 kept it, else the source ViewSlots recorded when the slot was` && |\n| &&
+             `    // filled (a fragment or a ``definition``-built view keeps none).` && |\n| &&
+             `    //` && |\n| &&
+             `    // Read from the SLOT, never from the last response: a slot lives and dies` && |\n| &&
+             `    // by ViewSlots.setView/destroy, and both ways of tearing one down end up` && |\n| &&
+             `    // there - the backend's ["VIEW_SLOTS","destroy",...] action and the` && |\n| &&
+             `    // roundtrip-free frontend close (cs_event-popup_close / popover_close,` && |\n| &&
+             `    // which the backend formats as that very same action). Scraping the last` && |\n| &&
+             `    // response's display action instead made the frontend close look like a` && |\n| &&
+             `    // popup that was still open: no roundtrip happens, so the response that` && |\n| &&
+             `    // opened it stayed the current one.` && |\n| &&
+             `    function getSlotXml(slotKey) {` && |\n| &&
+             `      return (` && |\n| &&
+             `        getViewContent(ViewSlots.getView(slotKey)) ||` && |\n| &&
+             `        ViewSlots.getViewXml(slotKey)` && |\n| &&
+             `      );` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    // Preload the sap.ui.codeeditor modules used by the fragment. On older` && |\n| &&
@@ -212,41 +197,33 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `      });` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    // What each dropdown entry shows: either a JSON source or an XML source` && |\n| &&
+             `    // What each tab shows: either a JSON source or an XML source` && |\n| &&
              `    // (the latter optionally with the rendered DOM for the templating` && |\n| &&
              `    // toggle). The "SOURCE" entry is handled separately in onItemSelect.` && |\n| &&
              `    const jsonSources = {` && |\n| &&
-             `      // The whole public z2ui5 global facade (oConfig, url, checkLocal,` && |\n| &&
-             `      // Util, app-registered members, ...). Read directly here on purpose:` && |\n| &&
-             `      // this is the developer tools inspector, whose job is to surface the live global` && |\n| &&
-             `      // as-is - functions drop out under JSON.stringify, which is fine.` && |\n| &&
-             `      // ui5lint-disable-next-line no-project-globals -- see reason above` && |\n| &&
-             `      SYSTEM: () => window.z2ui5,` && |\n| &&
              `      MODEL: () => getModelJson(ViewSlots.getView("MAIN")),` && |\n| &&
              `      PLAIN: () => AppState.state.responseData,` && |\n| &&
              `      REQUEST: () => AppState.state.oBody,` && |\n| &&
              `      POPUP_MODEL: () => getModelJson(ViewSlots.getView("POPUP")),` && |\n| &&
              `      POPOVER_MODEL: () => getModelJson(ViewSlots.getView("POPOVER")),` && |\n| &&
-             `      NEST1_MODEL: () => getModelJson(ViewSlots.getView("NEST")),` && |\n| &&
-             `      NEST2_MODEL: () => getModelJson(ViewSlots.getView("NEST2")),` && |\n| &&
+             `      // no NEST/NEST2 model sources: the nested views inherit the MAIN` && |\n| &&
+             `      // view's model by UI5 propagation - it would be the same data as` && |\n| &&
+             `      // MODEL, shown twice` && |\n| &&
              `    };` && |\n| &&
              `` && |\n| &&
              `    const xmlSources = {` && |\n| &&
-             `      // Prefer the actual viewContent string; fall back to the XML that` && |\n| &&
-             `      // arrived in the last server response.` && |\n| &&
              `      VIEW: () => ({` && |\n| &&
-             `        xml:` && |\n| &&
-             `          getViewContent(ViewSlots.getView("MAIN")) || getResponseXml("S_VIEW"),` && |\n| &&
+             `        xml: getSlotXml("MAIN"),` && |\n| &&
              `        rendered: getRenderedContent(ViewSlots.getView("MAIN")),` && |\n| &&
              `      }),` && |\n| &&
-             `      POPUP: () => ({ xml: getResponseXml("S_POPUP") }),` && |\n| &&
-             `      POPOVER: () => ({ xml: getResponseXml("S_POPOVER") }),` && |\n| &&
+             `      POPUP: () => ({ xml: getSlotXml("POPUP") }),` && |\n| &&
+             `      POPOVER: () => ({ xml: getSlotXml("POPOVER") }),` && |\n| &&
              `      NEST1: () => ({` && |\n| &&
-             `        xml: getViewContent(ViewSlots.getView("NEST")),` && |\n| &&
+             `        xml: getSlotXml("NEST"),` && |\n| &&
              `        rendered: getRenderedContent(ViewSlots.getView("NEST")),` && |\n| &&
              `      }),` && |\n| &&
              `      NEST2: () => ({` && |\n| &&
-             `        xml: getViewContent(ViewSlots.getView("NEST2")),` && |\n| &&
+             `        xml: getSlotXml("NEST2"),` && |\n| &&
              `        rendered: getRenderedContent(ViewSlots.getView("NEST2")),` && |\n| &&
              `      }),` && |\n| &&
              `    };` && |\n| &&
@@ -292,7 +269,6 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `      renderTab(selItem, oModel) {` && |\n| &&
              `        if (jsonSources[selItem]) {` && |\n| &&
              `          this.displayEditor(oModel, toJson(jsonSources[selItem]()), "json");` && |\n| &&
-             `          if (selItem === "SYSTEM") this.foldSystemTab();` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&
              `` && |\n| &&
@@ -353,13 +329,13 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `      // blob so it can be copied elsewhere in one go. XML tabs are` && |\n| &&
              `      // pretty-printed, JSON tabs serialized; empty / inactive sections are` && |\n| &&
              `      // skipped. Every source is guarded (a throwing one can never blank the` && |\n| &&
-             `      // whole export) and each section is capped, because the SYSTEM global can` && |\n| &&
-             `      // serialize to several MB - a value that large blanks a sap.m.TextArea.` && |\n| &&
+             `      // whole export) and each section is capped - a value that large blanks` && |\n| &&
+             `      // a sap.m.TextArea.` && |\n| &&
              `      // ``abapSource`` is the running app's ABAP class source, fetched` && |\n| &&
              `      // asynchronously by onExport (empty when it could not be retrieved).` && |\n| &&
              `      buildExport(abapSource) {` && |\n| &&
-             `        // Max characters per section; long ones (mainly SYSTEM) are truncated` && |\n| &&
-             `        // so the popup's TextArea still renders.` && |\n| &&
+             `        // Max characters per section; long ones are truncated so the` && |\n| &&
+             `        // popup's TextArea still renders.` && |\n| &&
              `        const MAX_SECTION = 100000;` && |\n| &&
              `        const sections = [];` && |\n| &&
              `        const push = (title, content) => {` && |\n| &&
@@ -415,21 +391,19 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `          "VIEW MODEL",` && |\n| &&
              `          json(() => jsonSources.MODEL()),` && |\n| &&
              `        );` && |\n| &&
-             `        // gate on the live slot too - the response only carries the XML in` && |\n| &&
-             `        // the roundtrip that opened the popup/popover, but the live model is` && |\n| &&
-             `        // exportable for as long as one is open` && |\n| &&
-             `        if (getResponseXml("S_POPUP") || ViewSlots.getView("POPUP")) {` && |\n| &&
+             `        // one gate for both slots and both close paths: the slot holds an` && |\n| &&
+             `        // XML for exactly as long as it is filled` && |\n| &&
+             `        if (getSlotXml("POPUP")) {` && |\n| &&
              `          push(` && |\n| &&
              `            "POPUP",` && |\n| &&
              `            xml(() => xmlSources.POPUP().xml),` && |\n| &&
              `          );` && |\n| &&
              `          push(` && |\n| &&
-             `            "POPUP MODEL",` && |\n|.
-    result = result &&
+             `            "POPUP MODEL",` && |\n| &&
              `            json(() => jsonSources.POPUP_MODEL()),` && |\n| &&
              `          );` && |\n| &&
              `        }` && |\n| &&
-             `        if (getResponseXml("S_POPOVER") || ViewSlots.getView("POPOVER")) {` && |\n| &&
+             `        if (getSlotXml("POPOVER")) {` && |\n| &&
              `          push(` && |\n| &&
              `            "POPOVER",` && |\n| &&
              `            xml(() => xmlSources.POPOVER().xml),` && |\n| &&
@@ -439,33 +413,21 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `            json(() => jsonSources.POPOVER_MODEL()),` && |\n| &&
              `          );` && |\n| &&
              `        }` && |\n| &&
-             `        if (getViewContent(ViewSlots.getView("NEST"))) {` && |\n| &&
+             `        // the nested views carry no model tab of their own - they inherit` && |\n| &&
+             `        // the MAIN view's model by propagation, so only the XML is shown` && |\n| &&
+             `        if (getSlotXml("NEST")) {` && |\n| &&
              `          push(` && |\n| &&
              `            "NEST1",` && |\n| &&
              `            xml(() => xmlSources.NEST1().xml),` && |\n| &&
              `          );` && |\n| &&
-             `          push(` && |\n| &&
-             `            "NEST1 MODEL",` && |\n| &&
-             `            json(() => jsonSources.NEST1_MODEL()),` && |\n| &&
-             `          );` && |\n| &&
              `        }` && |\n| &&
-             `        if (getViewContent(ViewSlots.getView("NEST2"))) {` && |\n| &&
+             `        if (getSlotXml("NEST2")) {` && |\n| &&
              `          push(` && |\n| &&
              `            "NEST2",` && |\n| &&
-             `            xml(() => xmlSources.NEST2().xml),` && |\n| &&
-             `          );` && |\n| &&
-             `          push(` && |\n| &&
-             `            "NEST2 MODEL",` && |\n| &&
-             `            json(() => jsonSources.NEST2_MODEL()),` && |\n| &&
+             `            xml(() => xmlSources.NEST2().xml),` && |\n|.
+    result = result &&
              `          );` && |\n| &&
              `        }` && |\n| &&
-             `        // SYSTEM (the whole z2ui5 global) is the largest by far - keep it last` && |\n| &&
-             `        // so the useful sections come first even after truncation.` && |\n| &&
-             `        push(` && |\n| &&
-             `          "SYSTEM",` && |\n| &&
-             `          json(() => jsonSources.SYSTEM()),` && |\n| &&
-             `        );` && |\n| &&
-             `` && |\n| &&
              `        return sections.join("\n\n") || "(nothing to export)";` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
@@ -552,45 +514,6 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `            dialog.open();` && |\n| &&
              `          },` && |\n| &&
              `        );` && |\n| &&
-             `      },` && |\n| &&
-             `` && |\n| &&
-             `      // The CodeEditor's underlying ACE editor, or null if it does not exist` && |\n| &&
-             `      // yet (created on the CodeEditor's first render) or the build exposes no` && |\n| &&
-             `      // internal instance.` && |\n| &&
-             `      getEditorInstance() {` && |\n| &&
-             `        const ce = Fragment.byId(FRAGMENT_ID, "developerToolsEditor");` && |\n| &&
-             `        return ce && typeof ce.getInternalEditorInstance === "function"` && |\n| &&
-             `          ? ce.getInternalEditorInstance()` && |\n| &&
-             `          : null;` && |\n| &&
-             `      },` && |\n| &&
-             `` && |\n| &&
-             `      // Fold the System tab's JSON down to the first SYSTEM_OPEN_LEVELS levels.` && |\n| &&
-             `      // The ACE editor is created lazily on the CodeEditor's first render, so` && |\n| &&
-             `      // on the very first open we retry briefly until it exists. Best-effort:` && |\n| &&
-             `      // any failure leaves the tab fully expanded rather than breaking the` && |\n| &&
-             `      // developer tools.` && |\n| &&
-             `      foldSystemTab(triesLeft = 10) {` && |\n| &&
-             `        let editor;` && |\n| &&
-             `        try {` && |\n| &&
-             `          editor = this.getEditorInstance();` && |\n| &&
-             `        } catch (e) {` && |\n| &&
-             `          Lib.logError("DeveloperTools System fold failed", e);` && |\n| &&
-             `          return;` && |\n| &&
-             `        }` && |\n| &&
-             `        if (editor) {` && |\n| &&
-             `          try {` && |\n| &&
-             `            const session = editor.getSession && editor.getSession();` && |\n| &&
-             `            if (session && typeof session.getFoldWidget === "function") {` && |\n| &&
-             `              foldSessionToLevel(session, SYSTEM_OPEN_LEVELS, INDENT_UNIT);` && |\n| &&
-             `            }` && |\n| &&
-             `          } catch (e) {` && |\n| &&
-             `            Lib.logError("DeveloperTools System fold failed", e);` && |\n| &&
-             `          }` && |\n| &&
-             `          return;` && |\n| &&
-             `        }` && |\n| &&
-             `        if (triesLeft > 0) {` && |\n| &&
-             `          setTimeout(() => this.foldSystemTab(triesLeft - 1), 30);` && |\n| &&
-             `        }` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
              `      // The ADT REST endpoint that renders the running app's ABAP class` && |\n| &&
@@ -714,23 +637,24 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `            source_visible: false,` && |\n| &&
              `            editor_visible: true,` && |\n| &&
              `            hasError: Boolean(AppState.state.lastError),` && |\n| &&
+             `            hasLog: Boolean(AppState.state.errors?.length),` && |\n| &&
              `            hasRetry: typeof AppState.state.lastError?.onRetry === "function",` && |\n| &&
              `            value: value,` && |\n| &&
              `            xContent: "",` && |\n| &&
              `            previousValue: value,` && |\n| &&
              `            isTemplating: false,` && |\n| &&
              `            templatingSource: false,` && |\n| &&
-             `            activeNest1: Boolean(getViewContent(ViewSlots.getView("NEST"))),` && |\n| &&
-             `            activeNest2: Boolean(getViewContent(ViewSlots.getView("NEST2"))),` && |\n| &&
-             `            // The response only carries the fragment XML in the roundtrip` && |\n| &&
-             `            // that opened the popup/popover - also check the live slot so` && |\n| &&
-             `            // the tabs stay usable while one is open after later roundtrips.` && |\n| &&
-             `            activePopup: Boolean(` && |\n| &&
-             `              getResponseXml("S_POPUP") || ViewSlots.getView("POPUP"),` && |\n| &&
-             `            ),` && |\n| &&
-             `            activePopover: Boolean(` && |\n| &&
-             `              getResponseXml("S_POPOVER") || ViewSlots.getView("POPOVER"),` && |\n| &&
-             `            ),` && |\n| &&
+             `            activeNest1: Boolean(getSlotXml("NEST")),` && |\n| &&
+             `            activeNest2: Boolean(getSlotXml("NEST2")),` && |\n| &&
+             `            // Filled for as long as the slot is - the tabs appear with the` && |\n| &&
+             `            // popup/popover and go with it, whether the backend tore it down` && |\n| &&
+             `            // or the app closed it in the browser without a roundtrip.` && |\n| &&
+             `            activePopup: Boolean(getSlotXml("POPUP")),` && |\n| &&
+             `            activePopover: Boolean(getSlotXml("POPOVER")),` && |\n| &&
+             `            // the model tabs grey out when the slot's model holds no data` && |\n| &&
+             `            hasViewModel: hasModelData(ViewSlots.getView("MAIN")),` && |\n| &&
+             `            hasPopupModel: hasModelData(ViewSlots.getView("POPUP")),` && |\n| &&
+             `            hasPopoverModel: hasModelData(ViewSlots.getView("POPOVER")),` && |\n| &&
              `          };` && |\n| &&
              `` && |\n| &&
              `          const oModel = new JSONModel(oData);` && |\n| &&
@@ -739,7 +663,7 @@ CLASS z2ui5_cl_app_developertools_js IMPLEMENTATION.
              `          // Render the requested tab's content (the default "PLAIN" already` && |\n| &&
              `          // matches the JSON response seeded above, so only re-render when a` && |\n| &&
              `          // specific tab was asked for).` && |\n| &&
-             `          if (initialTab && selectedTab !== "PLAIN") {` && |\n| &&
+             `          if (selectedTab !== "PLAIN") {` && |\n| &&
              `            this.renderTab(selectedTab, oModel);` && |\n| &&
              `          }` && |\n| &&
              `          oDialog.open();` && |\n| &&

@@ -36,8 +36,8 @@ CLASS z2ui5_cl_app_viewslots_js IMPLEMENTATION.
              `  (Fragment, Lib, AppState) => {` && |\n| &&
              `    "use strict";` && |\n| &&
              `` && |\n| &&
-             `    // ``key``    short slot name used in frontend events and S_FRONT.VIEW` && |\n| &&
-             `    // ``param``  key of the slot in the backend response PARAMS` && |\n| &&
+             `    // ``key``    short slot name used in frontend event args and as the` && |\n| &&
+             `    //           request's S_SCROLL keys` && |\n| &&
              `    // ``prop`` / ``controllerProp``  AppState fields holding the live instances` && |\n| &&
              `    // ``fragmentId``  only on the fragment-based slots (popup/popover): the` && |\n| &&
              `    //               id their inner controls are registered under, and the` && |\n| &&
@@ -45,32 +45,39 @@ CLASS z2ui5_cl_app_viewslots_js IMPLEMENTATION.
              `    const slots = [` && |\n| &&
              `      {` && |\n| &&
              `        key: "MAIN",` && |\n| &&
-             `        param: "S_VIEW",` && |\n| &&
+             `        // holds its own JSON model - NEST/NEST2 are inserted into` && |\n| &&
+             `        // the MAIN control tree and inherit theirs by UI5 propagation` && |\n| &&
+             `        ownsModel: true,` && |\n| &&
+             `        // ...and they die with it: destroy() routes these through the same` && |\n| &&
+             `        // teardown before MAIN goes down (see there)` && |\n| &&
+             `        dependentSlots: ["NEST", "NEST2"],` && |\n| &&
              `        prop: "oView",` && |\n| &&
              `        controllerProp: "oController",` && |\n| &&
              `      },` && |\n| &&
              `      {` && |\n| &&
              `        key: "NEST",` && |\n| &&
-             `        param: "S_VIEW_NEST",` && |\n| &&
              `        prop: "oViewNest",` && |\n| &&
              `        controllerProp: "oControllerNest",` && |\n| &&
              `      },` && |\n| &&
              `      {` && |\n| &&
              `        key: "NEST2",` && |\n| &&
-             `        param: "S_VIEW_NEST2",` && |\n| &&
              `        prop: "oViewNest2",` && |\n| &&
              `        controllerProp: "oControllerNest2",` && |\n| &&
              `      },` && |\n| &&
              `      {` && |\n| &&
              `        key: "POPUP",` && |\n| &&
-             `        param: "S_POPUP",` && |\n| &&
+             `        // holds its own JSON model - opened standalone, outside the MAIN` && |\n| &&
+             `        // control tree` && |\n| &&
+             `        ownsModel: true,` && |\n| &&
              `        prop: "oViewPopup",` && |\n| &&
              `        controllerProp: "oControllerPopup",` && |\n| &&
              `        fragmentId: "popupId",` && |\n| &&
              `      },` && |\n| &&
              `      {` && |\n| &&
              `        key: "POPOVER",` && |\n| &&
-             `        param: "S_POPOVER",` && |\n| &&
+             `        // holds its own JSON model - opened standalone, outside the MAIN` && |\n| &&
+             `        // control tree` && |\n| &&
+             `        ownsModel: true,` && |\n| &&
              `        prop: "oViewPopover",` && |\n| &&
              `        controllerProp: "oControllerPopover",` && |\n| &&
              `        fragmentId: "popoverId",` && |\n| &&
@@ -78,10 +85,9 @@ CLASS z2ui5_cl_app_viewslots_js IMPLEMENTATION.
              `    ];` && |\n| &&
              `` && |\n| &&
              `    // Constant-time lookups for the frequently used resolutions (byId,` && |\n| &&
-             `    // getView, paramByKey run on every roundtrip and scroll/focus capture)` && |\n| &&
+             `    // getView run on every roundtrip and scroll/focus capture)` && |\n| &&
              `    // instead of a linear find() per call.` && |\n| &&
              `    const slotsByKey = new Map(slots.map((s) => [s.key, s]));` && |\n| &&
-             `    const slotsByParam = new Map(slots.map((s) => [s.param, s]));` && |\n| &&
              `` && |\n| &&
              `    function byKey(key) {` && |\n| &&
              `      return slotsByKey.get(key);` && |\n| &&
@@ -93,11 +99,31 @@ CLASS z2ui5_cl_app_viewslots_js IMPLEMENTATION.
              `      return slot ? AppState.state[slot.prop] : undefined;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function setView(key, view) {` && |\n| &&
+             `    // Fill a slot. ``xml`` is the view XML the slot was built from; it is` && |\n| &&
+             `    // recorded next to the live instance because neither a Fragment nor an` && |\n| &&
+             `    // XMLView created from a ``definition`` keeps its source (mProperties.` && |\n| &&
+             `    // viewContent stays empty), and the developer tools have no other way` && |\n| &&
+             `    // back to it. Recorded HERE and dropped in destroy(), so the record` && |\n| &&
+             `    // follows the slot itself - not the response that happened to fill it.` && |\n| &&
+             `    function setView(key, view, xml) {` && |\n| &&
              `      const slot = byKey(key);` && |\n| &&
              `      if (!slot) return;` && |\n| &&
              `      AppState.state[slot.prop] = view;` && |\n| &&
+             `      slotXmlStore()[key] = xml;` && |\n| &&
              `      attachSharedModels(view);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // The XML a slot currently holds, undefined once it was torn down.` && |\n| &&
+             `    function getViewXml(key) {` && |\n| &&
+             `      return slotXmlStore()[key];` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // The record lives on AppState (so an app restart resets it with` && |\n| &&
+             `    // everything else); create it on first use so a state object that` && |\n| &&
+             `    // predates the field still works.` && |\n| &&
+             `    function slotXmlStore() {` && |\n| &&
+             `      if (!AppState.state.slotXml) AppState.state.slotXml = {};` && |\n| &&
+             `      return AppState.state.slotXml;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    // Attach the models every slot shares: the one device model (created` && |\n| &&
@@ -124,17 +150,6 @@ CLASS z2ui5_cl_app_viewslots_js IMPLEMENTATION.
              `    function getController(key) {` && |\n| &&
              `      const slot = byKey(key);` && |\n| &&
              `      return slot ? AppState.state[slot.controllerProp] : undefined;` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
-             `    // Returns the slot key for a response param key ("S_VIEW" -> "MAIN").` && |\n| &&
-             `    function keyByParam(param) {` && |\n| &&
-             `      return slotsByParam.get(param)?.key;` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
-             `    // Returns the response param key for a slot key ("MAIN" -> "S_VIEW").` && |\n| &&
-             `    function paramByKey(key) {` && |\n| &&
-             `      const slot = byKey(key);` && |\n| &&
-             `      return slot ? slot.param : undefined;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    // Returns the key of the slot whose controller is ``controller`` -` && |\n| &&
@@ -204,6 +219,22 @@ CLASS z2ui5_cl_app_viewslots_js IMPLEMENTATION.
              `    function destroy(key) {` && |\n| &&
              `      const slot = byKey(key);` && |\n| &&
              `      if (!slot) return;` && |\n| &&
+             `      // The nested views live INSIDE the MAIN control tree, so MAIN's` && |\n| &&
+             `      // view.destroy() below would cascade to their controls anyway - but` && |\n| &&
+             `      // the slot references and the messaging registration would stay` && |\n| &&
+             `      // behind, leaving getView("NEST") truthy long after an app switch` && |\n| &&
+             `      // (stale shortcut slot scopes, developer tools showing the previous` && |\n| &&
+             `      // app's nest XML). Route the dependent slots through this same` && |\n| &&
+             `      // teardown first, BEFORE the open-check: it keeps unregisterObject` && |\n| &&
+             `      // symmetric to attachSharedModels and clears a stale nest reference` && |\n| &&
+             `      // even when MAIN itself is already gone.` && |\n| &&
+             `      for (const dep of slot.dependentSlots ?? []) destroy(dep);` && |\n| &&
+             `      // Drop the recorded XML BEFORE the empty-slot exit below: a slot whose` && |\n| &&
+             `      // live instance is already gone (an app restart reset AppState, a` && |\n| &&
+             `      // fragment load that failed after recording) must not keep a stale` && |\n| &&
+             `      // source behind - the developer tools read "is this slot filled" off` && |\n| &&
+             `      // this record.` && |\n| &&
+             `      delete slotXmlStore()[key];` && |\n| &&
              `      const view = AppState.state[slot.prop];` && |\n| &&
              `      if (!view) return;` && |\n| &&
              `      if (slot.fragmentId) {` && |\n| &&
@@ -234,10 +265,9 @@ CLASS z2ui5_cl_app_viewslots_js IMPLEMENTATION.
              `    return {` && |\n| &&
              `      slots,` && |\n| &&
              `      getView,` && |\n| &&
+             `      getViewXml,` && |\n| &&
              `      setView,` && |\n| &&
              `      getController,` && |\n| &&
-             `      keyByParam,` && |\n| &&
-             `      paramByKey,` && |\n| &&
              `      keyOfController,` && |\n| &&
              `      byId,` && |\n| &&
              `      byIdOfOwner,` && |\n| &&
