@@ -23,7 +23,7 @@ npm start       # → http://localhost:4404/z2ui5/webapp/index.html
 ```
 
 Start any bundled app via URL parameter, e.g.
-`?app_start=z2ui5_cl_app_hello_world` or `?app_start=z2ui5_cl_demo_app_001`.
+`?app_start=z2ui5_cl_ui5_app_hi_world` or `?app_start=z2ui5_cl_smp_app_004`.
 
 Drafts live in an in-memory `Map` — swap the `set_store` implementation for
 anything durable. Samples that consume the CAP OData services (e.g.

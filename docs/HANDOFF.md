@@ -57,7 +57,7 @@ NOT sufficient.
 
 ## Caveats / gotchas
 
-- `z2ui5_cl_app_preload` always fails the assemble load-gate by design (deps
+- `z2ui5_cl_ui5f_preload` always fails the assemble load-gate by design (deps
   map to a non-existent path) — that one "SKIPPED" line is expected.
 
 ## What's next (pick one)

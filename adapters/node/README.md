@@ -28,8 +28,8 @@ npm start       # → http://localhost:4104/z2ui5/webapp/index.html
 Start any bundled app via URL parameter, e.g.
 
 ```
-http://localhost:4104/z2ui5/webapp/index.html?app_start=z2ui5_cl_app_hello_world
-http://localhost:4104/z2ui5/webapp/index.html?app_start=z2ui5_cl_demo_app_001
+http://localhost:4104/z2ui5/webapp/index.html?app_start=z2ui5_cl_ui5_app_hi_world
+http://localhost:4104/z2ui5/webapp/index.html?app_start=z2ui5_cl_smp_app_004
 ```
 
 ## What is (deliberately) different from the CAP project

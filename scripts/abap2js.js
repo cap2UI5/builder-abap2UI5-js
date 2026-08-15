@@ -40,9 +40,10 @@ const SY_RUNTIME_FIELDS = {
 // ---------------------------------------------------------------------------
 
 function requirePathFor(className) {
-  if (/^z2ui5_cl_demo_/.test(className)) return `./${className}`;
-  // sample-tree helpers (context, error) — flattened next to the demo apps
-  if (/^z2ui5_(cl|cx)_sample_/.test(className)) return `./${className}`;
+  // the sample tree — demo apps (z2ui5_cl_smp_app_*) and the helpers they
+  // share (context, error) — is flattened into srv/app/samples, so its
+  // members reference each other relatively
+  if (/^z2ui5_(cl|cx)_smp_/.test(className)) return `./${className}`;
   // SAP kernel classes — native shims under srv/z2ui5/00/00 (see abap_rtti.js);
   // a class without a shim fails the assemble load-gate visibly, not silently
   if (/^cl_abap_[a-z0-9_]+$/.test(className)) return `abap2UI5/${className}`;
@@ -50,10 +51,9 @@ function requirePathFor(className) {
   // kernel exception roots — one shared shim keeps previous/textid + get_text
   if (/^cx_(root|no_check|static_check|dynamic_check)$/.test(className)) return `abap2UI5/cx_root`;
   if (
-    /^z2ui5_(cl|cx)_abap2ui5_/.test(className) ||
-    /^z2ui5_(cl|cx)_a2ui5_/.test(className) ||
-    /^z2ui5_cl_core_/.test(className) ||
-    className === "z2ui5_cl_exit" ||
+    // the framework layer: z2ui5_cl_ui5_* (core), z2ui5_cl_ui5f_* (frontend
+    // asset classes), z2ui5_cx_ui5_* — all reachable as package exports
+    /^z2ui5_(cl|cx)_ui5f?_/.test(className) ||
     className === "z2ui5_cl_http_handler" ||
     /^z2ui5_(cl|cx)_srt_?/.test(className) ||
     /^z2ui5_(cl|cx)_ajson/.test(className) ||
@@ -84,6 +84,25 @@ function tokify(statement) {
 /** true when b starts directly after a with no whitespace (ABAP offset syntax) */
 function isAdjacent(a, b) {
   return a && b && a.row === b.row && b.col === a.col + a.str.length;
+}
+
+/**
+ * ABAP offset/length access without an offset: `field(3)` — the first three
+ * characters of a data object. abaplint types the `(` as plain `ParenLeft`
+ * only when it hugs both the name and its content; a functional method call
+ * is written `meth( … )` / `meth( )`, whose `(` is a `*W` variant. That is
+ * the same rule ABAP itself parses by, so it separates the two reliably.
+ * Returns null when the parenthesis is a call.
+ */
+function tightLength(toks, j, ctx) {
+  const p = toks[j];
+  if (!p || p.type !== "ParenLeft") return null;
+  const close = matchGroup(toks, j);
+  const inner = toks.slice(j + 1, close);
+  if (inner.length !== 1) return null;
+  const t = inner[0];
+  if (!/^\d+$/.test(t.str) && !isId(t)) return null;
+  return { len: /^\d+$/.test(t.str) ? t.str : txExpr([t], ctx), next: close + 1 };
 }
 
 const isParenL = (t) => t.type === "ParenLeft" || t.type === "ParenLeftW" || t.type === "WParenLeft" || t.type === "WParenLeftW";
@@ -281,11 +300,15 @@ function parseMethodDef(toksIn) {
         // TYPE REF TO … params carry reference semantics — assignments from
         // them must NOT be routed through the value-copy helper
         const isRef = KW(toks[i + 1]?.str) === "TYPE" && KW(toks[i + 2]?.str) === "REF" && KW(toks[i + 3]?.str) === "TO";
-        const param = { name: paramName(toks[i].str), defaultToks: null, isRef };
+        const param = { name: paramName(toks[i].str), defaultToks: null, isRef, typeTokens: [], optional: false };
         // scan ahead for DEFAULT <tok...> until next param/section
         for (let j = i + 2; j < toks.length - 1; j++) {
           const u = KW(toks[j].str);
           if (["IMPORTING", "EXPORTING", "CHANGING", "RETURNING", "RAISING"].includes(u)) break;
+          // the next parameter starts (name followed by TYPE/LIKE)
+          if (j > i + 2 && isId(toks[j]) && ["TYPE", "LIKE"].includes(KW(toks[j + 1]?.str ?? ""))) break;
+          if (u === "OPTIONAL") param.optional = true;
+          else if (u !== "PREFERRED" && u !== "PARAMETER") param.typeTokens.push(toks[j].str);
           if (u === "DEFAULT") {
             const dToks = [];
             for (let k = j + 1; k < toks.length - 1; k++) {
@@ -689,7 +712,7 @@ function renderLiteralToken(tok) {
 // ---------------------------------------------------------------------------
 // target signature introspection
 //
-// The hand-written client port (srv/z2ui5/01/02/z2ui5_cl_core_client.js) uses
+// The hand-written client port (srv/z2ui5/01/02/z2ui5_cl_ui5_client.js) uses
 // POSITIONAL parameters, while the view builder & transpiled app classes use
 // destructured option objects. ABAP named arguments on a client receiver are
 // therefore mapped to positional arguments in the order of the real JS
@@ -706,8 +729,8 @@ function clientSignature() {
   // PREVIOUS publish's client signature — a silent one-build lag. Fall back to
   // core/ only when src/ is unavailable (e.g. a standalone core checkout).
   const candidates = [
-    path.join(__dirname, "..", "src", "srv", "z2ui5", "01", "02", "z2ui5_cl_core_client.js"),
-    path.join(__dirname, "..", "core", "srv", "z2ui5", "01", "02", "z2ui5_cl_core_client.js"),
+    path.join(__dirname, "..", "src", "srv", "z2ui5", "01", "02", "z2ui5_cl_ui5_client.js"),
+    path.join(__dirname, "..", "core", "srv", "z2ui5", "01", "02", "z2ui5_cl_ui5_client.js"),
   ];
   const p = candidates.find((c) => fs.existsSync(c));
   if (!p) return _clientSig;
@@ -997,11 +1020,18 @@ const BUILTIN_FN = {
   to_upper: (args) => `${args[0]}.toUpperCase()`,
   to_lower: (args) => `${args[0]}.toLowerCase()`,
   condense: (args) => `${args[0]}.trim()`,
-  shift_left: null, // named args — handled below
+  // positional shift_left( x ) / shift_right( x ) drop leading / trailing
+  // blanks; the named forms (places =, sub =) are in renderBuiltinNamed
+  shift_left: (args) => `${args[0]}.replace(/^\\s+/, \`\`)`,
+  shift_right: (args) => `${args[0]}.replace(/\\s+$/, \`\`)`,
+  substring_after: null, // named args — handled below
+  substring_before: null,
   repeat: null,
   substring: null,
   replace: null,
-  concat_lines_of: null,
+  // positional form: concat_lines_of( itab ) — no separator; the named form
+  // (table = … sep = …) is handled in renderBuiltinNamed
+  concat_lines_of: (args) => `${args[0]}.join(\`\`)`,
   reverse: (args) => `${args[0]}.split("").reverse().join("")`,
   xsdbool: (args) => `Boolean(${args[0]})`,
   boolc: (args) => `Boolean(${args[0]})`,
@@ -1025,7 +1055,17 @@ function renderBuiltinNamed(name, named, ctx) {
     case "shift_left":
       if (named.has("places")) return `${g("val")}.slice(${g("places")})`;
       if (named.has("sub")) return `(${g("val")}.startsWith(${g("sub")}) ? ${g("val")}.slice((${g("sub")}).length) : ${g("val")})`;
-      return null;
+      return `${g("val")}.replace(/^\\s+/, \`\`)`;
+    case "shift_right":
+      if (named.has("places")) return `${g("val")}.slice(0, -(${g("places")}))`;
+      if (named.has("sub")) return `(${g("val")}.endsWith(${g("sub")}) ? ${g("val")}.slice(0, -(${g("sub")}).length) : ${g("val")})`;
+      return `${g("val")}.replace(/\\s+$/, \`\`)`;
+    // substring_after/_before — the part behind/before the FIRST occurrence
+    // of sub, empty when sub does not occur (abap returns the initial value)
+    case "substring_after":
+      return `(($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? \`\` : $v.slice($i + $s.length); })(${g("val")}, ${g("sub")})`;
+    case "substring_before":
+      return `(($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? \`\` : $v.slice(0, $i); })(${g("val")}, ${g("sub")})`;
     case "escape":
       return null;
     default:
@@ -1126,12 +1166,16 @@ function parseIdentChain(toks, i, ctx) {
   } else if (/^z2ui5_(cl|cx|if)_/.test(lower) || /^cl_|^cx_/.test(lower)) {
     ctx.requires?.add(lower);
     str = lower;
-  } else if (ctx.isLocal(lower)) {
-    str = lower;
-  } else if (ctx.isField(lower)) {
-    str = `this.${lower}`;
-  } else if (ctx.isStaticField(lower)) {
-    str = `${ctx.model.name}.${lower}`;
+  } else if (ctx.isLocal(lower) || ctx.isField(lower) || ctx.isStaticField(lower)) {
+    const base = ctx.isLocal(lower) ? lower : ctx.isField(lower) ? `this.${lower}` : `${ctx.model.name}.${lower}`;
+    // data object with an offset/length suffix: lv_x(3)
+    const tight = tightLength(toks, j, ctx);
+    if (tight) {
+      str = `String(${base}).substr(0, ${tight.len})`;
+      j = tight.next;
+    } else {
+      str = base;
+    }
   } else if (callFollows) {
     // unknown bare call — most likely an inherited/interface method
     const close = matchGroup(toks, j);
@@ -1178,6 +1222,13 @@ function chainSuffix(toks, j, atoms, ctx, upper = false) {
       // interface prefix on chained calls: obj->intf~meth( ) → obj.meth( )
       const meth = toks[j + 1].str.toLowerCase().replace(/^.*~/, "");
       j += 2;
+      // attribute with an offset/length suffix: cls=>const(1)
+      const tight = tightLength(toks, j, ctx);
+      if (tight) {
+        atoms[atoms.length - 1].str = `String(${atoms[atoms.length - 1].str}.${meth}).substr(0, ${tight.len})`;
+        j = tight.next;
+        continue;
+      }
       if (toks[j] && isParenL(toks[j])) {
         const close = matchGroup(toks, j);
         const group = toks.slice(j + 1, close);
@@ -1427,14 +1478,9 @@ function txConstructor(kind, typeName, inner, ctx) {
         return restRendered;
       }
       // table-expression fallbacks: VALUE #( tab[ ... ] OPTIONAL / DEFAULT x )
-      const optIdx = findTopWord(inner, "OPTIONAL");
-      if (optIdx > 0 && optIdx === inner.length - 1) {
-        return `(() => { try { return ${txExpr(inner.slice(0, optIdx), ctx)} ?? null; } catch { return null; } })()`;
-      }
-      const defIdx = findTopWord(inner, "DEFAULT");
-      if (defIdx > 0 && inner[defIdx + 1]?.str !== "=") {
-        const dflt = txExpr(inner.slice(defIdx + 1), ctx);
-        return `(() => { try { return ${txExpr(inner.slice(0, defIdx), ctx)} ?? ${dflt}; } catch { return ${dflt}; } })()`;
+      {
+        const fallback = txTableExprFallback(inner, ctx);
+        if (fallback) return fallback;
       }
       if (isId(inner[0]) && KW(inner[0].str) === "FOR") {
         const rendered = txValueFor(inner, ctx);
@@ -1540,8 +1586,13 @@ function txConstructor(kind, typeName, inner, ctx) {
     case "EXACT":
     case "CAST": // duck typing — the runtime check happens at call time anyway
       return `(${txExpr(inner, ctx)})`;
-    case "REF":
+    case "REF": {
+      // REF #( tab[ ... ] OPTIONAL ) yields an unbound reference instead of
+      // raising CX_SY_ITAB_LINE_NOT_FOUND — same lowering as VALUE #( )
+      const fallback = txTableExprFallback(inner, ctx);
+      if (fallback) return fallback;
       return `(${txExpr(inner, ctx)})`;
+    }
     case "CORRESPONDING": {
       // CORRESPONDING #( BASE ( x ) y ) → ({ ...x, ...y })
       if (inner.length && KW(inner[0].str) === "BASE" && isParenL(inner[1])) {
@@ -1556,6 +1607,25 @@ function txConstructor(kind, typeName, inner, ctx) {
       ctx.todos?.push(`${kind} #( ) not supported`);
       return `/* TODO(abap2js): ${kind} */ null`;
   }
+}
+
+/**
+ * The trailing OPTIONAL / DEFAULT x of a table expression inside a
+ * VALUE #( ) or REF #( ) constructor — `tab[ … ] OPTIONAL` returns the
+ * initial value (null here) instead of raising CX_SY_ITAB_LINE_NOT_FOUND,
+ * `DEFAULT x` returns x. Returns null when neither addition is present.
+ */
+function txTableExprFallback(inner, ctx) {
+  const optIdx = findTopWord(inner, "OPTIONAL");
+  if (optIdx > 0 && optIdx === inner.length - 1) {
+    return `(() => { try { return ${txExpr(inner.slice(0, optIdx), ctx)} ?? null; } catch { return null; } })()`;
+  }
+  const defIdx = findTopWord(inner, "DEFAULT");
+  if (defIdx > 0 && inner[defIdx + 1]?.str !== "=") {
+    const dflt = txExpr(inner.slice(defIdx + 1), ctx);
+    return `(() => { try { return ${txExpr(inner.slice(0, defIdx), ctx)} ?? ${dflt}; } catch { return ${dflt}; } })()`;
+  }
+  return null;
 }
 
 /** standalone paren (whitespace before) — a VALUE row, not a call group */
@@ -1719,7 +1789,13 @@ function joinAtoms(atoms, ctx) {
       const operand = out.pop();
       const w = what?.kind === "op" ? what.up : KW(what?.str ?? "");
       let cond;
-      if (w === "INITIAL") cond = negated ? `${wrap(operand)}` : `!${wrap(operand)}`;
+      if (w === "INITIAL") {
+        // not `!x`: an empty table and an all-initial structure are both
+        // truthy in JS — see z2ui5_cl_util.abap_is_initial
+        ctx.requires?.add("z2ui5_cl_util");
+        const call = `z2ui5_cl_util.abap_is_initial(${operand})`;
+        cond = negated ? `!${call}` : call;
+      }
       else if (w === "BOUND" || w === "ASSIGNED") cond = negated ? `${wrap(operand)} == null` : `${wrap(operand)} != null`;
       else if (w === "SUPPLIED") cond = negated ? `${wrap(operand)} === undefined` : `${wrap(operand)} !== undefined`;
       else if (w === "INSTANCE") {
@@ -2064,17 +2140,18 @@ function transpileClass(source, filename, opts = {}) {
   lines.push("");
   lines.push(`__REQUIRES__`);
 
-  // abap PREFERRED PARAMETER call style for popup factories — abap (and code
-  // transpiled 1:1 from it) passes the preferred/single-mandatory parameter
-  // positionally, while the JS factory destructures an options object. Wire the
+  // abap PREFERRED PARAMETER call style — abap (and code transpiled 1:1 from
+  // it) passes the preferred/single-mandatory parameter positionally, while
+  // the JS method destructures an options object. Wire the
   // z2ui5_pop_preferred_param shim so both call styles work, matching the
-  // hand-ported popups. Only z2ui5_cl_pop_* classes carry this convention.
-  if (/^z2ui5_cl_pop_/.test(model.name)) {
+  // hand-ported popups. Carried by the classes built for that call style: the
+  // popup factories and the view builder (`view->ele( \`Shell\` )`).
+  if (/^z2ui5_cl_pop_/.test(model.name) || model.name === "z2ui5_cl_ui5_view_builder") {
     const pmap = derivePreferredMap(file);
     const entries = Object.entries(pmap);
     if (entries.length) {
       lines.push(`// abap PREFERRED PARAMETER call style — see z2ui5_pop_preferred_param.js`);
-      lines.push(`require("./z2ui5_pop_preferred_param")(${model.name}, {`);
+      lines.push(`require("abap2UI5/z2ui5_pop_preferred_param")(${model.name}, {`);
       for (const [meth, { preferred, params }] of entries) {
         lines.push(`  ${meth}: { preferred: \`${preferred}\`, params: [${params.map((p) => `\`${p}\``).join(", ")}] },`);
       }
@@ -2148,6 +2225,9 @@ function emitMethod(model, body, lines, requires, todos) {
         if (!p.defaultToks?.length) return p;
         const t0 = p.defaultToks[0];
         if (t0.type !== "Identifier" || /^(abap_true|abap_false|abap_undefined|space)$/i.test(t0.str)) return p;
+        // numeric and string literals lex as Identifier too (DEFAULT 1,
+        // DEFAULT 'X') — qualifying those yields z2ui5_if_x=>1
+        if (!/^[A-Za-z_]/.test(t0.str)) return p;
         if (p.defaultToks.some((t) => t.str === "=>")) return p;
         return { ...p, defaultToks: [{ type: "Identifier", str: intf }, { type: "StaticArrow", str: "=>" }, ...p.defaultToks] };
       }),
@@ -2233,13 +2313,26 @@ function emitMethod(model, body, lines, requires, todos) {
     sig = `async main(client)`;
     ctx.locals.add("client");
   } else if (def.importing.length) {
+    // an OPTIONAL parameter that is not passed is INITIAL in ABAP, not
+    // undefined — bind the type's initial value so the body can read it.
+    // Parameters the body tests with IS SUPPLIED must stay undefined: that
+    // is the only way to tell "not passed" from "passed as initial".
+    const suppliedTested = new Set(
+      (body.statements || [])
+        .flatMap((s) => [...String(s.src).matchAll(/([A-Za-z_][\w]*)\s+IS\s+(?:NOT\s+)?SUPPLIED/gi)].map((m) => m[1].toLowerCase()))
+    );
     const params = def.importing
       .map((p) => {
         const local = safeIdent(p.name);
         ctx.locals.add(local);
         if (p.isRef) ctx.refVars.add(local);
         const bind = local === p.name ? p.name : `${p.name}: ${local}`;
-        return p.defaultToks ? `${bind} = ${txExpr(p.defaultToks, ctx)}` : bind;
+        if (p.defaultToks) return `${bind} = ${txExpr(p.defaultToks, ctx)}`;
+        if (p.optional && !p.isRef && !suppliedTested.has(p.name.toLowerCase())) {
+          const init = typeDefault(p.typeTokens ?? []);
+          if (init !== "null") return `${bind} = ${init}`;
+        }
+        return bind;
       })
       .join(", ");
     if (outParams.length) {
@@ -2262,11 +2355,18 @@ function emitMethod(model, body, lines, requires, todos) {
   {
     const tryStack = [];
     for (const s of body.statements) {
-      if (s.type === "Try") tryStack.push({ catches: 0 });
+      if (s.type === "Try") tryStack.push({ catches: 0, hasCleanup: false });
       else if (s.type === "Catch" && tryStack.length) {
         const t = tryStack[tryStack.length - 1];
         t.catches++;
         s._catch = { ordinal: t.catches, tryInfo: t };
+      } else if (s.type === "Cleanup" && tryStack.length) {
+        // CLEANUP runs only when the exception leaves the TRY unhandled —
+        // with CATCHes present that is the else branch of the dispatch
+        // chain, so those CATCHes must use the chain shape (see "Catch")
+        const t = tryStack[tryStack.length - 1];
+        t.hasCleanup = true;
+        s._cleanup = { tryInfo: t };
       } else if (s.type === "EndTry" && tryStack.length) {
         s._endTry = tryStack.pop();
       }
@@ -3396,7 +3496,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         ctx.locals.add(varName);
       }
       const info = s._catch;
-      if (!info || info.tryInfo.catches <= 1) {
+      if (!info || (info.tryInfo.catches <= 1 && !info.tryInfo.hasCleanup)) {
         st.indent--;
         if (varName) {
           // hoisted method-scoped var (see pre-scan) — assign the caught value
@@ -3441,9 +3541,33 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       if (varName) push(`${varName} = ${caught};`);
       break;
     }
+    case "Cleanup": {
+      // CLEANUP … ENDTRY → run the block on the way out, then rethrow.
+      // Without CATCHes that is the try's only catch clause; with CATCHes
+      // it is the else branch of the dispatch chain the "Catch" case opened.
+      const t = s._cleanup?.tryInfo;
+      if (!t) break;
+      st.indent--;
+      if (t.catches) {
+        push(`} else {`);
+      } else {
+        t.caughtVar ??= `_caught${++st.caughtSeq}`;
+        push(`} catch (${t.caughtVar}) {`);
+      }
+      st.indent++;
+      break;
+    }
     case "EndTry": {
       const t = s._endTry;
-      if (t && t.catches > 1) {
+      if (t && t.hasCleanup) {
+        push(`throw ${t.caughtVar};`);
+        st.indent--;
+        push(`}`);
+        if (t.catches) {
+          st.indent--;
+          push(`}`);
+        }
+      } else if (t && t.catches > 1) {
         st.indent--;
         push(`} else {`);
         st.indent++;

@@ -1,16 +1,13 @@
 {
   "global": {
-    "files": "/src/**/*.*",
-    // This is NOT the strip list (AGENTS.md section 2) - it is a targeted
-    // suppression. The on-premise samples reference ABAP objects no
-    // dependency above can provide (cl_apc_wsp_ext_stateless_base,
-    // icfservloc, VBELN_VA, ...), so abaplint reports errors there that are
-    // not defects. Everything else is really checked, the stripped testing,
-    // obsolete, release/version and experimental packages included - they
-    // pass. Keep this list as narrow as the unresolvable objects require.
-    "noIssues": [
-      "/src/02/02"
-    ]
+    // Nothing is suppressed: every package under src/ is really checked, the
+    // experimental and testing packages that the 702 build strips
+    // (AGENTS.md section 2) included - they pass. The
+    // on-premise samples that once needed a `noIssues` entry here, because
+    // they referenced objects no dependency below can provide
+    // (cl_apc_wsp_ext_stateless_base, icfservloc, VBELN_VA, ...), are gone:
+    // main runs on ABAP Cloud, so it carries no on-premise-only ABAP.
+    "files": "/src/**/*.*"
   },
   "dependencies": [
     {
@@ -42,8 +39,8 @@
     // installation therefore never needs truncation patterns.
     // "Z2UI5_CL_SMP_" is 13 chars, so 12 remain for the object name.
     // The legacy tokens DEMO and SAMPLE are gone - the last classes carrying
-    // them (all of src/02 and the obsolete package) were renamed, so the
-    // alternation is dropped and only SMP is accepted.
+    // them were renamed, so the alternation is dropped and only SMP is
+    // accepted.
     "object_naming": {
       "patternKind": "required",
       "severity": "Error",
@@ -61,6 +58,15 @@
     "parser_error": true,
     "superclass_final": true,
     "unknown_types": true,
+    // The ABAP editor strips a trailing blank when it saves, so a line that
+    // ends in one comes back changed on the next pull - for everyone. Nothing
+    // here caught that: the port of the corpus onto z2ui5_cl_ui5_view_builder
+    // (#752) left a trailing blank on seven lines in seven app classes, all
+    // four workflows stayed green, and b7edbc6 "fix abaplint diffs" had to be
+    // found and pushed by hand. The tree is clean as of that commit, so the
+    // rule costs nothing and closes the hole. abap2UI5 has carried it for
+    // src/01 and src/02 all along.
+    "whitespace_end": true,
     "xml_consistency": true
   }
 }

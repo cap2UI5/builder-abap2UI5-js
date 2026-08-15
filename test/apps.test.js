@@ -1,4 +1,4 @@
-const Client = require("../core/srv/z2ui5/01/02/z2ui5_cl_core_client");
+const Client = require("../core/srv/z2ui5/01/02/z2ui5_cl_ui5_client");
 
 function createClient(app, { event = "", args = [] } = {}) {
   const client = new Client();
@@ -10,13 +10,13 @@ function createClient(app, { event = "", args = [] } = {}) {
 }
 
 describe("sample apps", () => {
-  // ===== z2ui5_cl_app_hello_world =====
+  // ===== z2ui5_cl_ui5_app_hi_world =====
 
-  describe("z2ui5_cl_app_hello_world", () => {
+  describe("z2ui5_cl_ui5_app_hi_world", () => {
     let AppClass;
 
     beforeEach(() => {
-      AppClass = require("../core/srv/z2ui5/02/z2ui5_cl_app_hello_world");
+      AppClass = require("../core/srv/z2ui5/01/04/z2ui5_cl_ui5_app_hi_world");
     });
 
     test("init renders view with input and button", async () => {
@@ -40,13 +40,13 @@ describe("sample apps", () => {
     });
   });
 
-  // ===== z2ui5_cl_app_startup =====
+  // ===== z2ui5_cl_ui5_app_start =====
 
-  describe("z2ui5_cl_app_startup", () => {
+  describe("z2ui5_cl_ui5_app_start", () => {
     let AppClass;
 
     beforeEach(() => {
-      AppClass = require("../core/srv/z2ui5/02/z2ui5_cl_app_startup");
+      AppClass = require("../core/srv/z2ui5/01/04/z2ui5_cl_ui5_app_start");
     });
 
     test("default event renders startup view with quickstart sections", async () => {
@@ -64,7 +64,7 @@ describe("sample apps", () => {
     test("BUTTON_CHECK with valid class flips button to Edit + sets URL", async () => {
       const app = new AppClass();
       app.client = null;  // will be set by main
-      app.ms_home.classname = "z2ui5_cl_app_hello_world";
+      app.ms_home.classname = "z2ui5_cl_ui5_app_hi_world";
       const client = createClient(app, { event: "BUTTON_CHECK" });
       // ensure init defaults (z2ui5_on_init resets state); manually set classname after
       await app.main(client);

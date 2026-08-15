@@ -156,9 +156,8 @@ The sample-app smoke gate diffs actual startup results against
   adaptations always win. Added fill-ins are **load-gated**: each must actually
   `require()` (self-referencing `abap2UI5/*` via the assembled core's own
   `exports`, third-party via the cap adapter's `node_modules`); ones that fail
-  are dropped and reported. This is what keeps e.g. `z2ui5_cl_app_preload` —
-  whose deps resolve to a path that does not exist — out of the published
-  package.
+  are dropped and reported — a transpiled class whose dependencies resolve to
+  a path that does not exist never reaches the published package.
 - **samples** (`run/output/samples` → `core/srv/app/samples`): flattened (every
   class lands directly under `samples/`, keyed by bare class name) and
   overwritten; the hand-written `samples/README.md` from `src/` stays.
@@ -216,7 +215,7 @@ lives in
 [builder-cap2UI5-web](https://github.com/cap2UI5/builder-cap2UI5-web) — it
 mirrors the published cap2UI5 app repo and only relies on the two framework
 hooks `z2ui5_cl_util.register_app_class()` and
-`z2ui5_cl_core_srv_draft.set_store()`.
+`z2ui5_cl_ui5_srv_draft.set_store()`.
 
 ## External wiring
 

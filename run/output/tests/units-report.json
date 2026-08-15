@@ -30,99 +30,105 @@
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_a2ui5_context",
-    "classes": 1,
-    "tests": 8,
+    "main": "z2ui5_cl_ui5_util_context",
+    "classes": 5,
+    "tests": 39,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_a2ui5_http",
+    "main": "z2ui5_cl_ui5_util_http",
     "classes": 4,
     "tests": 10,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_a2ui5_json_fltr",
+    "main": "z2ui5_cl_ui5_util_json_fl",
     "classes": 1,
     "tests": 10,
     "todos": 0
   },
   {
-    "main": "z2ui5_cx_a2ui5_error",
+    "main": "z2ui5_cx_ui5_util_error",
     "classes": 1,
-    "tests": 6,
+    "tests": 12,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_srv_draft",
+    "main": "z2ui5_cl_ui5_srv_draft",
     "classes": 1,
-    "tests": 6,
+    "tests": 7,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_action",
-    "classes": 2,
-    "tests": 9,
+    "main": "z2ui5_cl_ui5_action",
+    "classes": 3,
+    "tests": 13,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_app",
+    "main": "z2ui5_cl_ui5_app_cont",
     "classes": 2,
     "tests": 7,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_client",
-    "classes": 2,
-    "tests": 39,
+    "main": "z2ui5_cl_ui5_client",
+    "classes": 4,
+    "tests": 44,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_handler",
-    "classes": 2,
-    "tests": 20,
+    "main": "z2ui5_cl_ui5_frontend",
+    "classes": 1,
+    "tests": 13,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_srv_bind",
+    "main": "z2ui5_cl_ui5_handler",
+    "classes": 4,
+    "tests": 41,
+    "todos": 0
+  },
+  {
+    "main": "z2ui5_cl_ui5_srv_bind",
     "classes": 4,
     "tests": 9,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_srv_event",
+    "main": "z2ui5_cl_ui5_srv_event",
     "classes": 1,
-    "tests": 16,
+    "tests": 28,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_core_srv_model",
+    "main": "z2ui5_cl_ui5_srv_model",
     "classes": 28,
-    "tests": 50,
+    "tests": 54,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_app_hello_world",
+    "main": "z2ui5_cl_ui5_app_hi_world",
     "classes": 1,
     "tests": 3,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_app_startup",
+    "main": "z2ui5_cl_ui5_app_start",
     "classes": 1,
-    "tests": 1,
+    "tests": 2,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_exit",
+    "main": "z2ui5_cl_ui5_http_handler",
     "classes": 1,
-    "tests": 6,
+    "tests": 17,
     "todos": 0
   },
   {
-    "main": "z2ui5_cl_http_handler",
+    "main": "z2ui5_cl_ui5_view_builder",
     "classes": 1,
-    "tests": 13,
+    "tests": 9,
     "todos": 0
   }
 ]

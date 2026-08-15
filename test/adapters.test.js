@@ -20,19 +20,19 @@ const path = require("path");
 const root = path.join(__dirname, "..");
 
 const HELLO = {
-  value: { S_FRONT: { APP: "", SEARCH: "?app_start=z2ui5_cl_app_hello_world", T_EVENT_ARG: [] } },
+  value: { S_FRONT: { APP: "", SEARCH: "?app_start=z2ui5_cl_ui5_app_hi_world", T_EVENT_ARG: [] } },
 };
 
 // Representative sample cross-section for the transport equivalence check:
-// getting-started gallery, table binding, popup helper, xml-view breadth,
-// new upstream features (menu), framework startup app. Per-app behavior is covered by the
+// getting-started gallery, table binding, popup helper, view-builder breadth,
+// framework startup app. Per-app behavior is covered by the
 // full apps-smoke gate — here we prove each ADAPTER runs the same set.
 const CROSS_SECTION = [
-  "z2ui5_cl_demo_app_g00",
-  "z2ui5_cl_demo_app_004",
-  "z2ui5_cl_demo_app_070",
-  "z2ui5_cl_demo_app_372",
-  "z2ui5_cl_app_startup",
+  "z2ui5_cl_smp_app_000",
+  "z2ui5_cl_smp_app_004",
+  "z2ui5_cl_smp_app_070",
+  "z2ui5_cl_smp_app_006",
+  "z2ui5_cl_ui5_app_start",
 ];
 
 function startBody(app) {
@@ -118,7 +118,7 @@ describe("platform adapters", () => {
       indexOk: true,
       bootstrapOk: true,
       status: 200,
-      app: "z2ui5_cl_app_hello_world",
+      app: "z2ui5_cl_ui5_app_hi_world",
       hasView: true,
       samples: CROSS_SECTION_OK,
     });
@@ -130,7 +130,7 @@ describe("platform adapters", () => {
       indexOk: true,
       bootstrapOk: true,
       status: 200,
-      app: "z2ui5_cl_app_hello_world",
+      app: "z2ui5_cl_ui5_app_hi_world",
       hasView: true,
       samples: CROSS_SECTION_OK,
     });
@@ -142,7 +142,7 @@ describe("platform adapters", () => {
       indexOk: true,
       bootstrapOk: true,
       status: 200,
-      app: "z2ui5_cl_app_hello_world",
+      app: "z2ui5_cl_ui5_app_hi_world",
       hasView: true,
       samples: CROSS_SECTION_OK,
     });
@@ -179,7 +179,7 @@ describe("platform adapters", () => {
     `;
     const out = execFileSync(process.execPath, ["-e", probe], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     expect(JSON.parse(out.trim().split("\n").pop())).toEqual({
-      app: "z2ui5_cl_app_hello_world",
+      app: "z2ui5_cl_ui5_app_hi_world",
       hasView: true,
       samples: CROSS_SECTION_OK,
     });

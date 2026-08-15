@@ -55,7 +55,7 @@ const smoke = runJson("smoke-apps.js");
 // sanity floors, same as the jest gates — an empty report must never be
 // allowed to delist the whole baseline
 if (units.total <= 150) throw new Error(`units report suspiciously small (total=${units.total})`);
-if (smoke.total <= 150) throw new Error(`smoke report suspiciously small (total=${smoke.total})`);
+if (smoke.total <= 80) throw new Error(`smoke report suspiciously small (total=${smoke.total})`);
 
 const outcomes = [
   reconcile("upstream-units", "upstream-units.known-failures.json", new Set(Object.keys(units.failures))),

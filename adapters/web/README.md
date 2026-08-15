@@ -21,7 +21,7 @@ are skipped at registry load with a console warning — everything else runs.
 ```bash
 npm install    # links ../../core + esbuild
 npm run build  # → dist/
-npm run serve  # → http://localhost:4304/index.html?app_start=z2ui5_cl_app_hello_world
+npm run serve  # → http://localhost:4304/index.html?app_start=z2ui5_cl_ui5_app_hi_world
 ```
 
 `dist/` is a plain static site — GitHub Pages, S3 or nginx serve it as-is.

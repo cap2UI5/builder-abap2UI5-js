@@ -28,7 +28,7 @@ const dist = path.join(__dirname, "dist");
 // ---- 1. registry ---------------------------------------------------------
 // subpath specifier per app-class location (must match the package exports map)
 const SOURCES = [
-  { dir: "srv/z2ui5/02",        spec: (n) => `abap2UI5/${n}`,             filter: (n) => /^z2ui5_cl_app_/.test(n) },
+  { dir: "srv/z2ui5/01/04",     spec: (n) => `abap2UI5/${n}`,             filter: (n) => /^z2ui5_cl_ui5_app_/.test(n) },
   { dir: "srv/z2ui5/99/02",     spec: (n) => `abap2UI5/${n}`,             filter: (n) => /^z2ui5_cl_pop_/.test(n) },
   { dir: "srv/app",             spec: (n) => `abap2UI5/app/${n}`,         filter: (n) => /^z2ui5_c[lx]_/.test(n) },
   { dir: "srv/app/samples",     spec: (n) => `abap2UI5/app/samples/${n}`, filter: (n) => /^z2ui5_c[lx]_/.test(n) },
@@ -78,6 +78,8 @@ require("esbuild").buildSync({
     "node:path": path.join(__dirname, "shims/path.js"),
     crypto: path.join(__dirname, "shims/crypto.js"),
     "node:crypto": path.join(__dirname, "shims/crypto.js"),
+    async_hooks: path.join(__dirname, "shims/async_hooks.js"),
+    "node:async_hooks": path.join(__dirname, "shims/async_hooks.js"),
   },
   external: ["@sap/cds", "openui5-dist"],
   // CJS node-isms: __dirname feeds only the (shimmed, no-op) fs discovery

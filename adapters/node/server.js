@@ -12,7 +12,7 @@
  *   GET  /resources/*          local UI5 runtime (openui5-dist)
  *
  * Start:  npm install && npm start   →  http://localhost:4104/z2ui5/webapp/index.html
- * Apps:   ?app_start=z2ui5_cl_app_hello_world (all bundled samples work)
+ * Apps:   ?app_start=z2ui5_cl_ui5_app_hi_world (all bundled samples work)
  */
 "use strict";
 

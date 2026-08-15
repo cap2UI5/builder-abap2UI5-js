@@ -80,7 +80,7 @@ function overlay(from, to, opts, stats) {
  * `abap2UI5/*` requires resolve via the assembled core's own package.json
  * exports; third-party deps resolve through the cap adapter's node_modules
  * (@sap/cds, express) via NODE_PATH). Files that fail are removed and the rest re-checked, since
- * fill-ins may require each other. It is what keeps e.g. z2ui5_cl_app_preload
+ * fill-ins may require each other. It is what keeps e.g. z2ui5_cl_ui5f_preload
  * (whose deps map to a path that does not exist) out of the published package.
  */
 function loadGate(files, stats) {

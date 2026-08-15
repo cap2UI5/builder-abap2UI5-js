@@ -126,7 +126,7 @@ Two rounds of evidence:
 **Round 1 — the interface cascade.** Removing all 64 zero-TODO base classes at
 once gave 17 load-gate + 29 test failures. Root cause: the ABAP *interfaces*
 (`z2ui5_if_app`, `z2ui5_if_client`, `z2ui5_if_types`, `z2ui5_if_exit`,
-`z2ui5_if_core_types`) transpile to a plain `const x = {…}` object, not a class,
+`z2ui5_if_ui5_types`) transpile to a plain `const x = {…}` object, not a class,
 so everything that `extends` them breaks. These interface hand-ports are
 load-bearing glue and must stay in base.
 
@@ -144,7 +144,7 @@ transpile drops and no test exercises:
   calls via `z2ui5_pop_preferred_param`; the transpile drops it. It also wraps
   `this.client = abap_copy(client)` (deep-copying the live client) — needs an
   audit.
-- `z2ui5_cl_app_hello_world` — hand-port button text `Send` vs upstream `Post`.
+- `z2ui5_cl_ui5_app_hi_world` — hand-port button text `Send` vs upstream `Post`.
 
 **Conclusion.** "Zero TODOs" and "green suite" are both necessary but **not
 sufficient** to prune. A class is safe to remove only once the transpiler
