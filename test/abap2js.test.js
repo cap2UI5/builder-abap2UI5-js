@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { transpileClass } = require("../scripts/abap2js");
-const Client = require("../core/srv/z2ui5/01/02/z2ui5_cl_core_client");
+const Client = require("../core/srv/z2ui5/01/02/z2ui5_cl_ui5_client");
 
 /**
  * Execute generated code with this test's require — the "abap2UI5/..."
@@ -23,11 +23,11 @@ function createClient(app, { event = "", args = [] } = {}) {
 
 describe("abap2js transpiler", () => {
   describe("hello world (real abap2UI5 source)", () => {
-    const abap = fs.readFileSync(path.join(__dirname, "fixtures", "z2ui5_cl_app_hello_world.clas.abap"), "utf8");
+    const abap = fs.readFileSync(path.join(__dirname, "fixtures", "z2ui5_cl_ui5_app_hi_world.clas.abap"), "utf8");
     let AppClass;
 
     beforeAll(() => {
-      const { code, todos } = transpileClass(abap, "z2ui5_cl_app_hello_world.clas.abap");
+      const { code, todos } = transpileClass(abap, "z2ui5_cl_ui5_app_hi_world.clas.abap");
       expect(todos).toEqual([]);
       AppClass = loadGenerated(code);
     });
@@ -222,8 +222,8 @@ ENDCLASS.
 
     test("dynamic CREATE OBJECT resolves through the class registry", () => {
       const f = Feature.factory();
-      const HelloWorld = require("abap2UI5/z2ui5_cl_app_hello_world");
-      expect(f.make_app({ i_name: "Z2UI5_CL_APP_HELLO_WORLD" })).toBeInstanceOf(HelloWorld);
+      const HelloWorld = require("abap2UI5/z2ui5_cl_ui5_app_hi_world");
+      expect(f.make_app({ i_name: "z2ui5_cl_ui5_app_hi_world" })).toBeInstanceOf(HelloWorld);
       expect(() => f.make_app({ i_name: "Z2UI5_NO_SUCH_CLASS" })).toThrow(/not found/);
     });
 

@@ -4,14 +4,14 @@
 //
 //   1. z2ui5_cl_util.register_app_class — class registry consulted before
 //      any filesystem lookup
-//   2. z2ui5_cl_core_srv_draft.set_store — draft persistence without CDS
+//   2. z2ui5_cl_ui5_srv_draft.set_store — draft persistence without CDS
 //
 // Together they mean a full roundtrip works with no @sap/cds runtime and no
 // app-class files on disk — exactly the browser situation.
 
 const z2ui5_cl_util = require("../core/srv/z2ui5/00/03/z2ui5_cl_util");
-const DB = require("../core/srv/z2ui5/01/01/z2ui5_cl_core_srv_draft");
-const Handler = require("../core/srv/z2ui5/01/02/z2ui5_cl_core_handler");
+const DB = require("../core/srv/z2ui5/01/01/z2ui5_cl_ui5_srv_draft");
+const Handler = require("../core/srv/z2ui5/01/02/z2ui5_cl_ui5_handler");
 const z2ui5_if_app = require("../core/srv/z2ui5/02/z2ui5_if_app");
 const z2ui5_cl_xml_view = require("../core/srv/z2ui5/02/z2ui5_cl_xml_view");
 
@@ -89,7 +89,7 @@ describe("web hooks: class registry + pluggable draft store", () => {
   });
 
   test("file-based classes still resolve (registry does not shadow disk)", () => {
-    const Cls = z2ui5_cl_util.rtti_get_class("z2ui5_cl_app_hello_world");
+    const Cls = z2ui5_cl_util.rtti_get_class("z2ui5_cl_ui5_app_hi_world");
     expect(typeof Cls).toBe("function");
   });
 
@@ -98,7 +98,7 @@ describe("web hooks: class registry + pluggable draft store", () => {
   test("roundtrip persists drafts through the custom store, not CDS", async () => {
     const result = JSON.parse(await new Handler().main(makeRequest()));
 
-    expect(result.S_FRONT.APP).toBe("z2ui5_cl_app_startup");
+    expect(result.S_FRONT.APP).toBe("z2ui5_cl_ui5_app_start");
     expect(result.S_FRONT.ID).toBeTruthy();
     expect(drafts.has(result.S_FRONT.ID)).toBe(true);
   });
@@ -109,7 +109,7 @@ describe("web hooks: class registry + pluggable draft store", () => {
       await new Handler().main(makeRequest({ id: first.S_FRONT.ID })),
     );
 
-    expect(second.S_FRONT.APP).toBe("z2ui5_cl_app_startup");
+    expect(second.S_FRONT.APP).toBe("z2ui5_cl_ui5_app_start");
     expect(second.S_FRONT.ID).not.toBe(first.S_FRONT.ID);
   });
 

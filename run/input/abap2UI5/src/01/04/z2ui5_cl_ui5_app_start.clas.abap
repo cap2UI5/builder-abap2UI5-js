@@ -322,10 +322,10 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
         )->a( n = `height`        v = `100%`
 
         )->ele( `Shell`
-        )->ele( `Page`
-            )->a( n = `title`          v = `abap2UI5 - Build UI5 Apps Purely in ABAP`
-            )->a( n = `showNavButton`  v = `false` ).
+            )->ele( `Page` ).
 
+    " no title on the Page: the title row is built as a Bar in its custom
+    " header, which is what render_header_toolbar( ) does - see there
     render_header_toolbar( page ).
 
     DATA(form) = create_layout_form( page ).
@@ -339,21 +339,36 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
 
   METHOD render_header_toolbar.
 
-    " icons only, the way the samples app carries them - the title row is not
-    " the place for labels, and what each one does is in its tooltip.
+    " The title row, built the way the three overview apps of the family build
+    " theirs (z2ui5_cl_smp_app_000=>render_header): a sap.m.Bar in the page's
+    " customHeader rather than the Page's own title and headerContent. Same
+    " controls either way - a Page renders its stock header as a Bar too - but
+    " the title becomes a Title control in contentLeft, and a Bar child carries
+    " the margin that sets it off from the window edge. The stock Page title
+    " sits flush against it, which reads as if the heading belonged to the
+    " browser rather than to the page.
+    DATA(bar) = page->ele( `customHeader`
+        )->ele( `Bar` ).
+
+    bar->ele( `contentLeft`
+        )->tag( `Title`
+            )->a( n = `text`   v = `abap2UI5 - Build UI5 Apps Purely in ABAP`
+            )->a( n = `level`  v = `H2` ).
+
+    " right: icons only, the way the samples app carries them - the title row
+    " is not the place for labels, and what each one does is in its tooltip.
     "
-    " ONLY INLINE CONTROLS BELONG IN HERE. sap.m.Page forwards headerContent
-    " into the contentRight aggregation of its internal sap.m.Bar, and that
-    " container became a flex box only after 1.71: on the oldest release
-    " abap2UI5 supports, .sapMBarRight is a plain absolutely positioned block
-    " that lays its children out in normal flow. A block-level child - and
-    " both ToolbarSpacer and ToolbarSeparator render a <div> - therefore
-    " starts a new line, and everything from that line on is cut away by the
+    " ONLY INLINE CONTROLS BELONG IN HERE. A sap.m.Bar's content containers
+    " became flex boxes only after 1.71: on the oldest release abap2UI5
+    " supports, .sapMBarRight is a plain absolutely positioned block that lays
+    " its children out in normal flow. A block-level child - and both
+    " ToolbarSpacer and ToolbarSeparator render a <div> - therefore starts a
+    " new line, and everything from that line on is cut away by the
     " overflow:hidden the container carries at the bar's height of 3rem. On
     " 1.71 that silently swallowed the documentation and repository icons,
     " while newer releases showed all of them.
     " No ToolbarSpacer either: contentRight is right-aligned on its own.
-    DATA(toolbar) = page->ele( `headerContent` ).
+    DATA(toolbar) = bar->ele( `contentRight` ).
 
     " first what this system is: the information popup, and the configuration
     " when it is installed. Sliders rather than a monitor on the first one -
@@ -420,9 +435,9 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
                      text    = `abap2UI5`
                      href    = `https://github.com/abap2UI5/abap2UI5`
                      new_tab = abap_true
-      )->tag( `Text`
-          )->a( n = `text`   v = `The repository itself - source code, issues, releases, and what abapGit installs from`
-          )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
+        )->tag( `Text`
+            )->a( n = `text`   v = `The repository itself - source code, issues, releases, and what abapGit installs from`
+            )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
 
     render_icon_row( form    = form
                      label   = `Docs`
@@ -430,9 +445,9 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
                      text    = `abap2UI5.org`
                      href    = `https://abap2UI5.org`
                      new_tab = abap_true
-      )->tag( `Text`
-          )->a( n = `text`   v = `Guides, tutorials and the API reference - from your first app to the full client API`
-          )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
+        )->tag( `Text`
+            )->a( n = `text`   v = `Guides, tutorials and the API reference - from your first app to the full client API`
+            )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
 
   ENDMETHOD.
 
@@ -441,18 +456,25 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
     render_section( form  = form
                     title = `Quickstart - your first app in 5 steps` ).
 
-    form->tag( `Label` )->a( n = `text`  v = `Step 1`
-      )->tag( `Text` )->a( n = `text`   v = `Create a new class in your ABAP system`
-      )->tag( `Label` )->a( n = `text`  v = `Step 2`
-      )->tag( `Text` )->a( n = `text`   v = `Add the interface Z2UI5_IF_APP - that is all it takes`
-      )->tag( `Label` )->a( n = `text`  v = `Step 3`
-      )->tag( `Text` )->a( n = `text`   v = `Define the view and implement the behavior - in pure ABAP` ).
+    form->tag( `Label`
+        )->a( n = `text`  v = `Step 1`
+        )->tag( `Text`
+            )->a( n = `text`   v = `Create a new class in your ABAP system`
+        )->tag( `Label`
+            )->a( n = `text`  v = `Step 2`
+        )->tag( `Text`
+            )->a( n = `text`   v = `Add the interface Z2UI5_IF_APP - that is all it takes`
+        )->tag( `Label`
+            )->a( n = `text`  v = `Step 3`
+        )->tag( `Text`
+            )->a( n = `text`   v = `Define the view and implement the behavior - in pure ABAP` ).
 
     render_link( form = form
                  text = `See a complete example: Hello World`
-                 href = `https://github.com/abap2UI5/abap2UI5/blob/main/src/02/z2ui5_cl_ui5_app_hi_world.clas.abap` ).
+                 href = `https://github.com/abap2UI5/abap2UI5/blob/main/src/01/04/z2ui5_cl_ui5_app_hi_world.clas.abap` ).
 
-    form->tag( `Label` )->a( n = `text`  v = `Step 4` ).
+    form->tag( `Label`
+        )->a( n = `text`  v = `Step 4` ).
 
     IF ms_home-class_editable = abap_true.
       form->tag( `Input`
@@ -465,7 +487,8 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
           )->a( n = `submit`          v = client->_event( ms_home-btn_event_id )
           )->a( n = `width`           v = `70%` ).
     ELSE.
-      form->tag( `Text` )->a( n = `text`  v = ms_home-classname ).
+      form->tag( `Text`
+          )->a( n = `text`  v = ms_home-classname ).
     ENDIF.
 
     form->tag( `Label` ).
@@ -477,12 +500,13 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
 
     " not render_link: this one is bound and additionally disabled until the
     " class name was checked
-    form->tag( `Label` )->a( n = `text`  v = `Step 5`
-      )->tag( `Link`
-          )->a( n = `text`     v = `Open your application in a new tab`
-          )->a( n = `target`   v = `_blank`
-          )->a( n = `href`     v = client->_bind( ms_home-url )
-          )->a( n = `enabled`  v = client->_bind( ms_home-link_enabled ) ).
+    form->tag( `Label`
+        )->a( n = `text`  v = `Step 5`
+        )->tag( `Link`
+            )->a( n = `text`     v = `Open your application in a new tab`
+            )->a( n = `target`   v = `_blank`
+            )->a( n = `href`     v = client->_bind( ms_home-url )
+            )->a( n = `enabled`  v = client->_bind( ms_home-link_enabled ) ).
 
     " the five steps are one thought - let it end before the next headline.
     " Four rows, not one: this is the break between doing something and reading
@@ -675,12 +699,14 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
     DATA(form) = create_layout_form( content ).
     DATA(ls_client) = client->get( ).
 
-    form->tag( `Label` )->a( n = `text`  v = `Launchpad active` ).
+    form->tag( `Label`
+        )->a( n = `text`  v = `Launchpad active` ).
     form->tag( `CheckBox`
         )->a( n = `selected`  b = ls_client-check_launchpad_active
         )->a( n = `enabled`   v = `false` ).
 
-    form->tag( `Label` )->a( n = `text`  v = `ABAP for Cloud` ).
+    form->tag( `Label`
+        )->a( n = `text`  v = `ABAP for Cloud` ).
     form->tag( `CheckBox`
         )->a( n = `selected`  b = z2ui5_cl_ui5_util_context=>check_abap_cloud( )
         )->a( n = `enabled`   v = `false` ).
@@ -748,8 +774,10 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
 
   METHOD render_text.
 
-    form->tag( `Label` )->a( n = `text`  v = label
-      )->tag( `Text` )->a( n = `text`  v = text ).
+    form->tag( `Label`
+        )->a( n = `text`  v = label
+        )->tag( `Text`
+            )->a( n = `text`  v = text ).
 
   ENDMETHOD.
 

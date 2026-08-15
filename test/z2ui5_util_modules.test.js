@@ -13,7 +13,7 @@ const z2ui5_cl_util_api   = require("../core/srv/z2ui5/00/03/02/z2ui5_cl_util_ap
 
 const z2ui5_if_client     = require("../core/srv/z2ui5/02/z2ui5_if_client");
 const z2ui5_if_exit       = require("../core/srv/z2ui5/02/z2ui5_if_exit");
-const z2ui5_cl_exit       = require("../core/srv/z2ui5/02/z2ui5_cl_exit");
+const z2ui5_cl_ui5_user_exit       = require("../core/srv/z2ui5/01/04/z2ui5_cl_ui5_user_exit");
 
 const { firstSampleName } = require("./helpers/samples");
 
@@ -352,7 +352,7 @@ describe("z2ui5_cl_util_api", () => {
 });
 
 // =============================================================
-//  z2ui5_if_client / z2ui5_if_exit / z2ui5_cl_exit
+//  z2ui5_if_client / z2ui5_if_exit / z2ui5_cl_ui5_user_exit
 // =============================================================
 describe("z2ui5_if_client", () => {
   test("cs_event has the 34 upstream entries", () => {
@@ -377,7 +377,7 @@ describe("z2ui5_if_client", () => {
   });
 
   test("check_implements passes on a real client", () => {
-    const Client = require("../core/srv/z2ui5/01/02/z2ui5_cl_core_client");
+    const Client = require("../core/srv/z2ui5/01/02/z2ui5_cl_ui5_client");
     expect(() => z2ui5_if_client.check_implements(new Client())).not.toThrow();
   });
 });
@@ -390,19 +390,19 @@ describe("z2ui5_if_exit", () => {
   });
 
   test("check_implements passes on cl_exit", () => {
-    expect(() => z2ui5_if_exit.check_implements(z2ui5_cl_exit.get_instance())).not.toThrow();
+    expect(() => z2ui5_if_exit.check_implements(z2ui5_cl_ui5_user_exit.get_instance())).not.toThrow();
   });
 });
 
-describe("z2ui5_cl_exit", () => {
+describe("z2ui5_cl_ui5_user_exit", () => {
   beforeEach(() => {
-    z2ui5_cl_exit._gi_me = null;
-    z2ui5_cl_exit._gi_user_exit = null;
-    z2ui5_cl_exit._context = {};
+    z2ui5_cl_ui5_user_exit._gi_me = null;
+    z2ui5_cl_ui5_user_exit._gi_user_exit = null;
+    z2ui5_cl_ui5_user_exit._context = {};
   });
 
   test("set_config_http_get fills CSP / theme / title / src / headers", () => {
-    const cfg = z2ui5_cl_exit.get_instance().set_config_http_get(undefined, {});
+    const cfg = z2ui5_cl_ui5_user_exit.get_instance().set_config_http_get(undefined, {});
     expect(cfg.title).toBe("abap2UI5");
     expect(cfg.theme).toBe("sap_horizon");
     // UI5 is served locally by the CAP server (see srv/server.js), not a CDN.
@@ -412,19 +412,19 @@ describe("z2ui5_cl_exit", () => {
   });
 
   test("set_config_http_post defaults draft_exp_time_in_hours to 4", () => {
-    const cfg = z2ui5_cl_exit.get_instance().set_config_http_post(undefined, {});
+    const cfg = z2ui5_cl_ui5_user_exit.get_instance().set_config_http_post(undefined, {});
     expect(cfg.draft_exp_time_in_hours).toBe(4);
   });
 
   test("init_context extracts app_start from t_params", () => {
-    z2ui5_cl_exit.init_context({
+    z2ui5_cl_ui5_user_exit.init_context({
       path: "/x",
       t_params: [{ n: "app_start", v: "FOO" }],
     });
-    expect(z2ui5_cl_exit._context.app_start).toBe("FOO");
+    expect(z2ui5_cl_ui5_user_exit._context.app_start).toBe("FOO");
   });
 
   test("get_instance is a singleton", () => {
-    expect(z2ui5_cl_exit.get_instance()).toBe(z2ui5_cl_exit.get_instance());
+    expect(z2ui5_cl_ui5_user_exit.get_instance()).toBe(z2ui5_cl_ui5_user_exit.get_instance());
   });
 });

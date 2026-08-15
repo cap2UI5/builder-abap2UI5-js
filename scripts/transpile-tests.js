@@ -156,7 +156,7 @@ const externTypes = new Map(); // "intf=>ty" -> struct members / ":table" marker
         for (const [ty, members] of parseInterfaceTypes(src, entry.name)) externTypes.set(`${intfName}=>${ty}`, members);
       } catch { /* fall back to signature-less */ }
     } else if (entry.name.endsWith(".clas.abap") && !entry.name.includes(".testclasses.") && !entry.name.includes(".locals_")) {
-      // class-qualified TYPES (z2ui5_cl_a2ui5_http=>ty_s_http_req) — same
+      // class-qualified TYPES (z2ui5_cl_ui5_util_http=>ty_s_http_req) — same
       // typed-initializer treatment as interface types
       const clsName = entry.name.replace(/\.clas\.abap$/i, "").toLowerCase();
       try {
@@ -168,7 +168,7 @@ const externTypes = new Map(); // "intf=>ty" -> struct members / ":table" marker
 })(INPUT);
 
 // global framework class signatures — positional calls onto TRANSPILED
-// framework classes (z2ui5_cl_a2ui5_context=>boolean_abap_2_json( val )) are
+// framework classes (z2ui5_cl_ui5_util_context=>boolean_abap_2_json( val )) are
 // wrapped into the destructured-options convention like sibling locals.
 // Hand-ported classes are excluded: their JS APIs take positional args.
 const handPorted = (() => {

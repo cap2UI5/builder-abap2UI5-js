@@ -1,0 +1,116 @@
+" @keywords generic data reference create data ddic dynamic itab
+CLASS z2ui5_cl_smp_app_061 DEFINITION PUBLIC.
+
+  PUBLIC SECTION.
+    INTERFACES z2ui5_if_app.
+
+    DATA t_tab TYPE REF TO data.
+
+  PROTECTED SECTION.
+    DATA client TYPE REF TO z2ui5_if_client.
+
+    METHODS set_view.
+
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS z2ui5_cl_smp_app_061 IMPLEMENTATION.
+
+
+  METHOD set_view.
+
+    DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
+        )->ele( n = `View` ns = `mvc`
+            )->a( n = `displayBlock` v = `true`
+            )->a( n = `height`       v = `100%`
+            )->a( n = `xmlns`        v = `sap.m`
+            )->a( n = `xmlns:mvc`    v = `sap.ui.core.mvc`
+            )->a( n = `xmlns:core`   v = `sap.ui.core` ).
+    DATA(page) = view->ele( `Shell`
+        )->ele( `Page`
+            )->a( n = `title`          v = `abap2UI5 - Binding - Dynamic Table Typed at Runtime (RTTI)`
+            )->a( n = `showNavButton`  b = client->check_app_prev_stack( )
+            )->a( n = `navButtonPress` v = client->_event_nav_app_leave( ) ).
+
+    FIELD-SYMBOLS <tab> TYPE table.
+    ASSIGN t_tab->* TO <tab>.
+
+    page->tag( `MessageStrip`
+        )->a( n = `text`     v = `A table typed dynamically at runtime via RTTI from a DDIC table type, with editable ` &&
+                   `multi-select rows bound directly to the dynamically created data.`
+        )->a( n = `type`     v = `Information`
+        )->a( n = `showIcon` b = abap_true
+        )->a( n = `class`    v = `sapUiSmallMargin` ).
+
+    DATA(tab) = page->ele( `Table`
+        )->a( n = `items` v = client->_bind( <tab> )
+        )->a( n = `mode`  v = `MultiSelect`
+        )->ele( `headerToolbar`
+            )->ele( `OverflowToolbar`
+                )->tag( `Title`
+                    )->a( n = `text` v = `Dynamic typed table`
+                )->tag( `ToolbarSpacer`
+                )->tag( `Button`
+                    )->a( n = `press` v = client->_event( `SEND` )
+                    )->a( n = `text`  v = `server <-> client`
+            )->end(
+        )->end( ).
+
+    tab->ele( `columns`
+        )->ele( `Column`
+            )->tag( `Text`
+                )->a( n = `text` v = `uuid`
+        )->end(
+        )->ele( `Column`
+            )->tag( `Text`
+                )->a( n = `text` v = `time`
+        )->end(
+        )->ele( `Column`
+            )->tag( `Text`
+                )->a( n = `text` v = `previous`
+        )->end( ).
+
+    tab->ele( `items`
+        )->ele( `ColumnListItem`
+            )->a( n = `selected` v = `{SELKZ}`
+            )->ele( `cells`
+                )->tag( `Input`
+                    )->a( n = `value` v = `{ID}`
+                )->tag( `Input`
+                    )->a( n = `value` v = `{TIMESTAMPL}`
+                )->tag( `Input`
+                    )->a( n = `value` v = `{ID_PREV}` ).
+
+    client->view_display( view->stringify( ) ).
+
+  ENDMETHOD.
+
+
+  METHOD z2ui5_if_app~main.
+
+    FIELD-SYMBOLS <tab> TYPE table.
+
+    me->client = client.
+
+    IF client->check_on_init( ).
+
+      CREATE DATA t_tab TYPE STANDARD TABLE OF (`Z2UI5_T_01`).
+      ASSIGN t_tab->* TO <tab>.
+
+      INSERT VALUE z2ui5_t_01( id = `this is an uuid`  timestampl = `2023234243`  id_prev = `previous` )
+        INTO TABLE <tab>.
+      INSERT VALUE z2ui5_t_01( id = `this is an uuid`  timestampl = `2023234243`  id_prev = `previous` )
+        INTO TABLE <tab>.
+      INSERT VALUE z2ui5_t_01( id = `this is an uuid`  timestampl = `2023234243`  id_prev = `previous` )
+        INTO TABLE <tab>.
+
+      set_view( ).
+
+    ELSEIF client->check_on_navigated( ).
+      set_view( ).
+    ENDIF.
+
+  ENDMETHOD.
+ENDCLASS.

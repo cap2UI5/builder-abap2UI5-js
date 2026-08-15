@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 /*
  * Generates the overview app's catalog from the folder tree.
- * (This is the smp_app_000 index page, not the Fiori Launchpad samples
- * app_481..484 in src/02/01.)
+ * (This is the smp_app_000 index page. It has nothing to do with the Fiori
+ * Launchpad - those demos live in abap2UI5/samples-stack, src/09.)
  *
- * Note: only src/01 has an overview app. The testing package (src/00/98), the
- * obsolete package (src/00/99) and the restricted samples (src/02) are
- * reported but not listed anywhere.
+ * Note: only src/01 has an overview app. Everything under src/00 - the
+ * experimental (src/00/97) and testing (src/00/98) samples - is reported but
+ * not listed anywhere.
  *
  * Job (see AGENTS.md §4):
  *   1. Scan every demo app class under src/ and read its abapGit <DESCRIPT>
  *      short text and the CTEXT of the subpackage it lives in.
  *   2. Derive each tile from that:
- *        - group  = subpackage CTEXT
- *        - header = DESCRIPT part before the first " - "
- *        - sub    = DESCRIPT part after the first " - " (empty if none)
+ *        - group    = subpackage CTEXT
+ *        - header   = DESCRIPT part before the first " - "
+ *        - sub      = DESCRIPT part after the first " - " (empty if none)
+ *        - keywords = the class's " @keywords ... comment line (optional),
+ *                     searched but never rendered
+ *        - path     = the class's folder relative to the repository root, for
+ *                     the source-code link on GitHub
  *      Apps whose header is "ZZZ" are helper apps (called only by other apps)
  *      and are skipped.
  *   3. Rewrite the result = VALUE #( ... ) block of get_catalog( ) in the
@@ -34,17 +38,16 @@ const SRC = path.join(__dirname, '..', 'src');
 // area (top-level package under src) -> overview app file. Every area listed
 // here must have its overview app in the tree - a missing file is an error,
 // not something to skip, because it means the catalog stops being generated.
-// src/00 and src/02 are deliberately absent: the testing package (src/00/98),
-// the obsolete package (src/00/99) and the restricted samples have no overview
-// app since the extended samples were reorganised, so their tiles are counted
-// but listed nowhere. Add an entry back here the day an extended overview
-// returns.
+// src/00 is deliberately absent: the experimental (src/00/97) and testing
+// (src/00/98) samples have no overview app since the extended samples were
+// reorganised, so their tiles are counted but listed nowhere. Add an entry back
+// here the day an extended overview returns.
 const TARGETS = {
-  '01': path.join(SRC, '01', 'z2ui5_cl_smp_app_000.clas.abap'),
+  '01': path.join(SRC, 'z2ui5_cl_smp_app_000.clas.abap'),
 };
 
-// The overview app lives under src/ too and shares the sample-app class-name
-// prefix. Skip it so an overview never lists itself as a tile.
+// The overview app lives in the src/ root package and shares the sample-app
+// class-name prefix. Skip it so an overview never lists itself as a tile.
 const OVERVIEW_APPS = new Set([
   'z2ui5_cl_smp_app_000',
 ]);
@@ -79,7 +82,7 @@ function splitDescript(d) {
   return i === -1 ? { header: t, sub: '' } : { header: t.slice(0, i), sub: t.slice(i + 3) };
 }
 
-// Controls-section tiles (the 02/03 demo-kit rebuilds) are shown without their
+// Controls-section tiles (the 01/03 demo-kit rebuilds) are shown without their
 // namespace prefix - the group heading already states it (sap.m, sap.uxap, …) -
 // and with a one-line, truncated description so the overview never wraps.
 const CONTROLS_SUB_MAX = 90;
@@ -108,7 +111,7 @@ function groupOf(dir) {
   return ctextCache[dir];
 }
 
-const tiles = { '00': [], '01': [], '02': [] };
+const tiles = { '00': [], '01': [] };
 let hidden = 0;
 
 for (const abap of walk(SRC)) {
@@ -121,7 +124,7 @@ for (const abap of walk(SRC)) {
   if (!cls.startsWith('z2ui5_cl_smp_app')) continue;
 
   const rel = path.relative(SRC, abap).split(path.sep); // [ area, ...subfolders, file ]
-  if (rel.length < 3) continue;
+  if (rel.length < 2) continue; // a class directly in src/ root is never a tile
   const area = rel[0];
   // full subfolder path ("03" or nested "03/01") so nested subpackages form
   // their own group directly after their parent slot
@@ -138,7 +141,15 @@ for (const abap of walk(SRC)) {
   // the 60-char DESCRIPT
   // the Rebuild line may be preceded by marker lines (e.g. the generated-port
   // marker), hence the multiline match
-  const doc = fs.readFileSync(abap, 'utf8')
+  const source = fs.readFileSync(abap, 'utf8');
+
+  // extra search terms, taken from the class's " @keywords line - they widen
+  // the overview's search without lengthening anything that is rendered
+  // (AGENTS.md §4). Plain comment, not ABAP Doc: an unknown "! @tag is
+  // reported by the extended check.
+  const keywords = (source.match(/^" @keywords (.+?)\r?$/m) || [, ''])[1].trim();
+
+  const doc = source
     .match(/^"! Rebuild of the UI5 demo kit sample: \S+\r?\n((?:"! .*\r?\n)+)/m);
   if (doc) {
     sub = doc[1].split(/\r?\n/)
@@ -157,8 +168,14 @@ for (const abap of walk(SRC)) {
   }
 
   if ((header + sub).includes('`')) throw new Error(`backtick in DESCRIPT of ${cls}`);
+  if (keywords.includes('`')) throw new Error(`backtick in @keywords of ${cls}`);
 
-  tiles[area].push({ subnum, group, header, sub, app: cls });
+  // repository-relative folder of the class, so the overview can link the
+  // source on GitHub - the class name does not encode the folder
+  // (FOLDER_LOGIC=PREFIX), so only the generator knows where a sample lives
+  const dir = ['src', area, ...rel.slice(1, -1)].join('/');
+
+  tiles[area].push({ subnum, group, header, sub, keywords, path: dir, app: cls });
 }
 
 // --- 2. sort --------------------------------------------------------------
@@ -185,21 +202,28 @@ function rewrite(file, list) {
   // ABAP sources are limited to 255 characters per line — longer lines break
   // the abapGit import ("Literals across more than one line are not allowed")
   const MAX_LINE = 255;
-  const rows = list.map((t) => {
-    const one = `${indent}( group = \`${t.group}\` header = \`${t.header}\` sub = \`${t.sub}\` app = \`${t.app}\` )`;
-    if (one.length <= MAX_LINE) return one;
-    // split the sub literal into && chunks so no line exceeds the limit
-    const subIndent = `${indent}  `;
-    const contIndent = `${subIndent}      `; // aligns under the first chunk's opening backtick
+  // one field on its own line(s), the literal split into && chunks so no line
+  // exceeds the limit; continuation lines align under the opening backtick
+  const chunked = (name, value, fieldIndent) => {
+    const first = `${fieldIndent}${name} = `;
+    const contIndent = ' '.repeat(first.length);
     const chunkSize = MAX_LINE - contIndent.length - 6;
     const chunks = [];
-    for (let s = t.sub; s.length; s = s.slice(chunkSize)) chunks.push(s.slice(0, chunkSize));
-    const subLines = chunks.map((c, i) =>
-      `${i === 0 ? `${subIndent}sub = ` : contIndent}\`${c}\`${i < chunks.length - 1 ? ' &&' : ''}`);
+    for (let s = value; s.length; s = s.slice(chunkSize)) chunks.push(s.slice(0, chunkSize));
+    if (chunks.length === 0) chunks.push('');
+    return chunks.map((c, i) =>
+      `${i === 0 ? first : contIndent}\`${c}\`${i < chunks.length - 1 ? ' &&' : ''}`);
+  };
+  const rows = list.map((t) => {
+    const kw = t.keywords ? ` keywords = \`${t.keywords}\`` : '';
+    const one = `${indent}( group = \`${t.group}\` header = \`${t.header}\` sub = \`${t.sub}\`${kw} path = \`${t.path}\` app = \`${t.app}\` )`;
+    if (one.length <= MAX_LINE) return one;
+    const fieldIndent = `${indent}  `;
     return [
       `${indent}( group = \`${t.group}\` header = \`${t.header}\``,
-      ...subLines,
-      `${subIndent}app = \`${t.app}\` )`,
+      ...chunked('sub', t.sub, fieldIndent),
+      ...(t.keywords ? chunked('keywords', t.keywords, fieldIndent) : []),
+      `${fieldIndent}path = \`${t.path}\` app = \`${t.app}\` )`,
     ].join('\n');
   });
   // the last row additionally closes the constructor + statement

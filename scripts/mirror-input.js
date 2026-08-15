@@ -10,14 +10,15 @@
  * Each stream owns exactly one top-level folder under run/input/ and
  * rewrites it from scratch on every run, so upstream deletions propagate and the
  * three streams never clobber each other (backend and frontend both come from
- * the abap2UI5 repo but land in separate folders). samples comes from the cloud
- * branch (rebuilt by its auto_cloud workflow on every push to standard) — it
- * already excludes the on-premise-only apps under src/00, which cannot run in
- * the CAP/Node environment anyway.
+ * the abap2UI5 repo but land in separate folders). samples comes from the
+ * samples repo's default branch `main`: every sample there is ABAP Cloud ready
+ * (the repo has no on-premise-only package and, since 2026-08-12, no `cloud`
+ * branch — cloud systems install `main` itself).
  *
  * Wipe policy: run/input/<dir>/ is always wiped first, then repopulated —
  *   - A source WITH `paths` copies each configured subtree (from → to).
  *   - A source WITHOUT `paths` mirrors its ENTIRE checkout (everything except .git).
+ *   - `exclude` drops paths from the mirrored result afterwards.
  *
  * The upstream commit is recorded in run/input/<dir>/UPSTREAM_COMMIT.
  * Set MIRROR_SOURCE=/path/to/checkout to use a local copy instead of cloning
@@ -35,8 +36,17 @@ const SOURCES = {
   abap2UI5: { url: A2U, dir: "abap2UI5", paths: [{ from: "src", to: "src" }] },
   // frontend: the static UI5 webapp, prepared into the CAP app folder
   app: { url: A2U, dir: "app", paths: [{ from: "app/webapp", to: "webapp" }] },
-  // samples: the whole cloud branch mirrored 1:1 (everything except .git)
-  samples: { url: "https://github.com/abap2UI5/samples", dir: "samples", branch: "cloud" },
+  // samples: the whole default branch mirrored 1:1 (everything except .git),
+  // minus the two packages upstream itself strips from its published build:
+  // 00/97 "experimental" (work in progress) and 00/98 "testing" (scaffolding,
+  // not demos). Everything else — the catalog in 01, the shared helpers in
+  // 00/01 and the overview app in the src root — is bundled with the core.
+  samples: {
+    url: "https://github.com/abap2UI5/samples",
+    dir: "samples",
+    branch: "main",
+    exclude: ["src/00/97", "src/00/98"],
+  },
 };
 
 const name = process.argv[2];
@@ -79,6 +89,9 @@ if (cfg.paths) {
   for (const p of fs.readdirSync(source).filter((e) => e !== ".git")) {
     fs.cpSync(path.join(source, p), path.join(dest, p), { recursive: true });
   }
+}
+for (const rel of cfg.exclude ?? []) {
+  fs.rmSync(path.join(dest, rel), { recursive: true, force: true });
 }
 fs.mkdirSync(dest, { recursive: true });
 fs.writeFileSync(path.join(dest, "UPSTREAM_COMMIT"), commit + "\n");
