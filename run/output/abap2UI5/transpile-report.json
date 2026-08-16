@@ -121,6 +121,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_ui5f_abapsrc_js",
+    "path": "01/03/z2ui5_cl_ui5f_abapsrc_js.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_ui5f_browser_js",
     "path": "01/03/z2ui5_cl_ui5f_browser_js.js",
     "todos": 0,
@@ -141,6 +147,12 @@
   {
     "class": "z2ui5_cl_ui5f_devtools_js",
     "path": "01/03/z2ui5_cl_ui5f_devtools_js.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_ui5f_dtformat_js",
+    "path": "01/03/z2ui5_cl_ui5f_dtformat_js.js",
     "todos": 0,
     "todoDetails": []
   },
@@ -211,6 +223,12 @@
     "todoDetails": []
   },
   {
+    "class": "z2ui5_cl_ui5f_report_js",
+    "path": "01/03/z2ui5_cl_ui5f_report_js.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
     "class": "z2ui5_cl_ui5f_router_js",
     "path": "01/03/z2ui5_cl_ui5f_router_js.js",
     "todos": 0,
@@ -237,6 +255,12 @@
   {
     "class": "z2ui5_cl_ui5f_slots_js",
     "path": "01/03/z2ui5_cl_ui5f_slots_js.js",
+    "todos": 0,
+    "todoDetails": []
+  },
+  {
+    "class": "z2ui5_cl_ui5f_tabs_js",
+    "path": "01/03/z2ui5_cl_ui5f_tabs_js.js",
     "todos": 0,
     "todoDetails": []
   },
