@@ -149,6 +149,8 @@ module.exports = {
    * deployments — see z2ui5_identity.
    */
   set_identity: (provider) => z2ui5_identity.set_provider(provider),
+  /** Session key for an explicit identity — see z2ui5_identity.key_for. */
+  session_key_for: (identity) => z2ui5_identity.key_for(identity),
 
   // ---- app registry ----
   register_app_class: (name, cls) =>

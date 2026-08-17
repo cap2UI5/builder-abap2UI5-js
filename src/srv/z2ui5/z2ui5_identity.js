@@ -88,8 +88,19 @@ module.exports = {
    * comment: a process-wide constant must not masquerade as a session key.
    */
   session_key() {
-    const id = _ask();
-    if (!id) return null;
+    return module.exports.key_for(_ask());
+  },
+
+  /**
+   * The session key for an explicitly supplied identity, null when it names
+   * nobody. Hosts need this on request paths where their own auth context is
+   * not active and the provider therefore cannot answer — a public route that
+   * still has to address one user's session state, e.g. the tab-close beacon
+   * that releases a sticky handler. Exposed so callers derive the key through
+   * the one place that defines its format instead of rebuilding it.
+   */
+  key_for(id) {
+    if (!id || typeof id !== `object`) return null;
     const user = id.user != null ? String(id.user) : ``;
     const tenant = id.tenant != null ? String(id.tenant) : ``;
     if (!user && !tenant) return null;
