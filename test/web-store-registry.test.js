@@ -13,7 +13,7 @@ const z2ui5_cl_util = require("../core/srv/z2ui5/00/03/z2ui5_cl_util");
 const DB = require("../core/srv/z2ui5/01/01/z2ui5_cl_ui5_srv_draft");
 const Handler = require("../core/srv/z2ui5/01/02/z2ui5_cl_ui5_handler");
 const z2ui5_if_app = require("../core/srv/z2ui5/02/z2ui5_if_app");
-const z2ui5_cl_xml_view = require("../core/srv/z2ui5/02/z2ui5_cl_xml_view");
+const z2ui5_cl_ui5_view_builder = require("../core/srv/z2ui5/02/z2ui5_cl_ui5_view_builder");
 
 // Registered at runtime only — this class has no file on disk, so every
 // lookup that succeeds must have gone through the registry.
@@ -22,7 +22,12 @@ class my_registry_only_app extends z2ui5_if_app {
 
   async main(client) {
     this.counter += 1;
-    const view = z2ui5_cl_xml_view.factory().shell().page(`registry test`).text(`hello`);
+    const view = z2ui5_cl_ui5_view_builder.factory()
+      .ele({ n: `View`, ns: `mvc` })
+      .a({ n: `xmlns`, v: `sap.m` })
+      .a({ n: `xmlns:mvc`, v: `sap.ui.core.mvc` });
+    view.ele(`Shell`).ele(`Page`).a({ n: `title`, v: `registry test` })
+      .tag({ n: `Text` }).a({ n: `text`, v: `hello` });
     client.view_display(view.stringify());
   }
 }

@@ -2137,8 +2137,8 @@ function transpileClass(source, filename, opts = {}) {
     const pmap = derivePreferredMap(file);
     const entries = Object.entries(pmap);
     if (entries.length) {
-      lines.push(`// abap PREFERRED PARAMETER call style — see z2ui5_pop_preferred_param.js`);
-      lines.push(`require("abap2UI5/z2ui5_pop_preferred_param")(${model.name}, {`);
+      lines.push(`// abap PREFERRED PARAMETER call style — see z2ui5_preferred_param.js`);
+      lines.push(`require("abap2UI5/z2ui5_preferred_param")(${model.name}, {`);
       for (const [meth, { preferred, params }] of entries) {
         lines.push(`  ${meth}: { preferred: \`${preferred}\`, params: [${params.map((p) => `\`${p}\``).join(", ")}] },`);
       }

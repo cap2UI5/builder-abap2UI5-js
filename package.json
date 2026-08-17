@@ -9,7 +9,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "jest --config jest.config.js --verbose",
+    "test": "node scripts/check-no-frozen.js && jest --config jest.config.js --verbose",
     "test:watch": "jest --config jest.config.js --watch",
     "transpile": "node scripts/abap2js.js",
     "mirror_abap2ui5": "node scripts/mirror-input.js abap2UI5",
@@ -23,7 +23,8 @@
     "assemble_core": "node scripts/assemble-core.js",
     "publish_core": "node scripts/publish-core.js",
     "build_core": "node scripts/assemble-core.js && node scripts/publish-core.js",
-    "coverage": "jest --config jest.config.js --coverage"
+    "coverage": "jest --config jest.config.js --coverage",
+    "check_frozen": "node scripts/check-no-frozen.js"
   },
   "devDependencies": {
     "@abaplint/core": "^2.119.56",

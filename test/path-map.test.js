@@ -73,12 +73,14 @@ describe("package path map", () => {
   });
 
   test("more specific patterns win over broader ones", () => {
-    // `./z2ui5_cl_util_*` must not shadow `./z2ui5_cl_util_db`, which the
-    // manifest places in a different directory. Ordering is the only thing
-    // that makes jest's first-match-wins agree with npm's most-specific-wins.
-    const db = pathMap.fileFor("z2ui5_cl_util_db");
-    const api = pathMap.fileFor("z2ui5_cl_util_api");
-    expect(db).toMatch(/00[/\\]03[/\\]01[/\\]z2ui5_cl_util_db\.js$/);
-    expect(api).toMatch(/00[/\\]03[/\\]02[/\\]z2ui5_cl_util_api\.js$/);
+    // `./z2ui5_cl_util_*` must not shadow `./z2ui5_cl_util_api`, which the
+    // manifest places in a different directory, and the broad
+    // `./z2ui5_cl_ui5_app_*` must not shadow the explicit
+    // `./z2ui5_cl_ui5_app_cont`. Ordering is the only thing that makes jest's
+    // first-match-wins agree with npm's most-specific-wins.
+    expect(pathMap.fileFor("z2ui5_cl_util_api")).toMatch(/00[/\\]03[/\\]02[/\\]z2ui5_cl_util_api\.js$/);
+    expect(pathMap.fileFor("z2ui5_cl_util_http")).toMatch(/00[/\\]03[/\\]z2ui5_cl_util_http\.js$/);
+    expect(pathMap.fileFor("z2ui5_cl_ui5_app_cont")).toMatch(/01[/\\]02[/\\]z2ui5_cl_ui5_app_cont\.js$/);
+    expect(pathMap.fileFor("z2ui5_cl_ui5_app_start")).toMatch(/01[/\\]04[/\\]z2ui5_cl_ui5_app_start\.js$/);
   });
 });

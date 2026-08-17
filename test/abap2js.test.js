@@ -13,10 +13,13 @@ function loadGenerated(code) {
   return m.exports;
 }
 
-function createClient(app, { event = "", args = [] } = {}) {
+function createClient(app, { event = "", args = [], navigated = false } = {}) {
   const client = new Client();
   client.oApp = app;
   client.oReq = { S_FRONT: { EVENT: event, T_EVENT_ARG: args } };
+  // The shipped hello-world renders on check_on_navigated( ), which is the
+  // first render of an app reached by navigation — the start page calls it.
+  client._check_on_navigated = navigated;
   app.client = client;
   return client;
 }
@@ -32,9 +35,9 @@ describe("abap2js transpiler", () => {
       AppClass = loadGenerated(code);
     });
 
-    test("renders the view on init", async () => {
+    test("renders the view when navigated to", async () => {
       const app = new AppClass();
-      const client = createClient(app);
+      const client = createClient(app, { navigated: true });
       await app.main(client);
 
       expect(client.S_VIEW.XML).toContain("Hello World");
@@ -288,15 +291,19 @@ ENDCLASS.
   });
 
   describe("view builder preferred-parameter shim", () => {
-    const View = require("abap2UI5/z2ui5_cl_xml_view");
+    const View = require("abap2UI5/z2ui5_cl_ui5_view_builder");
 
-    test("positional strings map to the abap PREFERRED PARAMETER", () => {
-      const view = View.factory();
-      view.shell().page(`Home`).label(`Name`).input(`{/XX/name}`);
+    test("a positional argument maps to the abap PREFERRED PARAMETER", () => {
+      // `.ele("Page")` ≡ `.ele({ n: "Page" })` — transpiled ABAP callers pass
+      // the preferred parameter positionally, and destructuring a bare string
+      // would silently yield undefined for every field.
+      const view = View.factory().ele({ n: `View`, ns: `mvc` });
+      view.ele(`Shell`).ele(`Page`).a({ n: `title`, v: `Home` })
+        .tag({ n: `Label` }).a({ n: `text`, v: `Name` });
       const xml = view.stringify();
+      expect(xml).toContain(`<Shell>`);
       expect(xml).toContain(`title="Home"`);
       expect(xml).toContain(`text="Name"`);
-      expect(xml).toContain(`value="{/XX/name}"`);
     });
   });
 });

@@ -33,7 +33,12 @@ const { execSync } = require("child_process");
 const A2U = "https://github.com/abap2UI5/abap2UI5";
 const SOURCES = {
   // backend: the ABAP framework sources, transpiled into srv/z2ui5
-  abap2UI5: { url: A2U, dir: "abap2UI5", paths: [{ from: "src", to: "src" }] },
+  // src/99 is upstream's frozen package (retired utilities, obsolete popups,
+  // the legacy view builder, the deprecated http_handler shim). It ships there
+  // only so abapGit installations keep compiling on upgrade — a reason that
+  // does not exist for an npm package — and upstream has zero consumers on it.
+  // Not mirrored, so nothing downstream can grow one either.
+  abap2UI5: { url: A2U, dir: "abap2UI5", paths: [{ from: "src", to: "src" }], exclude: ["src/99"] },
   // frontend: the static UI5 webapp, prepared into the CAP app folder
   app: { url: A2U, dir: "app", paths: [{ from: "app/webapp", to: "webapp" }] },
   // samples: the whole default branch mirrored 1:1 (everything except .git),

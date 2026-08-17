@@ -51,3 +51,7 @@ jobs:
       # block here, where a human is already looking, while the nightly only
       # warns so an upstream sync is never blocked.
       - run: node scripts/check-port-drift.js --strict
+      # Upstream's src/99 is frozen legacy and is deliberately not carried
+      # here; the mirror and the transpiler skip it, and this keeps them
+      # skipping it (see the script header).
+      - run: npm run check_frozen
