@@ -1,4 +1,6 @@
 " @keywords navcontainer icontabbar icontabheader page switch control_by_id whitelisted
+" @summary Switches the page of a NavContainer and the tab of an IconTabBar by ID, so navigation inside a view costs no roundtrip.
+" @docs https://abap2ui5.github.io/docs/cookbook/expert_more/follow_up_action
 CLASS z2ui5_cl_smp_app_088 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -27,6 +29,8 @@ CLASS z2ui5_cl_smp_app_088 IMPLEMENTATION.
     IF client->check_on_init( ).
       mv_page = `page1`.
       view_display( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
 
     ELSE.
       on_event( ).
@@ -37,25 +41,14 @@ CLASS z2ui5_cl_smp_app_088 IMPLEMENTATION.
 
   METHOD on_event.
 
-    CASE client->get_event( ).
-      WHEN OTHERS.
-        mv_page = client->get_event( ).
-        view_display( ).
-
-    ENDCASE.
+    mv_page = client->get_event( ).
+    view_display( ).
 
   ENDMETHOD.
 
 
   METHOD view_display.
 
-    DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
-        )->ele( n = `View` ns = `mvc`
-            )->a( n = `displayBlock` v = `true`
-            )->a( n = `height`       v = `100%`
-            )->a( n = `xmlns`        v = `sap.m`
-            )->a( n = `xmlns:mvc`    v = `sap.ui.core.mvc`
-            )->a( n = `xmlns:core`   v = `sap.ui.core` ).
     DATA(page) = z2ui5_cl_ui5_view_builder=>factory(
         )->ele( n = `View` ns = `mvc`
             )->a( n = `displayBlock` v = `true`
@@ -80,7 +73,7 @@ CLASS z2ui5_cl_smp_app_088 IMPLEMENTATION.
     page->ele( `IconTabHeader`
         )->a( n = `selectedKey` v = client->_bind( mv_selected_key )
         )->a( n = `select`      v = client->follow_up_action( val   = client->cs_event-control_by_id
-                                                                                     t_arg = VALUE #( ( `NavCon` ) ( `to` ) ( `${$parameters>/selectedKey}` ) ) )
+                                                                                     t_arg = VALUE #( ( `NavCon` ) ( `to` ) ( `${$parameters>/key}` ) ) )
         )->a( n = `mode`        v = `Inline`
         )->ele( `items`
             )->ele( `IconTabFilter`

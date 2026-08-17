@@ -1,4 +1,6 @@
 " @keywords fileuploader base64 attachment import picture document
+" @summary Takes a file from the FileUploader into the backend as base64 - a picture or a document, arriving as an xstring.
+" @docs https://abap2ui5.github.io/docs/cookbook/device_capabilities/upload_download
 CLASS z2ui5_cl_smp_app_074 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -18,14 +20,13 @@ CLASS z2ui5_cl_smp_app_074 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_074 IMPLEMENTATION.
 
 
   METHOD z2ui5_if_app~main.
 
     me->client = client.
-    IF client->check_on_init( ) OR client->check_on_navigated( ).
+    IF client->check_on_navigated( ).
       view_display( ).
     ELSE.
       on_event( ).
@@ -72,6 +73,8 @@ CLASS z2ui5_cl_smp_app_074 IMPLEMENTATION.
 
   METHOD view_display.
 
+    FIELD-SYMBOLS <table> TYPE table.
+
     DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
         )->ele( n = `View` ns = `mvc`
             )->a( n = `displayBlock` v = `true`
@@ -96,7 +99,6 @@ CLASS z2ui5_cl_smp_app_074 IMPLEMENTATION.
 
     IF table IS NOT INITIAL.
 
-      FIELD-SYMBOLS <table> TYPE table.
       ASSIGN table->* TO <table>.
 
       DATA(tab) = page->ele( `Table`

@@ -1,4 +1,6 @@
 " @keywords selectionmode none single multi segmentedbutton checkbox
+" @summary The table selection modes - none, single and multi - side by side, and what each returns.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/tables
 CLASS z2ui5_cl_smp_app_019 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -152,6 +154,8 @@ CLASS z2ui5_cl_smp_app_019 IMPLEMENTATION.
           ( title = `title_03` value = `value_03` )
           ( title = `title_04` value = `value_04` )
           ( title = `title_05` value = `value_05` ) ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
 
     ELSEIF client->check_on_event( `BUTTON_SEGMENT_CHANGE` ).
       client->message_toast_display( `Selection Mode changed` ).

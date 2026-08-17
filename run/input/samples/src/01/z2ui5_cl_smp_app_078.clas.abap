@@ -1,4 +1,6 @@
 " @keywords multiinput token tokens suggestion custom control
+" @summary A MultiInput with tokens and suggestions bound to an internal table - the value help for a field that holds many values at once.
+" @docs https://abap2ui5.github.io/docs/cookbook/expert_more/value_help
 CLASS z2ui5_cl_smp_app_078 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -13,7 +15,6 @@ CLASS z2ui5_cl_smp_app_078 DEFINITION PUBLIC.
         editable TYPE abap_bool,
       END OF ty_s_token.
 
-    DATA mv_value          TYPE string.
     DATA mt_token          TYPE STANDARD TABLE OF ty_s_token WITH EMPTY KEY.
     DATA mt_tokens_added TYPE STANDARD TABLE OF ty_s_token WITH EMPTY KEY.
     DATA mt_tokens_removed TYPE STANDARD TABLE OF ty_s_token WITH EMPTY KEY.
@@ -23,13 +24,12 @@ CLASS z2ui5_cl_smp_app_078 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_078 IMPLEMENTATION.
 
 
   METHOD z2ui5_if_app~main.
 
-    IF client->check_on_init( ).
+    IF client->check_on_navigated( ).
 
       DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
           )->ele( n = `View` ns = `mvc`
@@ -99,21 +99,18 @@ CLASS z2ui5_cl_smp_app_078 IMPLEMENTATION.
 
     ENDIF.
 
-    CASE client->get_event( ).
+    IF client->get_event( ) = `UPDATE_BACKEND`.
+      LOOP AT mt_tokens_removed INTO DATA(ls_token).
+        DELETE mt_token WHERE key = ls_token-key.
+      ENDLOOP.
 
-      WHEN `UPDATE_BACKEND`.
+      LOOP AT mt_tokens_added INTO ls_token.
+        INSERT VALUE #( key = ls_token-key text = ls_token-text visible = abap_true editable = abap_true ) INTO TABLE mt_token.
+      ENDLOOP.
 
-        LOOP AT mt_tokens_removed INTO DATA(ls_token).
-          DELETE mt_token WHERE key = ls_token-key.
-        ENDLOOP.
-
-        LOOP AT mt_tokens_added INTO ls_token.
-          INSERT VALUE #( key = ls_token-key text = ls_token-text visible = abap_true editable = abap_true ) INTO TABLE mt_token.
-        ENDLOOP.
-
-        mt_tokens_removed = VALUE #( ).
-        mt_tokens_added   = VALUE #( ).
-    ENDCASE.
+      mt_tokens_removed = VALUE #( ).
+      mt_tokens_added   = VALUE #( ).
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

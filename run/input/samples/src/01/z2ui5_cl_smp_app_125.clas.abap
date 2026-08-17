@@ -1,4 +1,6 @@
 " @keywords document.title tab caption headline set_title
+" @summary Sets the browser tab title from the app, so a bookmarked or duplicated window says which app it holds.
+" @docs https://abap2ui5.github.io/docs/cookbook/browser_interaction/title
 CLASS z2ui5_cl_smp_app_125 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -11,13 +13,12 @@ CLASS z2ui5_cl_smp_app_125 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_125 IMPLEMENTATION.
 
 
   METHOD z2ui5_if_app~main.
 
-    IF client->check_on_init( ).
+    IF client->check_on_navigated( ).
 
       DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
           )->ele( n = `View` ns = `mvc`

@@ -1,4 +1,6 @@
 " @keywords placement anchor button confirm cancel popover_display
+" @summary A Popover anchored to the control that opened it, with the placements to choose from and a confirm/cancel footer.
+" @docs https://abap2ui5.github.io/docs/cookbook/popup_popover/popover
 CLASS z2ui5_cl_smp_app_026 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -32,6 +34,8 @@ CLASS z2ui5_cl_smp_app_026 IMPLEMENTATION.
       product   = `tomato`.
       quantity  = `500`.
 
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
 
     ELSEIF client->check_on_event( `POPOVER` ).
@@ -119,7 +123,7 @@ CLASS z2ui5_cl_smp_app_026 IMPLEMENTATION.
                 )->a( n = `text` v = `Link`
             )->tag( `Link`
                 )->a( n = `text` v = `Documentation UI5 Popover Control`
-                )->a( n = `href` v = `https://openui5.hana.ondemand.com/entity/sap.m.Popover`
+                )->a( n = `href` v = `https://sdk.openui5.org/entity/sap.m.Popover`
             )->tag( `Label`
                 )->a( n = `text` v = `placement`
             )->ele( `SegmentedButton`

@@ -1,4 +1,5 @@
 " @keywords color background conditional formatting style data attribute
+" @summary Colours single table cells from the backend: the row carries its colour as custom data and a stylesheet turns it into a background.
 CLASS z2ui5_cl_smp_app_305 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -127,6 +128,8 @@ CLASS z2ui5_cl_smp_app_305 IMPLEMENTATION.
           ( title = `entry 05`  value = `orange` )
           ( title = `entry 06`  value = `grey` ) ).
 
+      set_view( ).
+    ELSEIF client->check_on_navigated( ).
       set_view( ).
     ENDIF.
 

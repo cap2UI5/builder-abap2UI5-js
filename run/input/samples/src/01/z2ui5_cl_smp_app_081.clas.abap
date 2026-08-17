@@ -1,4 +1,6 @@
 " @keywords list selection placement anchor
+" @summary A Popover holding a list to pick from - the anchored alternative to a full dialog.
+" @docs https://abap2ui5.github.io/docs/cookbook/popup_popover/popover
 CLASS z2ui5_cl_smp_app_081 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -130,7 +132,7 @@ CLASS z2ui5_cl_smp_app_081 IMPLEMENTATION.
                 )->a( n = `text` v = `Link`
             )->tag( `Link`
                 )->a( n = `text` v = `Documentation UI5 Popover Control`
-                )->a( n = `href` v = `https://openui5.hana.ondemand.com/entity/sap.m.Popover`
+                )->a( n = `href` v = `https://sdk.openui5.org/entity/sap.m.Popover`
             )->tag( `Label`
                 )->a( n = `text` v = `placement`
             )->ele( `SegmentedButton`
@@ -171,6 +173,8 @@ CLASS z2ui5_cl_smp_app_081 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       on_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
 
     ELSE.

@@ -1,4 +1,6 @@
 " @keywords export save base64 attachment xstring document
+" @summary Sends a file to the browser as a download - an xstring encoded as base64, handed over as an attachment.
+" @docs https://abap2ui5.github.io/docs/cookbook/device_capabilities/upload_download
 CLASS z2ui5_cl_smp_app_186 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -113,6 +115,8 @@ CLASS z2ui5_cl_smp_app_186 IMPLEMENTATION.
     IF client->check_on_init( ).
 
       initialize( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
 
     ENDIF.

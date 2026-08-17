@@ -1,4 +1,6 @@
 " @keywords f4 search help suggestion input dialog select
+" @summary The value help, both halves: suggestions while typing and the F4 dialog behind the field, over the same data.
+" @docs https://abap2ui5.github.io/docs/cookbook/popup_popover/popup https://abap2ui5.github.io/docs/cookbook/expert_more/value_help
 CLASS z2ui5_cl_smp_app_009 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -66,6 +68,8 @@ CLASS z2ui5_cl_smp_app_009 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       on_init( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
 
     ELSEIF client->check_on_event( ).
       on_event( ).

@@ -1,4 +1,6 @@
 " @keywords initial render one roundtrip anchor button
+" @summary View and popover in ONE roundtrip: both displayed from the same main( ) call, with the popover anchored to a button built in that very response.
+" @docs https://abap2ui5.github.io/docs/cookbook/popup_popover/popover
 "! View and popover in ONE roundtrip: view_display( ) and popover_display( )
 "! from the same main( ) call. The popover anchors to a button of the view
 "! that is built in this very response - the framework runs the display
@@ -33,6 +35,8 @@ CLASS z2ui5_cl_smp_app_490 IMPLEMENTATION.
       " popover anchored to a control of that very view
       view_display( ).
       popover_display( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
     ELSEIF client->check_on_event( `REBUILD_AND_OPEN` ).
       " same pair on an event roundtrip: the view is REPLACED and the
       " popover opens on the freshly built anchor

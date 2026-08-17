@@ -1,4 +1,6 @@
 " @keywords formatter parts conditional regexp visible enabled syntax
+" @summary Expression binding in the view - conditions, composite parts and a regular expression decide visible and enabled without asking the backend.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/expression_binding
 CLASS z2ui5_cl_smp_app_027 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -22,7 +24,6 @@ CLASS z2ui5_cl_smp_app_027 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_027 IMPLEMENTATION.
 
 
@@ -35,6 +36,8 @@ CLASS z2ui5_cl_smp_app_027 IMPLEMENTATION.
       product  = `tomato`.
       quantity = `500`.
       input41  = `faasdfdfsaVIp`.
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
 
     ENDIF.
 
@@ -89,7 +92,7 @@ CLASS z2ui5_cl_smp_app_027 IMPLEMENTATION.
             )->a( n = `text` v = `Documentation`
         )->tag( `Link`
             )->a( n = `text` v = `Expression Binding`
-            )->a( n = `href` v = `https://sapui5.hana.ondemand.com/sdk/#/topic/daf6852a04b44d118963968a1239d2c0`
+            )->a( n = `href` v = `https://sdk.openui5.org/topic/daf6852a04b44d118963968a1239d2c0`
         )->tag( `Label`
             )->a( n = `text` v = `input in uppercase`
         )->tag( `Input`

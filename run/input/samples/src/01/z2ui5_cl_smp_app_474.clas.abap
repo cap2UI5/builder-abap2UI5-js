@@ -1,4 +1,6 @@
 " @keywords url policy link security validator relative allow deny
+" @summary The URL policy of a MessagePopover: which links it will follow and which it refuses, and why the default is the strict one.
+" @docs https://abap2ui5.github.io/docs/cookbook/translation_messages/message
 CLASS z2ui5_cl_smp_app_474 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -111,7 +113,7 @@ CLASS z2ui5_cl_smp_app_474 IMPLEMENTATION.
                 )->a( n = `type`              v = `Warning`
                 )->a( n = `title`             v = `Delivery date in the past`
                 )->a( n = `description`       v = `Open the <a href="#/deliveries">delivery list</a> or the ` &&
-                                    `<a href="https://ui5.sap.com">UI5 demo kit</a>.`
+                                    `<a href="https://sdk.openui5.org">UI5 demo kit</a>.`
                 )->a( n = `markupDescription` b = abap_true
             )->end(
         )->end( ).

@@ -1,10 +1,11 @@
 " @keywords wizard step branching discardprogress setnextstep control_by_id
+" @summary Drives a Wizard from the backend: setting the next step and discarding progress by ID, which is how a branching wizard is steered.
+" @docs https://abap2ui5.github.io/docs/cookbook/expert_more/follow_up_action
 CLASS z2ui5_cl_smp_app_202 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
     INTERFACES z2ui5_if_app.
 
-    DATA av_next TYPE string VALUE `Step22` ##NO_TEXT.
 
   PROTECTED SECTION.
     METHODS view_display
@@ -13,7 +14,6 @@ CLASS z2ui5_cl_smp_app_202 DEFINITION PUBLIC.
 
   PRIVATE SECTION.
 ENDCLASS.
-
 
 
 CLASS z2ui5_cl_smp_app_202 IMPLEMENTATION.
@@ -104,6 +104,8 @@ CLASS z2ui5_cl_smp_app_202 IMPLEMENTATION.
 
       view_display( client ).
       RETURN.
+    ELSEIF client->check_on_navigated( ).
+      view_display( client ).
     ENDIF.
 
     CASE client->get_event( ).

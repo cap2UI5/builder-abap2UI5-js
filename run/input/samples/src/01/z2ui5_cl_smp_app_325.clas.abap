@@ -1,4 +1,6 @@
 " @keywords clipboard paste copy text area
+" @summary Copies text into the browser clipboard from the backend: a follow-up action carries the string, a toast confirms what landed there.
+" @docs https://abap2ui5.github.io/docs/cookbook/browser_interaction/clipboard
 CLASS z2ui5_cl_smp_app_325 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -12,13 +14,12 @@ CLASS z2ui5_cl_smp_app_325 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_325 IMPLEMENTATION.
 
 
   METHOD z2ui5_if_app~main.
 
-    IF client->check_on_init( ).
+    IF client->check_on_navigated( ).
 
       DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
           )->ele( n = `View` ns = `mvc`

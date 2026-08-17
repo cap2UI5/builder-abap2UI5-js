@@ -6,25 +6,19 @@
  *
  * Note: only src/01 has an overview app. Everything under src/00 - the
  * experimental (src/00/97) and testing (src/00/98) samples - is reported but
- * not listed anywhere.
+ * not listed in any app. SAMPLES.md lists it, which is what
+ * scripts/generate-samples-md.js is for; both read the same scan
+ * (scripts/lib/scan-samples.js), so the app and the markdown can never
+ * disagree about what this repository contains.
  *
- * Job (see AGENTS.md §4):
- *   1. Scan every demo app class under src/ and read its abapGit <DESCRIPT>
- *      short text and the CTEXT of the subpackage it lives in.
- *   2. Derive each tile from that:
- *        - group    = subpackage CTEXT
- *        - header   = DESCRIPT part before the first " - "
- *        - sub      = DESCRIPT part after the first " - " (empty if none)
- *        - keywords = the class's " @keywords ... comment line (optional),
- *                     searched but never rendered
- *        - path     = the class's folder relative to the repository root, for
- *                     the source-code link on GitHub
- *      Apps whose header is "ZZZ" are helper apps (called only by other apps)
- *      and are skipped.
- *   3. Rewrite the result = VALUE #( ... ) block of get_catalog( ) in the
- *      overview app of the area (src/01 -> smp_app_000):
- *        - groups in folder-number order
- *        - tiles within a group sorted by header, then sub, then app
+ * Job (see AGENTS.md section 4): scan every demo app class under src/, derive
+ * a tile from its abapGit <DESCRIPT> and the CTEXT of its subpackage (that is
+ * scan-samples.js), then rewrite the result = VALUE #( ... ) block of
+ * get_catalog( ) in the overview app of the area (src/01 -> smp_app_000):
+ *   - groups in folder-number order
+ *   - tiles within a group sorted by header, then sub, then app
+ * Apps whose header is "ZZZ" are helper apps (called only by other apps) and
+ * are skipped.
  *
  * No dependencies. Run:  node scripts/generate-launchpad.js   (or: npm run launchpad)
  * Afterwards run abaplint (must be 0 issues).
@@ -32,8 +26,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const SRC = path.join(__dirname, '..', 'src');
+const { SRC, scanSamples } = require('./lib/scan-samples');
 
 // area (top-level package under src) -> overview app file. Every area listed
 // here must have its overview app in the tree - a missing file is an error,
@@ -46,45 +39,10 @@ const TARGETS = {
   '01': path.join(SRC, 'z2ui5_cl_smp_app_000.clas.abap'),
 };
 
-// The overview app lives in the src/ root package and shares the sample-app
-// class-name prefix. Skip it so an overview never lists itself as a tile.
-const OVERVIEW_APPS = new Set([
-  'z2ui5_cl_smp_app_000',
-]);
-
-function walk(dir, out = []) {
-  for (const name of fs.readdirSync(dir)) {
-    const full = path.join(dir, name);
-    const st = fs.statSync(full);
-    if (st.isDirectory()) walk(full, out);
-    else out.push(full);
-  }
-  return out;
-}
-
-function tag(xml, name) {
-  const m = xml.match(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`));
-  return m ? m[1] : '';
-}
-
-function unescapeXml(s) {
-  return s
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, '&');
-}
-
-function splitDescript(d) {
-  const t = unescapeXml(d).trim();
-  const i = t.indexOf(' - ');
-  return i === -1 ? { header: t, sub: '' } : { header: t.slice(0, i), sub: t.slice(i + 3) };
-}
-
 // Controls-section tiles (the 01/03 demo-kit rebuilds) are shown without their
 // namespace prefix - the group heading already states it (sap.m, sap.uxap, …) -
 // and with a one-line, truncated description so the overview never wraps.
+// A rendering decision, which is why it lives here and not in the scan.
 const CONTROLS_SUB_MAX = 90;
 
 // keep only the entity name after the last dot: sap.m.Switch -> Switch
@@ -102,93 +60,17 @@ function truncateSub(sub) {
 }
 
 // --- 1. scan --------------------------------------------------------------
-const ctextCache = {};
-function groupOf(dir) {
-  if (!(dir in ctextCache)) {
-    const p = path.join(dir, 'package.devc.xml');
-    ctextCache[dir] = fs.existsSync(p) ? tag(fs.readFileSync(p, 'utf8'), 'CTEXT') : '';
+const { areas: tiles, hidden } = scanSamples();
+
+for (const list of Object.values(tiles)) {
+  for (const tile of list) {
+    if (!tile.group.startsWith('controls -')) continue;
+    tile.header = stripNamespace(tile.header);
+    tile.sub = truncateSub(tile.sub);
   }
-  return ctextCache[dir];
 }
 
-const tiles = { '00': [], '01': [] };
-let hidden = 0;
-
-for (const abap of walk(SRC)) {
-  if (!abap.endsWith('.clas.abap')) continue;
-  const cls = path.basename(abap, '.clas.abap');
-  if (OVERVIEW_APPS.has(cls)) continue; // an overview app is never a tile
-  // smp is the token this repository owns (AGENTS.md §6) - the legacy demo
-  // token is fully migrated. A class that does not carry it is not a sample
-  // and never becomes a tile.
-  if (!cls.startsWith('z2ui5_cl_smp_app')) continue;
-
-  const rel = path.relative(SRC, abap).split(path.sep); // [ area, ...subfolders, file ]
-  if (rel.length < 2) continue; // a class directly in src/ root is never a tile
-  const area = rel[0];
-  // full subfolder path ("03" or nested "03/01") so nested subpackages form
-  // their own group directly after their parent slot
-  const subnum = rel.slice(1, -1).join('/');
-  if (!(area in tiles)) continue;
-
-  const xmlPath = abap.replace(/\.clas\.abap$/, '.clas.xml');
-  if (!fs.existsSync(xmlPath)) { console.warn(`skipping ${cls}: no .clas.xml`); continue; }
-  const xml = fs.readFileSync(xmlPath, 'utf8');
-  let { header, sub } = splitDescript(tag(xml, 'DESCRIPT') || cls);
-
-  // demo kit rebuilds (AGENTS.md §1) carry the full, untruncated demo kit
-  // description as ABAP Doc lines below the URL line — prefer it as sub over
-  // the 60-char DESCRIPT
-  // the Rebuild line may be preceded by marker lines (e.g. the generated-port
-  // marker), hence the multiline match
-  const source = fs.readFileSync(abap, 'utf8');
-
-  // extra search terms, taken from the class's " @keywords line - they widen
-  // the overview's search without lengthening anything that is rendered
-  // (AGENTS.md §4). Plain comment, not ABAP Doc: an unknown "! @tag is
-  // reported by the extended check.
-  const keywords = (source.match(/^" @keywords (.+?)\r?$/m) || [, ''])[1].trim();
-
-  const doc = source
-    .match(/^"! Rebuild of the UI5 demo kit sample: \S+\r?\n((?:"! .*\r?\n)+)/m);
-  if (doc) {
-    sub = doc[1].split(/\r?\n/)
-      .map((l) => l.replace(/^"! ?/, '').trim())
-      .filter(Boolean)
-      .join(' ');
-  }
-
-  if (header.trim().toUpperCase() === 'ZZZ') { hidden++; continue; }
-
-  const group = groupOf(path.dirname(abap));
-  // controls section: drop the namespace prefix and truncate the description
-  if (group.startsWith('controls -')) {
-    header = stripNamespace(header);
-    sub = truncateSub(sub);
-  }
-
-  if ((header + sub).includes('`')) throw new Error(`backtick in DESCRIPT of ${cls}`);
-  if (keywords.includes('`')) throw new Error(`backtick in @keywords of ${cls}`);
-
-  // repository-relative folder of the class, so the overview can link the
-  // source on GitHub - the class name does not encode the folder
-  // (FOLDER_LOGIC=PREFIX), so only the generator knows where a sample lives
-  const dir = ['src', area, ...rel.slice(1, -1)].join('/');
-
-  tiles[area].push({ subnum, group, header, sub, keywords, path: dir, app: cls });
-}
-
-// --- 2. sort --------------------------------------------------------------
-const ci = (x) => x.toLowerCase();
-for (const area of Object.keys(tiles)) {
-  tiles[area].sort((a, b) =>
-    a.subnum.localeCompare(b.subnum) ||        // groups in folder-number order
-    ci(a.header).localeCompare(ci(b.header)) || // then by header (keeps I/II/III together)
-    ci(a.sub).localeCompare(ci(b.sub)) ||
-    ci(a.app).localeCompare(ci(b.app)));
-}
-
-// --- 3. rewrite get_catalog( ) -------------------------------------------
+// --- 2. rewrite get_catalog( ) -------------------------------------------
 function rewrite(file, list) {
   let text = fs.readFileSync(file, 'utf8');
 
@@ -234,6 +116,76 @@ function rewrite(file, list) {
   fs.writeFileSync(file, text);
 }
 
+/* A TILE without `@keywords` is a tile nobody can find.
+ *
+ * DESCRIPT caps the short text at 60 characters, so it carries the name of the
+ * thing and little else; `@keywords` is where the words a newcomer actually
+ * types go ("f4 search help suggestion input"). Three readers use them - the
+ * overview app's search box, `Ctrl+F` on SAMPLES.md, and an agent asking
+ * whether a sample for X exists - and all three degrade the same silent way:
+ * the sample is still listed, still correct, and simply never comes up.
+ *
+ * Scoped to the areas that HAVE an overview app, because that is what a tile
+ * is. The ZZZ helpers are already out (scanSamples flags them): a helper is
+ * reached BY another sample, never looked up, so search terms for it would be
+ * words nobody will type. */
+for (const [area, list] of Object.entries(tiles)) {
+  if (!TARGETS[area]) continue;
+  const unsearchable = list.filter((t) => !t.keywords);
+  if (unsearchable.length) {
+    console.error(`${unsearchable.length} tile(s) in src/${area} carry no \` @keywords\` line, so nothing can find them:`);
+    for (const t of unsearchable) console.error(`  ${t.app}  (${t.header})`);
+    console.error('\nAdd it as the FIRST line of the class (AGENTS.md section 4, tile schema):');
+    console.error('  " @keywords <words a newcomer would type, lowercase, space separated>');
+    process.exit(1);
+  }
+}
+
+/* And a tile without `" @summary` is one nobody can CHOOSE.
+ *
+ * Being findable and being recognisable are two different failures. The
+ * keywords put a sample in front of somebody; the summary is what tells them
+ * whether it is the one they want, and until it existed the answer was a
+ * 60-character short text ("Popup - change a popup control from the backend")
+ * that names the thing and stops. The same three readers are affected - the
+ * overview app, SAMPLES.md, an agent through abap2UI5/ai-mcp - and here the
+ * degradation is not silence but a wrong guess, which costs more.
+ *
+ * Written, not generated. abap2UI5/samples-controls fetches the sentence from
+ * the demo kit and samples-stack derives half of its metadata; here there is
+ * no upstream to quote, so the line is the author's. That is exactly why it
+ * needs a gate: nothing else fails when it is missing. */
+for (const [area, list] of Object.entries(tiles)) {
+  if (!TARGETS[area]) continue;
+  const unrecognisable = list.filter((t) => !t.summary);
+  if (unrecognisable.length) {
+    console.error(`${unrecognisable.length} tile(s) in src/${area} carry no \` @summary\` line, so nothing says what they show:`);
+    for (const t of unrecognisable) console.error(`  ${t.app}  (${t.header})`);
+    console.error('\nAdd it under the @keywords line (AGENTS.md section 4, tile schema):');
+    console.error('  " @summary <one sentence: what this sample SHOWS, not which controls it uses>');
+    process.exit(1);
+  }
+}
+
+/* The two lines travel together, everywhere - including where there is no
+ * tile. src/00/97 has no overview app, and its six experimental samples still
+ * carry both lines because they are documented samples that people are sent
+ * to from the cookbook. A class with one line and not the other is the state
+ * nobody chose: it means an author added a sample the way the last one looked
+ * and stopped halfway. (The ZZZ helpers are out of this by construction -
+ * `scanSamples` flags them, and a helper is reached BY a sample, never looked
+ * up.) */
+const halfDone = Object.values(tiles).flat()
+  .filter((t) => Boolean(t.keywords) !== Boolean(t.summary));
+if (halfDone.length) {
+  console.error(`${halfDone.length} sample(s) carry one search line but not the other:`);
+  for (const t of halfDone) {
+    console.error(`  ${t.app}  (${t.header}) — has ${t.keywords ? '@keywords, no @summary' : '@summary, no @keywords'}`);
+  }
+  console.error('\nBoth or neither: they answer the two halves of one question.');
+  process.exit(1);
+}
+
 let total = 0;
 for (const [area, list] of Object.entries(tiles)) {
   const file = TARGETS[area];
@@ -247,5 +199,5 @@ for (const [area, list] of Object.entries(tiles)) {
   console.log(`${path.relative(path.join(__dirname, '..'), file)}: ${list.length} tiles`);
   total += list.length;
 }
-console.log(`generated ${total} tiles, ${hidden} ZZZ helper app(s) hidden`);
+console.log(`generated ${total} tiles, ${hidden.length} ZZZ helper app(s) hidden`);
 console.log('now run: npx abaplint  (expect 0 issues)');

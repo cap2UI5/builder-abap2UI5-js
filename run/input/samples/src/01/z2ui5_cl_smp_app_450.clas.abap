@@ -1,4 +1,6 @@
 " @keywords dats tims conversion initial date 00000000 sy-datum
+" @summary ABAP DATS and TIMS strings in the view: the conversion in both directions, including what an initial 00000000 has to become.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/formatter
 CLASS z2ui5_cl_smp_app_450 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -30,6 +32,8 @@ CLASS z2ui5_cl_smp_app_450 IMPLEMENTATION.
       dats         = `20260720`.
       tims         = `134501`.
       dats_initial = `00000000`.
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ENDIF.
 

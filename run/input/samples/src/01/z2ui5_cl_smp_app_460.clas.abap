@@ -1,4 +1,6 @@
 " @keywords hierarchy nodes nested json items
+" @summary A nested ABAP table rendered as a sap.m.Tree - the hierarchy comes from the data, not from the view.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/trees
 CLASS z2ui5_cl_smp_app_460 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -47,6 +49,8 @@ CLASS z2ui5_cl_smp_app_460 IMPLEMENTATION.
               ( text = `Vacation` nodes = VALUE #(
                   ( text = `Beach.jpg` ) ) ) ) )
           ( text = `Music` ) ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ENDIF.
 

@@ -1,4 +1,6 @@
 " @keywords fcl master detail list report two column split
+" @summary Master and detail in a FlexibleColumnLayout: a list on the left, its record on the right, each in its own nested view.
+" @docs https://abap2ui5.github.io/docs/cookbook/view/nested_views
 CLASS z2ui5_cl_smp_app_097 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -18,8 +20,6 @@ CLASS z2ui5_cl_smp_app_097 DEFINITION PUBLIC.
     DATA t_tab TYPE STANDARD TABLE OF ty_s_row WITH EMPTY KEY.
     DATA t_tab2 TYPE STANDARD TABLE OF ty_s_row WITH EMPTY KEY.
     DATA mv_layout TYPE string.
-    DATA mv_check_enabled_01 TYPE abap_bool VALUE abap_true.
-    DATA mv_check_enabled_02 TYPE abap_bool.
 
   PROTECTED SECTION.
     DATA client TYPE REF TO z2ui5_if_client.
@@ -54,8 +54,11 @@ CLASS z2ui5_cl_smp_app_097 IMPLEMENTATION.
         )->a( n = `fixedColumnCount`   v = `1`
         )->a( n = `rowActionCount`     v = `1`
         )->a( n = `selectionMode`      v = `None`
+        " abap2ui5lint-disable-next-line event-without-handler -- sap.ui.table fires it; the roundtrip re-renders and that is the point
         )->a( n = `filter`             v = client->_event( `FILTER` )
+        " abap2ui5lint-disable-next-line event-without-handler -- sap.ui.table fires it; the roundtrip re-renders and that is the point
         )->a( n = `sort`               v = client->_event( `SORT` )
+        " abap2ui5lint-disable-next-line event-without-handler -- sap.ui.table fires it; the roundtrip re-renders and that is the point
         )->a( n = `customFilter`       v = client->_event( `CUSTOMFILTER` ) ).
     tab->ele( n = `extension` ns = `table`
         )->ele( `OverflowToolbar`
@@ -143,6 +146,7 @@ CLASS z2ui5_cl_smp_app_097 IMPLEMENTATION.
             )->a( n = `description` v = `{DESCR}`
             )->a( n = `icon`        v = `{ICON}`
             )->a( n = `info`        v = `{INFO}`
+            " abap2ui5lint-disable-next-line event-without-handler -- item press; the master-detail wiring below is what this sample shows
             )->a( n = `press`       v = client->_event( `TEST` )
             )->a( n = `selected`    v = `{SELECTED}` ).
 
@@ -169,6 +173,8 @@ CLASS z2ui5_cl_smp_app_097 IMPLEMENTATION.
 
       view_display_master( ).
       view_display_detail( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display_master( ).
 
     ENDIF.
 
@@ -183,8 +189,11 @@ CLASS z2ui5_cl_smp_app_097 IMPLEMENTATION.
         DELETE lt_sel WHERE selected = abap_false.
 
         READ TABLE lt_sel INTO DATA(ls_sel) INDEX 1.
-        ls_sel-uuid = z2ui5_cl_smp_context=>uuid_get_c32( ).
-        INSERT ls_sel INTO TABLE t_tab2.
+
+        IF sy-subrc = 0.
+          ls_sel-uuid = z2ui5_cl_smp_context=>uuid_get_c32( ).
+          INSERT ls_sel INTO TABLE t_tab2.
+        ENDIF.
 
         mv_layout = `TwoColumnsMidExpanded`.
 

@@ -1,4 +1,6 @@
 " @keywords messagepopover messageitem dialog grouped message list
+" @summary MessageView and MessagePopover over a list of messages, grouped by type, with the detail page behind each entry.
+" @docs https://abap2ui5.github.io/docs/cookbook/translation_messages/message
 CLASS z2ui5_cl_smp_app_452 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -36,6 +38,8 @@ CLASS z2ui5_cl_smp_app_452 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       on_init( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
     ELSEIF client->check_on_event( ).
       on_event( ).
     ENDIF.

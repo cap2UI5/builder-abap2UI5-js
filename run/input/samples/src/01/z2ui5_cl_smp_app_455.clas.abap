@@ -1,4 +1,5 @@
 " @keywords binding_call live search client side no roundtrip filter
+" @summary Filters a list live on the client as the user types - no roundtrip, no backend, the same binding_call from the view chain.
 CLASS z2ui5_cl_smp_app_455 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -20,7 +21,6 @@ CLASS z2ui5_cl_smp_app_455 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_455 IMPLEMENTATION.
 
 
@@ -35,6 +35,8 @@ CLASS z2ui5_cl_smp_app_455 IMPLEMENTATION.
           ( name = `Flat Basic`         category = `Screens` )
           ( name = `Comfort Easy`       category = `PDAs` )
           ( name = `ITelO Vault`        category = `PDAs` ) ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ENDIF.
 

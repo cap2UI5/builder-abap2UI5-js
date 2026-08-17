@@ -1,4 +1,6 @@
 " @keywords style stylesheet inline html class own design
+" @summary Ships a stylesheet with the view, so an app can carry its own design without a change to the UI5 theme.
+" @docs https://abap2ui5.github.io/docs/cookbook/view/definition
 CLASS z2ui5_cl_smp_app_050 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -22,10 +24,9 @@ CLASS z2ui5_cl_smp_app_050 IMPLEMENTATION.
       quantity = `500`.
     ENDIF.
 
-    CASE client->get_event( ).
-      WHEN `BUTTON_POST`.
-        client->message_toast_display( |{ product } { quantity } - send to the server| ).
-    ENDCASE.
+    IF client->get_event( ) = `BUTTON_POST`.
+      client->message_toast_display( |{ product } { quantity } - send to the server| ).
+    ENDIF.
 
     DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
         )->ele( n = `View` ns = `mvc`

@@ -1,4 +1,6 @@
 " @keywords live search parallel requests busy queue typing
+" @summary Two SearchFields that round-trip on every keystroke on purpose - to show what that does: requests overtaking each other, the busy queue, the value lagging behind fast typing.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/tables
 CLASS z2ui5_cl_smp_app_059 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -38,6 +40,8 @@ CLASS z2ui5_cl_smp_app_059 IMPLEMENTATION.
     IF client->check_on_init( ).
 
       set_data( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
 
     ELSEIF client->check_on_event( ).
@@ -82,6 +86,11 @@ CLASS z2ui5_cl_smp_app_059 IMPLEMENTATION.
 
 
   METHOD view_display.
+
+    " Both SearchFields below round-trip on every keystroke on purpose: this
+    " sample EXISTS to show what that does - requests overtaking each other,
+    " the busy queue, the value lagging behind fast typing.
+    " abap2ui5lint-disable live-event-roundtrip
 
     DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
         )->ele( n = `View` ns = `mvc`
@@ -163,6 +172,8 @@ CLASS z2ui5_cl_smp_app_059 IMPLEMENTATION.
         )->a( n = `text` v = `{QUANTITY}` ).
 
     client->view_display( view->stringify( ) ).
+
+    " abap2ui5lint-enable live-event-roundtrip
 
   ENDMETHOD.
 ENDCLASS.

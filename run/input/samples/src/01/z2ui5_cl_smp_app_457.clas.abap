@@ -1,4 +1,6 @@
 " @keywords datepicker datevalue javascript date object iso
+" @summary The DatePicker's dateValue wants a JavaScript date object rather than a string - what that means for the binding of an ABAP date.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/formatter
 CLASS z2ui5_cl_smp_app_457 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -22,6 +24,8 @@ CLASS z2ui5_cl_smp_app_457 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       date_iso = `2026-07-20`.
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ENDIF.
 

@@ -1,4 +1,6 @@
 " @keywords confirm warning error success information dialog action
+" @summary Every MessageBox type - confirm, warning, error, success, information - and what a custom action button changes about the answer.
+" @docs https://abap2ui5.github.io/docs/cookbook/translation_messages/message
 CLASS z2ui5_cl_smp_app_382 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -26,6 +28,8 @@ CLASS z2ui5_cl_smp_app_382 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       on_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ELSEIF client->check_on_event( ).
       on_event( ).
@@ -92,7 +96,7 @@ CLASS z2ui5_cl_smp_app_382 IMPLEMENTATION.
         )->tag( `Link`
             )->a( n = `text`   v = `UI5 Demo Kit`
             )->a( n = `target` v = `_blank`
-            )->a( n = `href`   v = `https://sapui5.hana.ondemand.com/sdk/#/entity/sap.m.MessageBox/sample/sap.m.sample.MessageBox` ).
+            )->a( n = `href`   v = `https://sdk.openui5.org/entity/sap.m.MessageBox/sample/sap.m.sample.MessageBox` ).
 
     page->ele( `Panel`
         )->a( n = `headerText` v = `Message Box Configuration`

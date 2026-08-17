@@ -1,4 +1,6 @@
 " @keywords roundtrip restart second view uncaught error controller basics
+" @summary What one event does to a running app: a second view replaces the first, the state comes back with it, and an uncaught error surfaces where you can see it.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/life_cycle https://abap2ui5.github.io/docs/cookbook/expert_more/snippets
 CLASS z2ui5_cl_smp_app_004 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -24,6 +26,16 @@ CLASS z2ui5_cl_smp_app_004 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       on_init( ).
+    ELSEIF client->check_on_navigated( ).
+
+      " the app has two views and remembers which one is up, so returning
+      " from a sub-app brings back the one the user left, not the first
+      IF view_main = `SECOND`.
+        view_second_display( ).
+      ELSE.
+        view_main_display( ).
+      ENDIF.
+
     ELSEIF client->check_on_event( ).
       on_event( ).
     ENDIF.
@@ -55,6 +67,7 @@ CLASS z2ui5_cl_smp_app_004 IMPLEMENTATION.
         ENDCASE.
       WHEN `BUTTON_ERROR`.
         DATA(dummy) = 1 / 0.
+        client->message_box_display( |{ dummy }| ).
     ENDCASE.
 
   ENDMETHOD.

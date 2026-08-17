@@ -1,4 +1,6 @@
 " @keywords edit input add row delete multiselect toolbar
+" @summary An editable table: input cells, adding and deleting rows, multi-select and a toolbar over them.
+" @docs https://abap2ui5.github.io/docs/get_started/full_example https://abap2ui5.github.io/docs/cookbook/model/tables
 CLASS z2ui5_cl_smp_app_011 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -25,7 +27,6 @@ CLASS z2ui5_cl_smp_app_011 DEFINITION PUBLIC.
 
   PRIVATE SECTION.
 ENDCLASS.
-
 
 
 CLASS z2ui5_cl_smp_app_011 IMPLEMENTATION.
@@ -62,6 +63,7 @@ CLASS z2ui5_cl_smp_app_011 IMPLEMENTATION.
                 )->tag( `Title`
                     )->a( n = `text` v = `title of the table`
                 )->tag( `Button`
+                    " abap2ui5lint-disable-next-line event-without-handler -- shows an OverflowToolbar filling up - the press is a plain roundtrip
                     )->a( n = `press` v = client->_event( `BUTTON_TEST` )
                     )->a( n = `text`  v = `test`
                 )->tag( `ToolbarSpacer`
@@ -142,6 +144,8 @@ CLASS z2ui5_cl_smp_app_011 IMPLEMENTATION.
           ( title = `entry 05` value = `grey`   info = `completed` descr = `this is a description` checkbox = abap_true )
           ( ) ).
 
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
 
     ELSEIF client->check_on_event( `BUTTON_EDIT` ).

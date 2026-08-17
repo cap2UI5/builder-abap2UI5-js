@@ -1,4 +1,6 @@
 " @keywords developer tools devtools ctrl f12 debug inspect payload previous request response view xml view model source code log error adt export
+" @summary What Ctrl+F12 opens: the request and response payload, the generated XML view, the model, the source and the error log - the first place to look when something does not render.
+" @docs https://abap2ui5.github.io/docs/cookbook/troubleshooting/common_failures
 CLASS z2ui5_cl_smp_app_496 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -12,7 +14,7 @@ CLASS z2ui5_cl_smp_app_496 DEFINITION PUBLIC.
 
     " a public attribute is serialized between the roundtrips - so everything
     " on this page is part of what the View Model tab of the tools shows
-    DATA t_tab      TYPE STANDARD TABLE OF ty_s_tab WITH DEFAULT KEY.
+    DATA t_tab      TYPE STANDARD TABLE OF ty_s_tab WITH EMPTY KEY.
     DATA text       TYPE string.
     DATA roundtrips TYPE i.
 
@@ -42,6 +44,8 @@ CLASS z2ui5_cl_smp_app_496 IMPLEMENTATION.
 
       text = `change me and press Send`.
       tabs_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
 
     ELSEIF client->check_on_event( cs_event-ping ).

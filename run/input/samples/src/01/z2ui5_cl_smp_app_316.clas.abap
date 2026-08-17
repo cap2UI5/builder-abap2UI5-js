@@ -1,4 +1,6 @@
 " @keywords mailto tel sms urlhelper redirect native link
+" @summary Opens mailto:, tel: and sms: links through URLHelper, so the device answers with its own mail or phone app instead of the browser.
+" @docs https://abap2ui5.github.io/docs/cookbook/browser_interaction/url_handling
 CLASS z2ui5_cl_smp_app_316 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -181,6 +183,8 @@ CLASS z2ui5_cl_smp_app_316 IMPLEMENTATION.
   METHOD z2ui5_if_app~main.
 
     IF client->check_on_init( ).
+      view_display( client ).
+    ELSEIF client->check_on_navigated( ).
       view_display( client ).
     ENDIF.
 

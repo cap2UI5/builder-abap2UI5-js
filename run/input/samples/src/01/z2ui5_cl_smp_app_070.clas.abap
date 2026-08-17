@@ -1,4 +1,6 @@
 " @keywords grid alv dynamicpage column row action currency search sort filter
+" @summary The full sap.ui.table example: a DynamicPage with search, sort, filter, currency columns and row actions - the closest thing here to a finished ALV.
+" @docs https://abap2ui5.github.io/docs/get_started/full_example https://abap2ui5.github.io/docs/cookbook/model/tables
 CLASS z2ui5_cl_smp_app_070 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -21,14 +23,6 @@ CLASS z2ui5_cl_smp_app_070 DEFINITION PUBLIC.
         process_state    TYPE string,
       END OF ty_s_tab.
 
-    TYPES:
-      BEGIN OF ty_s_filter_pop,
-        option TYPE string,
-        low    TYPE string,
-        high   TYPE string,
-        key    TYPE string,
-      END OF ty_s_filter_pop.
-
     DATA mt_mapping TYPE z2ui5_if_types=>ty_t_name_value.
     DATA mv_search_value TYPE string.
     DATA mt_table TYPE STANDARD TABLE OF ty_s_tab WITH EMPTY KEY.
@@ -50,7 +44,6 @@ CLASS z2ui5_cl_smp_app_070 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_070 IMPLEMENTATION.
 
 
@@ -70,6 +63,8 @@ CLASS z2ui5_cl_smp_app_070 IMPLEMENTATION.
     me->client     = client.
 
     IF client->check_on_init( ).
+      on_init( ).
+    ELSEIF client->check_on_navigated( ).
       on_init( ).
     ELSE.
       on_event( ).
@@ -366,7 +361,7 @@ CLASS z2ui5_cl_smp_app_070 IMPLEMENTATION.
         ENDDO.
 
         IF lv_row NS mv_search_value.
-          DELETE mt_table.
+          DELETE mt_table INDEX sy-tabix.
         ENDIF.
       ENDLOOP.
     ENDIF.

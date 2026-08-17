@@ -1,4 +1,6 @@
 " @keywords cursor set_focus selection position textfield
+" @summary Sets the focus into an Input and selects its text, so the next keystroke overwrites rather than appends.
+" @docs https://abap2ui5.github.io/docs/cookbook/browser_interaction/focus
 CLASS z2ui5_cl_smp_app_133 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -16,7 +18,6 @@ CLASS z2ui5_cl_smp_app_133 DEFINITION PUBLIC.
 
   PRIVATE SECTION.
 ENDCLASS.
-
 
 
 CLASS z2ui5_cl_smp_app_133 IMPLEMENTATION.
@@ -95,6 +96,8 @@ CLASS z2ui5_cl_smp_app_133 IMPLEMENTATION.
 
       view_display( ).
       RETURN.
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
 
     ENDIF.
 

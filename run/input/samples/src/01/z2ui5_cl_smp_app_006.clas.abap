@@ -1,4 +1,6 @@
 " @keywords growing 10000 rows sticky toolbar sort performance
+" @summary 10.000 rows in one table: growing, a sticky toolbar and sorting - and what that costs on the way to the browser.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/tables
 CLASS z2ui5_cl_smp_app_006 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -18,9 +20,8 @@ CLASS z2ui5_cl_smp_app_006 DEFINITION PUBLIC.
     DATA t_tab TYPE STANDARD TABLE OF ty_s_row WITH EMPTY KEY.
 
   PROTECTED SECTION.
-    DATA client    TYPE REF TO z2ui5_if_client.
-    DATA check_ui5 TYPE abap_bool.
-    DATA key       TYPE string.
+    DATA client TYPE REF TO z2ui5_if_client.
+    DATA key    TYPE string.
 
     METHODS on_init.
     METHODS on_event.
@@ -31,7 +32,6 @@ CLASS z2ui5_cl_smp_app_006 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_006 IMPLEMENTATION.
 
 
@@ -40,6 +40,8 @@ CLASS z2ui5_cl_smp_app_006 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       on_init( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
 
     ELSEIF client->check_on_event( ).
       on_event( ).
@@ -121,6 +123,7 @@ CLASS z2ui5_cl_smp_app_006 IMPLEMENTATION.
             )->tag( `Title`
                 )->a( n = `text` v = `title of the table`
             )->tag( `Button`
+                " abap2ui5lint-disable-next-line event-without-handler -- toolbar layout demo; the sort buttons on the right are the working pair
                 )->a( n = `press` v = client->_event( `BUTTON_SORT` )
                 )->a( n = `text`  v = `left side button`
                 )->a( n = `icon`  v = `sap-icon://account`
@@ -139,11 +142,13 @@ CLASS z2ui5_cl_smp_app_006 IMPLEMENTATION.
             )->end(
             )->tag( `ToolbarSpacer`
             )->tag( `Button`
-                )->a( n = `press` v = client->_event( `SORT_DESCENDING` )
-                )->a( n = `icon`  v = `sap-icon://sort-descending`
+                )->a( n = `press`   v = client->_event( `SORT_DESCENDING` )
+                )->a( n = `icon`    v = `sap-icon://sort-descending`
+                )->a( n = `tooltip` v = `Sort descending`
             )->tag( `Button`
-                )->a( n = `press` v = client->_event( `SORT_ASCENDING` )
-                )->a( n = `icon`  v = `sap-icon://sort-ascending` ).
+                )->a( n = `press`   v = client->_event( `SORT_ASCENDING` )
+                )->a( n = `icon`    v = `sap-icon://sort-ascending`
+                )->a( n = `tooltip` v = `Sort ascending` ).
 
     tab->ele( `columns`
         )->ele( `Column`

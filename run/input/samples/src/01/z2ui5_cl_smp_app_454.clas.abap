@@ -1,4 +1,5 @@
 " @keywords binding_call getbinding sorter filter follow_up_action
+" @summary Sorts and filters a bound list from ABAP by calling getBinding on the control - the binding does the work, not a rebuilt table.
 CLASS z2ui5_cl_smp_app_454 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -21,7 +22,6 @@ CLASS z2ui5_cl_smp_app_454 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_454 IMPLEMENTATION.
 
 
@@ -36,6 +36,8 @@ CLASS z2ui5_cl_smp_app_454 IMPLEMENTATION.
           ( name = `Flat Basic`         category = `Screens` )
           ( name = `Comfort Easy`       category = `PDAs` )
           ( name = `ITelO Vault`        category = `PDAs` ) ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ELSE.
       on_event( ).

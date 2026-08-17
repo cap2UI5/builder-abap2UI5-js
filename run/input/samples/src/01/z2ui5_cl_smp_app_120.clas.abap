@@ -1,19 +1,10 @@
 " @keywords gps position latitude longitude altitude location
+" @summary Asks the browser for the device's position - latitude, longitude and altitude - and what happens when the user says no.
+" @docs https://abap2ui5.github.io/docs/cookbook/device_capabilities/geolocation
 CLASS z2ui5_cl_smp_app_120 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
     INTERFACES z2ui5_if_app.
-
-    TYPES:
-      BEGIN OF ty_s_spot,
-        tooltip       TYPE string,
-        type          TYPE string,
-        pos           TYPE string,
-        scale         TYPE string,
-        contentoffset TYPE string,
-        key           TYPE string,
-        icon          TYPE string,
-      END OF ty_s_spot.
 
     DATA longitude TYPE string.
     DATA latitude TYPE string.
@@ -22,7 +13,6 @@ CLASS z2ui5_cl_smp_app_120 DEFINITION PUBLIC.
     DATA altitudeaccuracy TYPE string.
     DATA accuracy TYPE string.
 
-    DATA mt_spot TYPE TABLE OF ty_s_spot.
 
   PROTECTED SECTION.
     DATA client TYPE REF TO z2ui5_if_client.
@@ -42,20 +32,18 @@ CLASS z2ui5_cl_smp_app_120 IMPLEMENTATION.
     IF client->check_on_init( ).
       view_display( ).
       RETURN.
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
     ENDIF.
 
-    CASE client->get_event( ).
-
-      WHEN `GEOLOCATION_ERROR`.
-
-        " the Geolocation control fires `error` when the position cannot be
-        " read; the code (1 = permission denied, 2 = position unavailable,
-        " 3 = timeout) and message are passed as event arguments.
-        client->message_box_display(
-            text = |Location unavailable ({ client->get_event_arg( 1 ) }): { client->get_event_arg( 2 ) }|
-            type = `error` ).
-
-    ENDCASE.
+    IF client->get_event( ) = `GEOLOCATION_ERROR`.
+      " the Geolocation control fires `error` when the position cannot be
+      " read; the code (1 = permission denied, 2 = position unavailable,
+      " 3 = timeout) and message are passed as event arguments.
+      client->message_box_display(
+          text = |Location unavailable ({ client->get_event_arg( 1 ) }): { client->get_event_arg( 2 ) }|
+          type = `error` ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -86,6 +74,7 @@ CLASS z2ui5_cl_smp_app_120 IMPLEMENTATION.
         )->a( n = `class`    v = `sapUiSmallMargin` ).
 
     page->tag( n = `Geolocation` ns = `z2ui5`
+        " abap2ui5lint-disable-next-line event-without-handler -- the position arrives with the roundtrip and the view re-renders with it
         )->a( n = `finished` v = client->_event( `GEOLOCATION_LOADED` )
         )->a( n = `error`    v = client->_event( val   = `GEOLOCATION_ERROR`
                                                                            t_arg = VALUE #( ( `${$parameters>/code}` )

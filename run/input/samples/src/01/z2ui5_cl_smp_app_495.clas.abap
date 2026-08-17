@@ -1,4 +1,6 @@
 " @keywords lifecycle roundtrip main dispatcher state serialize check_on_init check_on_event check_on_navigated
+" @summary The three questions main( ) asks - init, event, navigated - as one dispatcher, showing what survives a roundtrip and what a navigation does to it.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/life_cycle https://abap2ui5.github.io/docs/cookbook/expert_more/snippets
 CLASS z2ui5_cl_smp_app_495 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -9,12 +11,12 @@ CLASS z2ui5_cl_smp_app_495 DEFINITION PUBLIC.
         no    TYPE string,
         check TYPE string,
       END OF ty_s_step.
-    DATA t_log TYPE STANDARD TABLE OF ty_s_step WITH DEFAULT KEY.
+    DATA t_log TYPE STANDARD TABLE OF ty_s_step WITH EMPTY KEY.
 
   PROTECTED SECTION.
     DATA client TYPE REF TO z2ui5_if_client.
 
-    METHODS log
+    METHODS log_step
       IMPORTING
         val TYPE string.
     METHODS view_display.
@@ -30,20 +32,20 @@ CLASS z2ui5_cl_smp_app_495 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
 
-      log( `check_on_init( ) - the very first call, nothing exists yet` ).
+      log_step( `check_on_init( ) - the very first call, nothing exists yet` ).
       view_display( ).
 
     ELSEIF client->check_on_navigated( ).
 
-      log( `check_on_navigated( ) - the sub-app returned, re-display the view` ).
+      log_step( `check_on_navigated( ) - the sub-app returned, re-display the view` ).
       view_display( ).
 
     ELSEIF client->check_on_event( `LOG` ).
-      log( `check_on_event( ) - a button was pressed, the view stays as it is` ).
+      log_step( `check_on_event( ) - a button was pressed, the view stays as it is` ).
 
     ELSEIF client->check_on_event( `CALL` ).
 
-      log( `check_on_event( ) - calling Basics I as a sub-app` ).
+      log_step( `check_on_event( ) - calling Basics I as a sub-app` ).
       client->nav_app_call( NEW z2ui5_cl_smp_app_493( ) ).
 
     ENDIF.
@@ -51,7 +53,7 @@ CLASS z2ui5_cl_smp_app_495 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD log.
+  METHOD log_step.
 
     INSERT VALUE #(
         no    = |{ lines( t_log ) + 1 }|

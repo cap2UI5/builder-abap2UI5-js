@@ -1,4 +1,6 @@
 " @keywords facetfilter filter object marshalling selected items
+" @summary Passes whole control objects to the backend in t_arg: a FacetFilter's selected items arrive as data instead of being reconstructed by hand.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/backend
 CLASS z2ui5_cl_smp_app_197 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -66,6 +68,7 @@ CLASS z2ui5_cl_smp_app_197 IMPLEMENTATION.
     DATA t_range TYPE RANGE OF string.
 
     TRY.
+        " abap2ui5lint-disable-next-line non-released-api -- abap2UI5 ships no RELEASED JSON parser for app code, and an event argument arrives as a JSON string. The mirror is what every app has to reach for until src/02 offers one
         DATA(json) = z2ui5_cl_ajson=>parse( client->get_event_arg( ) ).
         DATA(t_members) = json->members( `/` ).
 

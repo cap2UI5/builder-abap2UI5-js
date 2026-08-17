@@ -1,4 +1,6 @@
 " @keywords r_data result get_app_prev return event payload
+" @summary The way back carries data: the called app returns an event name and a payload (r_data) that the caller reads from get_app_prev.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/navigation
 "! Calls a second app (z2ui5_cl_smp_app_489) via client->nav_app_call( ). The
 "! called app comes back with client->nav_app_leave( event = ... r_data = ... ),
 "! handing an event name and a data payload to its caller without knowing who
@@ -47,26 +49,28 @@ CLASS z2ui5_cl_smp_app_488 IMPLEMENTATION.
     DATA(ls_get) = client->get( ).
     returned_event = ls_get-event.
 
-    IF returned_event = `DATA_CONFIRMED`.
+    CASE returned_event.
 
-      " the payload handed over by nav_app_leave( r_data = ... ) arrives as a
-      " generic data reference - the receiver decides the type
-      ASSIGN ls_get-r_event_data->* TO FIELD-SYMBOL(<s_result>).
+      WHEN `DATA_CONFIRMED`.
 
-      IF <s_result> IS ASSIGNED.
+        " the payload handed over by nav_app_leave( r_data = ... ) arrives as a
+        " generic data reference - the receiver decides the type
+        ASSIGN ls_get-r_event_data->* TO FIELD-SYMBOL(<s_result>).
 
-        s_result = <s_result>.
-        client->message_toast_display( |Returned event { returned_event }, | &&
-                                       |product { s_result-product }, quantity { s_result-quantity }| ).
+        IF <s_result> IS ASSIGNED.
 
-      ENDIF.
+          s_result = <s_result>.
+          client->message_toast_display( |Returned event { returned_event }, | &&
+                                         |product { s_result-product }, quantity { s_result-quantity }| ).
 
-    ELSEIF returned_event = `DATA_CANCELLED`.
+        ENDIF.
 
-      s_result = VALUE #( ).
-      client->message_toast_display( `Returned event DATA_CANCELLED, no data passed` ).
+      WHEN `DATA_CANCELLED`.
 
-    ENDIF.
+        s_result = VALUE #( ).
+        client->message_toast_display( `Returned event DATA_CANCELLED, no data passed` ).
+
+    ENDCASE.
 
     view_display( ).
 

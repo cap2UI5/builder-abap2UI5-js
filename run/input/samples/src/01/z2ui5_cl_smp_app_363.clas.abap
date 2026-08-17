@@ -1,4 +1,6 @@
 " @keywords scroll_into_view control id validation jump
+" @summary Scrolls a control into view by ID - what a validation does when the field it complains about is off screen.
+" @docs https://abap2ui5.github.io/docs/cookbook/browser_interaction/scrolling
 CLASS z2ui5_cl_smp_app_363 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -24,6 +26,8 @@ CLASS z2ui5_cl_smp_app_363 IMPLEMENTATION.
 
     me->client = client.
     IF client->check_on_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ELSEIF client->check_on_event( ).
       on_event( ).

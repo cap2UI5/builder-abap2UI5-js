@@ -1,4 +1,6 @@
 " @keywords flexbox layout responsive navigation tile panel
+" @summary Lays a page out with FlexBox and custom CSS classes - tiles, panels and a QuickView popover, all from the view chain.
+" @docs https://abap2ui5.github.io/docs/cookbook/view/definition
 CLASS z2ui5_cl_smp_app_255 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -103,9 +105,9 @@ CLASS z2ui5_cl_smp_app_255 IMPLEMENTATION.
         )->tag( `Link`
             )->a( n = `text`   v = `UI5 Demo Kit`
             )->a( n = `target` v = `_blank`
-            )->a( n = `href`   v = `https://sapui5.hana.ondemand.com/sdk/#/entity/sap.m.FlexBox/sample/sap.m.sample.FlexBoxNav` ).
+            )->a( n = `href`   v = `https://sdk.openui5.org/entity/sap.m.FlexBox/sample/sap.m.sample.FlexBoxNav` ).
 
-    DATA(layout) = page->ele( `VBox`
+    page->ele( `VBox`
         )->a( n = `class` v = `navigationExamples`
         )->ele( `Panel`
             )->a( n = `headerText` v = `Variable width`
@@ -196,6 +198,8 @@ CLASS z2ui5_cl_smp_app_255 IMPLEMENTATION.
     me->client = client.
 
     IF client->check_on_init( ).
+      view_display( client ).
+    ELSEIF client->check_on_navigated( ).
       view_display( client ).
     ENDIF.
 

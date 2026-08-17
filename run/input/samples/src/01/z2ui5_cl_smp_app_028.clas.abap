@@ -1,4 +1,6 @@
 " @keywords interval polling auto refresh follow_up_action seconds
+" @summary Refreshes the view every n seconds - the polling interval as a follow-up action the app renews itself.
+" @docs https://abap2ui5.github.io/docs/cookbook/browser_interaction/timer
 CLASS z2ui5_cl_smp_app_028 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -36,6 +38,8 @@ CLASS z2ui5_cl_smp_app_028 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       on_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ELSEIF client->check_on_event( `TIMER_FINISHED` ).
       on_event( ).

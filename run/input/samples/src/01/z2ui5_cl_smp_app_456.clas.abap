@@ -1,4 +1,6 @@
 " @keywords planningcalendar appointment javascript date object iso
+" @summary Appointments in a PlanningCalendar: start and end as date objects, which is what the control binds against.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/formatter
 CLASS z2ui5_cl_smp_app_456 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -46,6 +48,8 @@ CLASS z2ui5_cl_smp_app_456 IMPLEMENTATION.
             t_appointments = VALUE #(
                 ( start_at = `2026-07-20T09:30:00` end_at = `2026-07-20T10:30:00`
                   title = `Code review` type = `Type06` ) ) ) ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ENDIF.
 

@@ -1,4 +1,6 @@
 " @keywords cell input internal table row field level
+" @summary Edits one cell of an internal table: tab_index addresses the row, so the Input writes back to a single field instead of the whole line.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/binding
 CLASS z2ui5_cl_smp_app_144 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -52,9 +54,8 @@ CLASS z2ui5_cl_smp_app_144 IMPLEMENTATION.
           )->a( n = `value` v = client->_bind( val = lr_row->value tab = t_tab tab_index = lv_tabix ) ).
     ENDLOOP.
 
-    DATA(tab) = page->ele( `Table`
+    page->ele( `Table`
         )->a( n = `items` v = client->_bind( t_tab )
-        )->a( n = `mode`  v = `MultiSelect`
         )->ele( `headerToolbar`
             )->ele( `OverflowToolbar`
                 )->tag( `Title`
@@ -73,7 +74,6 @@ CLASS z2ui5_cl_smp_app_144 IMPLEMENTATION.
         )->end(
         )->ele( `items`
             )->ele( `ColumnListItem`
-                )->a( n = `selected` v = `{SELKZ}`
                 )->ele( `cells`
                     )->tag( `Input`
                         )->a( n = `value` v = `{TITLE}`
@@ -105,6 +105,8 @@ CLASS z2ui5_cl_smp_app_144 IMPLEMENTATION.
             ( title = `entry 01`  value = `red` )
             ( title = `entry 02`  value = `blue` ) ).
       ENDDO.
+      set_view( ).
+    ELSEIF client->check_on_navigated( ).
       set_view( ).
     ENDIF.
 

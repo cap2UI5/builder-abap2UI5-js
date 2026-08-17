@@ -1,4 +1,6 @@
 " @keywords sap.ui.device responsive orientation resize media model
+" @summary Reads the sap.ui.Device model - phone, tablet or desktop, orientation and resize - so a view can react to the device it is on.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/device_model https://abap2ui5.github.io/docs/cookbook/device_capabilities/info
 CLASS z2ui5_cl_smp_app_445 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -25,13 +27,14 @@ CLASS z2ui5_cl_smp_app_445 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_445 IMPLEMENTATION.
 
   METHOD z2ui5_if_app~main.
 
     me->client = client.
     IF client->check_on_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ELSEIF client->check_on_event( ).
       on_event( ).

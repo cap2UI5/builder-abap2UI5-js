@@ -1,4 +1,5 @@
 " @keywords menuitem nested submenu textpath controller path
+" @summary A nested Menu that reports the FULL path of the item that was chosen, not just its text.
 CLASS z2ui5_cl_smp_app_473 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -19,6 +20,8 @@ CLASS z2ui5_cl_smp_app_473 IMPLEMENTATION.
 
     me->client = client.
     IF client->check_on_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ENDIF.
 

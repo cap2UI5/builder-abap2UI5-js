@@ -1,4 +1,6 @@
 " @keywords argument parameter payload event data fixed value
+" @summary Sends extra arguments with an event (t_arg), so a handler knows which row, which value or which fixed payload it was called for.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/backend
 CLASS z2ui5_cl_smp_app_167 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -13,7 +15,6 @@ CLASS z2ui5_cl_smp_app_167 DEFINITION PUBLIC.
 
   PRIVATE SECTION.
 ENDCLASS.
-
 
 
 CLASS z2ui5_cl_smp_app_167 IMPLEMENTATION.
@@ -44,7 +45,7 @@ CLASS z2ui5_cl_smp_app_167 IMPLEMENTATION.
     page->tag( `Link`
         )->a( n = `text`   v = `More information...`
         )->a( n = `target` v = `_blank`
-        )->a( n = `href`   v = `https://sapui5.hana.ondemand.com/sdk/#/topic/b0fb4de7364f4bcbb053a99aa645affe` ).
+        )->a( n = `href`   v = `https://sdk.openui5.org/topic/b0fb4de7364f4bcbb053a99aa645affe` ).
 
     page->tag( `Button`
         )->a( n = `press` v = client->_event( val = `EVENT_FIX_VAL` t_arg = VALUE #(
@@ -84,6 +85,8 @@ CLASS z2ui5_cl_smp_app_167 IMPLEMENTATION.
 
     IF client->check_on_init( ).
       mv_value = `my value`.
+      set_view( ).
+    ELSEIF client->check_on_navigated( ).
       set_view( ).
     ENDIF.
 

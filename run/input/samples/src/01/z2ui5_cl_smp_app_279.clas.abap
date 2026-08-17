@@ -1,4 +1,6 @@
 " @keywords dirty unsaved changes leave confirmation warning
+" @summary Refuses to leave an app with unsaved changes: the confirmation popup in front of nav_app_leave, and how the dirty flag gets there.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/navigation
 CLASS z2ui5_cl_smp_app_279 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -25,6 +27,8 @@ CLASS z2ui5_cl_smp_app_279 IMPLEMENTATION.
 
     me->client = client.
     IF client->check_on_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ELSEIF client->check_on_event( ).
       on_event( ).

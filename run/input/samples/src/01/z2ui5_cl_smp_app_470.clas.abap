@@ -1,4 +1,6 @@
 " @keywords element binding relative path aggregation dialog row
+" @summary Element binding on a popup: the dialog binds RELATIVELY to the row that was pressed, so its fields need no path of their own.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/frontend https://abap2ui5.github.io/docs/cookbook/popup_popover/popup
 "! Aggregation binding on a popup via an element bind. The main table is bound
 "! to the product aggregation ({/T_PRODUCT}); pressing a row's "components"
 "! button opens a popup that uses RELATIVE bindings only ({NAME}, {CATEGORY}, and
@@ -40,7 +42,6 @@ CLASS z2ui5_cl_smp_app_470 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_470 IMPLEMENTATION.
 
 
@@ -61,6 +62,8 @@ CLASS z2ui5_cl_smp_app_470 IMPLEMENTATION.
                             ( name = `Cable 1 m` qty = 1 unit = `pc` )
                             ( name = `Quick Guide` qty = 1 unit = `pc` ) ) ) ).
       view_display( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
 
     ELSEIF client->check_on_event( ).
       on_event( ).
@@ -71,10 +74,9 @@ CLASS z2ui5_cl_smp_app_470 IMPLEMENTATION.
 
   METHOD on_event.
 
-    CASE client->get_event( ).
-      WHEN `SHOW`.
-        popup_components( client->get_event_arg( ) ).
-    ENDCASE.
+    IF client->get_event( ) = `SHOW`.
+      popup_components( client->get_event_arg( ) ).
+    ENDIF.
 
   ENDMETHOD.
 

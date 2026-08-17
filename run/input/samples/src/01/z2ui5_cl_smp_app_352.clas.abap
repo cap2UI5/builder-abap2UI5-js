@@ -1,4 +1,6 @@
 " @keywords mobile numeric keypad keyboard_set_mode phone input
+" @summary Asks a mobile device for the numeric keypad instead of the full keyboard (keyboard_set_mode) on an Input.
+" @docs https://abap2ui5.github.io/docs/cookbook/browser_interaction/soft_keyboard
 CLASS z2ui5_cl_smp_app_352 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -16,7 +18,6 @@ CLASS z2ui5_cl_smp_app_352 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_352 IMPLEMENTATION.
 
 
@@ -32,6 +33,8 @@ CLASS z2ui5_cl_smp_app_352 IMPLEMENTATION.
       client->follow_up_action(
           val   = z2ui5_if_client=>cs_event-keyboard_set_mode
           t_arg = VALUE #( ( `ZINPUT` ) ( `numeric` ) ) ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
     ENDIF.
 
     on_event( ).

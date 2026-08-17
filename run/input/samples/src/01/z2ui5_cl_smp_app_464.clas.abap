@@ -1,4 +1,6 @@
 " @keywords exception dump error handling debugtool restart retry
+" @summary What an uncaught exception looks like from the user's side - the error popup, and the way back into the app.
+" @docs https://abap2ui5.github.io/docs/cookbook/event_navigation/exception
 CLASS z2ui5_cl_smp_app_464 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -21,6 +23,8 @@ CLASS z2ui5_cl_smp_app_464 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       view_display( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display( ).
     ELSE.
       on_event( ).
     ENDIF.
@@ -40,6 +44,7 @@ CLASS z2ui5_cl_smp_app_464 IMPLEMENTATION.
       WHEN `DIVIDE_BY_ZERO`.
         DATA(lv_zero) = 0.
         DATA(lv_result) = 1 / lv_zero.
+        client->message_box_display( |{ lv_result }| ).
 
       WHEN `ASSERT`.
         ASSERT 1 = 0.

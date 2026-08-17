@@ -1,4 +1,6 @@
 " @keywords cell enter row index event grid alv
+" @summary Events on cell level in a grid table: which row and which column the user was in, and what arrives in the backend.
+" @docs https://abap2ui5.github.io/docs/cookbook/model/tables
 CLASS z2ui5_cl_smp_app_160 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -35,7 +37,7 @@ CLASS z2ui5_cl_smp_app_160 DEFINITION PUBLIC.
         pl_q04         TYPE i,
         per_cent_q04   TYPE p LENGTH 2 DECIMALS 1,
       END OF ty_s_output.
-    DATA mt_output TYPE STANDARD TABLE OF ty_s_output.
+    DATA mt_output TYPE STANDARD TABLE OF ty_s_output WITH EMPTY KEY.
 
   PROTECTED SECTION.
     DATA client TYPE REF TO z2ui5_if_client.
@@ -48,7 +50,6 @@ CLASS z2ui5_cl_smp_app_160 DEFINITION PUBLIC.
 ENDCLASS.
 
 
-
 CLASS z2ui5_cl_smp_app_160 IMPLEMENTATION.
 
   METHOD z2ui5_if_app~main.
@@ -56,6 +57,8 @@ CLASS z2ui5_cl_smp_app_160 IMPLEMENTATION.
     me->client = client.
     IF client->check_on_init( ).
       model_init( ).
+      view_display( ).
+    ELSEIF client->check_on_navigated( ).
       view_display( ).
     ELSE.
       on_event( ).
@@ -87,12 +90,11 @@ CLASS z2ui5_cl_smp_app_160 IMPLEMENTATION.
 
     IF client->check_on_event( `PL_TOTAL_CHANGE` ).
       client->message_box_display(
-        `Id of Input via source object: ` &&  client->get_event_arg( ) && z2ui5_cl_smp_context=>cv_char_util_newline  &&
-        `Id of Input via event.oSource.sId: ` &&  client->get_event_arg( 2 ) && z2ui5_cl_smp_context=>cv_char_util_newline &&
-        `Value of same row, index: ` &&  client->get_event_arg( 3 ) && z2ui5_cl_smp_context=>cv_char_util_newline  &&
-        `Id of parent (row) via event.oSource.oParent.sId: ` &&  client->get_event_arg( 4 ) && z2ui5_cl_smp_context=>cv_char_util_newline  &&
-        `Attribute of parameters.value: ` &&  client->get_event_arg( 5 )
-        ).
+        `Id of Input via source object: ` && client->get_event_arg( ) && z2ui5_cl_smp_context=>cv_char_util_newline &&
+        `Id of Input via event.oSource.sId: ` && client->get_event_arg( 2 ) && z2ui5_cl_smp_context=>cv_char_util_newline &&
+        `Value of same row, index: ` && client->get_event_arg( 3 ) && z2ui5_cl_smp_context=>cv_char_util_newline &&
+        `Id of parent (row) via event.oSource.oParent.sId: ` && client->get_event_arg( 4 ) && z2ui5_cl_smp_context=>cv_char_util_newline &&
+        `Attribute of parameters.value: ` && client->get_event_arg( 5 ) ).
     ENDIF.
 
 

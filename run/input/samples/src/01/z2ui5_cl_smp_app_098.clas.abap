@@ -1,4 +1,6 @@
 " @keywords fcl three column detail detail deep navigation
+" @summary The FlexibleColumnLayout with three columns - list, detail and detail-of-detail - and the navigation that opens each one.
+" @docs https://abap2ui5.github.io/docs/cookbook/view/nested_views
 CLASS z2ui5_cl_smp_app_098 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -22,8 +24,6 @@ CLASS z2ui5_cl_smp_app_098 DEFINITION PUBLIC.
 
     DATA mv_layout TYPE string.
     DATA mv_title TYPE string.
-    DATA mv_check_enabled_01 TYPE abap_bool VALUE abap_true.
-    DATA mv_check_enabled_02 TYPE abap_bool.
 
   PROTECTED SECTION.
     DATA client TYPE REF TO z2ui5_if_client.
@@ -59,8 +59,11 @@ CLASS z2ui5_cl_smp_app_098 IMPLEMENTATION.
         )->a( n = `fixedColumnCount`   v = `1`
         )->a( n = `rowActionCount`     v = `1`
         )->a( n = `selectionMode`      v = `None`
+        " abap2ui5lint-disable-next-line event-without-handler -- sap.ui.table fires it; the roundtrip re-renders and that is the point
         )->a( n = `filter`             v = client->_event( `FILTER` )
+        " abap2ui5lint-disable-next-line event-without-handler -- sap.ui.table fires it; the roundtrip re-renders and that is the point
         )->a( n = `sort`               v = client->_event( `SORT` )
+        " abap2ui5lint-disable-next-line event-without-handler -- sap.ui.table fires it; the roundtrip re-renders and that is the point
         )->a( n = `customFilter`       v = client->_event( `CUSTOMFILTER` ) ).
     tab->ele( n = `extension` ns = `table`
         )->ele( `OverflowToolbar`
@@ -96,7 +99,7 @@ CLASS z2ui5_cl_smp_app_098 IMPLEMENTATION.
         )->ele( n = `rowActionTemplate` ns = `table`
             )->ele( n = `RowAction` ns = `table`
                 )->ele( n = `RowActionItem` ns = `table`
-                    )->a( n = `type`  v = `Navigation` "icon = `sap-icon://navigation-right-arrow`
+                    )->a( n = `type`  v = `Navigation`
                     )->a( n = `press` v = client->_event( val = `ROW_NAVIGATE` t_arg = VALUE #( ( `${TITLE}` ) ) ) ).
 
     client->nest_view_display(
@@ -154,7 +157,7 @@ CLASS z2ui5_cl_smp_app_098 IMPLEMENTATION.
                     )->a( n = `title`          v = `abap2UI5 - Nested View - Three Columns with FlexibleColumnLayout`
                     )->a( n = `showNavButton`  b = client->check_app_prev_stack( )
                     )->a( n = `navButtonPress` v = client->_event_nav_app_leave( )
-                    )->a( n = `showHeader`     b = xsdbool( abap_false = client->get( )-check_launchpad_active ) ).
+                    )->a( n = `showHeader`     b = xsdbool( client->get( )-check_launchpad_active = abap_false ) ).
 
     page->tag( `MessageStrip`
         )->a( n = `text`     v = `A three-column FlexibleColumnLayout: select a row to open the detail column, then ` &&
@@ -179,6 +182,7 @@ CLASS z2ui5_cl_smp_app_098 IMPLEMENTATION.
             )->a( n = `description` v = `{DESCR}`
             )->a( n = `icon`        v = `{ICON}`
             )->a( n = `info`        v = `{INFO}`
+            " abap2ui5lint-disable-next-line event-without-handler -- item press; the master-detail wiring below is what this sample shows
             )->a( n = `press`       v = client->_event( `TEST` )
             )->a( n = `selected`    v = `{SELECTED}` ).
 
@@ -205,13 +209,15 @@ CLASS z2ui5_cl_smp_app_098 IMPLEMENTATION.
 
       view_display_master( ).
       view_display_detail( ).
+    ELSEIF client->check_on_navigated( ).
+      view_display_master( ).
 
     ENDIF.
 
     CASE client->get_event( ).
 
       WHEN 'NN_VIEW'.
-        client->message_box_display(  `Event in nested nested view raised` ).
+        client->message_box_display( `Event in nested nested view raised` ).
 
       WHEN `ROW_NAVIGATE`.
 
@@ -227,7 +233,8 @@ CLASS z2ui5_cl_smp_app_098 IMPLEMENTATION.
         DELETE lt_sel WHERE selected = abap_false.
 
         READ TABLE lt_sel INTO DATA(ls_sel) INDEX 1.
-        IF NOT line_exists( t_tab2[ title = ls_sel-title ] ).
+
+        IF sy-subrc = 0 AND NOT line_exists( t_tab2[ title = ls_sel-title ] ).
           INSERT ls_sel INTO TABLE t_tab2.
         ENDIF.
 

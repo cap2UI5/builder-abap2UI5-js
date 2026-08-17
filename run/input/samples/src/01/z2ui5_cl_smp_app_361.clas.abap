@@ -1,4 +1,5 @@
 " @keywords logoff signout icf session end fiori launchpad
+" @summary Ends the session from the client - the logoff an ICF session or a Fiori launchpad needs, triggered as a follow-up action.
 CLASS z2ui5_cl_smp_app_361 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -13,7 +14,7 @@ CLASS z2ui5_cl_smp_app_361 IMPLEMENTATION.
 
   METHOD z2ui5_if_app~main.
 
-    IF client->check_on_init( ).
+    IF client->check_on_navigated( ).
 
       DATA(view) = z2ui5_cl_ui5_view_builder=>factory(
           )->ele( n = `View` ns = `mvc`
