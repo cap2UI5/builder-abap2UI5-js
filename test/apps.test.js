@@ -66,7 +66,7 @@ describe("sample apps", () => {
       app.client = null;  // will be set by main
       app.ms_home.classname = "z2ui5_cl_ui5_app_hi_world";
       const client = createClient(app, { event: "BUTTON_CHECK" });
-      // ensure init defaults (z2ui5_on_init resets state); manually set classname after
+      // ensure init defaults (on_init resets state); manually set classname after
       await app.main(client);
 
       expect(app.ms_home.btn_text).toBe("Edit");
@@ -108,9 +108,10 @@ describe("sample apps", () => {
       expect(client.S_MSG_BOX.TEXT).toContain("CTRL+F12");
     });
 
-    test("OPEN_INFO shows the system-info popup", async () => {
+    test("OPEN_SYSTEM shows the system-info popup", async () => {
       const app = new AppClass();
-      const client = createClient(app, { event: "OPEN_INFO" });
+      // abap names this private event c_event_system = `OPEN_SYSTEM`
+      const client = createClient(app, { event: "OPEN_SYSTEM" });
       await app.main(client);
 
       expect(client.S_POPUP).not.toBeNull();

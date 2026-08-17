@@ -1,5 +1,6 @@
 const cds = require("@sap/cds");
 const engine = require("abap2UI5/engine");
+const { reqInfo, errorText } = require("../../_shared");
 
 /**
  * Wires the rootService.z2ui5 action to the engine roundtrip. CDS unwraps
@@ -12,24 +13,15 @@ module.exports = cds.service.impl(function (srv) {
     const oBody = req.data?.value ?? req.data;
 
     // exit-context request info from CAP's inner express req (when exposed)
-    let reqInfo;
     const inner = req.req || req._?.req;
-    if (inner) {
-      reqInfo = {
-        method: inner.method,
-        body: JSON.stringify(inner.body ?? {}),
-        path: inner.path,
-        t_params: Object.entries(inner.query || {}).map(([n, v]) => ({ n, v: String(v) })),
-      };
-    }
+    const info = inner ? reqInfo(inner, JSON.stringify(inner.body ?? {})) : undefined;
 
     try {
       // CDS will JSON.stringify whatever we return, so parse first to
       // avoid double-encoding the wire payload.
-      return JSON.parse(await engine.roundtrip(oBody, reqInfo));
+      return JSON.parse(await engine.roundtrip(oBody, info));
     } catch (x) {
-      const text = x?.get_text?.() || x?.message || String(x);
-      return req.error(500, `abap2UI5 Error:${text}`);
+      return req.error(500, `abap2UI5 Error:${errorText(x)}`);
     }
   });
 });

@@ -46,3 +46,8 @@ jobs:
       - run: npm ci
         working-directory: adapters/web
       - run: npm test
+      # A PR that touches a hand-port should say so against the upstream
+      # revision it was reconciled with — --strict makes unreconciled drift
+      # block here, where a human is already looking, while the nightly only
+      # warns so an upstream sync is never blocked.
+      - run: node scripts/check-port-drift.js --strict

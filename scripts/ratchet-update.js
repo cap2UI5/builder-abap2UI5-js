@@ -52,6 +52,15 @@ execFileSync(process.execPath, [path.join(ROOT, "scripts", "transpile-tests.js")
 const units = runJson("run-units.js");
 const smoke = runJson("smoke-apps.js");
 
+// Publish both reports so the jest gates can reuse them instead of producing
+// the same two (tens-of-seconds) reports a second time in the same pipeline
+// run. Reuse is opt-in on the consumer side via Z2UI5_REPORTS_DIR — see
+// test/helpers/reports.js for why it is explicit rather than time-based.
+const REPORTS_DIR = path.join(ROOT, "run", "output", "reports");
+fs.mkdirSync(REPORTS_DIR, { recursive: true });
+fs.writeFileSync(path.join(REPORTS_DIR, "units.json"), JSON.stringify(units));
+fs.writeFileSync(path.join(REPORTS_DIR, "smoke.json"), JSON.stringify(smoke));
+
 // sanity floors, same as the jest gates — an empty report must never be
 // allowed to delist the whole baseline
 if (units.total <= 150) throw new Error(`units report suspiciously small (total=${units.total})`);

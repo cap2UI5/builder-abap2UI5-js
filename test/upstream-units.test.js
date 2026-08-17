@@ -1,5 +1,4 @@
-const { execFileSync } = require("child_process");
-const path = require("path");
+const { loadReport } = require("./helpers/reports");
 
 /**
  * Upstream unit-test gate — the self-healing loop's ratchet.
@@ -22,13 +21,7 @@ describe("upstream unit tests (transpiled testclasses)", () => {
   jest.setTimeout(300000);
 
   test("every transpiled upstream unit test passes, except the known failures", () => {
-    execFileSync(process.execPath, [path.join(__dirname, "..", "scripts", "transpile-tests.js")], { stdio: "pipe" });
-    const out = execFileSync(
-      process.execPath,
-      [path.join(__dirname, "..", "scripts", "run-units.js"), "--json"],
-      { encoding: "utf8", timeout: 280000, maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] }
-    );
-    const report = JSON.parse(out);
+    const report = loadReport("units", "run-units.js", ["transpile-tests.js"]);
     const known = new Set(require("./upstream-units.known-failures.json").map((f) => f.name));
     const failing = new Set(Object.keys(report.failures));
 

@@ -2,5 +2,8 @@ node_modules/
 .mirror_tmp/
 .DS_Store
 run/output/core/
+# Ephemeral gate reports handed from ratchet-update.js to the jest gates
+# (see test/helpers/reports.js) — pure scratch, nothing to review in a diff.
+run/output/reports/
 adapters/web/dist/
 adapters/web/register-all.generated.js
