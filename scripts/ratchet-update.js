@@ -41,13 +41,17 @@ function runJson(script) {
 //   port-deviation  the test asserts on abap-internal state the idiomatic
 //                   port models differently. Permanent; not fixable without
 //                   giving up the port's design.
+//   port-bug        the API exists but its behaviour is wrong or incomplete.
+//                   REAL WORK, and unlike a port gap it is not visible from
+//                   the outside — the method is there and answers, it just
+//                   answers wrongly.
 //   js-limit        ABAP type/reference semantics JS cannot express.
 //   async-boundary  a sync ABAP test cannot await the async JS roundtrip.
 //
 // Free text used to carry this in square brackets, which broke on every
 // assertion message that contained brackets of its own — five entries
 // parsed to nonsense categories like "'ITEM_PRESS'". A field cannot.
-const CATEGORIES = new Set(["port-gap", "port-deviation", "js-limit", "async-boundary"]);
+const CATEGORIES = new Set(["port-gap", "port-bug", "port-deviation", "js-limit", "async-boundary"]);
 
 /** Reject a malformed baseline outright — a silently mis-shaped entry makes
  *  the whole worklist unreadable, and this file is edited by hand. */
@@ -130,8 +134,9 @@ for (const o of outcomes) {
   if (!o.regressions.length && !o.fixed.length) console.log(`${o.label}: baseline unchanged`);
 }
 
-// What is left, by category — so "127 known failures" stops reading like one
-// undifferentiated pile. Only port-gap entries are work anyone can do.
+// What is left, by category — so a three-digit "known failures" count stops
+// reading like one undifferentiated pile. port-gap and port-bug entries are
+// work; the rest is documented distance from ABAP semantics.
 {
   const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, "test", "upstream-units.known-failures.json"), "utf8"));
   const byCategory = {};

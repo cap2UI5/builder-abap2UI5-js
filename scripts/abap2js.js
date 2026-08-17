@@ -39,36 +39,23 @@ const SY_RUNTIME_FIELDS = {
 // require-path mapping (mirrors the "exports" of cap2UI5's package.json)
 // ---------------------------------------------------------------------------
 
+const pathMap = require("./lib/path-map");
+
 function requirePathFor(className) {
   // the sample tree — demo apps (z2ui5_cl_smp_app_*) and the helpers they
   // share (context, error) — is flattened into srv/app/samples, so its
   // members reference each other relatively
   if (/^z2ui5_(cl|cx)_smp_/.test(className)) return `./${className}`;
-  // SAP kernel classes — native shims under srv/z2ui5/00/00 (see abap_rtti.js);
-  // a class without a shim fails the assemble load-gate visibly, not silently
-  if (/^cl_abap_[a-z0-9_]+$/.test(className)) return `abap2UI5/${className}`;
-  if (/^cx_sy_[a-z0-9_]+$/.test(className)) return `abap2UI5/${className}`;
-  // kernel exception roots — one shared shim keeps previous/textid + get_text
+  // kernel exception roots — one shared shim keeps previous/textid + get_text,
+  // so these four names collapse onto one module rather than mapping 1:1
   if (/^cx_(root|no_check|static_check|dynamic_check)$/.test(className)) return `abap2UI5/cx_root`;
-  if (
-    // the framework layer: z2ui5_cl_ui5_* (core), z2ui5_cl_ui5f_* (frontend
-    // asset classes), z2ui5_cx_ui5_* — all reachable as package exports
-    /^z2ui5_(cl|cx)_ui5f?_/.test(className) ||
-    className === "z2ui5_cl_http_handler" ||
-    /^z2ui5_(cl|cx)_srt_?/.test(className) ||
-    /^z2ui5_(cl|cx)_ajson/.test(className) ||
-    /^z2ui5_if_/.test(className) ||
-    /^z2ui5_cl_pop_/.test(className) ||
-    /^z2ui5_cl_util/.test(className) ||
-    /^z2ui5_cl_app_/.test(className) ||
-    className === "z2ui5_cl_xml_view" ||
-    className === "z2ui5_cl_xml_view_cc" ||
-    className === "z2ui5_cx_util_error" ||
-    className === "z2ui5_port"
-  ) {
-    return `abap2UI5/${className}`;
-  }
-  return null; // unknown — will be flagged as TODO
+
+  // Everything else is a package export or it is not resolvable at all. Asking
+  // the manifest instead of re-listing the naming conventions here is the
+  // point: a class the package does not export must NOT get a require, or the
+  // transpile loads clean and fails at runtime. Returning null makes the
+  // transpiler emit a visible TODO instead.
+  return pathMap.subpathFor(className);
 }
 
 // ---------------------------------------------------------------------------

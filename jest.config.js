@@ -1,39 +1,19 @@
 /**
  * Jest does not resolve package self-references ("abap2UI5/..." from within
- * this repo, see the "exports" map in core/package.json) — map them explicitly so
- * tests can load modules exactly like the samples do.
+ * this repo, see the "exports" map in core/package.json), so the mapping is
+ * generated from that map — tests then resolve exactly what a consumer does,
+ * including what the package does NOT export.
  */
 module.exports = {
   // anchored at the repo root — this suite covers the transpile project (core
   // package, transpiler, adapters); the CAP app has its own suite in the
   // cap2UI5 repo (run via `npm test` there)
   rootDir: ".",
-  moduleNameMapper: {
-    "^abap2UI5/z2ui5_if_ui5_types$": "<rootDir>/core/srv/z2ui5/01/02/z2ui5_if_ui5_types.js",
-    "^abap2UI5/z2ui5_if_(.*)$": "<rootDir>/core/srv/z2ui5/02/z2ui5_if_$1.js",
-    "^abap2UI5/z2ui5_cl_xml_view$": "<rootDir>/core/srv/z2ui5/02/z2ui5_cl_xml_view.js",
-    "^abap2UI5/z2ui5_cl_xml_view_cc$": "<rootDir>/core/srv/z2ui5/02/z2ui5_cl_xml_view_cc.js",
-    "^abap2UI5/z2ui5_cl_pop_(.*)$": "<rootDir>/core/srv/z2ui5/99/02/z2ui5_cl_pop_$1.js",
-    "^abap2UI5/z2ui5_pop_preferred_param$": "<rootDir>/core/srv/z2ui5/99/02/z2ui5_pop_preferred_param.js",
-    "^abap2UI5/z2ui5_cl_ui5_util_(.*)$": "<rootDir>/core/srv/z2ui5/00/03/z2ui5_cl_ui5_util_$1.js",
-    "^abap2UI5/z2ui5_cx_ui5_util_error$": "<rootDir>/core/srv/z2ui5/00/03/z2ui5_cx_ui5_util_error.js",
-    "^abap2UI5/z2ui5_cl_ui5_srv_draft$": "<rootDir>/core/srv/z2ui5/01/01/z2ui5_cl_ui5_srv_draft.js",
-    "^abap2UI5/z2ui5_cl_ui5_app_(.*)$": "<rootDir>/core/srv/z2ui5/01/04/z2ui5_cl_ui5_app_$1.js",
-    "^abap2UI5/z2ui5_cl_ui5_user_exit$": "<rootDir>/core/srv/z2ui5/01/04/z2ui5_cl_ui5_user_exit.js",
-    "^abap2UI5/z2ui5_cl_ui5_http_handler$": "<rootDir>/core/srv/z2ui5/02/z2ui5_cl_ui5_http_handler.js",
-    "^abap2UI5/z2ui5_cl_ui5_view_builder$": "<rootDir>/core/srv/z2ui5/02/z2ui5_cl_ui5_view_builder.js",
-    "^abap2UI5/z2ui5_cl_ui5_(.*)$": "<rootDir>/core/srv/z2ui5/01/02/z2ui5_cl_ui5_$1.js",
-    "^abap2UI5/z2ui5_cl_ui5f_(.*)$": "<rootDir>/core/srv/z2ui5/01/03/z2ui5_cl_ui5f_$1.js",
-    "^abap2UI5/z2ui5_cl_http_handler$": "<rootDir>/core/srv/z2ui5/99/z2ui5_cl_http_handler.js",
-    "^abap2UI5/z2ui5_cl_app_(.*)$": "<rootDir>/core/srv/z2ui5/01/03/z2ui5_cl_app_$1.js",
-    "^abap2UI5/app/(.*)$": "<rootDir>/core/srv/app/$1.js",
-    "^abap2UI5/z2ui5_cl_util$": "<rootDir>/core/srv/z2ui5/00/03/z2ui5_cl_util.js",
-    "^abap2UI5/z2ui5_cl_util_(.*)$": "<rootDir>/core/srv/z2ui5/00/03/z2ui5_cl_util_$1.js",
-    "^abap2UI5/z2ui5_cx_util_error$": "<rootDir>/core/srv/z2ui5/00/03/z2ui5_cx_util_error.js",
-    "^abap2UI5/register-apps$": "<rootDir>/core/srv/z2ui5/register-apps.js",
-    "^abap2UI5/z2ui5_port$": "<rootDir>/core/srv/z2ui5/z2ui5_port.js",
-    "^abap2UI5$": "<rootDir>/core/srv/z2ui5/00/03/z2ui5_cl_util.js",
-  },
+  // Derived from the package's own `exports` map — see scripts/lib/path-map.js.
+  // Jest does not resolve package self-references, so it needs its own copy of
+  // the mapping; generating it means the copy cannot drift from the manifest
+  // that actually resolves for consumers (it did, four times over).
+  moduleNameMapper: require("./scripts/lib/path-map").moduleNameMapper(),
   testPathIgnorePatterns: ["/node_modules/", "/core/app/", "<rootDir>/src/", "<rootDir>/run/output/", "/adapters/"],
   // src/ is the hand-maintained SOURCE of the core package and
   // run/output/core is the assembled copy — keep both out of module
