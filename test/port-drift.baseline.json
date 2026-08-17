@@ -27,36 +27,6 @@
       "js": "src/srv/z2ui5/00/01/z2ui5_cl_ajson_utilities.js",
       "hash": "685f815235ac2c64"
     },
-    "z2ui5_cl_http_handler": {
-      "abap": "run/input/abap2UI5/src/99/z2ui5_cl_http_handler.clas.abap",
-      "js": "src/srv/z2ui5/99/z2ui5_cl_http_handler.js",
-      "hash": "9303cbcc9645e32e"
-    },
-    "z2ui5_cl_pop_data": {
-      "abap": "run/input/abap2UI5/src/99/02/z2ui5_cl_pop_data.clas.abap",
-      "js": "src/srv/z2ui5/99/02/z2ui5_cl_pop_data.js",
-      "hash": "840e11c44c98251d"
-    },
-    "z2ui5_cl_pop_demo_output": {
-      "abap": "run/input/abap2UI5/src/99/02/z2ui5_cl_pop_demo_output.clas.abap",
-      "js": "src/srv/z2ui5/99/02/z2ui5_cl_pop_demo_output.js",
-      "hash": "fc850cc4258a8fb2"
-    },
-    "z2ui5_cl_pop_get_range": {
-      "abap": "run/input/abap2UI5/src/99/02/z2ui5_cl_pop_get_range.clas.abap",
-      "js": "src/srv/z2ui5/99/02/z2ui5_cl_pop_get_range.js",
-      "hash": "f378f1e393f2e46a"
-    },
-    "z2ui5_cl_pop_table": {
-      "abap": "run/input/abap2UI5/src/99/02/z2ui5_cl_pop_table.clas.abap",
-      "js": "src/srv/z2ui5/99/02/z2ui5_cl_pop_table.js",
-      "hash": "850caaa26e9cdd84"
-    },
-    "z2ui5_cl_pop_to_select": {
-      "abap": "run/input/abap2UI5/src/99/02/z2ui5_cl_pop_to_select.clas.abap",
-      "js": "src/srv/z2ui5/99/02/z2ui5_cl_pop_to_select.js",
-      "hash": "ce60b3eb65fbe526"
-    },
     "z2ui5_cl_srt_aunit": {
       "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_aunit.clas.abap",
       "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_aunit.js",
@@ -332,56 +302,6 @@
       "js": "src/srv/z2ui5/01/03/z2ui5_cl_ui5f_viewslot_js.js",
       "hash": "0e1816889c7e49d4"
     },
-    "z2ui5_cl_util": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util.clas.abap",
-      "js": "src/srv/z2ui5/00/03/z2ui5_cl_util.js",
-      "hash": "11b3dfafeb9f8e25"
-    },
-    "z2ui5_cl_util_db": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util_db.clas.abap",
-      "js": "src/srv/z2ui5/00/03/01/z2ui5_cl_util_db.js",
-      "hash": "8d48a2928d5542a2"
-    },
-    "z2ui5_cl_util_ext": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util_ext.clas.abap",
-      "js": "src/srv/z2ui5/00/03/01/z2ui5_cl_util_ext.js",
-      "hash": "9b4efd77e3fb4311"
-    },
-    "z2ui5_cl_util_http": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util_http.clas.abap",
-      "js": "src/srv/z2ui5/00/03/z2ui5_cl_util_http.js",
-      "hash": "48af6c95c8dfdea5"
-    },
-    "z2ui5_cl_util_log": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util_log.clas.abap",
-      "js": "src/srv/z2ui5/00/03/z2ui5_cl_util_log.js",
-      "hash": "6d31f1dbbb6911d6"
-    },
-    "z2ui5_cl_util_msg": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util_msg.clas.abap",
-      "js": "src/srv/z2ui5/00/03/z2ui5_cl_util_msg.js",
-      "hash": "24b3e762caae4f96"
-    },
-    "z2ui5_cl_util_range": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util_range.clas.abap",
-      "js": "src/srv/z2ui5/00/03/z2ui5_cl_util_range.js",
-      "hash": "696588b2e0e45e1e"
-    },
-    "z2ui5_cl_util_xml": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cl_util_xml.clas.abap",
-      "js": "src/srv/z2ui5/00/03/z2ui5_cl_util_xml.js",
-      "hash": "f8a147d6ad2d7e09"
-    },
-    "z2ui5_cl_xml_view": {
-      "abap": "run/input/abap2UI5/src/99/z2ui5_cl_xml_view.clas.abap",
-      "js": "src/srv/z2ui5/02/z2ui5_cl_xml_view.js",
-      "hash": "caf56a3c0089f228"
-    },
-    "z2ui5_cl_xml_view_cc": {
-      "abap": "run/input/abap2UI5/src/99/z2ui5_cl_xml_view_cc.clas.abap",
-      "js": "src/srv/z2ui5/02/z2ui5_cl_xml_view_cc.js",
-      "hash": "f402d2d707afd7f9"
-    },
     "z2ui5_cx_ajson_error": {
       "abap": "run/input/abap2UI5/src/00/01/z2ui5_cx_ajson_error.clas.abap",
       "js": "src/srv/z2ui5/00/01/z2ui5_cx_ajson_error.js",
@@ -391,11 +311,6 @@
       "abap": "run/input/abap2UI5/src/00/02/z2ui5_cx_srt.clas.abap",
       "js": "src/srv/z2ui5/00/02/z2ui5_cx_srt.js",
       "hash": "d65878318fba6110"
-    },
-    "z2ui5_cx_util_error": {
-      "abap": "run/input/abap2UI5/src/99/01/z2ui5_cx_util_error.clas.abap",
-      "js": "src/srv/z2ui5/00/03/z2ui5_cx_util_error.js",
-      "hash": "acf18631d1c0726c"
     },
     "z2ui5_if_app": {
       "abap": "run/input/abap2UI5/src/02/z2ui5_if_app.intf.abap",

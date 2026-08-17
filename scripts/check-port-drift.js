@@ -74,17 +74,40 @@ for (const p of walk(UPSTREAM_DIR, ".intf.abap")) {
   upstream.set(path.basename(p, ".intf.abap").toLowerCase(), p);
 }
 
+// Upstream's src/99 is its FROZEN package: retired utility classes (99/01),
+// the obsolete built-in popups (99/02, superseded by the popups addon), the
+// legacy XML view builder and the deprecated http_handler shim. Upstream
+// states it has zero in-repo consumers and ships only so existing abapGit
+// installations keep compiling on upgrade — and forbids adding consumers.
+//
+// A name match against that package therefore does NOT mean "this hand-port
+// tracks upstream". It means one of two quite different things, and the
+// report separates them because the answer differs per class:
+//   - the port genuinely carries frozen legacy code (and, unlike upstream,
+//     may have built consumers on it)
+//   - or the port merely REUSED a retired name for something of its own
+//     (z2ui5_cl_util in this port is the transpiler's runtime library, which
+//     shares nothing but the name with upstream's retired class)
+// Either way, "did upstream change it?" is the wrong question for these:
+// frozen code does not change.
+const FROZEN = `${path.sep}99${path.sep}`;
+
 // ---- collect: hand-ported classes that shadow one of them -----------------
-const ports = new Map(); // className → { js, abap, hash }
+const ports = new Map();  // className → { js, abap, hash }   — tracks upstream
+const frozen = new Map(); // className → { js, abap }          — name match into src/99
 for (const js of walk(SRC_DIR, ".js")) {
   const name = path.basename(js, ".js").toLowerCase();
   const abap = upstream.get(name);
   if (!abap) continue; // engine, ports, cl_abap_* shims — no upstream counterpart
-  ports.set(name, {
+  const rel = {
     js: path.relative(ROOT, js),
     abap: path.relative(ROOT, abap),
-    hash: sha(fs.readFileSync(abap, "utf8")),
-  });
+  };
+  if (abap.includes(FROZEN)) {
+    frozen.set(name, rel);
+    continue;
+  }
+  ports.set(name, { ...rel, hash: sha(fs.readFileSync(abap, "utf8")) });
 }
 
 // ---- compare against the baseline -----------------------------------------
@@ -116,8 +139,17 @@ const upstreamCommit = fs.existsSync(UPSTREAM_COMMIT_FILE)
   ? fs.readFileSync(UPSTREAM_COMMIT_FILE, "utf8").trim()
   : "";
 
-console.log(`port-drift: ${ports.size} hand-ported classes shadow an upstream object`);
+console.log(`port-drift: ${ports.size} hand-ported classes shadow a LIVE upstream object`);
 console.log(`            upstream ${upstreamCommit.slice(0, 12) || "(unknown)"}`);
+
+if (frozen.size) {
+  console.log(`\n  ${frozen.size} more share a name with upstream's FROZEN src/99 package:`);
+  for (const [name, e] of [...frozen].sort()) {
+    console.log(`     ${name.padEnd(28)} ${e.js.replace(/^src\/srv\/z2ui5\//, "")}`);
+  }
+  console.log(`     (not tracked — frozen code does not change. Whether the port should`);
+  console.log(`      still carry these is a design question, not a drift question.)`);
+}
 
 if (added.length) console.log(`  + ${added.length} newly tracked: ${added.slice(0, 8).join(", ")}${added.length > 8 ? ", …" : ""}`);
 if (removed.length) console.log(`  - ${removed.length} no longer tracked: ${removed.slice(0, 8).join(", ")}${removed.length > 8 ? ", …" : ""}`);

@@ -42,14 +42,19 @@ describe("hand-port drift baseline", () => {
     }
   });
 
-  test("covers exactly the classes that shadow an upstream object", () => {
-    const upstreamNames = new Set(
+  test("covers exactly the classes that shadow a LIVE upstream object", () => {
+    // Upstream's src/99 is frozen: retired utilities, obsolete popups, the
+    // legacy view builder. A name match there is not something to track for
+    // drift — frozen code does not change — so those are reported separately
+    // and deliberately kept out of this baseline. See the detector's header.
+    const live = new Set(
       [...walk(UPSTREAM_DIR, ".clas.abap"), ...walk(UPSTREAM_DIR, ".intf.abap")]
+        .filter((p) => !p.includes(`${path.sep}99${path.sep}`))
         .map((p) => path.basename(p).replace(/\.(clas|intf)\.abap$/, "").toLowerCase()),
     );
     const shadowing = walk(SRC_DIR, ".js")
       .map((p) => path.basename(p, ".js").toLowerCase())
-      .filter((n) => upstreamNames.has(n))
+      .filter((n) => live.has(n))
       .sort();
 
     // Missing entries mean the detector is blind to those classes; extra ones
