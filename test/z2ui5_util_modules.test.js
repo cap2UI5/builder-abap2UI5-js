@@ -355,13 +355,33 @@ describe("z2ui5_cl_util_api", () => {
 //  z2ui5_if_client / z2ui5_if_exit / z2ui5_cl_ui5_user_exit
 // =============================================================
 describe("z2ui5_if_client", () => {
-  test("cs_event has the 34 upstream entries", () => {
-    expect(Object.keys(z2ui5_if_client.cs_event)).toHaveLength(34);
-    expect(z2ui5_if_client.cs_event.popup_close).toBe("POPUP_CLOSE");
-    // the whitelisted control/binding call events (upstream #2438)
-    expect(z2ui5_if_client.cs_event.control_by_id).toBe("CONTROL_BY_ID");
-    expect(z2ui5_if_client.cs_event.control_global).toBe("CONTROL_GLOBAL");
-    expect(z2ui5_if_client.cs_event.binding_call).toBe("BINDING_CALL");
+  // cs_event is the contract apps write against, so a constant upstream added
+  // and the port never carried is a silently undefined event name at the call
+  // site. This used to be pinned as a magic count ("34 upstream entries"),
+  // which is exactly the kind of assertion that rots: upstream grew to 41 and
+  // the number stayed, so seven missing constants went unnoticed. Compare
+  // against the mirrored interface instead — it is right there in run/input.
+  test("cs_event carries every upstream constant", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const intf = fs.readFileSync(
+      path.join(__dirname, "..", "run", "input", "abap2UI5", "src", "02", "z2ui5_if_client.intf.abap"),
+      "utf8",
+    );
+    const block = intf.slice(intf.indexOf("BEGIN OF cs_event"), intf.indexOf("END OF cs_event"));
+    const upstream = [...block.matchAll(/^\s+(\w+)\s+TYPE string VALUE `([^`]*)`/gm)]
+      .map(([, name, value]) => [name, value]);
+
+    expect(upstream.length).toBeGreaterThan(30); // sanity floor: block parsed
+
+    const missing = upstream.filter(([n]) => z2ui5_if_client.cs_event[n] === undefined).map(([n]) => n);
+    expect(missing).toEqual([]);
+
+    // and every carried constant must hold the upstream VALUE, not just exist
+    const wrong = upstream
+      .filter(([n, v]) => z2ui5_if_client.cs_event[n] !== undefined && z2ui5_if_client.cs_event[n] !== v)
+      .map(([n, v]) => `${n}: ${z2ui5_if_client.cs_event[n]} ≠ ${v}`);
+    expect(wrong).toEqual([]);
   });
 
   test("METHOD_NAMES covers all interface methods", () => {
