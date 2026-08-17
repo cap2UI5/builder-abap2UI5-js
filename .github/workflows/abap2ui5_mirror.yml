@@ -22,14 +22,7 @@ jobs:
           node-version: 22
       - run: npm run mirror_abap2ui5
       - name: commit
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add run/input/abap2UI5/src run/input/abap2UI5/UPSTREAM_COMMIT
-          if git diff --cached --quiet; then
-            echo "nothing to commit"
-          else
-            git commit -m "mirror: update run/input/abap2UI5/src ($(cut -c1-12 run/input/abap2UI5/UPSTREAM_COMMIT))"
-            git pull --rebase origin "${{ github.ref_name }}"
-            git push origin "HEAD:${{ github.ref_name }}"
-          fi
+        uses: ./.github/actions/commit-generated
+        with:
+          paths: run/input/abap2UI5/src run/input/abap2UI5/UPSTREAM_COMMIT
+          message: "mirror: update run/input/abap2UI5/src ($(cut -c1-12 run/input/abap2UI5/UPSTREAM_COMMIT))"

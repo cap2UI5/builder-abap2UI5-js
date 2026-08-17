@@ -65,14 +65,7 @@ jobs:
       # divergence is announced exactly once instead of silently accumulating.
       - run: node scripts/check-port-drift.js
       - name: commit
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add core test/upstream-units.known-failures.json test/apps-smoke.known-failures.json test/port-drift.baseline.json
-          if git diff --cached --quiet; then
-            echo "nothing to commit"
-          else
-            git commit -m "build: regenerate core"
-            git pull --rebase origin "${{ github.ref_name }}"
-            git push origin "HEAD:${{ github.ref_name }}"
-          fi
+        uses: ./.github/actions/commit-generated
+        with:
+          paths: core test/upstream-units.known-failures.json test/apps-smoke.known-failures.json test/port-drift.baseline.json
+          message: "build: regenerate core"

@@ -1,0 +1,50 @@
+name: commit generated tree
+description: >
+  Stage a generated tree, commit it if anything changed, and push it to the
+  current branch. Every pipeline step in this repo ends this way — this is
+  that block, once, instead of eight near-identical copies that a fix to the
+  push handling would have to be applied to eight times.
+
+inputs:
+  paths:
+    description: Paths to stage (whitespace-separated).
+    required: true
+  message:
+    description: Commit message. Nothing is committed when the tree is unchanged.
+    required: true
+  branch:
+    description: Branch to push to.
+    required: false
+    default: ${{ github.ref_name }}
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+        MESSAGE: ${{ inputs.message }}
+        BRANCH: ${{ inputs.branch }}
+      run: |
+        set -euo pipefail
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add $PATHS
+        if git diff --cached --quiet; then
+          echo "nothing to commit"
+          exit 0
+        fi
+        git commit -m "$MESSAGE"
+        # A concurrent push to the branch between rebase and push loses the
+        # race — the nightly pipelines can overlap, so retry a few times
+        # before giving up rather than failing a run that has nothing wrong
+        # with it. (Only two of the eight copies had this retry.)
+        for attempt in 1 2 3; do
+          if git pull --rebase origin "$BRANCH" && git push origin "HEAD:$BRANCH"; then
+            exit 0
+          fi
+          echo "push attempt $attempt failed — retrying"
+          sleep $((attempt * 5))
+        done
+        echo "::error::could not push to $BRANCH after 3 attempts"
+        exit 1

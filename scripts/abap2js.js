@@ -2782,12 +2782,16 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         // offset/length writes (lv_x+off(len) = ...) have no JS counterpart
         if (toks.slice(i, eq).some((t) => t.str === "+")) return todo();
         const lhs = txExpr(toks.slice(i, eq), ctx);
-        // x = VALUE #( ). resets to the type's INITIAL value — restore the
-        // declared component defaults instead of dropping the keys
+        // x = VALUE #( ). resets to the type's INITIAL value. The parser
+        // cannot tell an empty struct constructor from an empty table one —
+        // both are `VALUE #( )` — so it emits `{}` and the declared type
+        // decides. Getting this wrong is silent until the first APPEND:
+        // `mt_table = VALUE #( ).` followed by an append crashed with
+        // "mt_table.push is not a function", i.e. at runtime, in the app.
         let rhs2 = rhs;
         if (rhs === "{}") {
           const f = ctx.model.fields.get(lhs.replace(/^this\./, ""));
-          if (f && f.default.startsWith("{")) rhs2 = f.default;
+          if (f && (f.default.startsWith("{") || f.default.startsWith("["))) rhs2 = f.default;
         }
         // A struct copied out of client.get() carries UPPERCASE wire keys,
         // but non-local targets are read with the lowercase naming later on —
