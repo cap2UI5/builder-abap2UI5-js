@@ -1,0 +1,69 @@
+name: oracle
+
+# Differential oracle over the known-failures baseline.
+#
+# The upstream abap2UI5 repo ships its own JS runtime under node/ — the
+# official @abaplint transpiler plus open-abap-core, executing the REAL
+# (downported) ABAP, including every testclass this repo transpiles. Whatever
+# runs green THERE is proven achievable in JavaScript, so a baseline entry
+# that the oracle passes is a fixable bug HERE rather than ABAP-kernel magic.
+#
+# That is the only tool in this repo that answers "how much of the baseline is
+# actually work?", and until now it ran only by hand — which means never, and
+# it goes stale with every upstream sync. Weekly, and on demand.
+#
+# It reports; it does not gate. The classification is input to a maintainer's
+# judgement, not a pass/fail: a newly-provable entry is a lead to follow, not
+# a build to break.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"   # Mondays, after the weekend's nightlies
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Check out upstream abap2UI5 (the oracle runtime)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          repository: abap2UI5/abap2UI5
+          path: .oracle-upstream
+
+      - run: npm ci
+
+      # Downport → transpile → run, in the upstream checkout. This mutates
+      # its src/ (that repo's own rule), which is fine here: the checkout is
+      # throwaway and nothing is pushed back.
+      - name: Run the upstream unit suite
+        working-directory: .oracle-upstream
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run auto_downport
+          npm run auto_transpile
+          # The suite is expected to have failures — that IS the signal.
+          npm run unit > "$RUNNER_TEMP/oracle-run.txt" 2>&1 || true
+          wc -l "$RUNNER_TEMP/oracle-run.txt"
+
+      - name: Classify the baseline against it
+        run: |
+          set -euo pipefail
+          {
+            echo '### Oracle classification'
+            echo
+            echo '```'
+            node scripts/oracle-classify.js "$RUNNER_TEMP/oracle-run.txt" .oracle-upstream || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

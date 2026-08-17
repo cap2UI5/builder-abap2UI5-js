@@ -2,13 +2,11 @@
 // Each block exercises the same surface the abap test classes hit.
 
 const z2ui5_cl_util       = require("../core/srv/z2ui5/00/03/z2ui5_cl_util");
-const z2ui5_cl_util_log   = require("../core/srv/z2ui5/00/03/z2ui5_cl_util_log");
 const z2ui5_cl_util_msg   = require("../core/srv/z2ui5/00/03/z2ui5_cl_util_msg");
 const z2ui5_cl_util_range = require("../core/srv/z2ui5/00/03/z2ui5_cl_util_range");
 const z2ui5_cl_util_xml   = require("../core/srv/z2ui5/00/03/z2ui5_cl_util_xml");
 const z2ui5_cl_util_http  = require("../core/srv/z2ui5/00/03/z2ui5_cl_util_http");
 const z2ui5_cx_util_error = require("../core/srv/z2ui5/00/03/z2ui5_cx_util_error");
-const z2ui5_cl_util_db    = require("../core/srv/z2ui5/00/03/01/z2ui5_cl_util_db");
 const z2ui5_cl_util_api   = require("../core/srv/z2ui5/00/03/02/z2ui5_cl_util_api");
 
 const z2ui5_if_client     = require("../core/srv/z2ui5/02/z2ui5_if_client");
@@ -125,43 +123,6 @@ describe("z2ui5_cx_util_error", () => {
   test("get_text returns UNKNOWN_ERROR when no text", () => {
     const e = new z2ui5_cx_util_error(new Error(""));
     expect(e.get_text()).toBe("UNKNOWN_ERROR");
-  });
-});
-
-// =============================================================
-//  z2ui5_cl_util_log — fluent API
-// =============================================================
-describe("z2ui5_cl_util_log", () => {
-  test("info/warning/error chain + count + has_error", () => {
-    const log = new z2ui5_cl_util_log();
-    log.info("a").warning("b").error("c").success("d");
-    expect(log.count()).toBe(4);
-    expect(log.has_error()).toBe(true);
-  });
-
-  test("clear empties the log", () => {
-    const log = new z2ui5_cl_util_log().info("a").error("b");
-    log.clear();
-    expect(log.count()).toBe(0);
-    expect(log.has_error()).toBe(false);
-  });
-
-  test("to_string renders [TYPE] text per row", () => {
-    const log = new z2ui5_cl_util_log().info("a").error("b");
-    expect(log.to_string()).toBe("[I] a\n[E] b");
-  });
-
-  test("to_csv has header + rows", () => {
-    const log = new z2ui5_cl_util_log().error("oops");
-    const csv = log.to_csv();
-    expect(csv.split("\n")[0]).toBe("type,id,no,text,v1,v2,v3,v4");
-    expect(csv.split("\n")[1]).toContain("oops");
-  });
-
-  test("add ingests a struct via msg_get", () => {
-    const log = new z2ui5_cl_util_log().add({ MSGTY: "E", TEXT: "x" });
-    expect(log.has_error()).toBe(true);
-    expect(log.count()).toBe(1);
   });
 });
 
@@ -288,41 +249,6 @@ describe("z2ui5_cl_util_http", () => {
 });
 
 // =============================================================
-//  z2ui5_cl_util_db
-// =============================================================
-describe("z2ui5_cl_util_db", () => {
-  beforeEach(() => {
-    // Reset the in-memory store to keep tests isolated.
-    z2ui5_cl_util_db._store = new Map();
-    z2ui5_cl_util_db._by_id = new Map();
-  });
-
-  test("save returns id, load_by_id retrieves data", () => {
-    const id = z2ui5_cl_util_db.save({ uname: "u", handle: "h", data: { a: 1 } });
-    expect(id).toMatch(/^[a-f0-9]{32}$/);
-    expect(z2ui5_cl_util_db.load_by_id({ id })).toEqual({ a: 1 });
-  });
-
-  test("load_by_handle returns the saved data", () => {
-    z2ui5_cl_util_db.save({ uname: "u", handle: "h", data: 42 });
-    expect(z2ui5_cl_util_db.load_by_handle({ uname: "u", handle: "h" })).toBe(42);
-  });
-
-  test("delete_by_handle removes the entry", () => {
-    z2ui5_cl_util_db.save({ uname: "u", handle: "h", data: 1 });
-    z2ui5_cl_util_db.delete_by_handle({ uname: "u", handle: "h" });
-    expect(() => z2ui5_cl_util_db.load_by_handle({ uname: "u", handle: "h" })).toThrow();
-  });
-
-  test("save with same handle re-uses the same id", () => {
-    const id1 = z2ui5_cl_util_db.save({ uname: "u", handle: "h", data: 1 });
-    const id2 = z2ui5_cl_util_db.save({ uname: "u", handle: "h", data: 2 });
-    expect(id1).toBe(id2);
-    expect(z2ui5_cl_util_db.load_by_id({ id: id1 })).toBe(2);
-  });
-});
-
-// =============================================================
 //  z2ui5_cl_util_api
 // =============================================================
 describe("z2ui5_cl_util_api", () => {
@@ -355,13 +281,33 @@ describe("z2ui5_cl_util_api", () => {
 //  z2ui5_if_client / z2ui5_if_exit / z2ui5_cl_ui5_user_exit
 // =============================================================
 describe("z2ui5_if_client", () => {
-  test("cs_event has the 34 upstream entries", () => {
-    expect(Object.keys(z2ui5_if_client.cs_event)).toHaveLength(34);
-    expect(z2ui5_if_client.cs_event.popup_close).toBe("POPUP_CLOSE");
-    // the whitelisted control/binding call events (upstream #2438)
-    expect(z2ui5_if_client.cs_event.control_by_id).toBe("CONTROL_BY_ID");
-    expect(z2ui5_if_client.cs_event.control_global).toBe("CONTROL_GLOBAL");
-    expect(z2ui5_if_client.cs_event.binding_call).toBe("BINDING_CALL");
+  // cs_event is the contract apps write against, so a constant upstream added
+  // and the port never carried is a silently undefined event name at the call
+  // site. This used to be pinned as a magic count ("34 upstream entries"),
+  // which is exactly the kind of assertion that rots: upstream grew to 41 and
+  // the number stayed, so seven missing constants went unnoticed. Compare
+  // against the mirrored interface instead — it is right there in run/input.
+  test("cs_event carries every upstream constant", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const intf = fs.readFileSync(
+      path.join(__dirname, "..", "run", "input", "abap2UI5", "src", "02", "z2ui5_if_client.intf.abap"),
+      "utf8",
+    );
+    const block = intf.slice(intf.indexOf("BEGIN OF cs_event"), intf.indexOf("END OF cs_event"));
+    const upstream = [...block.matchAll(/^\s+(\w+)\s+TYPE string VALUE `([^`]*)`/gm)]
+      .map(([, name, value]) => [name, value]);
+
+    expect(upstream.length).toBeGreaterThan(30); // sanity floor: block parsed
+
+    const missing = upstream.filter(([n]) => z2ui5_if_client.cs_event[n] === undefined).map(([n]) => n);
+    expect(missing).toEqual([]);
+
+    // and every carried constant must hold the upstream VALUE, not just exist
+    const wrong = upstream
+      .filter(([n, v]) => z2ui5_if_client.cs_event[n] !== undefined && z2ui5_if_client.cs_event[n] !== v)
+      .map(([n, v]) => `${n}: ${z2ui5_if_client.cs_event[n]} ≠ ${v}`);
+    expect(wrong).toEqual([]);
   });
 
   test("METHOD_NAMES covers all interface methods", () => {

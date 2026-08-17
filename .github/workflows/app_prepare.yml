@@ -27,14 +27,7 @@ jobs:
       - run: npm ci
       - run: npm run prepare_app
       - name: commit
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add run/output/app
-          if git diff --cached --quiet; then
-            echo "nothing to commit"
-          else
-            git commit -m "prepare: update run/output/app ($(cut -c1-12 run/input/app/UPSTREAM_COMMIT))"
-            git pull --rebase origin "${{ github.ref_name }}"
-            git push origin "HEAD:${{ github.ref_name }}"
-          fi
+        uses: ./.github/actions/commit-generated
+        with:
+          paths: run/output/app
+          message: "prepare: update run/output/app ($(cut -c1-12 run/input/app/UPSTREAM_COMMIT))"

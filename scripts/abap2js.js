@@ -39,36 +39,23 @@ const SY_RUNTIME_FIELDS = {
 // require-path mapping (mirrors the "exports" of cap2UI5's package.json)
 // ---------------------------------------------------------------------------
 
+const pathMap = require("./lib/path-map");
+
 function requirePathFor(className) {
   // the sample tree — demo apps (z2ui5_cl_smp_app_*) and the helpers they
   // share (context, error) — is flattened into srv/app/samples, so its
   // members reference each other relatively
   if (/^z2ui5_(cl|cx)_smp_/.test(className)) return `./${className}`;
-  // SAP kernel classes — native shims under srv/z2ui5/00/00 (see abap_rtti.js);
-  // a class without a shim fails the assemble load-gate visibly, not silently
-  if (/^cl_abap_[a-z0-9_]+$/.test(className)) return `abap2UI5/${className}`;
-  if (/^cx_sy_[a-z0-9_]+$/.test(className)) return `abap2UI5/${className}`;
-  // kernel exception roots — one shared shim keeps previous/textid + get_text
+  // kernel exception roots — one shared shim keeps previous/textid + get_text,
+  // so these four names collapse onto one module rather than mapping 1:1
   if (/^cx_(root|no_check|static_check|dynamic_check)$/.test(className)) return `abap2UI5/cx_root`;
-  if (
-    // the framework layer: z2ui5_cl_ui5_* (core), z2ui5_cl_ui5f_* (frontend
-    // asset classes), z2ui5_cx_ui5_* — all reachable as package exports
-    /^z2ui5_(cl|cx)_ui5f?_/.test(className) ||
-    className === "z2ui5_cl_http_handler" ||
-    /^z2ui5_(cl|cx)_srt_?/.test(className) ||
-    /^z2ui5_(cl|cx)_ajson/.test(className) ||
-    /^z2ui5_if_/.test(className) ||
-    /^z2ui5_cl_pop_/.test(className) ||
-    /^z2ui5_cl_util/.test(className) ||
-    /^z2ui5_cl_app_/.test(className) ||
-    className === "z2ui5_cl_xml_view" ||
-    className === "z2ui5_cl_xml_view_cc" ||
-    className === "z2ui5_cx_util_error" ||
-    className === "z2ui5_port"
-  ) {
-    return `abap2UI5/${className}`;
-  }
-  return null; // unknown — will be flagged as TODO
+
+  // Everything else is a package export or it is not resolvable at all. Asking
+  // the manifest instead of re-listing the naming conventions here is the
+  // point: a class the package does not export must NOT get a require, or the
+  // transpile loads clean and fails at runtime. Returning null makes the
+  // transpiler emit a visible TODO instead.
+  return pathMap.subpathFor(className);
 }
 
 // ---------------------------------------------------------------------------
@@ -2150,8 +2137,8 @@ function transpileClass(source, filename, opts = {}) {
     const pmap = derivePreferredMap(file);
     const entries = Object.entries(pmap);
     if (entries.length) {
-      lines.push(`// abap PREFERRED PARAMETER call style — see z2ui5_pop_preferred_param.js`);
-      lines.push(`require("abap2UI5/z2ui5_pop_preferred_param")(${model.name}, {`);
+      lines.push(`// abap PREFERRED PARAMETER call style — see z2ui5_preferred_param.js`);
+      lines.push(`require("abap2UI5/z2ui5_preferred_param")(${model.name}, {`);
       for (const [meth, { preferred, params }] of entries) {
         lines.push(`  ${meth}: { preferred: \`${preferred}\`, params: [${params.map((p) => `\`${p}\``).join(", ")}] },`);
       }
@@ -2795,12 +2782,16 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         // offset/length writes (lv_x+off(len) = ...) have no JS counterpart
         if (toks.slice(i, eq).some((t) => t.str === "+")) return todo();
         const lhs = txExpr(toks.slice(i, eq), ctx);
-        // x = VALUE #( ). resets to the type's INITIAL value — restore the
-        // declared component defaults instead of dropping the keys
+        // x = VALUE #( ). resets to the type's INITIAL value. The parser
+        // cannot tell an empty struct constructor from an empty table one —
+        // both are `VALUE #( )` — so it emits `{}` and the declared type
+        // decides. Getting this wrong is silent until the first APPEND:
+        // `mt_table = VALUE #( ).` followed by an append crashed with
+        // "mt_table.push is not a function", i.e. at runtime, in the app.
         let rhs2 = rhs;
         if (rhs === "{}") {
           const f = ctx.model.fields.get(lhs.replace(/^this\./, ""));
-          if (f && f.default.startsWith("{")) rhs2 = f.default;
+          if (f && (f.default.startsWith("{") || f.default.startsWith("["))) rhs2 = f.default;
         }
         // A struct copied out of client.get() carries UPPERCASE wire keys,
         // but non-local targets are read with the lowercase naming later on —

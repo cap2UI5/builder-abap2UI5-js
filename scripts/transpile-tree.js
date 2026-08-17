@@ -18,15 +18,24 @@ const path = require("path");
 const vm = require("vm");
 const { transpileFile, parseInterfaceSigs, parseInterfaceTypes } = require("./abap2js");
 
+// Upstream's src/99 is its FROZEN package — retired utility classes (99/01),
+// the obsolete built-in popups (99/02, superseded by the popups addon), the
+// legacy XML view builder and the deprecated http_handler shim. It exists so
+// that abapGit installations keep compiling on upgrade; that reason does not
+// apply to an npm package with no installed base, and upstream itself has
+// zero consumers on it.
+//
+// So nothing from 99 is transpiled. The framework's own error dialog and
+// value help — the only two things this port ever needed from there — live in
+// 01/04 as z2ui5_cl_ui5_app_error / _app_select, built on the current view
+// builder and owned by this port.
+const notFrozen = (relDir) => !`${relDir}/`.replace(/\\/g, "/").startsWith("99/");
+
 // Framework classes that are hand-maintained in this repo's src/srv/z2ui5
 // overlay win at assemble time (assemble-core copies src/ first and overlays
 // the transpiled tree add-only). Transpiling their upstream ABAP is wasted
-// work, and for classes abap2js cannot yet parse (e.g. z2ui5_cl_xml_view in
-// tree 99) it emits a parse-error file that assemble then skips — pure noise
-// that also masks any *new* parse error. Skip them here; the hand-port already
-// covers every path that requires them. (Popups in 99/02 that are NOT
-// hand-ported — e.g. z2ui5_cl_pop_error, required by core_handler — keep
-// transpiling.)
+// work, so skip them here; the hand-port already covers every path that
+// requires them.
 const handPortedClasses = (() => {
   const set = new Set();
   const base = path.join(__dirname, "..", "src", "srv", "z2ui5");
@@ -43,7 +52,7 @@ const handPortedClasses = (() => {
 const notHandPorted = (fname) => !handPortedClasses.has(fname.replace(/\.(clas|intf)\.abap$/i, "").toLowerCase());
 
 const TARGETS = {
-  abap2UI5: { base: ["src"], filter: notHandPorted },
+  abap2UI5: { base: ["src"], filter: notHandPorted, skipDir: notFrozen },
   samples: { base: ["src"], filter: () => true },
 };
 
@@ -69,7 +78,9 @@ const targets = [];
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) walk(full);
     else if ((entry.name.endsWith(".clas.abap") || entry.name.endsWith(".intf.abap")) && !entry.name.includes(".testclasses.") && cfg.filter(entry.name)) {
-      targets.push({ file: full, relDir: path.relative(srcBase, dir) });
+      const relDir = path.relative(srcBase, dir);
+      if (cfg.skipDir && !cfg.skipDir(relDir)) continue;
+      targets.push({ file: full, relDir });
     }
   }
 })(srcBase);

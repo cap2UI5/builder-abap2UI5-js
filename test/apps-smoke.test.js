@@ -1,5 +1,4 @@
-const { execFileSync } = require("child_process");
-const path = require("path");
+const { loadReport } = require("./helpers/reports");
 
 /**
  * Smoke gate over all bundled sample apps — every class in
@@ -17,12 +16,7 @@ describe("sample apps smoke", () => {
   jest.setTimeout(300000);
 
   test("every sample app starts, except the known failures", () => {
-    const out = execFileSync(
-      process.execPath,
-      [path.join(__dirname, "..", "scripts", "smoke-apps.js"), "--json"],
-      { encoding: "utf8", timeout: 280000, maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] }
-    );
-    const report = JSON.parse(out);
+    const report = loadReport("smoke", "smoke-apps.js");
     const known = new Set(require("./apps-smoke.known-failures.json").map((f) => f.name));
 
     const failing = new Set(report.results.filter((r) => r.verdict !== "ok").map((r) => r.name));

@@ -26,10 +26,17 @@ const pkgRoot = path.dirname(require.resolve("abap2UI5/engine")).replace(/srv[\/
 const dist = path.join(__dirname, "dist");
 
 // ---- 1. registry ---------------------------------------------------------
-// subpath specifier per app-class location (must match the package exports map)
+// Where app classes live, and how to address each location as a package
+// subpath. The class-shaped locations resolve through the package's own
+// exports map (scripts/lib/path-map derives the same answer the runtime
+// gives), so a moved class does not need this list edited; only the two
+// app FOLDERS, which the exports map addresses by path rather than by class
+// name, are spelled out.
+const pathMap = require("../../scripts/lib/path-map");
+
 const SOURCES = [
-  { dir: "srv/z2ui5/01/04",     spec: (n) => `abap2UI5/${n}`,             filter: (n) => /^z2ui5_cl_ui5_app_/.test(n) },
-  { dir: "srv/z2ui5/99/02",     spec: (n) => `abap2UI5/${n}`,             filter: (n) => /^z2ui5_cl_pop_/.test(n) },
+  { dir: "srv/z2ui5/01/04",     spec: (n) => pathMap.subpathFor(n),       filter: (n) => /^z2ui5_cl_ui5_app_/.test(n) },
+  { dir: "srv/z2ui5/99/02",     spec: (n) => pathMap.subpathFor(n),       filter: (n) => /^z2ui5_cl_pop_/.test(n) },
   { dir: "srv/app",             spec: (n) => `abap2UI5/app/${n}`,         filter: (n) => /^z2ui5_c[lx]_/.test(n) },
   { dir: "srv/app/samples",     spec: (n) => `abap2UI5/app/samples/${n}`, filter: (n) => /^z2ui5_c[lx]_/.test(n) },
 ];

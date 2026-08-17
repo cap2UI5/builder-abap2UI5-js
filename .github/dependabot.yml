@@ -4,3 +4,29 @@ updates:
     directory: /
     schedule:
       interval: weekly
+
+  # npm — every manifest with real dependencies. Without these the only
+  # watched surface was the workflow actions, while @sap/cds, express, esbuild
+  # and the pinned openui5-dist aged unobserved.
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /src
+      - /adapters/cap
+      - /adapters/node
+      - /adapters/express
+      - /adapters/web
+    schedule:
+      interval: weekly
+    groups:
+      # One PR per ecosystem bump rather than six near-identical ones; the
+      # adapters share the same handful of dependencies.
+      dev-dependencies:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
+    ignore:
+      # openui5-dist is pinned on purpose: it is the UI5 runtime the app
+      # serves offline from /resources, and the supported-release floor is a
+      # deliberate compatibility decision, not a version to float.
+      - dependency-name: openui5-dist

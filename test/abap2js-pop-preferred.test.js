@@ -1,9 +1,9 @@
 const { transpileClass } = require("../scripts/abap2js");
-const shim = require("../src/srv/z2ui5/99/02/z2ui5_pop_preferred_param");
+const shim = require("../src/srv/z2ui5/z2ui5_preferred_param");
 
 /** load generated code, resolving the popup shim + framework self-refs */
 function loadGenerated(code) {
-  const req = (id) => (id === "./z2ui5_pop_preferred_param" ? shim : require(id));
+  const req = (id) => (id === "./z2ui5_preferred_param" ? shim : require(id));
   const m = { exports: {} };
   new Function("require", "module", "exports", code)(req, m, m.exports);
   return m.exports;
@@ -12,7 +12,7 @@ function loadGenerated(code) {
 /**
  * z2ui5_cl_pop_* factories must keep abap's PREFERRED PARAMETER call style: the
  * preferred / single-mandatory parameter can be passed positionally. The
- * transpiler emits the z2ui5_pop_preferred_param wiring so the transpiled popups
+ * transpiler emits the z2ui5_preferred_param wiring so the transpiled popups
  * behave like the hand-ports (and can replace them in base).
  */
 describe("abap2js — popup PREFERRED PARAMETER wiring", () => {
@@ -53,7 +53,7 @@ ENDCLASS.
   });
 
   test("emits wiring: first mandatory param, and explicit PREFERRED PARAMETER", () => {
-    expect(out.code).toMatch(/z2ui5_pop_preferred_param/);
+    expect(out.code).toMatch(/z2ui5_preferred_param/);
     expect(out.code).toMatch(/factory: \{ preferred: `i_main`, params: \[`i_main`, `i_opt`\] \}/);
     expect(out.code).toMatch(/explicit: \{ preferred: `i_second`, params: \[`i_first`, `i_second`\] \}/);
   });

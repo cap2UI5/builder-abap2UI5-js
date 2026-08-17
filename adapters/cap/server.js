@@ -21,14 +21,16 @@
 const cds = require("@sap/cds");
 const express = require("express");
 const engine = require("abap2UI5/engine");
+const { reqInfo, memoryStore } = require("../_shared");
 
 // draft persistence: in-memory (the full CAP project swaps this for the
 // cap2ui5.z2ui5_t_01 draft table via the database service)
-const drafts = new Map();
-engine.set_store({
-  load: (id) => drafts.get(id) || null,
-  save: (entry) => { drafts.set(entry.id, entry); },
-});
+engine.set_store(memoryStore());
+
+// Identity: this demo adapter has no auth, so every request is the same
+// (process) user and the engine's per-session isolation collapses to one
+// session — correct here, NOT correct for a multi-user deployment. The full
+// CAP project injects cds.context.user instead.
 
 cds.on("bootstrap", (app) => {
   // statics: the bundled webapp + the local UI5 runtime
@@ -46,16 +48,6 @@ cds.on("bootstrap", (app) => {
   });
   app.head("/rest/root/z2ui5", (_req, res) => res.set("X-CSRF-Token", "disabled").end());
 });
-
-// exit-context request info — same shape z2ui5_cl_util_http produces on CAP
-function reqInfo(req, body) {
-  return {
-    method: req.method,
-    body: body || ``,
-    path: req.path,
-    t_params: Object.entries(req.query).map(([n, v]) => ({ n, v: String(v) })),
-  };
-}
 
 // under `cds serve` / `cds watch` this file is the custom server
 module.exports = cds.server;

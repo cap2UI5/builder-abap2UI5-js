@@ -20,17 +20,14 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const engine = require("abap2UI5/engine");
+const { reqInfo, memoryStore, errorBody } = require("../_shared");
 
 const PORT = Number(process.env.PORT || 4104);
 
 // ---- draft persistence: in-memory store (the StorePort) ----------------
 // Swap for anything durable (file, sqlite, redis) — the contract is just
 // load(id) / save({id, id_prev, data}).
-const drafts = new Map();
-engine.set_store({
-  load: (id) => drafts.get(id) || null,
-  save: (entry) => { drafts.set(entry.id, entry); },
-});
+engine.set_store(memoryStore());
 
 // ---- static file serving ------------------------------------------------
 const MIME = {
@@ -82,18 +79,6 @@ function readBody(req) {
   });
 }
 
-// reqInfo for the exit context — same shape z2ui5_cl_util_http.get_req_info()
-// produces on CAP: { method, body, path, t_params: [{n, v}] }.
-function reqInfo(req, body) {
-  const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-  return {
-    method: req.method,
-    body: body || ``,
-    path: url.pathname,
-    t_params: [...url.searchParams].map(([n, v]) => ({ n, v })),
-  };
-}
-
 // ---- the server ----------------------------------------------------------
 const UI5_RESOURCES = engine.ui5_resources_dir();
 
@@ -128,8 +113,7 @@ const server = http.createServer(async (req, res) => {
         const json = await engine.roundtrip(oBody, reqInfo(req, raw));
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" }).end(json);
       } catch (x) {
-        const text = x?.get_text?.() || x?.message || String(x);
-        res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" }).end(`abap2UI5 Error:${text}`);
+        res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" }).end(errorBody(x));
       }
       return;
     }

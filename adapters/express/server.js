@@ -12,15 +12,12 @@
 
 const express = require("express");
 const engine = require("abap2UI5/engine");
+const { reqInfo, memoryStore, errorBody } = require("../_shared");
 
 const PORT = Number(process.env.PORT || 4204);
 
 // draft persistence: in-memory (swap for anything durable)
-const drafts = new Map();
-engine.set_store({
-  load: (id) => drafts.get(id) || null,
-  save: (entry) => { drafts.set(entry.id, entry); },
-});
+engine.set_store(memoryStore());
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));
@@ -46,20 +43,9 @@ app.post("/rest/root/z2ui5", async (req, res) => {
     const json = await engine.roundtrip(oBody, reqInfo(req, JSON.stringify(req.body ?? {})));
     res.type("application/json").send(json);
   } catch (x) {
-    const text = x?.get_text?.() || x?.message || String(x);
-    res.status(500).type("text/plain").send(`abap2UI5 Error:${text}`);
+    res.status(500).type("text/plain").send(errorBody(x));
   }
 });
-
-// exit-context request info — same shape z2ui5_cl_util_http produces on CAP
-function reqInfo(req, body) {
-  return {
-    method: req.method,
-    body: body || ``,
-    path: req.path,
-    t_params: Object.entries(req.query).map(([n, v]) => ({ n, v: String(v) })),
-  };
-}
 
 app.listen(PORT, () => {
   console.log(`abap2UI5 on express — http://localhost:${PORT}/z2ui5/webapp/index.html`);
