@@ -292,7 +292,7 @@ start page (`z2ui5_cl_app_startup`) — dropped from all three overviews on
 | Icon | Target | Repository |
 |------|--------|------------|
 | `sap-icon://lightbulb` | `z2ui5_cl_smp_app_000` | abap2UI5/samples — *Samples* |
-| `sap-icon://palette` | `z2ui5_cl_smpc_app_overview` | abap2UI5/samples-controls — *Control Samples* |
+| `sap-icon://palette` | `z2ui5_cl_smpc_app_000` | abap2UI5/samples-controls — *Control Samples* |
 | `sap-icon://database` | `z2ui5_cl_smpe_app_00` | abap2UI5/samples-stack — *Stack Samples* |
 | `sap-icon://learning-assistant` | — | <https://abap2UI5.org> |
 | `sap-icon://globe` | — | the repository the app itself lives in |
@@ -337,7 +337,7 @@ GitHub) still open their site directly through `open_url( )`.
 five icons with their separator on the right, the two colour states and the
 install popover. samples-controls builds it in
 `scripts/generate-overview.mjs` (its overview class is generated — never edit
-the class), samples-stack in `z2ui5_cl_smps_app_00`. All three build it with
+the class), samples-stack in `z2ui5_cl_smps_app_000`. All three build it with
 `z2ui5_cl_ui5_view_builder`, which renders an empty attribute rather than
 skipping it (`color=""` is no valid `IconColor`), so the optional ones are
 added under an `IF`. What stays local to a repository is
@@ -365,7 +365,7 @@ Each repository is installed on its own, so every button decides for itself:
 A repository that **renames** its overview app is installed under both names in
 the wild for a while, so `header_button( )` takes an optional `class_old` and
 falls back to it when the current name is not on the system —
-`z2ui5_cl_dmo_app_overview` for samples-controls (renamed 2026-08),
+`z2ui5_cl_smpc_app_overview` for samples-controls (renamed again 2026-08),
 `z2ui5_cl_demo_app_g00` for this repository. Add the old name there when an
 overview app is renamed; drop it again once the rename is old enough.
 

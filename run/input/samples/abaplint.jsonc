@@ -22,10 +22,17 @@
     "errorNamespace": "."
   },
   // ===================================================================
-  // THE RULE BLOCK BELOW IS KEPT BYTE-IDENTICAL IN THREE REPOSITORIES:
-  // abap2UI5/samples, abap2UI5/samples-controls and abap2UI5/samples-stack.
-  // Change it in one and copy it to the other two - the same rule
-  // scripts/chain-format.mjs already lives under.
+  // THE RULE BLOCK BELOW IS THE SHARED APP RULE SET, and its SOURCE is
+  // abap2UI5/abap2UI5 `.github/abaplint/app-rules.json` - where the rest of
+  // "how to write an abap2UI5 app" lives (the build-an-app and
+  // view-chain-layout skills, docs/agents/building-apps.md, abap-check,
+  // ui5-check). Change it THERE first, then copy it here; the three sample
+  // repositories are consumers of it, not peers of each other.
+  //
+  // `npm run check:app-rules` compares this block against the source, as
+  // PARSED SETTINGS. The peer checker it replaced compared rule NAMES, so
+  // switching a rule to false read as no change at all - which is precisely
+  // the drift it existed to catch.
   //
   // The ONE exception is "object_naming", the last rule in the file: it
   // encodes which repository you are in (SMP / SMPC / SMPS) and is the only
@@ -234,7 +241,7 @@
       "checkForms": true,
       "checkFunctionModules": true,
       "exclude": [
-        "z2ui5_cl_smpc_app_overview\\.clas\\."
+        "z2ui5_cl_smpc_app_000\\.clas\\."
       ]
     },
     // On, because non-7-bit source is an abapGit round-trip hazard - and it
@@ -247,7 +254,7 @@
     "7bit_ascii": {
       "exclude": [
         "z2ui5_cl_smpc_app_(012|040|092|103|104|114|134|185|191|194|215|218|254|290|302|303|350|356|357|358|360)\\.clas\\.",
-        "z2ui5_cl_smpc_app_overview\\.clas\\."
+        "z2ui5_cl_smpc_app_000\\.clas\\."
       ]
     },
     // --- on, scoped to what the RAP corpus can comply with -------------
@@ -308,7 +315,7 @@
     "fully_type_constants": {
       "checkData": true,
       "exclude": [
-        "z2ui5_cl_smps_app_(07|10)\\.clas\\."
+        "z2ui5_cl_smps_app_(007|010)\\.clas\\."
       ]
     },
     // Excluded for the RAP handler pools: their SELECT SINGLE is an
