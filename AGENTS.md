@@ -111,11 +111,30 @@ while the decision is still cheap) so nobody has to re-derive it later:
   may squash bot commits older than the current baseline into one
   baseline commit (history rewrite + coordinated force push), preserving
   all hand-written commits (`src/`, `scripts/`, `test/`, workflows).
-- Therefore never build anything that resolves **old commits of this
-  repo**: cross-repo references (`UPSTREAM_COMMIT` files, the
-  `UPSTREAM_HEAD` trigger slot in builder-cap2UI5) are change-detection
-  tokens and upstream-repo shas — they must stay that, and must never be
-  resolved against this repo's history.
+- Therefore never build anything **out of an old commit of this repo**.
+  Cross-repo references (`UPSTREAM_COMMIT` files, the `UPSTREAM_HEAD`
+  trigger slot in builder-cap2UI5) are change-detection tokens and
+  upstream-repo shas; nothing downstream may assume a sha it was handed
+  earlier is still reachable here, because a squash of superseded bot
+  commits will drop it.
+
+  Precisely, so the rule stays checkable:
+
+  - **Allowed** — resolving such a pin *only to arbitrate ordering*, and
+    only with a graceful fallback when it no longer resolves. That is what
+    builder-cap2UI5's mirror does
+    ([`scripts/mirror-core.js`](https://github.com/cap2UI5/builder-cap2UI5/blob/main/scripts/mirror-core.js),
+    the slot-vs-HEAD block): it fetches the `UPSTREAM_HEAD` sha and compares
+    committer dates against the freshly cloned HEAD purely to decide which
+    of the two is newer, warns and falls back to HEAD when the sha cannot be
+    fetched, and checks the pin out **only when it is newer than HEAD** —
+    i.e. it never reaches back into history, it only resolves the
+    fast-double-push race where the announced commit is ahead of what a
+    fresh clone sees.
+  - **Forbidden** — checking out, mirroring, building or diffing an *older*
+    commit of this repo, or treating any pin as a durable reference that
+    must keep resolving. A pin that fails to resolve is a fallback, never an
+    error.
 
 ## Upstream's frozen `src/99` is not carried here — recorded policy
 

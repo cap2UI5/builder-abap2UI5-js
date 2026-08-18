@@ -27,13 +27,18 @@ all. The full CAP app is built downstream by
 > rewrites it. The hand-written source lives in [`src/`](src/); edit there
 > and re-run the build.
 
-cap2UI5 is organized as three repositories, from framework to finished app:
+cap2UI5 is organized as six repositories, from framework to finished app:
 
 | Repository | What it is | Run it |
 |---|---|---|
 | [`builder-abap2UI5-js`](https://github.com/cap2UI5/builder-abap2UI5-js) (here) | transpiler + sync scripts → generates [`core/`](core/); hosts the [adapters](adapters/) | `npm install && npm test` |
 | [`builder-cap2UI5`](https://github.com/cap2UI5/builder-cap2UI5) | generates the full CAP app from its `src/` + the published core | `npm run build_cap` |
 | [`cap2UI5`](https://github.com/cap2UI5/cap2UI5) | the finished, deployable CAP app (**generated**) | `npm install && npx cds watch` |
+| [`builder-cap2UI5-web`](https://github.com/cap2UI5/builder-cap2UI5-web) | browser build tooling — bundles the app into a static site | `npm ci && npm run build` |
+| [`web-cap2UI5-build`](https://github.com/cap2UI5/web-cap2UI5-build) | the built static site (**generated**), served via GitHub Pages | [live demo](https://cap2ui5.github.io/web-cap2UI5-build/) |
+| [`docs`](https://github.com/cap2UI5/docs) | the VitePress documentation site | — |
+
+The full documentation lives in [cap2UI5/docs](https://github.com/cap2UI5/docs).
 
 ## Install & run
 

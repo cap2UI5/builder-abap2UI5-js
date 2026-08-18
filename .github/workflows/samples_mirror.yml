@@ -21,8 +21,13 @@ jobs:
         with:
           node-version: 22
       - run: npm run mirror_samples
+      # A `with:` input is never run through a shell — a $(…) in the commit
+      # message would land in the history verbatim. Resolve it here instead.
+      - name: read upstream sha
+        id: upstream
+        run: echo "short=$(cut -c1-12 run/input/samples/UPSTREAM_COMMIT)" >> "$GITHUB_OUTPUT"
       - name: commit
         uses: ./.github/actions/commit-generated
         with:
           paths: run/input/samples
-          message: "mirror: update run/input/samples ($(cut -c1-12 run/input/samples/UPSTREAM_COMMIT))"
+          message: "mirror: update run/input/samples (${{ steps.upstream.outputs.short }})"
