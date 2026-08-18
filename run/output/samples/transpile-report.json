@@ -2,11 +2,9 @@
   {
     "class": "z2ui5_cl_smp_context",
     "path": "00/01/z2ui5_cl_smp_context.js",
-    "todos": 36,
+    "todos": 34,
     "todoDetails": [
       "IN range-table check approximated (sign E ignored)",
-      "unsupported statement: DELETE val INDEX sy-tabix.",
-      "unsupported statement: DELETE tab INDEX sy-tabix.",
       "CREATE DATA: CREATE DATA result TYPE HANDLE o_table_desc.",
       "CREATE DATA: CREATE DATA lr_row TYPE HANDLE struc.",
       "unsupported statement: z2ui5_cl_ajson=>parse( val )->to_abap( EXPORTING iv_corresponding = abap_true IMPORTING ev_container = data ).",
@@ -197,10 +195,8 @@
   {
     "class": "z2ui5_cl_smp_app_070",
     "path": "01/z2ui5_cl_smp_app_070.js",
-    "todos": 1,
-    "todoDetails": [
-      "unsupported statement: DELETE mt_table INDEX sy-tabix."
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_smp_app_071",
