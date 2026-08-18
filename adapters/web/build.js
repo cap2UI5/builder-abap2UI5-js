@@ -36,7 +36,8 @@ const pathMap = require("../../scripts/lib/path-map");
 
 const SOURCES = [
   { dir: "srv/z2ui5/01/04",     spec: (n) => pathMap.subpathFor(n),       filter: (n) => /^z2ui5_cl_ui5_app_/.test(n) },
-  { dir: "srv/z2ui5/99/02",     spec: (n) => pathMap.subpathFor(n),       filter: (n) => /^z2ui5_cl_pop_/.test(n) },
+  // (no srv/z2ui5/99 entry: upstream's frozen src/99 — including the
+  // z2ui5_cl_pop_* popups — is not carried into this pipeline, see AGENTS.md)
   { dir: "srv/app",             spec: (n) => `abap2UI5/app/${n}`,         filter: (n) => /^z2ui5_c[lx]_/.test(n) },
   { dir: "srv/app/samples",     spec: (n) => `abap2UI5/app/samples/${n}`, filter: (n) => /^z2ui5_c[lx]_/.test(n) },
 ];

@@ -26,8 +26,13 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci
       - run: npm run prepare_app
+      # A `with:` input is never run through a shell — a $(…) in the commit
+      # message would land in the history verbatim. Resolve it here instead.
+      - name: read upstream sha
+        id: upstream
+        run: echo "short=$(cut -c1-12 run/input/app/UPSTREAM_COMMIT)" >> "$GITHUB_OUTPUT"
       - name: commit
         uses: ./.github/actions/commit-generated
         with:
           paths: run/output/app
-          message: "prepare: update run/output/app ($(cut -c1-12 run/input/app/UPSTREAM_COMMIT))"
+          message: "prepare: update run/output/app (${{ steps.upstream.outputs.short }})"
