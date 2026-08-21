@@ -1,52 +1,5 @@
 [
   {
-    "class": "z2ui5_cl_smp_context",
-    "path": "00/01/z2ui5_cl_smp_context.js",
-    "todos": 34,
-    "todoDetails": [
-      "IN range-table check approximated (sign E ignored)",
-      "CREATE DATA: CREATE DATA result TYPE HANDLE o_table_desc.",
-      "CREATE DATA: CREATE DATA lr_row TYPE HANDLE struc.",
-      "unsupported statement: z2ui5_cl_ajson=>parse( val )->to_abap( EXPORTING iv_corresponding = abap_true IMPORTING ev_container = data ).",
-      "unsupported statement: cl_abap_classdescr=>describe_by_name( EXPORTING p_name = val EXCEPTIONS type_not_found = 1 ).",
-      "unsupported statement: cl_abap_typedescr=>describe_by_name( EXPORTING p_name = type->absolute_name RECEIVING p_descr_ref = DATA(type_desc) EXCE",
-      "unsupported statement: GET TIME STAMP FIELD result.",
-      "unsupported statement: CALL TRANSFORMATION id SOURCE XML xml RESULT data = any.",
-      "unsupported statement: CALL TRANSFORMATION id SOURCE XML rtti_data RESULT srtti = srtti.",
-      "CREATE DATA: CREATE DATA result TYPE HANDLE lo_datadescr.",
-      "unsupported statement: CALL TRANSFORMATION id SOURCE XML rtti_data RESULT dobj = <variable>.",
-      "unsupported statement: CALL METHOD (lv_classname)=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = srtti.",
-      "unsupported statement: CALL TRANSFORMATION id SOURCE srtti = srtti dobj = data RESULT XML result.",
-      "unsupported statement: CALL METHOD z2ui5_cl_srt_typedescr=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = srtti.",
-      "unsupported statement: CALL TRANSFORMATION id SOURCE srtti = srtti dobj = data RESULT XML result.",
-      "unsupported statement: CALL TRANSFORMATION id SOURCE data = any RESULT XML result OPTIONS data_refs = `heap-or-create`.",
-      "unsupported statement: cl_abap_structdescr=>describe_by_name( EXPORTING p_name = table_name RECEIVING p_descr_ref = DATA(lo_obj) EXCEPTIONS typ",
-      "unsupported statement: cl_abap_structdescr=>describe_by_name( EXPORTING p_name = table_name RECEIVING p_descr_ref = lo_obj EXCEPTIONS type_not_",
-      "unsupported statement: MOVE-CORRESPONDING <row_in> TO <row_out>.",
-      "unsupported statement: CALL METHOD (lv_web_http_name)=>(`DECODE_X_BASE64`) EXPORTING encoded = val RECEIVING decoded = result.",
-      "unsupported statement: CALL METHOD (classname)=>(`DECODE_X_BASE64`) EXPORTING encoded = val RECEIVING decoded = result.",
-      "unsupported statement: CALL METHOD (lv_web_http_name)=>(`ENCODE_X_BASE64`) EXPORTING unencoded = val RECEIVING encoded = result.",
-      "unsupported statement: CALL METHOD (classname)=>(`ENCODE_X_BASE64`) EXPORTING unencoded = val RECEIVING encoded = result.",
-      "unsupported statement: CALL METHOD (conv_codepage)=>create_in RECEIVING instance = conv.",
-      "unsupported statement: CALL METHOD (conv_in_class)=>create EXPORTING encoding = `UTF-8` RECEIVING conv = conv.",
-      "unsupported statement: CALL METHOD (conv_codepage)=>create_out RECEIVING instance = conv.",
-      "unsupported statement: CALL METHOD (conv_out_class)=>create EXPORTING encoding = `UTF-8` RECEIVING conv = conv.",
-      "unsupported statement: CALL FUNCTION lv_fm IMPORTING ev_guid_32 = lv_uuid.",
-      "CREATE DATA: CREATE DATA dfies TYPE HANDLE new_table_desc.",
-      "unsupported statement: CALL METHOD (lv_method2)=>(`DATABASE_TABLE`) EXPORTING iv_name = lv_tabname RECEIVING ro_database_table = obj.",
-      "CREATE DATA: CREATE DATA lr_ddfields TYPE (workaround).",
-      "unsupported statement: MESSAGE ID ls_result-id TYPE `I` NUMBER ls_result-no WITH ls_result-v1 ls_result-v2 ls_result-v3 ls_result-v4 INTO ls_re",
-      "CREATE DATA: CREATE DATA lr_tab TYPE (`if_bali_log=>ty_item_table`).",
-      "CREATE DATA: CREATE DATA lr_tab TYPE (`BAPIRETTAB`)."
-    ]
-  },
-  {
-    "class": "z2ui5_cx_smp_error",
-    "path": "00/01/z2ui5_cx_smp_error.js",
-    "todos": 0,
-    "todoDetails": []
-  },
-  {
     "class": "z2ui5_cl_smp_app_004",
     "path": "01/z2ui5_cl_smp_app_004.js",
     "todos": 0,
@@ -213,8 +166,13 @@
   {
     "class": "z2ui5_cl_smp_app_074",
     "path": "01/z2ui5_cl_smp_app_074.js",
-    "todos": 0,
-    "todoDetails": []
+    "todos": 4,
+    "todoDetails": [
+      "unsupported statement: CALL METHOD (lv_class)=>(`DECODE_X_BASE64`) EXPORTING encoded = val RECEIVING decoded = result.",
+      "unsupported statement: CALL METHOD (lv_class)=>(`DECODE_X_BASE64`) EXPORTING encoded = val RECEIVING decoded = result.",
+      "unsupported statement: CALL METHOD (lv_class)=>create_in RECEIVING instance = lo_conv.",
+      "unsupported statement: CALL METHOD (lv_class)=>create EXPORTING encoding = `UTF-8` RECEIVING conv = lo_conv."
+    ]
   },
   {
     "class": "z2ui5_cl_smp_app_078",
@@ -420,10 +378,8 @@
   {
     "class": "z2ui5_cl_smp_app_327",
     "path": "01/z2ui5_cl_smp_app_327.js",
-    "todos": 1,
-    "todoDetails": [
-      "unsupported statement: z2ui5_cl_ajson=>parse( client->get_event_arg( 4 ) )->to_abap_corresponding_only( )->to_abap( IMPORTING ev_container = s_"
-    ]
+    "todos": 0,
+    "todoDetails": []
   },
   {
     "class": "z2ui5_cl_smp_app_352",
