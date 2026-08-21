@@ -202,6 +202,13 @@ class z2ui5_cl_ui5_user_exit {
   _config_http_post(is_context, cs_config = {}) {
     cs_config.draft_exp_time_in_hours = 4;
 
+    // CSRF protection is ON by default (2026-08). It used to be opt-in and
+    // nothing opted in, so the shipped app ran with the gate inert. The check
+    // costs nothing for first-party traffic — the frontend posts JSON from the
+    // same origin — and an app that fronts this endpoint with its own
+    // protection can still set `false` in its own exit.
+    cs_config.check_csrf_active = true;
+
     if (z2ui5_cl_ui5_user_exit._gi_user_exit) {
       const ctx = is_context ?? z2ui5_cl_ui5_user_exit._get_context();
       const ret = z2ui5_cl_ui5_user_exit._gi_user_exit.set_config_http_post(ctx, cs_config);

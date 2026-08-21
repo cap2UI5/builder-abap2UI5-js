@@ -25,15 +25,25 @@ class z2ui5_cl_ui5f_index_html {
    */
   static get_source(config) {
     const cfg = config || z2ui5_cl_ui5f_index_html._default_config();
+    // Everything below is interpolated into markup, and an exit can derive any
+    // of it from the request (it receives path/params/headers). Escape at the
+    // boundary so a reflected value cannot close an attribute or an element.
+    // `content_security_policy` is deliberately NOT escaped: it is a whole
+    // <meta> tag by contract, not a value.
+    const html = require(`../../00/03/z2ui5_html`);
     const csp   = cfg.content_security_policy || ``;
-    const title = cfg.title || `cap2UI5`;
-    const theme = cfg.theme || `sap_horizon`;
-    const src   = cfg.src   || `https://sdk.openui5.org/resources/sap-ui-cachebuster/sap-ui-core.js`;
+    const title = html.escape_text(cfg.title || `cap2UI5`);
+    const theme = html.escape_attr(cfg.theme || `sap_horizon`);
+    const src   = html.escape_uri(cfg.src || `https://sdk.openui5.org/resources/sap-ui-cachebuster/sap-ui-core.js`);
 
-    // Extra <script> data-sap-ui-* params from t_add_config.
+    // Extra <script> data-sap-ui-* params from t_add_config. The NAME is
+    // restricted rather than escaped — an attribute name is not a quoted
+    // context, so anything outside the allowed shape is dropped, not encoded.
     let addAttrs = ``;
     for (const row of (cfg.t_add_config || [])) {
-      addAttrs += ` ${row.n}='${row.v}'`;
+      const n = String(row?.n ?? ``);
+      if (!/^[A-Za-z_][A-Za-z0-9_:.-]*$/.test(n)) continue;
+      addAttrs += ` ${n}='${html.escape_attr(row.v)}'`;
     }
 
     return `<!DOCTYPE html>
