@@ -157,6 +157,28 @@ Model subpaths resolve by real file path, not through the `exports` map (the
 cds-compiler has its own resolver), which is why the two `.cds` files sit at the
 package root rather than under `srv/cap/`.
 
+## Tracking upstream's retirements
+
+Upstream `main` moves constantly while its releases are quarterly, and it keeps
+a standing obsolescence list in `docs/removal-plan.md` — APIs scheduled for
+removal, custom controls already marked `// OBSOLETE:`, parameters accepted but
+no longer evaluated. None of that reached this port except by somebody
+happening to read it: the port's README was still teaching `_bind_edit` months
+after upstream had migrated every caller off it.
+
+`scripts/check-upstream-divergence.js` (`npm run check_divergence`, `--strict`
+in the PR gate) turns that into a baseline diff, same idiom as the test
+ratchets: known divergences live in `test/upstream-divergence.baseline.json`
+**with a reason**, and a NEW one fails. A divergence is not automatically a
+defect — the 8 obsolete custom controls currently listed are carried precisely
+because `app/webapp` is mirrored 1:1 on purpose, and dropping them would mean
+forking the mirror. The point is that the choice is written down rather than
+unnoticed.
+
+The `docs/removal-plan.md` half of the check needs an upstream checkout
+(`UPSTREAM_CHECKOUT=/path`, or a sibling `../abap2UI5`); the mirror carries only
+`src` and `app/webapp`, so it skips that half when there is none.
+
 ## npm publishing — decided, not executed
 
 The package cannot be published as it stands: `"private": true`, and more

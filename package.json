@@ -25,7 +25,8 @@
     "build_core": "node scripts/assemble-core.js && node scripts/publish-core.js",
     "coverage": "jest --config jest.config.js --coverage",
     "check_frozen": "node scripts/check-no-frozen.js",
-    "check_doc_numbers": "node scripts/check-doc-numbers.js"
+    "check_doc_numbers": "node scripts/check-doc-numbers.js",
+    "check_divergence": "node scripts/check-upstream-divergence.js"
   },
   "devDependencies": {
     "@abaplint/core": "^2.119.56",
