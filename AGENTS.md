@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 26 suites <!-- count:suites --> (3 skipped)
+npm test                         # 27 suites <!-- count:suites --> (3 skipped)
 ```
 
 The `(cd adapters/cap && npm install)` line is a hard precondition, not a
@@ -117,6 +117,17 @@ components and sub-apps that cannot be started standalone — not outstanding bu
 there are provable-in-JS; the remaining ones here need ABAP type/reference
 semantics our idiomatic port deliberately avoids (scalar/dref identity,
 RTTI-typed conversions, sync-over-async) — reasons live in the baseline.
+Its verdicts are **committed** to `test/oracle-classification.json` by the
+weekly `oracle` workflow. They used to go only to the job summary, which
+expires with the Actions log — so the one tool that can answer "how much of
+the baseline is actually work?" gave an answer nobody could read a week later,
+let alone diff against the previous week. As a tracked file, an entry moving
+from NOTRUN to BUG is a lead somebody can pick up. The file is deterministic
+(sorted, no timestamps) so an unchanged verdict produces no commit, and
+`test/oracle-classification.test.js` holds that property plus the requirement
+that it stay in step with the baseline it classifies. The file in the repo now
+is a SEED (all NOTRUN): the oracle has not run yet, and NOTRUN means "nothing
+proven", never "not fixable".
 
 ## The CAP entry points
 
