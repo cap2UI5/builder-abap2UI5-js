@@ -51,8 +51,14 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 19 suites / ~225 tests
+npm test                         # 23 suites / 236 tests (3 skipped)
 ```
+
+The `(cd adapters/cap && npm install)` line is a hard precondition, not a
+suggestion: `assemble_core` now refuses to run the load gate without it.
+Absent that tree, every fill-in requiring `@sap/cds` or `express` failed to
+load, was deleted from the package, and the build still reported success —
+i.e. a forgotten install published a quietly gutted core.
 
 Pipeline steps (all runnable standalone, `MIRROR_SOURCE=/path` uses a local
 checkout instead of cloning):
@@ -65,15 +71,47 @@ backend overlay is add-only + **load-gated** (each fill-in must `require()`
 NODE_PATH); samples are flattened into `core/srv/app/samples/`; the webapp
 replaces `core/app/z2ui5/webapp` 1:1. Non-parsing transpiles fail the
 transpile step (scripts/transpile-tree.js exits 1) unless deliberately
-allow-listed in `scripts/transpile-parse-allow.json`; assemble additionally
-skips and reports anything that still does not parse or load.
+allow-listed in `scripts/transpile-parse-allow.json`.
 
-Test ratchets: `test/upstream-units.known-failures.json` and
-`test/apps-smoke.known-failures.json` — a new failure is a regression (red),
+**A skipped file fails the build.** Assemble used to delete anything that did
+not parse or load, print a WARNING and exit 0 — so a change that broke N
+modules published a smaller package and went green. It now exits 1 (override
+with `ASSEMBLE_ALLOW_SKIPPED=1`, and say why), and each skip carries its
+parse/load error rather than just a filename. Three size floors back it up,
+because the loud gates say nothing about a run that quietly found almost
+nothing to do: per-tree minimums in `transpile-tree.js` (`MIN_TRANSPILED`),
+a file-count floor in `publish-core.js` checked *before* it wipes `core/`,
+and the corpus floors below. `test/pipeline-guards.test.js` covers all of it
+against temp fixtures.
+
+Test ratchets: `test/upstream-units.known-failures.json` (112 entries) and
+`test/apps-smoke.known-failures.json` (5) — a new failure is a regression (red),
 a fixed entry must be delisted (red). `node scripts/ratchet-update.js`
 reconciles both baselines (delists fixed entries, fails on regressions;
 `--check` for a dry run) — the `build_core` pipeline runs it and commits the
-shrunken baselines, so only regressions can turn the nightlies red.
+shrunken baselines, so only regressions can turn the nightlies red. Its corpus
+floors (units >480 of 511, smoke >100 of 104) sit close to the real numbers on
+purpose: at the old floors of 150/80 two thirds of the suite could vanish —
+`transpile-tests.js` drops a test class it cannot emit with only a
+`console.error` — and the ratchet would have recorded the shrinkage as
+"everything fixed".
+
+**Baseline categories are a contract**, enforced by
+`test/ratchet-governance.test.js`: every entry needs a known `category` and a
+reason worth reading, and a `port-bug` — a real defect in shipped code — needs
+a tracked issue URL, because a baselined defect is otherwise just a bug with a
+green build in front of it. That rule exists because six entries carried
+`port-bug` for months with descriptions ("_bind does not walk nested structure
+levels") that read as shipped, user-facing breakage. Five were one inherent JS
+limit reachable only from the transpiled ABAP tests: `REF #( ms-s_02-input )`
+copies the *value* of an empty string, so the lookup matches the first empty
+attribute. Real apps pass the member path — `main_two_way(client, val,
+{ name: 'ms_struc-s_02-s_03-input' })` answers `{/XX/MS_STRUC/S_02/S_03/INPUT}`,
+correct at every depth. The sixth was a genuine one-line gap (`db_save` did not
+stamp the container's lifecycle latch) and is fixed. There are now **zero**
+`port-bug` entries. The smoke baseline gained the same schema, and all five of
+its entries turned out to describe *correct* behaviour (`expected: true`) —
+components and sub-apps that cannot be started standalone — not outstanding bugs.
 `scripts/oracle-classify.js` classifies the baseline against the upstream
 `node/` runtime (official @abaplint transpiler + open-abap): entries green
 there are provable-in-JS; the remaining ones here need ABAP type/reference

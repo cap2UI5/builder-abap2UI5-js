@@ -2,62 +2,62 @@
   {
     "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref",
     "category": "js-limit",
-    "why": "REF TO data initiator refs \u2014 a null JS field carries no type/ref identity to fill through",
-    "observed": "assertion failed \u2014 expected \"hello\", got \"\""
+    "why": "REF TO data initiator refs — a null JS field carries no type/ref identity to fill through",
+    "observed": "assertion failed — expected \"hello\", got \"\""
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref_no_initiator",
     "category": "js-limit",
-    "why": "REF TO data initiator refs \u2014 a null JS field carries no type/ref identity to fill through",
-    "observed": "assertion failed \u2014 expected \"Missing ref initiator\", got \"assertion failed\""
+    "why": "REF TO data initiator refs — a null JS field carries no type/ref identity to fill through",
+    "observed": "assertion failed — expected \"Missing ref initiator\", got \"assertion failed\""
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_data_ref_test::to_abap_data_ref_table",
     "category": "js-limit",
-    "why": "REF TO data initiator refs \u2014 a null JS field carries no type/ref identity to fill through",
-    "observed": "assertion failed \u2014 expected [\"one\",\"two\"], got []"
+    "why": "REF TO data initiator refs — a null JS field carries no type/ref identity to fill through",
+    "observed": "assertion failed — expected [\"one\",\"two\"], got []"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_negative",
     "category": "js-limit",
-    "why": "RTTI type precision \u2014 a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
-    "observed": "assertion failed \u2014 expected \"Unexpected date format\", got \"assertion failed\""
+    "why": "RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
+    "observed": "assertion failed — expected \"Unexpected date format\", got \"assertion failed\""
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_str_to_packed",
     "category": "js-limit",
-    "why": "RTTI type precision \u2014 a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
-    "observed": "assertion failed \u2014 expected \"1.333\", got 1.3333"
+    "why": "RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
+    "observed": "assertion failed — expected \"1.333\", got 1.3333"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_struc",
     "category": "js-limit",
-    "why": "RTTI type precision \u2014 a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
+    "why": "RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
     "observed": "Unexpected timestamp format"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_json_to_abap::to_abap_time",
     "category": "js-limit",
-    "why": "RTTI type precision \u2014 a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
-    "observed": "assertion failed \u2014 expected \"111111\", got \"11:11:11\""
+    "why": "RTTI type precision — a JS string/number carries no DATS/TIMS/packed length info for the ABAP conversions",
+    "observed": "assertion failed — expected \"111111\", got \"11:11:11\""
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_parser_test::unicode_characters",
     "category": "js-limit",
-    "why": "RTTI type precision \u2014 sorted node-table index is TYPE i (blank-padded) in ABAP, plain number in JS",
-    "observed": "assertion failed \u2014 expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"  \",\"children\":\"3\"},{\"path\":\"/\",\"name\":\"unicode\",\"type\":\"num\",\"value\":\"3\",\"index\":\"  \",\"childr"
+    "why": "RTTI type precision — sorted node-table index is TYPE i (blank-padded) in ABAP, plain number in JS",
+    "observed": "assertion failed — expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"  \",\"children\":\"3\"},{\"path\":\"/\",\"name\":\"unicode\",\"type\":\"num\",\"value\":\"3\",\"index\":\"  \",\"childr"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_writer_test::set_obj",
     "category": "js-limit",
-    "why": "RTTI type precision \u2014 typed DATS/TIMS/timestamp components serialize as plain strings/numbers",
-    "observed": "assertion failed \u2014 expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"1\"},{\"path\":\"/\",\"name\":\"x\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"3\"}"
+    "why": "RTTI type precision — typed DATS/TIMS/timestamp components serialize as plain strings/numbers",
+    "observed": "assertion failed — expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"1\"},{\"path\":\"/\",\"name\":\"x\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"3\"}"
   },
   {
     "name": "z2ui5_cl_ajson::ltcl_writer_test::set_obj_w_date_time",
     "category": "js-limit",
-    "why": "RTTI type precision \u2014 typed DATS/TIMS/timestamp components serialize as plain strings/numbers",
-    "observed": "assertion failed \u2014 expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"6\"},{\"path\":\"/\",\"name\":\"d\",\"type\":\"str\",\"value\":\"2022-04-01\",\"index\":\"\",\"childre"
+    "why": "RTTI type precision — typed DATS/TIMS/timestamp components serialize as plain strings/numbers",
+    "observed": "assertion failed — expected [{\"path\":\"\",\"name\":\"\",\"type\":\"object\",\"value\":\"\",\"index\":\"\",\"children\":\"6\"},{\"path\":\"/\",\"name\":\"d\",\"type\":\"str\",\"value\":\"2022-04-01\",\"index\":\"\",\"childre"
   },
   {
     "name": "z2ui5_cl_ui5_action::ltcl_test::test_first_start_draft_gone",
@@ -85,15 +85,10 @@
     "why": "same: ms_next.t_custom is not this port's shape"
   },
   {
-    "name": "z2ui5_cl_ui5_app_cont::ltcl_test_db::test_db_save_complex",
-    "category": "port-bug",
-    "why": "db_save of a complex app does not report success the way upstream does"
-  },
-  {
     "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_check_on_init_done",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected false, got true"
+    "observed": "assertion failed — expected false, got true"
   },
   {
     "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_follow_up_action",
@@ -325,7 +320,7 @@
     "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_app_state_hash",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected \"ABC123\", got \"\""
+    "observed": "assertion failed — expected \"ABC123\", got \"\""
   },
   {
     "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_auto_update_push",
@@ -345,7 +340,7 @@
     "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_auto_update_snapshot",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected true, got undefined"
+    "observed": "assertion failed — expected true, got undefined"
   },
   {
     "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_nav_mode_resent",
@@ -370,7 +365,7 @@
     "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_response_no_model",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected false, got true"
+    "observed": "assertion failed — expected false, got true"
   },
   {
     "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_system_destroy_only",
@@ -418,37 +413,37 @@
     "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_http_get_status",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected \"OK\", got \"success\""
+    "observed": "assertion failed — expected \"OK\", got \"success\""
   },
   {
     "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_http_post_ok",
     "category": "async-boundary",
-    "why": "the POST roundtrip awaits app main()/draft store \u2014 result is a Promise, the sync ABAP test cannot await it",
-    "observed": "assertion failed \u2014 expected 200, got undefined"
+    "why": "the POST roundtrip awaits app main()/draft store — result is a Promise, the sync ABAP test cannot await it",
+    "observed": "assertion failed — expected 200, got undefined"
   },
   {
     "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_main_post_no_app",
     "category": "async-boundary",
-    "why": "the POST roundtrip awaits app main()/draft store \u2014 result is a Promise, the sync ABAP test cannot await it",
-    "observed": "assertion failed \u2014 expected 500, got undefined"
+    "why": "the POST roundtrip awaits app main()/draft store — result is a Promise, the sync ABAP test cannot await it",
+    "observed": "assertion failed — expected 500, got undefined"
   },
   {
     "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_main_post_routing",
     "category": "async-boundary",
-    "why": "the POST roundtrip awaits app main()/draft store \u2014 result is a Promise, the sync ABAP test cannot await it",
-    "observed": "assertion failed \u2014 expected 200, got undefined"
+    "why": "the POST roundtrip awaits app main()/draft store — result is a Promise, the sync ABAP test cannot await it",
+    "observed": "assertion failed — expected 200, got undefined"
   },
   {
     "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_main_unsupported",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected 405, got 0"
+    "observed": "assertion failed — expected 405, got 0"
   },
   {
     "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_post_no_s_front",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected 200, got undefined"
+    "observed": "assertion failed — expected 200, got undefined"
   },
   {
     "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_preload_literals",
@@ -459,52 +454,52 @@
   },
   {
     "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_bind::test_attri_named_xx",
-    "category": "port-bug",
-    "why": "an attribute literally named XX collides with the two-way model namespace"
+    "category": "js-limit",
+    "why": "scalar value identity — the transpiled test binds an EMPTY STRING field (REF #( ms_struc-s_02-input ) copies the value, it does not carry a reference), so the lookup matches the first attribute that is also empty and answers {/MS_STRUC/INPUT}. Not reachable from a real app: the app-facing API takes the member path explicitly — main_two_way(client, val, { name: 'ms_struc-s_02-s_03-input' }) returns {/XX/MS_STRUC/S_02/S_03/INPUT}, verified at every depth. Fixing this needs the transpiler to emit REF #( ) as a path-carrying reference, not a value copy."
   },
   {
     "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_bind::test_bind_path",
-    "category": "port-bug",
-    "why": "_bind resolves every attribute to the first structure member instead of the bound one"
+    "category": "js-limit",
+    "why": "scalar value identity — the transpiled test binds an EMPTY STRING field (REF #( ms_struc-s_02-input ) copies the value, it does not carry a reference), so the lookup matches the first attribute that is also empty and answers {/MS_STRUC/INPUT}. Not reachable from a real app: the app-facing API takes the member path explicitly — main_two_way(client, val, { name: 'ms_struc-s_02-s_03-input' }) returns {/XX/MS_STRUC/S_02/S_03/INPUT}, verified at every depth. Fixing this needs the transpiler to emit REF #( ) as a path-carrying reference, not a value copy."
   },
   {
     "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_main_structure::test_bind_lev2",
-    "category": "port-bug",
-    "why": "_bind does not walk nested structure levels \u2014 it stops at level 1"
+    "category": "js-limit",
+    "why": "scalar value identity — the transpiled test binds an EMPTY STRING field (REF #( ms_struc-s_02-input ) copies the value, it does not carry a reference), so the lookup matches the first attribute that is also empty and answers {/MS_STRUC/INPUT}. Not reachable from a real app: the app-facing API takes the member path explicitly — main_two_way(client, val, { name: 'ms_struc-s_02-s_03-input' }) returns {/XX/MS_STRUC/S_02/S_03/INPUT}, verified at every depth. Fixing this needs the transpiler to emit REF #( ) as a path-carrying reference, not a value copy."
   },
   {
     "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_main_structure::test_bind_lev3",
-    "category": "port-bug",
-    "why": "_bind does not walk nested structure levels \u2014 it stops at level 1"
+    "category": "js-limit",
+    "why": "scalar value identity — the transpiled test binds an EMPTY STRING field (REF #( ms_struc-s_02-input ) copies the value, it does not carry a reference), so the lookup matches the first attribute that is also empty and answers {/MS_STRUC/INPUT}. Not reachable from a real app: the app-facing API takes the member path explicitly — main_two_way(client, val, { name: 'ms_struc-s_02-s_03-input' }) returns {/XX/MS_STRUC/S_02/S_03/INPUT}, verified at every depth. Fixing this needs the transpiler to emit REF #( ) as a path-carrying reference, not a value copy."
   },
   {
     "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_main_structure::test_bind_lev4_long_name",
-    "category": "port-bug",
-    "why": "_bind does not walk nested structure levels \u2014 it stops at level 1"
+    "category": "js-limit",
+    "why": "scalar value identity — the transpiled test binds an EMPTY STRING field (REF #( ms_struc-s_02-input ) copies the value, it does not carry a reference), so the lookup matches the first attribute that is also empty and answers {/MS_STRUC/INPUT}. Not reachable from a real app: the app-facing API takes the member path explicitly — main_two_way(client, val, { name: 'ms_struc-s_02-s_03-input' }) returns {/XX/MS_STRUC/S_02/S_03/INPUT}, verified at every depth. Fixing this needs the transpiler to emit REF #( ) as a path-carrying reference, not a value copy."
   },
   {
     "name": "z2ui5_cl_ui5_srv_event::ltcl_test::event_backslash_escaped",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected true, got false"
+    "observed": "assertion failed — expected true, got false"
   },
   {
     "name": "z2ui5_cl_ui5_srv_event::ltcl_test::event_lone_cr_escaped",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected true, got false"
+    "observed": "assertion failed — expected true, got false"
   },
   {
     "name": "z2ui5_cl_ui5_srv_event::ltcl_test::event_prevent_default",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected \".eBP($event,true,['ITEM_PRESS'])\", got \".eBP($event,['ITEM_PRESS'])\""
+    "observed": "assertion failed — expected \".eBP($event,true,['ITEM_PRESS'])\", got \".eBP($event,['ITEM_PRESS'])\""
   },
   {
     "name": "z2ui5_cl_ui5_srv_event::ltcl_test::event_prevent_default_expr",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected \".eBP($event,${$parameters>/column}.getId().indexOf('COL_DATE') >= 0,['COLUMN_RESIZE'], ${$parameters>/width})\", got \".eB(['COLUMN_RESIZE'], ${$paramete"
+    "observed": "assertion failed — expected \".eBP($event,${$parameters>/column}.getId().indexOf('COL_DATE') >= 0,['COLUMN_RESIZE'], ${$parameters>/width})\", got \".eB(['COLUMN_RESIZE'], ${$paramete"
   },
   {
     "name": "z2ui5_cl_ui5_srv_model::ltcl_test_app_root4::test_tab_ref_gen",
@@ -515,7 +510,7 @@
   {
     "name": "z2ui5_cl_ui5_srv_model::ltcl_test_diss_complex::test_table_in_dref",
     "category": "js-limit",
-    "why": "CREATE DATA dref without an aliased canonical attribute \u2014 no MR_TAB->* entry derivable",
+    "why": "CREATE DATA dref without an aliased canonical attribute — no MR_TAB->* entry derivable",
     "observed": "assertion failed"
   },
   {
@@ -552,25 +547,25 @@
     "name": "z2ui5_cl_ui5_srv_model::ltcl_test_json_stringify::test_json_node",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "the raw JSON must become a node, not a quoted string \u2014 expected \"object\", got \"str\""
+    "observed": "the raw JSON must become a node, not a quoted string — expected \"object\", got \"str\""
   },
   {
     "name": "z2ui5_cl_ui5_srv_model::ltcl_test_json_stringify::test_omit_initial",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "an initial field must stay ABSENT, not serialize as an empty string \u2014 expected false, got true"
+    "observed": "an initial field must stay ABSENT, not serialize as an empty string — expected false, got true"
   },
   {
     "name": "z2ui5_cl_ui5_srv_model::ltcl_test_json_to_attri::test_skips_json",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "a json bind must not be read back from the client model \u2014 expected \"{\\\"sap.app\\\":{\\\"type\\\":\\\"card\\\"}}\", got \"overwritten\""
+    "observed": "a json bind must not be read back from the client model — expected \"{\\\"sap.app\\\":{\\\"type\\\":\\\"card\\\"}}\", got \"overwritten\""
   },
   {
     "name": "z2ui5_cl_ui5_util_context::ltcl_itab::test_corresponding",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected \"Ada\", got undefined"
+    "observed": "assertion failed — expected \"Ada\", got undefined"
   },
   {
     "name": "z2ui5_cl_ui5_util_context::ltcl_itab::test_filter_all_fields",
@@ -589,7 +584,7 @@
     "name": "z2ui5_cl_ui5_util_context::ltcl_itab::test_filter_ignore_case",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected 1, got 3"
+    "observed": "assertion failed — expected 1, got 3"
   },
   {
     "name": "z2ui5_cl_ui5_util_context::ltcl_itab::test_filter_named_field",
@@ -628,25 +623,25 @@
     "name": "z2ui5_cl_ui5_util_context::ltcl_rtti::test_bound_not_init",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected true, got false"
+    "observed": "assertion failed — expected true, got false"
   },
   {
     "name": "z2ui5_cl_ui5_util_context::ltcl_rtti::test_check_clike",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected true, got false"
+    "observed": "assertion failed — expected true, got false"
   },
   {
     "name": "z2ui5_cl_ui5_util_context::ltcl_rtti::test_check_ref_data",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected false, got true"
+    "observed": "assertion failed — expected false, got true"
   },
   {
     "name": "z2ui5_cl_ui5_util_context::ltcl_rtti::test_scan_flag",
     "category": "port-deviation",
     "why": "the transpiled upstream test asserts on abap-internal state the idiomatic JS port models differently",
-    "observed": "assertion failed \u2014 expected 1, got 0"
+    "observed": "assertion failed — expected 1, got 0"
   },
   {
     "name": "z2ui5_cl_ui5_util_context::ltcl_rtti::test_struc_to_pairs",

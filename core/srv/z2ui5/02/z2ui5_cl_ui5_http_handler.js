@@ -129,6 +129,11 @@ module.exports._http_get = function _http_get() {
     if (typeof pre.get === `function`) preload = pre.get({ styles_css: styles, custom_js: cfg.custom_js || `` });
   } catch { /* optional — the webapp is served statically on JS platforms */ }
 
+  // The tab icon is config, like the title: the exit sets a URI and the page
+  // carries it as <link rel="icon">. An exit that clears the field gets no
+  // <link> at all rather than one pointing nowhere.
+  const favicon = cfg.favicon ? `    <link rel="icon" href="${cfg.favicon}">\n` : ``;
+
   const body =
     `<!DOCTYPE html>\n` +
     `<html lang="en">\n` +
@@ -137,6 +142,7 @@ module.exports._http_get = function _http_get() {
     `    <meta charset="UTF-8">\n` +
     `    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n` +
     `    <title>${cfg.title || `abap2UI5`}</title>\n` +
+    favicon +
     `    <style> html, body, body > div, #container, #container-uiarea { height: 100%; } </style>\n` +
     `    <script>${preload}</script>\n` +
     `    <script id="sap-ui-bootstrap" src="${cfg.src || `/resources/sap-ui-core.js`}"\n` +

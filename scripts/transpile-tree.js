@@ -146,3 +146,17 @@ if (blocked.length) {
   console.error(`${blocked.length} class(es) with parse errors not in scripts/transpile-parse-allow.json — fix the transpiler (or allow-list a deliberate loss)`);
 }
 if (failed.length || blocked.length) process.exit(1);
+
+// Size floor. The gates above catch classes that failed LOUDLY; they say
+// nothing about a run that quietly found almost nothing to do — a mis-pointed
+// input path, an over-eager skip list, a mirror that landed empty. Such a run
+// writes a near-empty report, exits 0, and assemble/publish faithfully ship the
+// hole. Per-tree minimums, comfortably under the real counts (abap2UI5 ~41,
+// samples ~104 as of 2026-08) so normal upstream churn never trips them.
+const MIN_TRANSPILED = { abap2UI5: 25, samples: 60 };
+const floor = MIN_TRANSPILED[name];
+if (floor !== undefined && report.length < floor) {
+  console.error(`ERROR: only ${report.length} class(es) transpiled for '${name}' (expected at least ${floor}).`);
+  console.error(`       That is a build accident — check run/input/${name} and the skip list — not a small upstream.`);
+  process.exit(1);
+}

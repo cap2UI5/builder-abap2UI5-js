@@ -24,7 +24,9 @@ const path = require("path");
 const vm = require("vm");
 const { execFileSync } = require("child_process");
 
-const root = path.join(__dirname, "..");          // repo root
+// CORE_ROOT is a test seam (test/pipeline-guards.test.js) so the preconditions
+// can be exercised against a temp fixture; the pipeline never sets it.
+const root = process.env.CORE_ROOT || path.join(__dirname, "..");          // repo root
 const base = path.join(root, "src");
 const outRoot = path.join(root, "run", "output");
 const dest = path.join(outRoot, "core");
@@ -37,9 +39,12 @@ const OVERLAYS = [
 
 const skip = (p) => path.basename(p) === "transpile-report.json";
 
-function parses(file) {
-  try { new vm.Script(fs.readFileSync(file, "utf8"), { filename: file }); return true; }
-  catch { return false; }
+// Returns null when the file parses, else the parse error message. The reason
+// is part of the answer: a skip reported without one ("SKIPPED (does not
+// parse)") tells a maintainer nothing about what to fix in the transpiler.
+function parseError(file) {
+  try { new vm.Script(fs.readFileSync(file, "utf8"), { filename: file }); return null; }
+  catch (e) { return String(e.message).split("\n")[0]; }
 }
 
 // Local-only artifacts that may exist in src/ when it was used standalone —
@@ -67,7 +72,10 @@ function overlay(from, to, opts, stats) {
     const dst = path.join(to, entry.name);
     const isNew = !fs.existsSync(dst);
     if (!opts.clobber && !isNew) { stats.kept++; continue; }
-    if (opts.parseCheck && src.endsWith(".js") && !parses(src)) { stats.invalid.push(path.relative(root, src)); continue; }
+    if (opts.parseCheck && src.endsWith(".js")) {
+      const err = parseError(src);
+      if (err) { stats.invalid.push(`${path.relative(root, src)}: ${err}`); continue; }
+    }
     fs.mkdirSync(to, { recursive: true });
     fs.copyFileSync(src, dst);
     stats.copied++;
@@ -83,15 +91,41 @@ function overlay(from, to, opts, stats) {
  * fill-ins may require each other. It is what keeps e.g. z2ui5_cl_ui5f_preload
  * (whose deps map to a path that does not exist) out of the published package.
  */
+const GATE_NODE_PATH = path.join(root, "adapters", "cap", "node_modules");
+
+/**
+ * The load gate resolves @sap/cds and express through the cap adapter's tree.
+ * When that tree is absent EVERY fill-in requiring them fails to load and is
+ * deleted — i.e. a forgotten `npm install` silently produces a gutted package
+ * instead of an error. Checked BEFORE any work, so the build stops on the
+ * missing precondition rather than after half-assembling a package it will
+ * throw away.
+ */
+function requireGateDependencies() {
+  if (fs.existsSync(GATE_NODE_PATH)) return;
+  console.error(`ERROR: the load gate needs the cap adapter's dependencies, which are not installed.`);
+  console.error(`       Run:  (cd adapters/cap && npm install)`);
+  console.error(`       Without them every fill-in requiring @sap/cds or express would be`);
+  console.error(`       deleted from the package and the build would still report success.`);
+  process.exit(1);
+}
+
 function loadGate(files, stats) {
   let candidates = [...files];
-  const env = { ...process.env, NODE_PATH: path.join(root, "adapters", "cap", "node_modules") };
+  const env = { ...process.env, NODE_PATH: GATE_NODE_PATH };
   for (let round = 0; round < 5 && candidates.length; round++) {
+    // Fence the payload with a sentinel instead of taking the last stdout line:
+    // a required module that logs at load time (after the probe has printed)
+    // would otherwise make the JSON.parse throw on unrelated output.
+    const MARK = "__ASSEMBLE_LOADGATE__";
     const res = execFileSync(process.execPath, [
       "-e",
-      `const out=[];for(const f of ${JSON.stringify(candidates)}){try{require(f)}catch(e){out.push([f,String(e.message).split("\\n")[0]])}}console.log(JSON.stringify(out));`,
+      `const out=[];for(const f of ${JSON.stringify(candidates)}){try{require(f)}catch(e){out.push([f,String(e.message).split("\\n")[0]])}}` +
+      `console.log(${JSON.stringify(MARK)}+JSON.stringify(out)+${JSON.stringify(MARK)});`,
     ], { cwd: dest, encoding: "utf8", env });
-    const failed = JSON.parse(res.trim().split("\n").pop());
+    const fenced = res.split(MARK);
+    if (fenced.length < 3) throw new Error(`load gate: probe produced no parsable result\n${res}`);
+    const failed = JSON.parse(fenced[1]);
     if (!failed.length) return;
     for (const [f, msg] of failed) {
       fs.rmSync(f, { force: true });
@@ -106,6 +140,10 @@ if (!fs.existsSync(base)) {
   console.error("builder-abap2UI5-js/src not found — it is the hand-maintained source of the core package");
   process.exit(1);
 }
+
+// Preconditions before any work: the load gate must be armed whenever there is
+// a backend overlay for it to gate.
+if (OVERLAYS.some((o) => o.name === "abap2UI5" && fs.existsSync(o.from))) requireGateDependencies();
 
 fs.rmSync(dest, { recursive: true, force: true });
 copyDir(base, dest);
@@ -132,4 +170,19 @@ for (const { name, from, to, clobber, parseCheck, flatten } of OVERLAYS) {
 }
 
 console.log(`\nassembled → ${path.relative(root, dest)}`);
-if (broken) console.error(`WARNING: ${broken} transpiled file(s) skipped (parse/load error) — fix builder-abap2UI5-js/scripts/abap2js.js`);
+
+// A skipped file is a SMALLER published package, and that must never be a
+// warning somebody scrolls past in a CI log: the shipped `core/` is what every
+// downstream repo mirrors. Historically this exited 0 with a WARNING, so a
+// change that made N modules unloadable published a quietly gutted package and
+// went green. Opt out deliberately with ASSEMBLE_ALLOW_SKIPPED=1 (and say why).
+if (broken) {
+  const msg = `${broken} transpiled file(s) skipped (parse/load error) — fix scripts/abap2js.js or the hand-port`;
+  if (process.env.ASSEMBLE_ALLOW_SKIPPED === "1") {
+    console.error(`WARNING: ${msg} (ASSEMBLE_ALLOW_SKIPPED=1 — publishing anyway)`);
+  } else {
+    console.error(`ERROR: ${msg}`);
+    console.error(`       The package would ship incomplete. Set ASSEMBLE_ALLOW_SKIPPED=1 to override.`);
+    process.exit(1);
+  }
+}

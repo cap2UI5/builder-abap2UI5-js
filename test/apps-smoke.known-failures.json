@@ -2,26 +2,36 @@
   {
     "name": "z2ui5_cl_smp_app_020",
     "verdict": "not-started",
+    "expected": true,
+    "why": "component, not a standalone app — a confirm-dialog built through factory( i_confirm_event … ) by a parent. Started with no event, get_event() returns the empty string, which equals its (unset) cancel_event, so main( ) takes the cancel branch and calls nav_app_leave( ) immediately. The handler then correctly answers with the start page. Same in the abap original; no fix will delist this.",
     "detail": "handler answered with z2ui5_cl_ui5_app_start"
   },
   {
     "name": "z2ui5_cl_smp_app_105",
     "verdict": "error-popup",
-    "detail": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone (same as the abap original). Cannot read properties of null (reading 'input')"
+    "expected": true,
+    "why": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone. Same as the abap original, so no fix will delist this.",
+    "detail": "Cannot read properties of null (reading 'input')"
   },
   {
     "name": "z2ui5_cl_smp_app_112",
     "verdict": "error-popup",
-    "detail": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone (same as the abap original). Cannot read properties of null (reading 'input')"
+    "expected": true,
+    "why": "sub-app — needs a parent that sets mo_view_parent; crashes when started standalone. Same as the abap original, so no fix will delist this.",
+    "detail": "Cannot read properties of null (reading 'input')"
   },
   {
     "name": "z2ui5_cl_smp_app_122",
     "verdict": "error-popup",
+    "expected": true,
+    "why": "reads frontend device info (ls_get.S_DEVICE.SYSTEM) that only a real browser sends. The smoke run drives the handler headlessly, so S_DEVICE is absent and the sample dereferences undefined. It is the sample doing exactly its job; a headless run cannot supply the input it demonstrates.",
     "detail": "Cannot read properties of undefined (reading 'system')"
   },
   {
     "name": "z2ui5_cl_smp_app_488",
     "verdict": "error-popup",
+    "expected": true,
+    "why": "demonstrates returning data to a CALLER (get_app_prev / r_data): s_result is only filled once a called sub-app hands data back. Started standalone there is no caller, so s_result is null when the view binds s_result-product. Same as the abap original; no fix will delist this.",
     "detail": "Cannot read properties of null (reading 'product')"
   }
 ]
