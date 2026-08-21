@@ -91,10 +91,17 @@ reconciles both baselines (delists fixed entries, fails on regressions;
 `--check` for a dry run) — the `build_core` pipeline runs it and commits the
 shrunken baselines, so only regressions can turn the nightlies red. Its corpus
 floors (units >480 of 511, smoke >100 of 104) sit close to the real numbers on
-purpose: at the old floors of 150/80 two thirds of the suite could vanish —
-`transpile-tests.js` drops a test class it cannot emit with only a
-`console.error` — and the ratchet would have recorded the shrinkage as
-"everything fixed".
+purpose: at the old floors of 150/80 two thirds of the suite could vanish and
+the ratchet would have recorded the shrinkage as "everything fixed".
+
+That mattered because `transpile-tests.js` can drop a local test class it
+cannot emit, and every dropped class silently removes the tests that reach it
+from the corpus. It used to say so only with a `console.error`, so a shrinking
+corpus looked exactly like a corpus that never had those tests. Skips are now
+recorded per include in `units-report.json` — which is committed, so a class
+that stops transpiling is a DIFF — and summarised loudly at the end of the run.
+Currently **zero**: the corpus is complete, which until now was an assumption
+rather than a measurement.
 
 **Baseline categories are a contract**, enforced by
 `test/ratchet-governance.test.js`: every entry needs a known `category` and a

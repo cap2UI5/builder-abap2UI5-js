@@ -230,6 +230,10 @@ for (const file of walk(INPUT).sort()) {
   const bodies = [];
   const tests = {};
   const emitted = [];
+  // Local classes this include could not transpile. Recorded per include and
+  // surfaced in the report, because a lost class silently removes every test
+  // that reaches it from the corpus the ratchet measures.
+  const skipped = [];
   let error = null;
 
   // pass 1: collect every chunk's method signatures, so positional calls
@@ -276,6 +280,7 @@ for (const file of walk(INPUT).sort()) {
       }
     } catch (e) {
       console.error(`  skip local interface ${name} in ${mainClass}: ${e.message}`);
+      skipped.push({ name, reason: `interface: ${e.message}`.slice(0, 160) });
     }
   }
 
@@ -291,6 +296,7 @@ for (const file of walk(INPUT).sort()) {
         // impl-only local relic (definition removed upstream) — skip it,
         // only tests that reach the missing class will fail
         console.error(`  skip local ${name} in ${mainClass}: no definition`);
+        skipped.push({ name, reason: "no definition (impl-only relic)" });
         continue;
       }
       const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs, siblingFields, siblingTypes, intfSigs, externTypes });
@@ -318,6 +324,7 @@ for (const file of walk(INPUT).sort()) {
         // still transpile; only tests reaching this class fail (visible on
         // the ratchet worklist instead of a blanket __transpile entry)
         console.error(`  skip local ${name} in ${mainClass}: ${e.message}`);
+      skipped.push({ name, reason: String(e.message).slice(0, 160) });
         continue;
       }
       error = `${name}: ${e.message}`;
@@ -350,9 +357,31 @@ for (const file of walk(INPUT).sort()) {
     "",
   ].join("\n");
   fs.writeFileSync(path.join(OUTPUT, `${mainClass}.units.js`), out);
-  report.push({ main: mainClass, classes: emitted.length, tests: Object.values(tests).flat().length, todos: todoLines.length });
+  // `skipped` is recorded, not just logged. The report is committed, so a
+  // class that stops transpiling shows up as a DIFF rather than as a slightly
+  // smaller test total that nobody notices — which is how a shrinking corpus
+  // used to look exactly like a corpus that never had those tests.
+  report.push({
+    main: mainClass,
+    classes: emitted.length,
+    tests: Object.values(tests).flat().length,
+    todos: todoLines.length,
+    ...(skipped.length ? { skipped } : {}),
+  });
 }
 
 fs.writeFileSync(path.join(OUTPUT, "units-report.json"), JSON.stringify(report, null, 2) + "\n");
 const total = report.reduce((n, r) => n + (r.tests || 0), 0);
-console.log(`${report.length} testclass includes → ${total} test methods (${report.filter((r) => r.error).length} failed to transpile)`);
+const droppedTotal = report.reduce((n, r) => n + (r.skipped?.length || 0), 0);
+console.log(
+  `${report.length} testclass includes → ${total} test methods ` +
+  `(${report.filter((r) => r.error).length} failed to transpile, ${droppedTotal} local class(es) skipped)`,
+);
+if (droppedTotal) {
+  // Loud, because every skipped local class silently removes whatever tests
+  // reach it from the corpus the ratchet measures.
+  console.error(`\n${droppedTotal} local class(es) were skipped — the tests that reach them are NOT in the corpus:`);
+  for (const r of report.filter((x) => x.skipped)) {
+    for (const sk of r.skipped) console.error(`  ${r.main} :: ${sk.name} — ${sk.reason}`);
+  }
+}
