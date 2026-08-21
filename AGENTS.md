@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 25 suites / 259 tests (3 skipped)
+npm test                         # 26 suites <!-- count:suites --> (3 skipped)
 ```
 
 The `(cd adapters/cap && npm install)` line is a hard precondition, not a
@@ -84,8 +84,8 @@ a file-count floor in `publish-core.js` checked *before* it wipes `core/`,
 and the corpus floors below. `test/pipeline-guards.test.js` covers all of it
 against temp fixtures.
 
-Test ratchets: `test/upstream-units.known-failures.json` (112 entries) and
-`test/apps-smoke.known-failures.json` (5) — a new failure is a regression (red),
+Test ratchets: `test/upstream-units.known-failures.json` (111 entries <!-- count:ratchet-units -->) and
+`test/apps-smoke.known-failures.json` (5 <!-- count:ratchet-smoke -->) — a new failure is a regression (red),
 a fixed entry must be delisted (red). `node scripts/ratchet-update.js`
 reconciles both baselines (delists fixed entries, fails on regressions;
 `--check` for a dry run) — the `build_core` pipeline runs it and commits the

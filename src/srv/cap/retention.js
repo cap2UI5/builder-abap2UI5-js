@@ -56,6 +56,11 @@ function isRetentionInstance() {
 async function deleteExpiredDrafts({ cds, entity = "cap2ui5.z2ui5_t_01", now = Date.now() } = {}) {
   const ttl = ttlHours();
   if (ttl === 0) return 0;
+  // Resolve CAP ourselves when the caller did not hand it over: a test or a
+  // one-off script should be able to call this without knowing that the
+  // package cannot use a plain require for @sap/cds (see cap/activate.js).
+  cds = cds || require("./activate").requireCds();
+  if (!cds) return 0;
   const [namespace] = entity.split(".");
   const name = entity.slice(namespace.length + 1);
   const target = cds.entities(namespace)?.[name];

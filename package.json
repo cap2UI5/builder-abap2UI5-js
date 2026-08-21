@@ -2,14 +2,14 @@
   "name": "builder-abap2ui5-js",
   "version": "1.0.0",
   "private": true,
-  "description": "abap2UI5 ported to JavaScript \u2014 the ABAP\u2192JS transpiler, sync scripts and jest suite that generate the platform-neutral core package in core/ (consumed by the adapters and, downstream, the cap2UI5 CAP app)",
+  "description": "abap2UI5 ported to JavaScript — the ABAP→JS transpiler, sync scripts and jest suite that generate the platform-neutral core package in core/ (consumed by the adapters and, downstream, the cap2UI5 CAP app)",
   "license": "MIT",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "node scripts/check-no-frozen.js && jest --config jest.config.js --verbose",
+    "test": "node scripts/check-no-frozen.js && node scripts/check-doc-numbers.js && jest --config jest.config.js --verbose",
     "test:watch": "jest --config jest.config.js --watch",
     "transpile": "node scripts/abap2js.js",
     "mirror_abap2ui5": "node scripts/mirror-input.js abap2UI5",
@@ -24,7 +24,8 @@
     "publish_core": "node scripts/publish-core.js",
     "build_core": "node scripts/assemble-core.js && node scripts/publish-core.js",
     "coverage": "jest --config jest.config.js --coverage",
-    "check_frozen": "node scripts/check-no-frozen.js"
+    "check_frozen": "node scripts/check-no-frozen.js",
+    "check_doc_numbers": "node scripts/check-doc-numbers.js"
   },
   "devDependencies": {
     "@abaplint/core": "^2.119.56",

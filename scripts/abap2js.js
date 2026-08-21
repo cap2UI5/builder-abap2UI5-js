@@ -24,6 +24,52 @@ const { Registry, MemoryFile } = require("@abaplint/core");
 const fs = require("fs");
 const path = require("path");
 
+// ---------------------------------------------------------------------------
+// Inline runtime helpers for the two ABAP comparisons whose old lowerings
+// returned WRONG ANSWERS rather than failing.
+//
+// Emitted inline as IIFEs rather than as a require: these operators are rare
+// enough that the verbosity costs little, and it keeps them working in every
+// consumer (including the browser bundle) without adding a module the require
+// plumbing would have to resolve.
+// ---------------------------------------------------------------------------
+
+/**
+ * ABAP `CP` — pattern match. `*` any sequence, `+` exactly one character, `#`
+ * escapes the next character; case-insensitive, and the pattern is anchored.
+ * The old lowering stripped the wildcards and called includes(), so `A*Z`
+ * matched "ZA" and a leading `*` matched anywhere.
+ */
+const ABAP_CP =
+  `(($v, $p) => { let $r = ""; const $s = String($p); ` +
+  `for (let $i = 0; $i < $s.length; $i++) { const $c = $s[$i]; ` +
+  `if ($c === "#") { $i++; $r += ($s[$i] || "").replace(/[.*+?^\${}()|[\\]\\\\]/g, "\\\\$&"); } ` +
+  `else if ($c === "*") { $r += ".*"; } ` +
+  `else if ($c === "+") { $r += "."; } ` +
+  `else { $r += $c.replace(/[.*+?^\${}()|[\\]\\\\]/g, "\\\\$&"); } } ` +
+  `return new RegExp("^" + $r + "$", "i").test(String($v)); })`;
+
+/**
+ * ABAP `IN` — range-table check, honouring `sign`. In range when at least one
+ * I line matches and no E line does; with only E lines, in range when none
+ * matches; an empty range imposes no restriction. The old lowering ignored
+ * `sign` entirely, so an exclude line was read as an include — the exact
+ * opposite result, silently.
+ */
+const ABAP_IN =
+  `(($v, $r) => { if (!$r || !$r.length) return true; ` +
+  `let $inc = false, $anyI = false, $exc = false; ` +
+  `for (const $x of $r) { const $o = String($x.option || "EQ").toUpperCase(); ` +
+  `const $hit = $o === "BT" ? $v >= $x.low && $v <= $x.high ` +
+  `: $o === "NB" ? !($v >= $x.low && $v <= $x.high) ` +
+  `: $o === "NE" ? $v !== $x.low : $o === "GT" ? $v > $x.low : $o === "GE" ? $v >= $x.low ` +
+  `: $o === "LT" ? $v < $x.low : $o === "LE" ? $v <= $x.low ` +
+  `: $o === "CP" ? ${ABAP_CP}($v, $x.low) : $o === "NP" ? !${ABAP_CP}($v, $x.low) ` +
+  `: $v === $x.low; ` +
+  `if (String($x.sign || "I").toUpperCase() === "E") { if ($hit) $exc = true; } ` +
+  `else { $anyI = true; if ($hit) $inc = true; } } ` +
+  `return $exc ? false : ($anyI ? $inc : true); })`;
+
 // Read-only system fields (sy-<field>) that carry a runtime default instead of
 // being computed. Emitted as `sy_<field>` references; declared once per method
 // (see emitMethod) so transpiled code — mostly test guards like
@@ -1964,8 +2010,10 @@ const COMPARE_WORDS = new Set(["CS", "CP", "NS", "NP", "CO", "CN", "CA", "NA", "
 function renderCompare(op, lhs, atoms, opIdx, ctx) {
   const rhsAtom = atoms[opIdx + 1];
   if (!rhsAtom || rhsAtom.kind !== "expr") {
+    // Same rule as the unknown-operator case below: never answer a comparison
+    // the transpiler could not read. `false` here looked like a result.
     ctx.todos?.push(`${op} comparison without operand — rewrite manually`);
-    return { str: `false /* TODO(abap2js): ${op} */`, last: opIdx };
+    return { str: unsupported(`${op} comparison without a right-hand operand`), last: opIdx };
   }
   const rhs = rhsAtom.str;
   switch (op) {
@@ -1973,12 +2021,14 @@ function renderCompare(op, lhs, atoms, opIdx, ctx) {
       return { str: `String(${lhs}).toLowerCase().includes(String(${rhs}).toLowerCase())`, last: opIdx + 1 };
     case "NS":
       return { str: `!String(${lhs}).toLowerCase().includes(String(${rhs}).toLowerCase())`, last: opIdx + 1 };
+    // CP/NP used to drop the wildcards and fall back to includes(), so
+    // `lv IN 'A*Z'` was true for "ZA" and `'*x' CP` matched anywhere. Compile
+    // the ABAP pattern instead: `*` any sequence, `+` exactly one character,
+    // `#` escapes the next one. Case-insensitive, as ABAP's CP is.
     case "CP":
-      ctx.todos?.push(`CP pattern match approximated with includes()`);
-      return { str: `String(${lhs}).includes(String(${rhs}).replace(/\\*/g, ""))`, last: opIdx + 1 };
+      return { str: `${ABAP_CP}(${lhs}, ${rhs})`, last: opIdx + 1 };
     case "NP":
-      ctx.todos?.push(`NP pattern match approximated with includes()`);
-      return { str: `!String(${lhs}).includes(String(${rhs}).replace(/\\*/g, ""))`, last: opIdx + 1 };
+      return { str: `!${ABAP_CP}(${lhs}, ${rhs})`, last: opIdx + 1 };
     case "CO":
       return { str: `[...String(${lhs})].every(($c) => String(${rhs}).includes($c))`, last: opIdx + 1 };
     case "CN":
@@ -1987,25 +2037,42 @@ function renderCompare(op, lhs, atoms, opIdx, ctx) {
       return { str: `[...String(${lhs})].some(($c) => String(${rhs}).includes($c))`, last: opIdx + 1 };
     case "NA":
       return { str: `![...String(${lhs})].some(($c) => String(${rhs}).includes($c))`, last: opIdx + 1 };
+    // Range-table check. This used to ignore `sign`, i.e. an EXCLUDE line was
+    // read as an include — the one failure mode that returns the exact
+    // opposite of the right answer, silently, with only a TODO in a comment.
+    // ABAP's rule: in range when at least one I line matches and no E line
+    // does; with only E lines, in range when none of them matches.
     case "IN":
-      // range table check (sign/option approximated: I/EQ, BT, CP, NE)
-      ctx.todos?.push(`IN range-table check approximated (sign E ignored)`);
-      return {
-        str: `(($v, $r) => !$r || !$r.length || $r.some(($x) => ($x.option === \`BT\` ? $v >= $x.low && $v <= $x.high : $x.option === \`NE\` ? $v !== $x.low : $x.option === \`CP\` ? String($v).includes(String($x.low).replace(/\\*/g, "")) : $v === $x.low)))(${lhs}, ${rhs})`,
-        last: opIdx + 1,
-      };
+      return { str: `${ABAP_IN}(${lhs}, ${rhs})`, last: opIdx + 1 };
     case "BETWEEN": {
       const andAtom = atoms[opIdx + 2];
       const highAtom = atoms[opIdx + 3];
       if (!andAtom || andAtom.up !== "AND" || !highAtom || highAtom.kind !== "expr") {
+        // Was `false`, which is an ANSWER — and a plausible-looking one, so a
+        // wrong branch would be taken with nothing to notice. Fail loudly at
+        // the point of use instead.
         ctx.todos?.push(`BETWEEN without AND bound — rewrite manually`);
-        return { str: `false /* TODO(abap2js): BETWEEN */`, last: opIdx + 1 };
+        return { str: unsupported(`BETWEEN without an AND bound`), last: opIdx + 1 };
       }
       return { str: `${wrap(lhs)} >= ${rhs} && ${wrap(lhs)} <= ${highAtom.str}`, last: opIdx + 3 };
     }
     default:
-      return { str: `false /* TODO(abap2js): ${op} */`, last: opIdx };
+      // Same reasoning: an operator the transpiler cannot lower must not
+      // evaluate to a comparison result. `false` here meant every unsupported
+      // condition quietly took its else branch.
+      ctx.todos?.push(`comparison operator ${op} not supported`);
+      return { str: unsupported(`comparison operator ${op}`), last: opIdx };
   }
+}
+
+/**
+ * An expression that THROWS when evaluated, for a construct the transpiler
+ * cannot lower. The alternative — emitting `false` — is worse than a crash: it
+ * is a wrong answer that looks like a right one, so the program takes a branch
+ * nobody chose and no test can see it happen.
+ */
+function unsupported(what) {
+  return `(() => { throw new Error(${JSON.stringify(`abap2js: ${what} is not supported — rewrite this expression`)}); })()`;
 }
 
 function wrap(s) {

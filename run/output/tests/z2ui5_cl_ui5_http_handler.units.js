@@ -178,7 +178,7 @@ class ltcl_test_http_handler {
     sy_tabix = 0;
     for (const lv_line of lt_lines) {
       sy_tabix++;
-      if (!String(lv_line).includes(String(`      "z2ui5/*": '*',`).replace(/\*/g, ""))) {
+      if (!(($v, $p) => { let $r = ""; const $s = String($p); for (let $i = 0; $i < $s.length; $i++) { const $c = $s[$i]; if ($c === "#") { $i++; $r += ($s[$i] || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); } else if ($c === "*") { $r += ".*"; } else if ($c === "+") { $r += "."; } else { $r += $c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); } } return new RegExp("^" + $r + "$", "i").test(String($v)); })(lv_line, `      "z2ui5/*": '*',`)) {
         continue;
       }
       lv_rest = lv_line.replaceAll(`\\'`, ``);

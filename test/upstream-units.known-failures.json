@@ -446,13 +446,6 @@
     "observed": "assertion failed — expected 200, got undefined"
   },
   {
-    "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_preload_literals",
-    "category": "port-gap",
-    "api": "get",
-    "why": "upstream API the JS port does not implement yet",
-    "observed": "z2ui5_cl_ui5f_comp_js.get is not a function"
-  },
-  {
     "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_bind::test_attri_named_xx",
     "category": "js-limit",
     "why": "scalar value identity — the transpiled test binds an EMPTY STRING field (REF #( ms_struc-s_02-input ) copies the value, it does not carry a reference), so the lookup matches the first attribute that is also empty and answers {/MS_STRUC/INPUT}. Not reachable from a real app: the app-facing API takes the member path explicitly — main_two_way(client, val, { name: 'ms_struc-s_02-s_03-input' }) returns {/XX/MS_STRUC/S_02/S_03/INPUT}, verified at every depth. Fixing this needs the transpiler to emit REF #( ) as a path-carrying reference, not a value copy."
