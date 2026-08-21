@@ -36,6 +36,15 @@ class z2ui5_cl_ui5f_index_html {
     const theme = html.escape_attr(cfg.theme || `sap_horizon`);
     const src   = html.escape_uri(cfg.src || `https://sdk.openui5.org/resources/sap-ui-cachebuster/sap-ui-core.js`);
 
+    // The tab icon, same contract as in z2ui5_cl_ui5_http_handler._http_get:
+    // the exit sets a URI and the page carries it as <link rel="icon">; an
+    // exit that clears the field gets no <link> at all rather than one
+    // pointing nowhere. This is the page CAP actually serves (via
+    // engine.bootstrap_html), so without it the deployed app had no tab icon
+    // even though the exit set one.
+    const faviconUri = html.escape_uri(cfg.favicon);
+    const favicon = faviconUri ? `\t<link rel="icon" href="${faviconUri}">\n` : ``;
+
     // Extra <script> data-sap-ui-* params from t_add_config. The NAME is
     // restricted rather than escaped — an attribute name is not a quoted
     // context, so anything outside the allowed shape is dropped, not encoded.
@@ -53,7 +62,7 @@ ${csp}
 \t<meta charset="UTF-8">
 \t<meta name="viewport" content="width=device-width, initial-scale=1.0">
 \t<title>${title}</title>
-
+${favicon}
 \t<script
 \t\tid="sap-ui-bootstrap"
 \t\tsrc="${src}"

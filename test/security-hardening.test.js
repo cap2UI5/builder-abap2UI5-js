@@ -59,6 +59,47 @@ describe("CSRF gate", () => {
     expect(handler._check_csrf_rejected({ active: true, origin: "", referer: "", host: HOST })).toBe(false);
   });
 
+  describe("reaches the wire, not just the pure function", () => {
+    // Both of these were found by booting a real CAP 9 server against this
+    // package, and neither was visible to a unit test of the check itself.
+
+    test("the handler reads headers from CAP's current accessor", async () => {
+      // The gate read `req.req || req._.req`. On CAP 9 the express request is
+      // `req.http.req`, so innerReq was null, origin/host arrived empty, and
+      // the lenient no-headers branch let every cross-origin POST through — an
+      // active, correct gate that never saw a header. (It also meant user
+      // exits saw no request context at all.)
+      const src = require("fs").readFileSync(
+        require("path").join(CORE, "02", "z2ui5_cl_ui5_http_handler.js"), "utf8",
+      );
+      expect(src).toMatch(/req\?\.http\?\.req/);
+      expect(src).toMatch(/req\?\.http\?\.res/);
+    });
+
+    test("a rejection is refused through CDS, not returned as a value", async () => {
+      // Returning {status_code: 403} made CDS serialize it as a SUCCESSFUL
+      // action result: HTTP 200 carrying a 403 in the body, so a blocked
+      // request looked completed to any client that checks the status.
+      const rejects = [];
+      const req = {
+        http: { req: { headers: { origin: "https://evil.example.net", host: "app.example.com" } }, res: {} },
+        data: { value: { S_FRONT: {} } },
+        reject: (code, msg) => { rejects.push([code, msg]); throw new Error(`rejected ${code}`); },
+      };
+      await expect(handler(req)).rejects.toThrow(/rejected 403/);
+      expect(rejects).toEqual([[403, "CSRF validation failed - cross-origin POST rejected"]]);
+    });
+
+    test("a same-origin POST is not rejected", async () => {
+      const req = {
+        http: { req: { headers: { origin: "https://app.example.com", host: "app.example.com" } }, res: {} },
+        data: { value: { S_FRONT: { ORIGIN: "https://app.example.com", PATHNAME: "/rest/root/z2ui5", SEARCH: "" } } },
+        reject: (code) => { throw new Error(`must not reject (${code})`); },
+      };
+      await expect(handler(req)).resolves.toBeDefined();
+    });
+  });
+
   test("does nothing when an app switches it off", () => {
     expect(handler._check_csrf_rejected({
       active: false, origin: "https://evil.example.net", host: HOST,
