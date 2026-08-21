@@ -29,9 +29,9 @@
     "check_divergence": "node scripts/check-upstream-divergence.js"
   },
   "devDependencies": {
-    "@abaplint/core": "^2.119.56",
-    "@eslint/js": "^9.39.5",
-    "eslint": "^9.39.5",
+    "@abaplint/core": "^2.120.27",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.1",
     "jest": "^30.2.0"
   },
   "repository": "github:cap2UI5/builder-abap2UI5-js"
