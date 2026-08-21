@@ -16,7 +16,17 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const crypto = require("crypto");
 const { transpileFile, parseInterfaceSigs, parseInterfaceTypes } = require("./abap2js");
+
+/** Content hash of the transpiler, so a generated tree can name its producer. */
+function transpilerHash() {
+  return crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(path.join(__dirname, "abap2js.js")))
+    .digest("hex")
+    .slice(0, 16);
+}
 
 // Upstream's src/99 is its FROZEN package — retired utility classes (99/01),
 // the obsolete built-in popups (99/02, superseded by the popups addon), the
@@ -29,7 +39,15 @@ const { transpileFile, parseInterfaceSigs, parseInterfaceTypes } = require("./ab
 // value help — the only two things this port ever needed from there — live in
 // 01/04 as z2ui5_cl_ui5_app_error / _app_select, built on the current view
 // builder and owned by this port.
-const notFrozen = (relDir) => !`${relDir}/`.replace(/\\/g, "/").startsWith("99/");
+const notFrozen = (relDir) => {
+  const d = `${relDir}/`.replace(/\\/g, "/");
+  // 99/ is upstream's frozen package; 00/02 is its vendored S-RTTI, which
+  // serializes ABAP type descriptors for `CREATE DATA ... TYPE HANDLE` — a
+  // pattern JS has no counterpart for. Both are excluded at the mirror too;
+  // this is the second gate, so a mirror that changes cannot quietly
+  // reintroduce them. check-no-frozen.js enforces both.
+  return !d.startsWith("99/") && !d.startsWith("00/02/");
+};
 
 // Framework classes that are hand-maintained in this repo's src/srv/z2ui5
 // overlay win at assemble time (assemble-core copies src/ first and overlays
@@ -127,7 +145,18 @@ for (const { file, relDir } of targets) {
 }
 report.sort((a, b) => a.path.localeCompare(b.path));
 fs.mkdirSync(outBase, { recursive: true });
-fs.writeFileSync(path.join(outBase, "transpile-report.json"), JSON.stringify(report, null, 2) + "\n");
+// Stamp WHICH transpiler produced this tree. The pipeline is mirror →
+// transpile → assemble → publish, and assemble reads the committed
+// run/output tree rather than re-transpiling — correct, but it means a
+// transpiler fix that is not followed by a transpile step ships nothing while
+// looking like it shipped. That happened in 2026-08: the CP/NP/IN lowering
+// fixes landed in abap2js.js, `build_core` was run, everything went green, and
+// the published samples kept the old buggy `includes()` form for two commits.
+// assemble-core compares this hash against the transpiler it can see.
+fs.writeFileSync(
+  path.join(outBase, "transpile-report.json"),
+  JSON.stringify({ transpiler: transpilerHash(), classes: report }, null, 2) + "\n",
+);
 
 const clean = report.filter((r) => r.todos === 0).length;
 const unparseable = report.filter((r) => r.parseError);
@@ -146,3 +175,17 @@ if (blocked.length) {
   console.error(`${blocked.length} class(es) with parse errors not in scripts/transpile-parse-allow.json — fix the transpiler (or allow-list a deliberate loss)`);
 }
 if (failed.length || blocked.length) process.exit(1);
+
+// Size floor. The gates above catch classes that failed LOUDLY; they say
+// nothing about a run that quietly found almost nothing to do — a mis-pointed
+// input path, an over-eager skip list, a mirror that landed empty. Such a run
+// writes a near-empty report, exits 0, and assemble/publish faithfully ship the
+// hole. Per-tree minimums, comfortably under the real counts (abap2UI5 ~41,
+// samples ~104 as of 2026-08) so normal upstream churn never trips them.
+const MIN_TRANSPILED = { abap2UI5: 25, samples: 60 };
+const floor = MIN_TRANSPILED[name];
+if (floor !== undefined && report.length < floor) {
+  console.error(`ERROR: only ${report.length} class(es) transpiled for '${name}' (expected at least ${floor}).`);
+  console.error(`       That is a build accident — check run/input/${name} and the skip list — not a small upstream.`);
+  process.exit(1);
+}

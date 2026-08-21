@@ -38,7 +38,11 @@ const SOURCES = {
   // only so abapGit installations keep compiling on upgrade — a reason that
   // does not exist for an npm package — and upstream has zero consumers on it.
   // Not mirrored, so nothing downstream can grow one either.
-  abap2UI5: { url: A2U, dir: "abap2UI5", paths: [{ from: "src", to: "src" }], exclude: ["src/99"] },
+  // src/00/02 is upstream's vendored S-RTTI (serializable RTTI). It exists to
+  // persist an ABAP type descriptor so `CREATE DATA ... TYPE HANDLE` can
+  // rebuild the type later — a pattern with no JavaScript counterpart. See the
+  // recorded policy in AGENTS.md.
+  abap2UI5: { url: A2U, dir: "abap2UI5", paths: [{ from: "src", to: "src" }], exclude: ["src/99", "src/00/02"] },
   // frontend: the static UI5 webapp, prepared into the CAP app folder
   app: { url: A2U, dir: "app", paths: [{ from: "app/webapp", to: "webapp" }] },
   // samples: the whole default branch mirrored 1:1 (everything except .git),

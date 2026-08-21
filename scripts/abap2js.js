@@ -24,6 +24,52 @@ const { Registry, MemoryFile } = require("@abaplint/core");
 const fs = require("fs");
 const path = require("path");
 
+// ---------------------------------------------------------------------------
+// Inline runtime helpers for the two ABAP comparisons whose old lowerings
+// returned WRONG ANSWERS rather than failing.
+//
+// Emitted inline as IIFEs rather than as a require: these operators are rare
+// enough that the verbosity costs little, and it keeps them working in every
+// consumer (including the browser bundle) without adding a module the require
+// plumbing would have to resolve.
+// ---------------------------------------------------------------------------
+
+/**
+ * ABAP `CP` — pattern match. `*` any sequence, `+` exactly one character, `#`
+ * escapes the next character; case-insensitive, and the pattern is anchored.
+ * The old lowering stripped the wildcards and called includes(), so `A*Z`
+ * matched "ZA" and a leading `*` matched anywhere.
+ */
+const ABAP_CP =
+  `(($v, $p) => { let $r = ""; const $s = String($p); ` +
+  `for (let $i = 0; $i < $s.length; $i++) { const $c = $s[$i]; ` +
+  `if ($c === "#") { $i++; $r += ($s[$i] || "").replace(/[.*+?^\${}()|[\\]\\\\]/g, "\\\\$&"); } ` +
+  `else if ($c === "*") { $r += ".*"; } ` +
+  `else if ($c === "+") { $r += "."; } ` +
+  `else { $r += $c.replace(/[.*+?^\${}()|[\\]\\\\]/g, "\\\\$&"); } } ` +
+  `return new RegExp("^" + $r + "$", "i").test(String($v)); })`;
+
+/**
+ * ABAP `IN` — range-table check, honouring `sign`. In range when at least one
+ * I line matches and no E line does; with only E lines, in range when none
+ * matches; an empty range imposes no restriction. The old lowering ignored
+ * `sign` entirely, so an exclude line was read as an include — the exact
+ * opposite result, silently.
+ */
+const ABAP_IN =
+  `(($v, $r) => { if (!$r || !$r.length) return true; ` +
+  `let $inc = false, $anyI = false, $exc = false; ` +
+  `for (const $x of $r) { const $o = String($x.option || "EQ").toUpperCase(); ` +
+  `const $hit = $o === "BT" ? $v >= $x.low && $v <= $x.high ` +
+  `: $o === "NB" ? !($v >= $x.low && $v <= $x.high) ` +
+  `: $o === "NE" ? $v !== $x.low : $o === "GT" ? $v > $x.low : $o === "GE" ? $v >= $x.low ` +
+  `: $o === "LT" ? $v < $x.low : $o === "LE" ? $v <= $x.low ` +
+  `: $o === "CP" ? ${ABAP_CP}($v, $x.low) : $o === "NP" ? !${ABAP_CP}($v, $x.low) ` +
+  `: $v === $x.low; ` +
+  `if (String($x.sign || "I").toUpperCase() === "E") { if ($hit) $exc = true; } ` +
+  `else { $anyI = true; if ($hit) $inc = true; } } ` +
+  `return $exc ? false : ($anyI ? $inc : true); })`;
+
 // Read-only system fields (sy-<field>) that carry a runtime default instead of
 // being computed. Emitted as `sy_<field>` references; declared once per method
 // (see emitMethod) so transpiled code — mostly test guards like
@@ -722,21 +768,154 @@ function clientSignature() {
   const p = candidates.find((c) => fs.existsSync(c));
   if (!p) return _clientSig;
   _clientSig = new Map();
-  const src = fs.readFileSync(p, "utf8");
-  // signatures may span multiple lines (e.g. message_box_display)
-  const re = /^  (?:static |async )*([a-z_][a-z0-9_]*)\(([^)]*?)\)\s*\{/gms;
-  let m;
-  while ((m = re.exec(src)) !== null) {
-    const raw = m[2].replace(/\s+/g, " ").trim();
-    const destructured = raw.startsWith("{");
-    const params = destructured
-      ? []
-      : raw === ""
-        ? []
-        : raw.split(",").map((s) => s.trim().split("=")[0].trim());
-    _clientSig.set(m[1], { params, destructured });
-  }
+  for (const [name, sig] of parseClassMethods(fs.readFileSync(p, "utf8"))) _clientSig.set(name, sig);
   return _clientSig;
+}
+
+/**
+ * Extract `name -> { params, destructured }` for every method of the FIRST
+ * class in `src`.
+ *
+ * This used to be one regex anchored on exactly two leading spaces:
+ *
+ *   /^ {2}(?:static |async )*([a-z_][a-z0-9_]*)\(([^)]*?)\)\s*\{/gms
+ *
+ * which decided the ABAP-to-JS calling convention for all 104 sample apps by
+ * pattern-matching the indentation of a hand-written file. Two ways to lose:
+ * reformat the client port (prettier, a method moved into a nested block, any
+ * change of indent) and the method silently vanishes from the map, so
+ * `clientArgs` returns null, the emitter falls back to an options object, and
+ * every transpiled app calling that method breaks AT RUNTIME — past the parse
+ * gate, past the load gate. Or give a parameter a default containing a `)`,
+ * e.g. `foo(a = bar())`, and `[^)]*?` stops at the wrong parenthesis.
+ *
+ * Reflection would be better still, but the client cannot be `require`d here:
+ * this runs before assemble_core, so its `abap2UI5/…` imports do not resolve
+ * yet. So: a brace/paren-balanced scan instead, which depends on the code's
+ * structure rather than its layout. `test/client-signature.test.js` closes the
+ * loop by REQUIRING the real class (jest resolves the package) and asserting
+ * this parser found every method reflection sees.
+ */
+function parseClassMethods(src) {
+  const out = [];
+  const open = src.indexOf("{", src.search(/\bclass\s+[A-Za-z_$][\w$]*/));
+  if (open < 0) return out;
+
+  let depth = 0;
+  // The last character that was CODE — not comment, string or whitespace. A
+  // method may only start at a statement boundary, and looking backwards at
+  // raw text cannot tell one: the comment above a method routinely ends in a
+  // full stop ("… mirrors client->_event_nav_app_leave( )."), which reads as a
+  // property access and silently dropped three of the client's methods.
+  let prevCode = "";
+  for (let i = open; i < src.length; i++) {
+    const c = src[i];
+
+    // Skip anything that can contain braces or parens but is not code.
+    if (c === "/" && src[i + 1] === "/") { i = src.indexOf("\n", i); if (i < 0) break; continue; }
+    if (c === "/" && src[i + 1] === "*") { i = src.indexOf("*/", i); if (i < 0) break; i++; continue; }
+    if (c === '"' || c === "'" || c === "`") { i = skipString(src, i); prevCode = c; continue; }
+    if (/\s/.test(c)) continue;
+
+    if (c === "{") { depth++; prevCode = c; continue; }
+    if (c === "}") { depth--; prevCode = c; if (depth === 0) break; continue; }
+
+    // Method definitions live at class-body level, i.e. depth 1.
+    if (depth !== 1) { prevCode = c; continue; }
+
+    // `get`/`set` are matched only so the scan can STEP OVER an accessor
+    // without mistaking its body for the class body; they are not callable
+    // methods and must not enter the signature map — an accessor there would
+    // claim a zero-parameter call convention for a property. `constructor`
+    // likewise: it is never the target of a client call.
+    const m = /^(?:(?:static|async)\s+)*(?<acc>(?:get|set)\s+)?\s*([a-z_][a-z0-9_]*)\s*\(/i.exec(src.slice(i, i + 200));
+    if (!m || !isDefinitionStart(prevCode)) { prevCode = c; continue; }
+    const isAccessor = Boolean(m.groups?.acc);
+
+    const parenAt = i + m[0].length - 1;
+    const close = matchParen(src, parenAt);
+    if (close < 0) continue;
+    // A method definition has its body right after the parameter list; a call
+    // expression does not.
+    const after = src.slice(close + 1, close + 40);
+    if (!/^\s*\{/.test(after)) { i = close; prevCode = ")"; continue; }
+
+    if (!isAccessor && m[2] !== "constructor") out.push([m[2], paramsOf(src.slice(parenAt + 1, close))]);
+    i = close;
+    prevCode = ")";
+  }
+  return out;
+}
+
+/**
+ * True when position `i` starts a token rather than continuing one.
+ *
+ * The point is only to reject the tail of a longer identifier (`this.foo(` must
+ * not read as a definition of `foo`). Anything else may precede a method: `{`
+ * for the first one, `}` or `;` after a previous member, and `/` when a JSDoc
+ * block `*\/` sits above it — which is the common case in this codebase and
+ * which an earlier allow-list of just `{ } ;` rejected, silently dropping most
+ * of the client's methods.
+ */
+function isDefinitionStart(prevCode) {
+  return prevCode === "" || !/[A-Za-z0-9_$.]/.test(prevCode);
+}
+
+/** Index of the `)` matching the `(` at `from`, or -1. */
+function matchParen(src, from) {
+  let depth = 0;
+  for (let i = from; i < src.length; i++) {
+    const c = src[i];
+    if (c === '"' || c === "'" || c === "`") { i = skipString(src, i); continue; }
+    if (c === "(") depth++;
+    else if (c === ")") { depth--; if (depth === 0) return i; }
+  }
+  return -1;
+}
+
+/** Index of the closing quote of the string starting at `from`. */
+function skipString(src, from) {
+  const q = src[from];
+  for (let i = from + 1; i < src.length; i++) {
+    if (src[i] === "\\") { i++; continue; }
+    if (src[i] === q) return i;
+    // A template literal can nest ${ ... } containing anything; step over it.
+    if (q === "`" && src[i] === "$" && src[i + 1] === "{") {
+      let d = 1;
+      i += 2;
+      for (; i < src.length && d > 0; i++) {
+        if (src[i] === "{") d++;
+        else if (src[i] === "}") d--;
+      }
+      i--;
+    }
+  }
+  return src.length;
+}
+
+/** Split a parameter list into names, tolerating defaults that contain commas. */
+function paramsOf(raw) {
+  const text = raw.replace(/\s+/g, " ").trim();
+  if (text === "") return { params: [], destructured: false };
+  if (text.startsWith("{")) return { params: [], destructured: true };
+
+  const params = [];
+  let depth = 0;
+  let cur = "";
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"' || c === "'" || c === "`") { const e = skipString(text, i); cur += text.slice(i, e + 1); i = e; continue; }
+    if ("([{".includes(c)) depth++;
+    else if (")]}".includes(c)) depth--;
+    if (c === "," && depth === 0) { params.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  params.push(cur);
+
+  return {
+    params: params.map((s) => s.trim().split("=")[0].trim()).filter(Boolean),
+    destructured: false,
+  };
 }
 
 function isClientReceiver(recv) {
@@ -1025,7 +1204,7 @@ const BUILTIN_FN = {
   escape: null,
 };
 
-function renderBuiltinNamed(name, named, ctx) {
+function renderBuiltinNamed(name, named, _ctx) {
   const g = (k) => named.get(k);
   switch (name) {
     case "repeat":
@@ -1964,8 +2143,10 @@ const COMPARE_WORDS = new Set(["CS", "CP", "NS", "NP", "CO", "CN", "CA", "NA", "
 function renderCompare(op, lhs, atoms, opIdx, ctx) {
   const rhsAtom = atoms[opIdx + 1];
   if (!rhsAtom || rhsAtom.kind !== "expr") {
+    // Same rule as the unknown-operator case below: never answer a comparison
+    // the transpiler could not read. `false` here looked like a result.
     ctx.todos?.push(`${op} comparison without operand — rewrite manually`);
-    return { str: `false /* TODO(abap2js): ${op} */`, last: opIdx };
+    return { str: unsupported(`${op} comparison without a right-hand operand`), last: opIdx };
   }
   const rhs = rhsAtom.str;
   switch (op) {
@@ -1973,12 +2154,14 @@ function renderCompare(op, lhs, atoms, opIdx, ctx) {
       return { str: `String(${lhs}).toLowerCase().includes(String(${rhs}).toLowerCase())`, last: opIdx + 1 };
     case "NS":
       return { str: `!String(${lhs}).toLowerCase().includes(String(${rhs}).toLowerCase())`, last: opIdx + 1 };
+    // CP/NP used to drop the wildcards and fall back to includes(), so
+    // `lv IN 'A*Z'` was true for "ZA" and `'*x' CP` matched anywhere. Compile
+    // the ABAP pattern instead: `*` any sequence, `+` exactly one character,
+    // `#` escapes the next one. Case-insensitive, as ABAP's CP is.
     case "CP":
-      ctx.todos?.push(`CP pattern match approximated with includes()`);
-      return { str: `String(${lhs}).includes(String(${rhs}).replace(/\\*/g, ""))`, last: opIdx + 1 };
+      return { str: `${ABAP_CP}(${lhs}, ${rhs})`, last: opIdx + 1 };
     case "NP":
-      ctx.todos?.push(`NP pattern match approximated with includes()`);
-      return { str: `!String(${lhs}).includes(String(${rhs}).replace(/\\*/g, ""))`, last: opIdx + 1 };
+      return { str: `!${ABAP_CP}(${lhs}, ${rhs})`, last: opIdx + 1 };
     case "CO":
       return { str: `[...String(${lhs})].every(($c) => String(${rhs}).includes($c))`, last: opIdx + 1 };
     case "CN":
@@ -1987,25 +2170,42 @@ function renderCompare(op, lhs, atoms, opIdx, ctx) {
       return { str: `[...String(${lhs})].some(($c) => String(${rhs}).includes($c))`, last: opIdx + 1 };
     case "NA":
       return { str: `![...String(${lhs})].some(($c) => String(${rhs}).includes($c))`, last: opIdx + 1 };
+    // Range-table check. This used to ignore `sign`, i.e. an EXCLUDE line was
+    // read as an include — the one failure mode that returns the exact
+    // opposite of the right answer, silently, with only a TODO in a comment.
+    // ABAP's rule: in range when at least one I line matches and no E line
+    // does; with only E lines, in range when none of them matches.
     case "IN":
-      // range table check (sign/option approximated: I/EQ, BT, CP, NE)
-      ctx.todos?.push(`IN range-table check approximated (sign E ignored)`);
-      return {
-        str: `(($v, $r) => !$r || !$r.length || $r.some(($x) => ($x.option === \`BT\` ? $v >= $x.low && $v <= $x.high : $x.option === \`NE\` ? $v !== $x.low : $x.option === \`CP\` ? String($v).includes(String($x.low).replace(/\\*/g, "")) : $v === $x.low)))(${lhs}, ${rhs})`,
-        last: opIdx + 1,
-      };
+      return { str: `${ABAP_IN}(${lhs}, ${rhs})`, last: opIdx + 1 };
     case "BETWEEN": {
       const andAtom = atoms[opIdx + 2];
       const highAtom = atoms[opIdx + 3];
       if (!andAtom || andAtom.up !== "AND" || !highAtom || highAtom.kind !== "expr") {
+        // Was `false`, which is an ANSWER — and a plausible-looking one, so a
+        // wrong branch would be taken with nothing to notice. Fail loudly at
+        // the point of use instead.
         ctx.todos?.push(`BETWEEN without AND bound — rewrite manually`);
-        return { str: `false /* TODO(abap2js): BETWEEN */`, last: opIdx + 1 };
+        return { str: unsupported(`BETWEEN without an AND bound`), last: opIdx + 1 };
       }
       return { str: `${wrap(lhs)} >= ${rhs} && ${wrap(lhs)} <= ${highAtom.str}`, last: opIdx + 3 };
     }
     default:
-      return { str: `false /* TODO(abap2js): ${op} */`, last: opIdx };
+      // Same reasoning: an operator the transpiler cannot lower must not
+      // evaluate to a comparison result. `false` here meant every unsupported
+      // condition quietly took its else branch.
+      ctx.todos?.push(`comparison operator ${op} not supported`);
+      return { str: unsupported(`comparison operator ${op}`), last: opIdx };
   }
+}
+
+/**
+ * An expression that THROWS when evaluated, for a construct the transpiler
+ * cannot lower. The alternative — emitting `false` — is worse than a crash: it
+ * is a wrong answer that looks like a right one, so the program takes a branch
+ * nobody chose and no test can see it happen.
+ */
+function unsupported(what) {
+  return `(() => { throw new Error(${JSON.stringify(`abap2js: ${what} is not supported — rewrite this expression`)}); })()`;
 }
 
 function wrap(s) {
@@ -2760,7 +2960,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       // variable/attribute chain, optionally with index access — route it
       // through the runtime copy helper (class refs pass through unchanged).
       // Constructor expressions / calls already produce fresh values.
-      if (/^(this\.)?[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*|\[[^\[\]]*\])*$/.test(rhs) && !/^(true|false|null|undefined)$/.test(rhs)) {
+      if (/^(this\.)?[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*|\[[^[\]]*\])*$/.test(rhs) && !/^(true|false|null|undefined)$/.test(rhs)) {
         // REF TO assignments keep reference semantics — no value copy when
         // either side is declared as a reference (param/local/field) or the
         // RHS chain ends in a REF TO field
@@ -3996,6 +4196,6 @@ function main(argv) {
   if (todoTotal) console.error(`\n${todoTotal} TODO(s) need manual follow-up (search for "TODO(abap2js)").`);
 }
 
-module.exports = { transpileClass, transpileFile, transpileInterface, parseInterfaceSigs, parseInterfaceTypes };
+module.exports = { transpileClass, transpileFile, transpileInterface, parseInterfaceSigs, parseInterfaceTypes, parseClassMethods };
 
 if (require.main === module) main(process.argv);

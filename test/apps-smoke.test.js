@@ -25,11 +25,13 @@ describe("sample apps smoke", () => {
     const fixed = [...known].filter((n) => !failing.has(n));
 
     expect({ regressions, fixedButStillListed: fixed }).toEqual({ regressions: [], fixedButStillListed: [] });
-    // sanity floor: guard against an empty / mis-copied samples folder. The
-    // exact count drifts as upstream adds/removes samples (currently ~104 —
+    // Sanity floor: guard against an empty / mis-copied samples folder. The
+    // exact count drifts as upstream adds/removes samples (currently 104 —
     // the samples repo dropped its `cloud` branch in 2026-08 and moved every
     // SAPUI5-only sample out, so the catalog shrank from ~208), so this is a
-    // loose lower bound, not a pin.
-    expect(report.total).toBeGreaterThan(80);
+    // lower bound rather than a pin — but a bound close enough to the real
+    // number to notice a folder that half failed to copy, which a floor of 80
+    // did not.
+    expect(report.total).toBeGreaterThan(100);
   });
 });

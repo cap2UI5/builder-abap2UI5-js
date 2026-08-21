@@ -1,5 +1,15 @@
 # Transpiler roadmap — two-step ABAP → native CAP/JS
 
+> [!WARNING]
+> **Parts of this document are stale.** It was written before the 2026-07
+> monorepo split, so paths like `base/srv/z2ui5/` mean `src/srv/z2ui5/` here
+> and the `build_cap` steps now live in builder-cap2UI5. Its counts have
+> drifted too — see AGENTS.md for the current ones, which are checked by
+> `npm run check_doc_numbers`. The *reasoning* — the approach-A decision, the
+> gap-category table, and the two negative findings at the end — is still
+> current and is why the file is kept rather than deleted.
+
+
 Goal: make `abap2js` as good as possible so that as little as possible has to
 be hand-maintained in `base/srv/z2ui5/`, **without** giving up cap2UI5's core
 value: idiomatic, readable, runtime-free JS that integrates natively with

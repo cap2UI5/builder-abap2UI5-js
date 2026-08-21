@@ -105,10 +105,14 @@ fs.mkdirSync(REPORTS_DIR, { recursive: true });
 fs.writeFileSync(path.join(REPORTS_DIR, "units.json"), JSON.stringify(units));
 fs.writeFileSync(path.join(REPORTS_DIR, "smoke.json"), JSON.stringify(smoke));
 
-// sanity floors, same as the jest gates — an empty report must never be
-// allowed to delist the whole baseline
-if (units.total <= 150) throw new Error(`units report suspiciously small (total=${units.total})`);
-if (smoke.total <= 80) throw new Error(`smoke report suspiciously small (total=${smoke.total})`);
+// Sanity floors, same as the jest gates — a shrunken report must never be
+// allowed to delist the baseline. Keep these in step with the numbers in
+// test/upstream-units.test.js and test/apps-smoke.test.js: this script is the
+// one that WRITES the baselines, so a floor too low here is worse than a floor
+// too low in a test — it does not just fail to notice a shrunken corpus, it
+// records the shrinkage as "everything fixed".
+if (units.total <= 480) throw new Error(`units report suspiciously small (total=${units.total}, expected >480)`);
+if (smoke.total <= 100) throw new Error(`smoke report suspiciously small (total=${smoke.total}, expected >100)`);
 
 const outcomes = [
   reconcile("upstream-units", "upstream-units.known-failures.json", new Set(Object.keys(units.failures))),

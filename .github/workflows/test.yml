@@ -51,6 +51,11 @@ jobs:
       # block here, where a human is already looking, while the nightly only
       # warns so an upstream sync is never blocked.
       - run: node scripts/check-port-drift.js --strict
+      # Upstream announces retirements in docs/removal-plan.md and with
+      # // OBSOLETE: markers; nothing used to carry that across to this port,
+      # so a retired API could stay documented here indefinitely. A NEW
+      # divergence fails; the known ones live in the baseline with a reason.
+      - run: node scripts/check-upstream-divergence.js --strict
       # Upstream's src/99 is frozen legacy and is deliberately not carried
       # here; the mirror and the transpiler skip it, and this keeps them
       # skipping it (see the script header).

@@ -63,7 +63,10 @@ jobs:
       # one of them is invisible to the transpiler. Report it (warning +
       # job summary) and record it in the baseline committed below, so each
       # divergence is announced exactly once instead of silently accumulating.
-      - run: node scripts/check-port-drift.js
+      # --record: drift lands in test/port-drift.pending.json and is committed
+      # with the rest of the run, so it stays visible until someone reconciles
+      # it. Report mode never touches the baseline that would silence it.
+      - run: node scripts/check-port-drift.js --record
       - name: commit
         uses: ./.github/actions/commit-generated
         with:

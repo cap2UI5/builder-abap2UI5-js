@@ -15,6 +15,15 @@ name: oracle
 # It reports; it does not gate. The classification is input to a maintainer's
 # judgement, not a pass/fail: a newly-provable entry is a lead to follow, not
 # a build to break.
+#
+# Since 2026-08 it also COMMITS the classification to
+# test/oracle-classification.json. It used to write only to the job summary,
+# which expires with the Actions log — so the one tool that can answer "how
+# much of the baseline is actually work?" produced an answer nobody could read
+# a week later, and could not be diffed against the previous week. As a tracked
+# file, an entry moving from NOTRUN to BUG shows up as a diff somebody can act
+# on. The file is deterministic (sorted, no timestamps), so an unchanged
+# verdict produces no commit.
 
 on:
   schedule:
@@ -22,7 +31,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # commits the refreshed classification
 
 jobs:
   classify:
@@ -64,6 +73,28 @@ jobs:
             echo '### Oracle classification'
             echo
             echo '```'
-            node scripts/oracle-classify.js "$RUNNER_TEMP/oracle-run.txt" .oracle-upstream || true
+            node scripts/oracle-classify.js "$RUNNER_TEMP/oracle-run.txt" .oracle-upstream \
+              --json test/oracle-classification.json || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # The throwaway upstream checkout must not end up in the commit.
+      - name: Commit the classification when it changed
+        run: |
+          set -euo pipefail
+          rm -rf .oracle-upstream
+          if git diff --quiet -- test/oracle-classification.json; then
+            echo "classification unchanged — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test/oracle-classification.json
+          git commit -m "oracle: refresh the baseline classification"
+          # The nightlies push to the same branch; rebase rather than fail.
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((i * 5))
+          done
+          echo "could not push the refreshed classification" >&2
+          exit 1

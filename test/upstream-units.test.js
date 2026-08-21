@@ -29,7 +29,14 @@ describe("upstream unit tests (transpiled testclasses)", () => {
     const fixedButStillListed = [...known].filter((n) => !failing.has(n));
 
     expect({ regressions, fixedButStillListed }).toEqual({ regressions: [], fixedButStillListed: [] });
-    // sanity floor — guards against an empty/mis-generated tests folder
-    expect(report.total).toBeGreaterThan(150);
+    // Sanity floor — guards against an empty/mis-generated tests folder.
+    // Kept near the real corpus (511 as of 2026-08), not at a token value: at
+    // the old floor of 150 two thirds of the upstream suite could vanish —
+    // transpile-tests.js drops a test class it cannot emit with only a
+    // console.error — and every ratchet check would still pass, on a corpus
+    // silently reduced to the tests that happen to be easy. Raise it when
+    // upstream grows; lower it only with a reason, since the whole point is
+    // that shrinkage is loud.
+    expect(report.total).toBeGreaterThan(480);
   });
 });

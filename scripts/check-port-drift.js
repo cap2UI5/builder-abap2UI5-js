@@ -24,13 +24,18 @@
  * and compares against a committed baseline. A changed hash means: upstream
  * moved, someone must decide whether the hand-port needs to follow.
  *
- *   node scripts/check-port-drift.js            report (exit 0) + CI annotations
+ *   node scripts/check-port-drift.js            report only — READ-ONLY, exit 0
  *   node scripts/check-port-drift.js --strict    exit 1 when drift is unreconciled
+ *   node scripts/check-port-drift.js --record    also write test/port-drift.pending.json
  *   node scripts/check-port-drift.js --update    accept current state as baseline
  *
- * The build pipeline runs it in report mode and commits the refreshed
- * baseline, so each drift is announced exactly once — in the run that
- * introduced it — instead of either being silent or nagging forever.
+ * Exactly one mode writes the baseline: --update. Until 2026-08 a plain report
+ * run ALSO rewrote it whenever it found drift, which had two bad consequences:
+ * the nightly announced drift and silenced it in the same run (leaving the
+ * evidence in an expiring Actions log on a bot commit nobody reviews), and
+ * merely inspecting drift dirtied a git-tracked file. Now reporting never
+ * writes, --record surfaces drift as a committed diff that persists until it is
+ * reconciled, and accepting drift is always an explicit act.
  */
 "use strict";
 
@@ -43,10 +48,12 @@ const SRC_DIR = path.join(ROOT, "src", "srv", "z2ui5");
 const UPSTREAM_DIR = path.join(ROOT, "run", "input", "abap2UI5", "src");
 const UPSTREAM_COMMIT_FILE = path.join(ROOT, "run", "input", "abap2UI5", "UPSTREAM_COMMIT");
 const BASELINE = path.join(ROOT, "test", "port-drift.baseline.json");
+const PENDING = path.join(ROOT, "test", "port-drift.pending.json");
 
 const args = process.argv.slice(2);
 const UPDATE = args.includes("--update");
 const STRICT = args.includes("--strict");
+const RECORD = args.includes("--record");
 
 /** Every *.js below dir, recursively. */
 function walk(dir, ext, out = []) {
@@ -188,7 +195,13 @@ if (process.env.GITHUB_STEP_SUMMARY && (drifted.length || added.length)) {
 }
 
 // ---- persist --------------------------------------------------------------
-if (UPDATE || (!STRICT && (drifted.length || added.length || removed.length))) {
+// ONLY --update writes. This used to also write on any non-strict run, which
+// meant the nightly reported drift and silently accepted it in the same breath
+// (the evidence was an annotation on a bot commit nobody reads), and merely
+// *inspecting* drift dirtied a git-tracked file. Reporting is now read-only:
+// accepting drift is an explicit act, so an upstream change that needs the
+// hand-port to follow stays visible until somebody looks at it.
+if (UPDATE) {
   const next = {
     // Documentation for whoever opens this file cold.
     _comment:
@@ -203,6 +216,32 @@ if (UPDATE || (!STRICT && (drifted.length || added.length || removed.length))) {
   };
   fs.writeFileSync(BASELINE, JSON.stringify(next, null, 2) + "\n");
   console.log(`  baseline written → ${path.relative(ROOT, BASELINE)}`);
+}
+
+// ---- record (nightly) -----------------------------------------------------
+// The nightly runs read-only, so unreconciled drift would live only in an
+// Actions log that expires. `--record` writes it to a tracked file instead, so
+// the bot commit carries the drift as a reviewable diff and it keeps showing up
+// until somebody reconciles it. This only ever makes drift MORE visible — the
+// baseline that silences it still moves solely under --update.
+if (RECORD) {
+  if (drifted.length) {
+    const pending = {
+      _comment:
+        "Unreconciled hand-port drift, written by scripts/check-port-drift.js --record. " +
+        "Each entry is an upstream ABAP object that changed after the hand-port in " +
+        "src/srv/z2ui5 was last reconciled against it. Review the upstream diff, update " +
+        "the hand-port where the change matters, then run --update to accept the new state. " +
+        "This file disappearing is the signal that everything is reconciled.",
+      upstream_commit: upstreamCommit,
+      drifted: drifted.map((d) => ({ name: d.name, abap: d.abap, js: d.js, was: d.was, now: d.hash })),
+    };
+    fs.writeFileSync(PENDING, JSON.stringify(pending, null, 2) + "\n");
+    console.log(`  drift recorded → ${path.relative(ROOT, PENDING)} (commit it; it clears on --update)`);
+  } else if (fs.existsSync(PENDING)) {
+    fs.rmSync(PENDING);
+    console.log(`  cleared → ${path.relative(ROOT, PENDING)} (no drift left)`);
+  }
 }
 
 if (STRICT && drifted.length) process.exit(1);

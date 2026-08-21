@@ -1,0 +1,53 @@
+{
+  "_comment": "Known divergences from upstream's obsolescence list, written by scripts/check-upstream-divergence.js --update. An entry is not necessarily a defect — the webapp is mirrored 1:1 on purpose — but every entry needs a `why`. A NEW divergence fails --strict.",
+  "entries": [
+    {
+      "kind": "obsolete-control",
+      "id": "cc/Favicon.js",
+      "note": "replaced by the frontend event cs_event-set_favicon - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    },
+    {
+      "kind": "obsolete-control",
+      "id": "cc/Focus.js",
+      "note": "replaced by the frontend event cs_event-set_focus - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    },
+    {
+      "kind": "obsolete-control",
+      "id": "cc/History.js",
+      "note": "app state in the URL is handled by the framework now (set_push_state) - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    },
+    {
+      "kind": "obsolete-control",
+      "id": "cc/Info.js",
+      "note": "replaced by client.get().s_device / s_ui5 - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    },
+    {
+      "kind": "obsolete-control",
+      "id": "cc/LPTitle.js",
+      "note": "replaced by the frontend event cs_event-set_title_launchpad - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    },
+    {
+      "kind": "obsolete-control",
+      "id": "cc/Scrolling.js",
+      "note": "replaced by cs_event-scroll_to / cs_event-scroll_into_view - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    },
+    {
+      "kind": "obsolete-control",
+      "id": "cc/Timer.js",
+      "note": "replaced by the frontend event cs_event-start_timer - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    },
+    {
+      "kind": "obsolete-control",
+      "id": "cc/Title.js",
+      "note": "replaced by the frontend event cs_event-set_title - kept for backward compatibility.",
+      "why": "carried because the webapp is mirrored 1:1 from upstream by design (mirror-input.js takes app/webapp verbatim), so dropping it would mean forking the mirror. Upstream keeps these for ABAP installations that still reference them; this port has no installed base, so they are droppable in principle -- but only together with a decision to stop mirroring the frontend verbatim, which is a bigger call than removing one control. Listed so the choice stays visible rather than forgotten."
+    }
+  ]
+}

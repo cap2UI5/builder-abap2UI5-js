@@ -60,27 +60,46 @@ module.exports = [
       // the gate can be introduced green over a legacy codebase instead of
       // requiring a large, risky port refactor up front.
       //
-      // Status (2026-08): down from 102 to 48. What is left is NOT a config
-      // gap — these are genuinely undefined identifiers the transpiler
-      // emitted, i.e. latent runtime bugs, concentrated in:
+      // Status (2026-08): **the demotion is over — these are errors now.**
+      // The bucket went 130 → 0. What had dominated it was not a config gap
+      // but genuinely undefined identifiers the transpiler emitted, i.e.
+      // latent runtime bugs, and they were concentrated in two places that no
+      // longer exist in this form:
       //
-      //   13  00/02/z2ui5_cl_srt_elemdescr.js   (absolute_name, decimals, …)
-      //   11  00/03/z2ui5_cl_util_json_fltr.js
-      //    6  00/02/z2ui5_cl_srt_refdescr.js
-      //    …  the rest of the srt_* family, 1–4 each
+      //   97  00/02/z2ui5_cl_srt_*  — upstream's S-RTTI, removed: 12 classes
+      //                              whose factory returned null for every
+      //                              type kind, with no consumers and a
+      //                              purpose (serialize an ABAP type
+      //                              descriptor for CREATE DATA … TYPE
+      //                              HANDLE) that has no JS counterpart.
+      //   11  00/03/z2ui5_cl_util_json_fltr.js — fixed: keep_node() took no
+      //                              parameters while using the ABAP importing
+      //                              names, and returned nothing.
       //
-      // Flipping this to "error" is the goal and is blocked only on those.
-      // The 150-marker z2ui5_cl_util_ext that used to dominate the list is
-      // gone — it is honest stubs now.
-      "no-undef": "warn",
-      "no-this-before-super": "warn",
-      "constructor-super": "warn",
+      // The rest was a real config gap after all: CAP injects SELECT/INSERT/
+      // DELETE as globals and `fetch` is a Node global — declared above, so a
+      // REAL no-undef is now visible instead of buried in known noise.
+      //
+      // Keep these at "error". A new undefined identifier in this codebase is
+      // a runtime bug, and the whole reason the bucket grew to 130 is that for
+      // a year nothing failed when one appeared.
+      "no-undef": "error",
+      "no-this-before-super": "error",
+      "constructor-super": "error",
+      "no-unreachable": "error",
+      "no-global-assign": "error",
+      // Stylistic — kept at "warn", but `npm run lint` passes --max-warnings 0,
+      // so a new one still fails the build. The split is about severity in the
+      // output, not about tolerance.
       "no-extra-boolean-cast": "warn",
-      "no-unreachable": "warn",
       "no-useless-escape": "warn",
       "no-regex-spaces": "warn",
-      "no-global-assign": "warn",
-      "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" }],
+      // ignoreRestSiblings: `({ val, ...meta }) => meta` is the standard way to
+      // omit a key from an object; the omitted name is not dead code.
+      "no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none", ignoreRestSiblings: true },
+      ],
       "no-empty": ["warn", { allowEmptyCatch: true }],
       "no-constant-condition": ["warn", { checkLoops: false }],
     },
@@ -88,6 +107,27 @@ module.exports = [
   {
     // adapters/web/entry.js is the browser bundle's entry point — it runs in
     // the page, so the DOM and fetch globals are legitimately defined there.
+    // The CAP entry points run inside a @sap/cds server, which injects the
+    // query-builder globals (SELECT/INSERT/UPDATE/DELETE) rather than
+    // exporting them. `fetch` is a Node 18+ global. Neither is undefined —
+    // declaring them here is what makes a REAL no-undef in these files visible
+    // instead of buried in known noise.
+    files: ["src/srv/cap/**/*.js", "src/srv/z2ui5/**/*.js"],
+    languageOptions: {
+      globals: {
+        SELECT: "readonly",
+        INSERT: "readonly",
+        UPDATE: "readonly",
+        DELETE: "readonly",
+        fetch: "readonly",
+        AbortController: "readonly",
+        URL: "readonly",
+        TextEncoder: "readonly",
+        TextDecoder: "readonly",
+      },
+    },
+  },
+  {
     files: ["adapters/web/entry.js"],
     languageOptions: {
       globals: {
@@ -123,6 +163,8 @@ module.exports = [
         beforeAll: "readonly",
         afterAll: "readonly",
         jest: "readonly",
+        // the adapter smoke tests drive a real server over HTTP
+        fetch: "readonly",
       },
     },
   },
