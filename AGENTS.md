@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 30 suites <!-- count:suites --> (3 skipped)
+npm test                         # 31 suites <!-- count:suites --> (3 skipped)
 ```
 
 The `(cd adapters/cap && npm install)` line is a hard precondition, not a
@@ -295,6 +295,27 @@ Note the name collision that made this confusing for a long time: this port's
 `abap_tab_assign`, `abap_is_initial`, …). It shares nothing but its name with
 upstream's retired `99/01/z2ui5_cl_util`, and it is load-bearing — 394 of the
 415 calls the samples make into it are runtime helpers.
+
+## The gates rest on contracts — keep them single-sourced
+
+Two more of the same shape, both fixed in 2026-08:
+
+**The smoke gate's verdicts came from a copied string.** Every sample is
+classified by looking for the framework's unhandled-error marker in the
+response, and that literal lived twice: once where the handler wraps the error,
+once in `scripts/smoke-apps.js`. Rewording the message would have
+reclassified every erroring sample while the gate kept running and kept
+reporting — measuring a rule that no longer matched anything. The handler now
+exports it as `z2ui5_cl_ui5_handler.UNCAUGHT_EXCEPTION_PREFIX` and the gate
+reads it from there (falling back to the literal only so the script still runs
+standalone). `test/gate-contracts.test.js` pins it, including an end-to-end
+check that a throwing app really does come back wrapped in it.
+
+**Both gates hard-coded their timeouts.** A timeout is a NEW failure, a new
+failure is a ratchet regression, and a ratchet regression is exactly what stops
+`core/` from being committed — so on a slow shared runner, *slow* looked like
+*broken port*. `Z2UI5_SMOKE_TIMEOUT_MS` and `Z2UI5_UNIT_TIMEOUT_MS` override
+the defaults (10 s / 5 s).
 
 ## Two things the pipeline cannot tell you by being green
 

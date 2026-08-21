@@ -19,6 +19,12 @@
 const fs = require("fs");
 const path = require("path");
 
+// Per-test budget. Configurable for the same reason as the smoke gate's: a
+// hard-coded one makes a slow shared runner produce timeouts, a timeout is a
+// NEW failure, and a new failure is a ratchet regression that blocks core/
+// from being committed. Slow must not look like broken.
+const UNIT_TIMEOUT_MS = Number(process.env.Z2UI5_UNIT_TIMEOUT_MS) || 5000;
+
 const OUT = path.join(__dirname, "..", "run", "output", "tests");
 const jsonMode = process.argv.includes("--json");
 
@@ -59,7 +65,7 @@ const jsonMode = process.argv.includes("--json");
           if (typeof inst.setup === "function") await inst.setup();
           await Promise.race([
             Promise.resolve(inst[m]()),
-            new Promise((_, rej) => setTimeout(() => rej(new Error("timeout (5s)")), 5000).unref?.()),
+            new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout (${UNIT_TIMEOUT_MS}ms)`)), UNIT_TIMEOUT_MS).unref?.()),
           ]);
           if (typeof inst.teardown === "function") await inst.teardown();
         } catch (e) {

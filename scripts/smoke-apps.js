@@ -38,7 +38,33 @@ DB.loadPreviousApp = async () => null;
 
 const Handler = require(path.join(root, "core", "srv", "z2ui5", "01", "02", "z2ui5_cl_ui5_handler"));
 
-const TIMEOUT_MS = 10000;
+// Per-app roundtrip budget. Configurable because a hard-coded one turns a slow
+// shared runner into a "regression": a timeout here is a NEW smoke failure,
+// which is exactly what blocks core/ from being committed. A build that is
+// merely slow must not look like a broken port.
+const TIMEOUT_MS = Number(process.env.Z2UI5_SMOKE_TIMEOUT_MS) || 10000;
+
+/**
+ * The framework's own marker for an unhandled app error, read from the handler
+ * rather than copied here.
+ *
+ * Every "error-popup" verdict in this gate is decided by finding this string in
+ * the response. It used to be a literal in this file, so rewording the message
+ * in z2ui5_cl_ui5_handler would have silently reclassified every erroring
+ * sample — the gate would have kept running and kept reporting, on a rule that
+ * no longer matched anything. Falls back to the historical literal only if the
+ * handler cannot be loaded at all, so this script still works standalone.
+ */
+const UNCAUGHT_PREFIX = (() => {
+  try {
+    return require("../core/srv/z2ui5/01/02/z2ui5_cl_ui5_handler").UNCAUGHT_EXCEPTION_PREFIX
+      || `UNCAUGHT EXCEPTION - Please Restart App:`;
+  } catch {
+    return `UNCAUGHT EXCEPTION - Please Restart App:`;
+  }
+})();
+
+const escapeRe = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const jsonMode = process.argv.includes("--json");
 const only = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 
@@ -101,9 +127,9 @@ async function smokeOne(name) {
     return { name, verdict: "crashed", detail: `non-JSON response: ${String(raw).slice(0, 120)}` };
   }
   const rawStr = typeof raw === "string" ? raw : JSON.stringify(raw);
-  if (rawStr.includes("UNCAUGHT EXCEPTION")) {
+  if (rawStr.includes(UNCAUGHT_PREFIX)) {
     // the cause sits behind the framework prefix inside the pop_error text
-    const m = rawStr.match(/UNCAUGHT EXCEPTION - Please Restart App:(?:\\n)?([^"]*)/);
+    const m = rawStr.match(new RegExp(`${escapeRe(UNCAUGHT_PREFIX)}(?:\\\\n)?([^"]*)`));
     return { name, verdict: "error-popup", detail: (m ? m[1] : "").replace(/\\+$/, "").slice(0, 200) };
   }
   const started = (res.S_FRONT?.APP || "").toLowerCase();
