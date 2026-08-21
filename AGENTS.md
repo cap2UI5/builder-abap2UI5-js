@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 27 suites <!-- count:suites --> (3 skipped)
+npm test                         # 28 suites <!-- count:suites --> (3 skipped)
 ```
 
 The `(cd adapters/cap && npm install)` line is a hard precondition, not a
@@ -296,12 +296,59 @@ Note the name collision that made this confusing for a long time: this port's
 upstream's retired `99/01/z2ui5_cl_util`, and it is load-bearing — 394 of the
 415 calls the samples make into it are runtime helpers.
 
+## Upstream's S-RTTI (`src/00/02`) is not carried here — recorded policy
+
+Upstream vendors [S-RTTI](https://github.com/sbcgua/abap-srtti) at `src/00/02`:
+12 classes that serialize an ABAP type descriptor so `CREATE DATA … TYPE
+HANDLE` can rebuild the type on the other side of a roundtrip. Since 2026-08
+none of it enters this pipeline — `mirror-input.js` excludes it,
+`transpile-tree.js` skips it, and `check-no-frozen.js` fails the build if
+either drifts back or if a class reappears under those names.
+
+The reason is not "it was broken", though it was. The reason is that **its
+purpose has no JavaScript counterpart.** JS objects carry no static type to
+describe, and there is no `CREATE DATA … TYPE HANDLE` to hand a rebuilt
+descriptor to. The port persists app state as JSON and rehydrates by class
+name; it never needs a serialized type descriptor. That is why, in the whole
+repository, nothing called it.
+
+What was actually shipped, for the record, because it argues for the same
+conclusion from a different direction:
+
+- `create_by_rtti( )` — the entry point of the whole library — assigned
+  `srtti = null` in **every** branch of its `switch`, each with a TODO where
+  the `CREATE OBJECT` should have been. There was no input for which it
+  returned an object.
+- `z2ui5_cl_srt_structdescr` and `_tabledescr` did `x = null` and then
+  `x.name = …` on the next line: an immediate `TypeError`.
+- Constructors called `super.constructor(rtti)`, which does not invoke the
+  parent constructor, and assigned to `this` before it.
+- `get_rtti( )` assigned to an undeclared `rtti` (a global in sloppy mode, a
+  `ReferenceError` in strict) and returned nothing. `_elemdescr` read bare
+  `length` — in a browser that is `window.length`.
+
+It was 12 classes, **0** consumers, **0** test-corpus entries, **0** coverage,
+97 of the repository's 130 lint warnings and 34 of its shipped
+`TODO(abap2js)` markers — and it was exposed in the package's `exports` map, so
+a consumer could import it and get `null` back. Removing it took lint from 130
+to 33 warnings and shipped TODOs from 72 to 38; fixing `z2ui5_cl_util_json_fltr`
+and declaring the CAP/Node globals took the rest, so the lint gate is at **zero**
+and its correctness rules are `error` rather than `warn` (see eslint.config.js).
+
+**The consequence to know about:** the transpiled
+`00/03/z2ui5_cl_ui5_util_context.js` still carries a TODO for
+`CALL METHOD z2ui5_cl_srt_typedescr=>(\`CREATE_BY_DATA_OBJECT\`)`. That TODO is
+now permanently unimplementable here, and that is the correct outcome — it is
+the RTTI-serialization path, which is exactly what does not transfer. If a
+future need for dynamic typing appears, it wants a JS-shaped design (a schema
+object the port owns), not a port of ABAP's type system.
+
 ## Rules
 
 - Never hand-edit `core/` or anything under `run/` — edit `src/` (or the
   transpiler in `scripts/abap2js.js`) and rebuild.
-- Never reintroduce anything from upstream's frozen `src/99` (see above);
-  `npm run check_frozen` enforces it.
+- Never reintroduce anything from upstream's frozen `src/99` or its S-RTTI
+  package `src/00/02` (see above); `npm run check_frozen` enforces both.
 - `core/README.md` comes from `src/README.md`.
 - The jest suite must stay green; it gates every pipeline commit.
 - Scripts anchor all paths at the repo root (`__dirname/..`) — keep it that

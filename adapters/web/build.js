@@ -22,7 +22,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const pkgRoot = path.dirname(require.resolve("abap2UI5/engine")).replace(/srv[\/\\]z2ui5$/, "");
+const pkgRoot = path.dirname(require.resolve("abap2UI5/engine")).replace(/srv[/\\]z2ui5$/, "");
 const dist = path.join(__dirname, "dist");
 
 // ---- 1. registry ---------------------------------------------------------

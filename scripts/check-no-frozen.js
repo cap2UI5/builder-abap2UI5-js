@@ -49,11 +49,16 @@ const problems = [];
 // 1. The mirror must not carry it in the first place.
 for (const f of walk(path.join(ROOT, "run", "input", "abap2UI5"))) {
   if (f.includes("/src/99/")) problems.push(`mirrored from the frozen package: ${f}`);
+  // Upstream's vendored S-RTTI. Same rule, different reason: it serializes ABAP
+  // type descriptors so `CREATE DATA ... TYPE HANDLE` can rebuild a type, and
+  // JS has neither. See the recorded policy in AGENTS.md.
+  if (f.includes("/src/00/02/")) problems.push(`mirrored from upstream's S-RTTI package: ${f}`);
 }
 
 // 2. Nothing may be transpiled out of it.
 for (const f of walk(path.join(ROOT, "run", "output", "abap2UI5"))) {
   if (/\/99\//.test(f)) problems.push(`transpiled from the frozen package: ${f}`);
+  if (/\/00\/02\//.test(f)) problems.push(`transpiled from upstream's S-RTTI package: ${f}`);
 }
 
 // 3. No hand-port may reintroduce it — neither in a 99 folder of our own …
@@ -71,6 +76,12 @@ const RETIRED = [
   /^z2ui5_cl_xml_view(_cc)?$/, // the legacy view builder
   /^z2ui5_cl_http_handler$/,   // the deprecated shim (z2ui5_cl_ui5_http_handler is the live one)
   /^z2ui5_cl_util_(db|ext|log)$/, // retired utilities with no live role here
+  // S-RTTI. Removed in 2026-08: 12 classes whose factory returned null for
+  // every type kind, with zero consumers, zero coverage and zero entries in
+  // the test corpus — and whose purpose (persist a type descriptor so
+  // `CREATE DATA ... TYPE HANDLE` can rebuild the type) has no JS counterpart.
+  /^z2ui5_cl_srt_/,
+  /^z2ui5_cx_srt$/,
 ];
 for (const f of walk(path.join(ROOT, "src", "srv", "z2ui5"))) {
   const name = path.basename(f, ".js");
@@ -78,7 +89,7 @@ for (const f of walk(path.join(ROOT, "src", "srv", "z2ui5"))) {
 }
 
 // 4. And nothing may require them.
-const RETIRED_REQUIRE = /require\((["'`])abap2UI5\/(z2ui5_cl_pop_[a-z0-9_]+|z2ui5_cl_xml_view(_cc)?|z2ui5_cl_http_handler)\1\)/;
+const RETIRED_REQUIRE = /require\((["'`])abap2UI5\/(z2ui5_cl_pop_[a-z0-9_]+|z2ui5_cl_xml_view(_cc)?|z2ui5_cl_http_handler|z2ui5_cl_srt_[a-z0-9_]+|z2ui5_cx_srt)\1\)/;
 for (const tree of ["src", "adapters", "scripts"]) {
   for (const f of walk(path.join(ROOT, tree))) {
     if (!f.endsWith(".js")) continue;
@@ -91,11 +102,12 @@ if (problems.length) {
   console.error(`check-no-frozen: ${problems.length} problem(s) —\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error(
-    `\nUpstream's src/99 is frozen legacy and is deliberately not carried here.\n` +
+    `\nUpstream's src/99 (frozen legacy) and src/00/02 (S-RTTI) are deliberately\n` +
+    `not carried here — see AGENTS.md for both policies.\n` +
     `If the framework needs one of these capabilities, give it a home in the\n` +
     `live layer under its own name (see 01/04/z2ui5_cl_ui5_app_error).`,
   );
   process.exit(1);
 }
 
-console.log(`check-no-frozen: OK — nothing from upstream's frozen src/99 is carried here`);
+console.log(`check-no-frozen: OK — nothing from upstream's src/99 or src/00/02 is carried here`);

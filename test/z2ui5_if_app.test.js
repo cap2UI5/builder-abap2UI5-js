@@ -13,14 +13,14 @@ describe("z2ui5_if_app", () => {
 
   test("subclass with main() can be instantiated", () => {
     class GoodApp extends z2ui5_if_app {
-      async main(client) {}
+      async main(_client) {}
     }
     expect(() => new GoodApp()).not.toThrow();
   });
 
   test("instanceof check works", () => {
     class MyApp extends z2ui5_if_app {
-      async main(client) {}
+      async main(_client) {}
     }
     const app = new MyApp();
     expect(app instanceof z2ui5_if_app).toBe(true);

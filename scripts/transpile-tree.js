@@ -29,7 +29,15 @@ const { transpileFile, parseInterfaceSigs, parseInterfaceTypes } = require("./ab
 // value help — the only two things this port ever needed from there — live in
 // 01/04 as z2ui5_cl_ui5_app_error / _app_select, built on the current view
 // builder and owned by this port.
-const notFrozen = (relDir) => !`${relDir}/`.replace(/\\/g, "/").startsWith("99/");
+const notFrozen = (relDir) => {
+  const d = `${relDir}/`.replace(/\\/g, "/");
+  // 99/ is upstream's frozen package; 00/02 is its vendored S-RTTI, which
+  // serializes ABAP type descriptors for `CREATE DATA ... TYPE HANDLE` — a
+  // pattern JS has no counterpart for. Both are excluded at the mirror too;
+  // this is the second gate, so a mirror that changes cannot quietly
+  // reintroduce them. check-no-frozen.js enforces both.
+  return !d.startsWith("99/") && !d.startsWith("00/02/");
+};
 
 // Framework classes that are hand-maintained in this repo's src/srv/z2ui5
 // overlay win at assemble time (assemble-core copies src/ first and overlays

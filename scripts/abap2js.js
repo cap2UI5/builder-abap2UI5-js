@@ -770,7 +770,7 @@ function clientSignature() {
   _clientSig = new Map();
   const src = fs.readFileSync(p, "utf8");
   // signatures may span multiple lines (e.g. message_box_display)
-  const re = /^  (?:static |async )*([a-z_][a-z0-9_]*)\(([^)]*?)\)\s*\{/gms;
+  const re = /^ {2}(?:static |async )*([a-z_][a-z0-9_]*)\(([^)]*?)\)\s*\{/gms;
   let m;
   while ((m = re.exec(src)) !== null) {
     const raw = m[2].replace(/\s+/g, " ").trim();
@@ -1071,7 +1071,7 @@ const BUILTIN_FN = {
   escape: null,
 };
 
-function renderBuiltinNamed(name, named, ctx) {
+function renderBuiltinNamed(name, named, _ctx) {
   const g = (k) => named.get(k);
   switch (name) {
     case "repeat":
@@ -2827,7 +2827,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       // variable/attribute chain, optionally with index access — route it
       // through the runtime copy helper (class refs pass through unchanged).
       // Constructor expressions / calls already produce fresh values.
-      if (/^(this\.)?[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*|\[[^\[\]]*\])*$/.test(rhs) && !/^(true|false|null|undefined)$/.test(rhs)) {
+      if (/^(this\.)?[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*|\[[^[\]]*\])*$/.test(rhs) && !/^(true|false|null|undefined)$/.test(rhs)) {
         // REF TO assignments keep reference semantics — no value copy when
         // either side is declared as a reference (param/local/field) or the
         // RHS chain ends in a REF TO field

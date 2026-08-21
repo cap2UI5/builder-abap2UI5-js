@@ -27,51 +27,6 @@
       "js": "src/srv/z2ui5/00/01/z2ui5_cl_ajson_utilities.js",
       "hash": "685f815235ac2c64"
     },
-    "z2ui5_cl_srt_aunit": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_aunit.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_aunit.js",
-      "hash": "d49738128080a31c"
-    },
-    "z2ui5_cl_srt_classdescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_classdescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_classdescr.js",
-      "hash": "654f312871d9715e"
-    },
-    "z2ui5_cl_srt_elemdescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_elemdescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_elemdescr.js",
-      "hash": "951a8131c0f3e899"
-    },
-    "z2ui5_cl_srt_intfdescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_intfdescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_intfdescr.js",
-      "hash": "8ffab43bb90efda4"
-    },
-    "z2ui5_cl_srt_objectdescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_objectdescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_objectdescr.js",
-      "hash": "7363472b3bce17cf"
-    },
-    "z2ui5_cl_srt_refdescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_refdescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_refdescr.js",
-      "hash": "7c8fedc3d65a154f"
-    },
-    "z2ui5_cl_srt_structdescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_structdescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_structdescr.js",
-      "hash": "d4910d60cc3ec28a"
-    },
-    "z2ui5_cl_srt_tabledescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_tabledescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_tabledescr.js",
-      "hash": "c52462ef753ecd0a"
-    },
-    "z2ui5_cl_srt_typedescr": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cl_srt_typedescr.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cl_srt_typedescr.js",
-      "hash": "42cc7651d3af01eb"
-    },
     "z2ui5_cl_ui5_action": {
       "abap": "run/input/abap2UI5/src/01/02/z2ui5_cl_ui5_action.clas.abap",
       "js": "src/srv/z2ui5/01/02/z2ui5_cl_ui5_action.js",
@@ -306,11 +261,6 @@
       "abap": "run/input/abap2UI5/src/00/01/z2ui5_cx_ajson_error.clas.abap",
       "js": "src/srv/z2ui5/00/01/z2ui5_cx_ajson_error.js",
       "hash": "acaed455e2db856e"
-    },
-    "z2ui5_cx_srt": {
-      "abap": "run/input/abap2UI5/src/00/02/z2ui5_cx_srt.clas.abap",
-      "js": "src/srv/z2ui5/00/02/z2ui5_cx_srt.js",
-      "hash": "d65878318fba6110"
     },
     "z2ui5_if_app": {
       "abap": "run/input/abap2UI5/src/02/z2ui5_if_app.intf.abap",
