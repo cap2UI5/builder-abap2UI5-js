@@ -61,8 +61,33 @@ function installed(dir) {
   return fs.existsSync(path.join(root, dir, "node_modules"));
 }
 
+/**
+ * Skip locally, FAIL in CI.
+ *
+ * Locally, skipping is right: a contributor touching the transpiler should not
+ * have to install four adapters to run the suite. In CI it is the opposite —
+ * the workflows install all four on purpose (test.yml, build_core.yml), so a
+ * missing tree means an install step was dropped or broke. The old behaviour
+ * turned that into a GREEN run with a warning in the log, i.e. the adapter
+ * smoke silently stopped being a gate while still appearing in the output as
+ * one. The failure mode of a test gate must not be "passes".
+ */
 function gate(dir) {
   if (installed(dir)) return test;
+
+  if (process.env.CI === "true") {
+    return (name) =>
+      test(name, () => {
+        throw new Error(
+          `${dir}/node_modules is missing in CI. The workflows install every adapter ` +
+          `(test.yml / build_core.yml) precisely so this smoke runs; a missing tree means ` +
+          `an install step was dropped. Skipping here would turn the adapter gate green ` +
+          `without testing anything. Restore the install step, or delete this smoke ` +
+          `deliberately.`,
+        );
+      });
+  }
+
   console.warn(`adapters.test: ${dir}/node_modules missing — smoke SKIPPED (run npm install there to arm it)`);
   return test.skip;
 }

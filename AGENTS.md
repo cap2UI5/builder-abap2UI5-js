@@ -296,6 +296,20 @@ Note the name collision that made this confusing for a long time: this port's
 upstream's retired `99/01/z2ui5_cl_util`, and it is load-bearing — 394 of the
 415 calls the samples make into it are runtime helpers.
 
+## A test gate must not fail by passing
+
+`test/adapters.test.js` smokes the four platform adapters, and skipped itself
+when an adapter's `node_modules` was absent. Locally that is right — nobody
+touching the transpiler should have to install four adapters to run the suite.
+In CI it was the opposite: the workflows install all four precisely so this
+runs, so a missing tree means an install step was dropped or broke, and the
+gate answered that by going GREEN with a warning in the log. It stopped being
+a gate while still appearing in the output as one.
+
+It now skips locally and FAILS when `CI=true`, naming what to restore. Keep
+that shape for any gate that can legitimately be skipped in one environment:
+the failure mode of a test gate must never be "passes".
+
 ## The gates rest on contracts — keep them single-sourced
 
 Two more of the same shape, both fixed in 2026-08:
