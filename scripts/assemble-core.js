@@ -21,6 +21,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const vm = require("vm");
 const { execFileSync } = require("child_process");
 
@@ -141,8 +142,60 @@ if (!fs.existsSync(base)) {
   process.exit(1);
 }
 
+/**
+ * Refuse to assemble a tree that a DIFFERENT transpiler produced.
+ *
+ * assemble reads the committed run/output trees rather than re-transpiling,
+ * which is the right pipeline shape (mirror → transpile → assemble → publish)
+ * and has one sharp edge: a transpiler fix that is not followed by a transpile
+ * step ships nothing while looking like it shipped. That is not hypothetical —
+ * the CP/NP/IN lowering fixes landed in abap2js.js in 2026-08, `build_core`
+ * ran, every gate went green, and the published samples kept the old buggy
+ * `includes()` form for two commits, because nobody re-ran transpile_samples.
+ *
+ * transpile-tree.js stamps its own content hash into each report; if that does
+ * not match the transpiler on disk, the tree is stale. Non-fatal by default —
+ * a contributor editing only src/ has no reason to re-transpile, and the
+ * nightly pipeline always transpiles first — but loud, and
+ * ASSEMBLE_REQUIRE_FRESH=1 makes it an error for a release build.
+ */
+function checkTranspilerFreshness() {
+  let current;
+  try {
+    current = crypto.createHash("sha256").update(fs.readFileSync(path.join(__dirname, "abap2js.js"))).digest("hex").slice(0, 16);
+  } catch {
+    return; // no transpiler here (a standalone core checkout) — nothing to compare
+  }
+  const stale = [];
+  for (const name of ["abap2UI5", "samples"]) {
+    const rep = path.join(outRoot, name, "transpile-report.json");
+    if (!fs.existsSync(rep)) continue;
+    let doc;
+    try {
+      doc = JSON.parse(fs.readFileSync(rep, "utf8"));
+    } catch {
+      continue;
+    }
+    // Trees produced before the stamp existed carry a bare array; they cannot
+    // say who made them, so they are reported as unknown rather than stale.
+    const stamped = Array.isArray(doc) ? null : doc.transpiler;
+    if (stamped !== current) stale.push(`${name} (${stamped || "unstamped"} vs ${current})`);
+  }
+  if (!stale.length) return;
+
+  const msg = `run/output tree(s) were produced by a different transpiler: ${stale.join(", ")}`;
+  if (process.env.ASSEMBLE_REQUIRE_FRESH === "1") {
+    console.error(`ERROR: ${msg}`);
+    console.error(`       Run \`npm run transpile_abap2ui5 && npm run transpile_samples\` first.`);
+    process.exit(1);
+  }
+  console.error(`WARNING: ${msg}`);
+  console.error(`         A transpiler change will NOT reach the package until you re-transpile.`);
+}
+
 // Preconditions before any work: the load gate must be armed whenever there is
 // a backend overlay for it to gate.
+checkTranspilerFreshness();
 if (OVERLAYS.some((o) => o.name === "abap2UI5" && fs.existsSync(o.from))) requireGateDependencies();
 
 fs.rmSync(dest, { recursive: true, force: true });

@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 28 suites <!-- count:suites --> (3 skipped)
+npm test                         # 29 suites <!-- count:suites --> (3 skipped)
 ```
 
 The `(cd adapters/cap && npm install)` line is a hard precondition, not a
@@ -295,6 +295,45 @@ Note the name collision that made this confusing for a long time: this port's
 `abap_tab_assign`, `abap_is_initial`, …). It shares nothing but its name with
 upstream's retired `99/01/z2ui5_cl_util`, and it is load-bearing — 394 of the
 415 calls the samples make into it are runtime helpers.
+
+## Two things the pipeline cannot tell you by being green
+
+**The calling convention is derived from the client port's source.**
+`clientSignature()` in `scripts/abap2js.js` decides, per client method,
+whether transpiled apps call it positionally or with a single options object.
+It used to do that with one regex anchored on exactly two leading spaces —
+so reformatting `z2ui5_cl_ui5_client.js` (prettier, a method moved into a
+nested block, any change of indent) silently dropped a method from the map,
+the emitter fell back to an options object, and every app calling that method
+broke AT RUNTIME, past the parse gate and past the load gate. It is a
+brace/paren-balanced scan now, which depends on the code's structure rather
+than its layout. `require`-ing the client instead would be better still, but
+it cannot resolve its own `abap2UI5/…` imports before assemble runs — so
+`test/client-signature.test.js` closes the loop from jest, where they do
+resolve: it reflects over the real class and asserts the scan found exactly
+the methods that exist, no more and no fewer (68 today).
+
+**A transpiler fix does not reach the package on its own.** assemble reads the
+committed `run/output` trees rather than re-transpiling — the right pipeline
+shape, with one sharp edge: change `abap2js.js`, run `build_core`, and every
+gate goes green while the package still carries the old output. That is not
+hypothetical. The CP/NP/IN lowering fixes sat in the transpiler for two commits
+while the published samples kept the old, wrong `includes()` form, because
+nobody re-ran `transpile_samples`. `transpile-tree.js` now stamps its own
+content hash into each `transpile-report.json` and `assemble-core.js` compares
+it, warning by default and failing under `ASSEMBLE_REQUIRE_FRESH=1`.
+
+When you touch the transpiler, the sequence is:
+
+```bash
+npm run transpile_abap2ui5 && npm run transpile_samples && npm run build_core
+```
+
+and the way to prove a transpiler change is safe is a byte diff: keep a copy of
+`run/output/` from before, re-transpile, and compare. A refactor that is meant
+to preserve behaviour must produce an identical tree — that is how the
+`clientSignature()` rewrite above was verified (framework tree identical; the
+only sample differences were the CP/IN corrections finally landing).
 
 ## Upstream's S-RTTI (`src/00/02`) is not carried here — recorded policy
 

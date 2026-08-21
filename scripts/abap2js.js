@@ -768,21 +768,154 @@ function clientSignature() {
   const p = candidates.find((c) => fs.existsSync(c));
   if (!p) return _clientSig;
   _clientSig = new Map();
-  const src = fs.readFileSync(p, "utf8");
-  // signatures may span multiple lines (e.g. message_box_display)
-  const re = /^ {2}(?:static |async )*([a-z_][a-z0-9_]*)\(([^)]*?)\)\s*\{/gms;
-  let m;
-  while ((m = re.exec(src)) !== null) {
-    const raw = m[2].replace(/\s+/g, " ").trim();
-    const destructured = raw.startsWith("{");
-    const params = destructured
-      ? []
-      : raw === ""
-        ? []
-        : raw.split(",").map((s) => s.trim().split("=")[0].trim());
-    _clientSig.set(m[1], { params, destructured });
-  }
+  for (const [name, sig] of parseClassMethods(fs.readFileSync(p, "utf8"))) _clientSig.set(name, sig);
   return _clientSig;
+}
+
+/**
+ * Extract `name -> { params, destructured }` for every method of the FIRST
+ * class in `src`.
+ *
+ * This used to be one regex anchored on exactly two leading spaces:
+ *
+ *   /^ {2}(?:static |async )*([a-z_][a-z0-9_]*)\(([^)]*?)\)\s*\{/gms
+ *
+ * which decided the ABAP-to-JS calling convention for all 104 sample apps by
+ * pattern-matching the indentation of a hand-written file. Two ways to lose:
+ * reformat the client port (prettier, a method moved into a nested block, any
+ * change of indent) and the method silently vanishes from the map, so
+ * `clientArgs` returns null, the emitter falls back to an options object, and
+ * every transpiled app calling that method breaks AT RUNTIME — past the parse
+ * gate, past the load gate. Or give a parameter a default containing a `)`,
+ * e.g. `foo(a = bar())`, and `[^)]*?` stops at the wrong parenthesis.
+ *
+ * Reflection would be better still, but the client cannot be `require`d here:
+ * this runs before assemble_core, so its `abap2UI5/…` imports do not resolve
+ * yet. So: a brace/paren-balanced scan instead, which depends on the code's
+ * structure rather than its layout. `test/client-signature.test.js` closes the
+ * loop by REQUIRING the real class (jest resolves the package) and asserting
+ * this parser found every method reflection sees.
+ */
+function parseClassMethods(src) {
+  const out = [];
+  const open = src.indexOf("{", src.search(/\bclass\s+[A-Za-z_$][\w$]*/));
+  if (open < 0) return out;
+
+  let depth = 0;
+  // The last character that was CODE — not comment, string or whitespace. A
+  // method may only start at a statement boundary, and looking backwards at
+  // raw text cannot tell one: the comment above a method routinely ends in a
+  // full stop ("… mirrors client->_event_nav_app_leave( )."), which reads as a
+  // property access and silently dropped three of the client's methods.
+  let prevCode = "";
+  for (let i = open; i < src.length; i++) {
+    const c = src[i];
+
+    // Skip anything that can contain braces or parens but is not code.
+    if (c === "/" && src[i + 1] === "/") { i = src.indexOf("\n", i); if (i < 0) break; continue; }
+    if (c === "/" && src[i + 1] === "*") { i = src.indexOf("*/", i); if (i < 0) break; i++; continue; }
+    if (c === '"' || c === "'" || c === "`") { i = skipString(src, i); prevCode = c; continue; }
+    if (/\s/.test(c)) continue;
+
+    if (c === "{") { depth++; prevCode = c; continue; }
+    if (c === "}") { depth--; prevCode = c; if (depth === 0) break; continue; }
+
+    // Method definitions live at class-body level, i.e. depth 1.
+    if (depth !== 1) { prevCode = c; continue; }
+
+    // `get`/`set` are matched only so the scan can STEP OVER an accessor
+    // without mistaking its body for the class body; they are not callable
+    // methods and must not enter the signature map — an accessor there would
+    // claim a zero-parameter call convention for a property. `constructor`
+    // likewise: it is never the target of a client call.
+    const m = /^(?:(?:static|async)\s+)*(?<acc>(?:get|set)\s+)?\s*([a-z_][a-z0-9_]*)\s*\(/i.exec(src.slice(i, i + 200));
+    if (!m || !isDefinitionStart(prevCode)) { prevCode = c; continue; }
+    const isAccessor = Boolean(m.groups?.acc);
+
+    const parenAt = i + m[0].length - 1;
+    const close = matchParen(src, parenAt);
+    if (close < 0) continue;
+    // A method definition has its body right after the parameter list; a call
+    // expression does not.
+    const after = src.slice(close + 1, close + 40);
+    if (!/^\s*\{/.test(after)) { i = close; prevCode = ")"; continue; }
+
+    if (!isAccessor && m[2] !== "constructor") out.push([m[2], paramsOf(src.slice(parenAt + 1, close))]);
+    i = close;
+    prevCode = ")";
+  }
+  return out;
+}
+
+/**
+ * True when position `i` starts a token rather than continuing one.
+ *
+ * The point is only to reject the tail of a longer identifier (`this.foo(` must
+ * not read as a definition of `foo`). Anything else may precede a method: `{`
+ * for the first one, `}` or `;` after a previous member, and `/` when a JSDoc
+ * block `*\/` sits above it — which is the common case in this codebase and
+ * which an earlier allow-list of just `{ } ;` rejected, silently dropping most
+ * of the client's methods.
+ */
+function isDefinitionStart(prevCode) {
+  return prevCode === "" || !/[A-Za-z0-9_$.]/.test(prevCode);
+}
+
+/** Index of the `)` matching the `(` at `from`, or -1. */
+function matchParen(src, from) {
+  let depth = 0;
+  for (let i = from; i < src.length; i++) {
+    const c = src[i];
+    if (c === '"' || c === "'" || c === "`") { i = skipString(src, i); continue; }
+    if (c === "(") depth++;
+    else if (c === ")") { depth--; if (depth === 0) return i; }
+  }
+  return -1;
+}
+
+/** Index of the closing quote of the string starting at `from`. */
+function skipString(src, from) {
+  const q = src[from];
+  for (let i = from + 1; i < src.length; i++) {
+    if (src[i] === "\\") { i++; continue; }
+    if (src[i] === q) return i;
+    // A template literal can nest ${ ... } containing anything; step over it.
+    if (q === "`" && src[i] === "$" && src[i + 1] === "{") {
+      let d = 1;
+      i += 2;
+      for (; i < src.length && d > 0; i++) {
+        if (src[i] === "{") d++;
+        else if (src[i] === "}") d--;
+      }
+      i--;
+    }
+  }
+  return src.length;
+}
+
+/** Split a parameter list into names, tolerating defaults that contain commas. */
+function paramsOf(raw) {
+  const text = raw.replace(/\s+/g, " ").trim();
+  if (text === "") return { params: [], destructured: false };
+  if (text.startsWith("{")) return { params: [], destructured: true };
+
+  const params = [];
+  let depth = 0;
+  let cur = "";
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"' || c === "'" || c === "`") { const e = skipString(text, i); cur += text.slice(i, e + 1); i = e; continue; }
+    if ("([{".includes(c)) depth++;
+    else if (")]}".includes(c)) depth--;
+    if (c === "," && depth === 0) { params.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  params.push(cur);
+
+  return {
+    params: params.map((s) => s.trim().split("=")[0].trim()).filter(Boolean),
+    destructured: false,
+  };
 }
 
 function isClientReceiver(recv) {
@@ -4063,6 +4196,6 @@ function main(argv) {
   if (todoTotal) console.error(`\n${todoTotal} TODO(s) need manual follow-up (search for "TODO(abap2js)").`);
 }
 
-module.exports = { transpileClass, transpileFile, transpileInterface, parseInterfaceSigs, parseInterfaceTypes };
+module.exports = { transpileClass, transpileFile, transpileInterface, parseInterfaceSigs, parseInterfaceTypes, parseClassMethods };
 
 if (require.main === module) main(process.argv);

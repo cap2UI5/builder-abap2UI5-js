@@ -16,7 +16,17 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const crypto = require("crypto");
 const { transpileFile, parseInterfaceSigs, parseInterfaceTypes } = require("./abap2js");
+
+/** Content hash of the transpiler, so a generated tree can name its producer. */
+function transpilerHash() {
+  return crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(path.join(__dirname, "abap2js.js")))
+    .digest("hex")
+    .slice(0, 16);
+}
 
 // Upstream's src/99 is its FROZEN package — retired utility classes (99/01),
 // the obsolete built-in popups (99/02, superseded by the popups addon), the
@@ -135,7 +145,18 @@ for (const { file, relDir } of targets) {
 }
 report.sort((a, b) => a.path.localeCompare(b.path));
 fs.mkdirSync(outBase, { recursive: true });
-fs.writeFileSync(path.join(outBase, "transpile-report.json"), JSON.stringify(report, null, 2) + "\n");
+// Stamp WHICH transpiler produced this tree. The pipeline is mirror →
+// transpile → assemble → publish, and assemble reads the committed
+// run/output tree rather than re-transpiling — correct, but it means a
+// transpiler fix that is not followed by a transpile step ships nothing while
+// looking like it shipped. That happened in 2026-08: the CP/NP/IN lowering
+// fixes landed in abap2js.js, `build_core` was run, everything went green, and
+// the published samples kept the old buggy `includes()` form for two commits.
+// assemble-core compares this hash against the transpiler it can see.
+fs.writeFileSync(
+  path.join(outBase, "transpile-report.json"),
+  JSON.stringify({ transpiler: transpilerHash(), classes: report }, null, 2) + "\n",
+);
 
 const clean = report.filter((r) => r.todos === 0).length;
 const unparseable = report.filter((r) => r.parseError);
