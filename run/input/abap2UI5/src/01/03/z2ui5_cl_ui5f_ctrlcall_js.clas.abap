@@ -195,6 +195,8 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      setActivePage: ["controlId"], // sap.m.Carousel` && |\n| &&
              `      expandToLevel: ["int"], // sap.m.Tree / sap.ui.table.TreeTable: expand to N levels` && |\n| &&
              `      collapseAll: [], // sap.m.Tree / sap.ui.table.TreeTable: collapse every node` && |\n| &&
+             `      expandSelected: [], // NOT a UI5 method: expand the tree's selected nodes` && |\n| &&
+             `      collapseSelected: [], // NOT a UI5 method: collapse the tree's selected nodes` && |\n| &&
              `      setHiddenInPopin: ["object"], // sap.m.Table: hide columns by importance (JSON array of Priority keys)` && |\n| &&
              `      setSticky: ["object"], // sap.m.ListBase/sap.m.Table: JSON array of sap.m.Sticky keys` && |\n| &&
              `      setSelectedSection: ["controlIdOrNull"], // sap.uxap.ObjectPageLayout: an EMPTY argument clears the association` && |\n| &&
@@ -407,6 +409,24 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        get: () => BusyIndicator,` && |\n| &&
              `        methods: { show: ["int"], hide: [] },` && |\n| &&
              `      },` && |\n| &&
+             `      // A UI5 icon collection outside the default SAP-icons font - sap.tnt's` && |\n| &&
+             `      // SAP-icons-TNT is the common one - resolves only once something has` && |\n| &&
+             `      // called IconPool.registerFont({ fontFamily, fontURI }). In a normal UI5` && |\n| &&
+             `      // app that call sits in the Component's init. An abap2UI5 app has no` && |\n| &&
+             `      // Component of its own, and IconPool is a module-level SINGLETON rather` && |\n| &&
+             `      // than a control, so CONTROL_BY_ID cannot address it and no global target` && |\n| &&
+             `      // reached it: a sap-icon://SAP-icons-TNT/... URI rendered no glyph at` && |\n| &&
+             `      // all, silently (samples-controls app 350).` && |\n| &&
+             `      //` && |\n| &&
+             `      // Two positional arguments rather than the config object UI5 takes,` && |\n| &&
+             `      // because that is what a t_arg can carry; the hook assembles it.` && |\n| &&
+             `      ICON_POOL: {` && |\n| &&
+             `        get: () => sap.ui.require("sap/ui/core/IconPool"),` && |\n| &&
+             `        methods: { registerFont: ["string", "string"] },` && |\n| &&
+             `        display: (oController, method, aArgs) =>` && |\n| &&
+             `          registerIconFont(aArgs[0], aArgs[1]),` && |\n|.
+    result = result &&
+             `      },` && |\n| &&
              `      // sap/ui/core/Theming only exists since UI5 1.118, so it must NOT be a` && |\n| &&
              `      // hard dependency (it 404s on 1.71 and kills the whole component load).` && |\n| &&
              `      // Resolve it lazily: on modern UI5 the core has it loaded, on 1.71 the` && |\n| &&
@@ -424,8 +444,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      // "not available" guard below covers that.` && |\n| &&
              `      POPUP: {` && |\n| &&
              `        get: () => CorePopup,` && |\n| &&
-             `        methods: { setWithinArea: ["within"] },` && |\n|.
-    result = result &&
+             `        methods: { setWithinArea: ["within"] },` && |\n| &&
              `      },` && |\n| &&
              `      // sap/ui/core/InvisibleMessage is @since 1.78 and is a SINGLETON: it` && |\n| &&
              `      // renders nothing, so it has no id CONTROL_BY_ID could resolve - a` && |\n| &&
@@ -440,22 +459,29 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        },` && |\n| &&
              `        methods: { announce: ["string", "string"] },` && |\n| &&
              `      },` && |\n| &&
-             `      // sap/ui/core/Formatting (@since 1.120) carries the global formatting` && |\n| &&
+             `      // sap/base/i18n/Formatting (@since 1.120) carries the global formatting` && |\n| &&
              `      // configuration. Custom currencies are the case an app cannot express` && |\n| &&
              `      // otherwise: the digit count of a currency code is neither a control` && |\n| &&
              `      // property nor something a per-binding formatter can register for the` && |\n| &&
              `      // standard sap.ui.model.type.Currency. The payload is a JSON object -` && |\n| &&
              `      // data the backend owns anyway. Lazy-require like THEMING.` && |\n| &&
              `      // The two are NOT interchangeable and the difference is silent: set` && |\n| &&
-             `      // REPLACES the whole registration, add ADDS one code to it. An app` && |\n| &&
+             `      // REPLACES the whole registration, add MERGES codes into it. An app` && |\n| &&
              `      // that registers currencies as it loads more data and reaches for` && |\n| &&
              `      // ``set`` drops the ones it registered before - and the symptom is a` && |\n| &&
              `      // wrong digit count in a table, never an error.` && |\n| &&
+             `      // Both names are the module's own and were WRONG here until 2026-08-23:` && |\n| &&
+             `      // the target read ``sap/ui/core/Formatting``, which is not a module in any` && |\n| &&
+             `      // UI5 release (Core.js loads the base one), so the require returned` && |\n| &&
+             `      // undefined and every call logged "not available" and did nothing; and` && |\n| &&
+             `      // the second method was spelled ``addCustomCurrency``, which the module` && |\n| &&
+             `      // does not have either - it is addCustomCurrencies, taking the same map` && |\n| &&
+             `      // as set. Found through samples-controls app 196.` && |\n| &&
              `      FORMATTING: {` && |\n| &&
-             `        get: () => sap.ui.require("sap/ui/core/Formatting"),` && |\n| &&
+             `        get: () => sap.ui.require("sap/base/i18n/Formatting"),` && |\n| &&
              `        methods: {` && |\n| &&
              `          setCustomCurrencies: ["object"], // REPLACES: { CODE: { digits: n }, ... }` && |\n| &&
-             `          addCustomCurrency: ["string", "object"], // ADDS one: code, { digits: n }` && |\n| &&
+             `          addCustomCurrencies: ["object"], // MERGES: same shape, keeps the rest` && |\n| &&
              `        },` && |\n| &&
              `      },` && |\n| &&
              `    };` && |\n| &&
@@ -573,15 +599,48 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      return raw;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
+             `    // The one case where inference is provably wrong: a string-typed property.` && |\n| &&
+             `    // castArgAuto has to map ""/" " to false - that is how an ABAP boolean` && |\n| &&
+             `    // travels - which leaves the EMPTY STRING with no spelling at all, so every` && |\n| &&
+             `    // string setter on the unlisted path can be given any value except "".` && |\n| &&
+             `    // UI5 then hides the failure instead of reporting it: validateProperty does` && |\n| &&
+             `    // not reject a boolean for a string property, it casts implicitly` && |\n| &&
+             `    // (``oValue = "" + oValue``), so setText("") arrives as setText(false) and` && |\n| &&
+             `    // renders the four characters "false" - no error, no warning, and a` && |\n| &&
+             `    // screenshot that reads like a typo rather than a type bug.` && |\n| &&
+             `    //` && |\n| &&
+             `    // The control and the method are both known here, so UI5's own declaration` && |\n| &&
+             `    // can settle it instead of a guess: for a setXxx whose property is declared` && |\n| &&
+             `    // ``string``, pass the raw value through untouched. Everything else keeps the` && |\n| &&
+             `    // inference, so the "X"/space boolean contract is untouched.` && |\n| &&
+             `    function setsStringProperty(control, method) {` && |\n| &&
+             `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` && |\n| &&
+             `        return false;` && |\n| &&
+             `      const prop = control.getMetadata?.()?.getAllProperties?.()[` && |\n| &&
+             `        method.charAt(3).toLowerCase() + method.slice(4)` && |\n| &&
+             `      ];` && |\n| &&
+             `      return !!prop && prop.type === "string";` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
              `    // kinds whose EMPTY value is meaningful (null), so a missing trailing` && |\n| &&
              `    // argument still has to be passed: the backend wire drops a trailing empty` && |\n| &&
              `    // t_arg entry, and "clear this association" is exactly a call whose only` && |\n| &&
              `    // argument is empty.` && |\n| &&
              `    const NULLABLE_KINDS = ["controlIdOrNull"];` && |\n| &&
              `` && |\n| &&
-             `    function castArgs(kinds, rawArgs, view) {` && |\n| &&
+             `    // ``target`` (optional) is the { control, method } the call will land on -` && |\n| &&
+             `    // only the CONTROL_BY_ID path can supply it, and it is only consulted on` && |\n| &&
+             `    // the inferred branch.` && |\n| &&
+             `    function castArgs(kinds, rawArgs, view, target) {` && |\n| &&
              `      // kinds === null: unlisted-but-allowed method, infer each arg's type` && |\n| &&
-             `      if (kinds === null) return rawArgs.map((raw) => castArgAuto(raw));` && |\n| &&
+             `      if (kinds === null) {` && |\n| &&
+             `        // a setXxx takes its value first, and that is the only position a` && |\n| &&
+             `        // declared property type can speak for` && |\n| &&
+             `        const keepString = setsStringProperty(target?.control, target?.method);` && |\n| &&
+             `        return rawArgs.map((raw, i) =>` && |\n| &&
+             `          i === 0 && keepString ? raw : castArgAuto(raw),` && |\n| &&
+             `        );` && |\n| &&
+             `      }` && |\n| &&
              `      // only cast args the caller actually sent - padding missing trailing` && |\n| &&
              `      // args would turn open() into open(undefined) and ints into NaN. The one` && |\n| &&
              `      // exception is a nullable kind (see above): pad it so the call carries` && |\n| &&
@@ -592,6 +651,59 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      return kinds` && |\n| &&
              `        .slice(0, count)` && |\n| &&
              `        .map((kind, i) => castArg(kind, rawArgs[i], view));` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // Collections already registered in this session. UI5 tolerates a repeat` && |\n| &&
+             `    // registerFont but Log.warning's on it, and a port issuing this from its` && |\n| &&
+             `    // init branch would do so on every single round-trip.` && |\n| &&
+             `    const registeredIconFonts = new Set();` && |\n| &&
+             `` && |\n| &&
+             `    function registerIconFont(fontFamily, fontURI) {` && |\n| &&
+             `      const IconPool = sap.ui.require("sap/ui/core/IconPool");` && |\n| &&
+             `      if (!IconPool) {` && |\n| &&
+             `        Lib.logError("ICON_POOL: sap/ui/core/IconPool is not loaded");` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      if (!fontFamily || !fontURI) {` && |\n| &&
+             `        Lib.logError(` && |\n| &&
+             `          "ICON_POOL: registerFont needs a fontFamily AND a fontURI",` && |\n| &&
+             `        );` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
+             `      if (registeredIconFonts.has(fontFamily)) return;` && |\n| &&
+             `      /* fontURI is a MODULE PATH in every real use ('sap/tnt/themes/base/fonts/'),` && |\n| &&
+             `       * and resolving it through sap.ui.require.toUrl is what makes the` && |\n| &&
+             `       * registration survive a different mount point - it is also what the UI5` && |\n| &&
+             `       * samples pass. Anything that already looks like a URL is left alone. */` && |\n| &&
+             `      const uri = /^(?:[a-z]+:)?\/\//i.test(fontURI)` && |\n| &&
+             `        ? fontURI` && |\n| &&
+             `        : sap.ui.require.toUrl(fontURI);` && |\n| &&
+             `      IconPool.registerFont({ fontFamily, fontURI: uri });` && |\n| &&
+             `      registeredIconFonts.add(fontFamily);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    // The selected rows of a tree, as the row INDICES its expand()/collapse()` && |\n| &&
+             `    // take. Two shapes, because the two tree controls disagree:` && |\n| &&
+             `    //   sap.ui.table.TreeTable - getSelectedIndices() gives them directly` && |\n| &&
+             `    //   sap.m.Tree             - getSelectedItems() + indexOfItem() per item` && |\n| &&
+             `    // Returns null when the control is neither, so the caller can say so` && |\n| &&
+             `    // rather than silently doing nothing. An index of -1 (an item the tree no` && |\n| &&
+             `    // longer holds) is dropped: expand(-1) is not a smaller mistake than` && |\n| &&
+             `    // expand(undefined).` && |\n| &&
+             `    function selectedIndicesOf(control) {` && |\n| &&
+             `      if (typeof control.getSelectedIndices === "function") {` && |\n| &&
+             `        return control.getSelectedIndices();` && |\n| &&
+             `      }` && |\n| &&
+             `      if (` && |\n| &&
+             `        typeof control.getSelectedItems === "function" &&` && |\n| &&
+             `        typeof control.indexOfItem === "function"` && |\n| &&
+             `      ) {` && |\n| &&
+             `        return control` && |\n| &&
+             `          .getSelectedItems()` && |\n| &&
+             `          .map((item) => control.indexOfItem(item))` && |\n| &&
+             `          .filter((i) => i >= 0);` && |\n| &&
+             `      }` && |\n| &&
+             `      return null;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    // Run fn once the openBy/toggleBy anchor is in the DOM. A control anchor` && |\n| &&
@@ -665,6 +777,40 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        el.style.setProperty(prop, String(args[5] ?? ""));` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&
+             `      // expandSelected / collapseSelected are not UI5 methods either. Both` && |\n| &&
+             `      // trees take INDICES (``expand(int|int[])``, ``collapse(int|int[])``), and` && |\n| &&
+             `      // only sap.ui.table.TreeTable can hand them over: it has` && |\n| &&
+             `      // getSelectedIndices(). sap.m.Tree offers getSelectedItems() plus` && |\n| &&
+             `      // indexOfItem(), so the mapping is a LOOP - and a loop written into an` && |\n| &&
+             `      // event argument needs a JS callback, which UI5's ExpressionParser has` && |\n| &&
+             `      // no grammar for (no ``function`` keyword, ``{`` is the object-literal nud),` && |\n| &&
+             `      // so ``.getSelectedItems().map(function (o) { ... })`` does not fail on that` && |\n| &&
+             `      // argument, it takes the WHOLE handler down and every argument with it.` && |\n| &&
+             `      // The loop therefore lives here, which is the same reason ``css`` does:` && |\n| &&
+             `      // the app has no spelling for it at all. It stays a thin executor - no` && |\n| &&
+             `      // decision is made, the selection is read and handed straight back to` && |\n| &&
+             `      // the control's own method.` && |\n| &&
+             `      if (method === "expandSelected" || method === "collapseSelected") {` && |\n| &&
+             `        const op = method === "expandSelected" ? "expand" : "collapse";` && |\n| &&
+             `        if (!control || typeof control[op] !== "function") {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``CONTROL_BY_ID: '${method}' not callable on control '${id}'``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        const indices = selectedIndicesOf(control);` && |\n| &&
+             `        if (indices === null) {` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``CONTROL_BY_ID: '${method}' - control '${id}' exposes no selection``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        // an empty selection is not an error: nothing selected, nothing to` && |\n| &&
+             `        // expand. Calling expand([]) would be a no-op anyway, but skipping it` && |\n| &&
+             `        // keeps a stray re-render off a tree the user did not touch.` && |\n| &&
+             `        if (indices.length) control[op](indices);` && |\n| &&
+             `        return;` && |\n| &&
+             `      }` && |\n| &&
              `      // setAsyncURLHandler takes a FUNCTION, so the argument names a policy` && |\n| &&
              `      // (see URL_POLICIES) and the client installs the matching built-in` && |\n| &&
              `      // validator - the wire still carries data, never code.` && |\n| &&
@@ -679,7 +825,8 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        }` && |\n| &&
              `        if (!control || typeof control.setAsyncURLHandler !== "function") {` && |\n| &&
              `          Lib.logError(` && |\n| &&
-             `            ``CONTROL_BY_ID: 'setAsyncURLHandler' not callable on control '${id}'``,` && |\n| &&
+             `            ``CONTROL_BY_ID: 'setAsyncURLHandler' not callable on control '${id}'``,` && |\n|.
+    result = result &&
              `          );` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&
@@ -722,7 +869,9 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        );` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&
-             `      control[method](...castArgs(kinds, args.slice(4), view));` && |\n| &&
+             `      control[method](` && |\n| &&
+             `        ...castArgs(kinds, args.slice(4), view, { control, method }),` && |\n| &&
+             `      );` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    // args: [_, object, method, ...params]. ``ctx`` is the action context the` && |\n| &&
@@ -825,8 +974,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      "NotEndsWith",` && |\n| &&
              `      "NotStartsWith",` && |\n| &&
              `      "StartsWith",` && |\n| &&
-             `    ]);` && |\n|.
-    result = result &&
+             `    ]);` && |\n| &&
              `` && |\n| &&
              `    const isEmpty = (v) => v == null || v === "";` && |\n| &&
              `` && |\n| &&
