@@ -57,7 +57,7 @@
   }
  ],
  "counts": {
-  "samples": 97,
+  "samples": 98,
   "categories": 23,
   "stages": 6
  },
@@ -196,6 +196,33 @@
    ]
   },
   {
+   "class": "z2ui5_cl_smp_app_497",
+   "file": "src/01/z2ui5_cl_smp_app_497.clas.abap",
+   "category": "Binding",
+   "stage": "data",
+   "title": "Binding",
+   "description": "A View Built From RTTI, No Field Named",
+   "summary": "The view names no field: RTTI reads the components of the internal table and derives every column and every cell binding from them, so changing the structure changes the screen with no view code touched.",
+   "keywords": [
+    "rtti",
+    "generic",
+    "view",
+    "runtime",
+    "columns",
+    "get_components",
+    "describe_by_data",
+    "no",
+    "field",
+    "name",
+    "itab",
+    "structure",
+    "column",
+    "cell",
+    "binding"
+   ],
+   "docs": []
+  },
+  {
    "class": "z2ui5_cl_smp_app_067",
    "file": "src/01/z2ui5_cl_smp_app_067.clas.abap",
    "category": "Binding",
@@ -222,7 +249,7 @@
    "stage": "data",
    "title": "Binding",
    "description": "Dynamic Table Typed at Runtime (RTTI)",
-   "summary": "Builds a table whose columns are only known at runtime: RTTI over a DDIC name, CREATE DATA, and the generic reference bound into the view.",
+   "summary": "The row type is created at runtime from a DDIC name with CREATE DATA, and the generic data reference is bound straight into the view - editable, multi-selectable, and it survives the roundtrip back to ABAP.",
    "keywords": [
     "generic",
     "data",
