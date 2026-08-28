@@ -165,6 +165,12 @@
       "todoDetails": []
     },
     {
+      "class": "z2ui5_cl_ui5f_inputext_js",
+      "path": "01/03/z2ui5_cl_ui5f_inputext_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
       "class": "z2ui5_cl_ui5f_inspect_js",
       "path": "01/03/z2ui5_cl_ui5f_inspect_js.js",
       "todos": 0,
