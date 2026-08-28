@@ -173,8 +173,35 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `    // declared kinds are dropped; trailing args the caller did not send are` && |\n| &&
              `    // not passed at all (so ``open()`` stays a true no-arg call).` && |\n| &&
              `    const CONTROL_METHODS = {` && |\n| &&
-             `      to: ["controlId", "string"], // target page + optional transitionName` && |\n| &&
+             `      // ``pageId``, NOT ``controlId``: the three containers that own a ``to( )``` && |\n| &&
+             `      // disagree about what the first argument may be. sap.m.NavContainer` && |\n| &&
+             `      // normalises a Control to its id on its own first line, but` && |\n| &&
+             `      // sap.f.FlexibleColumnLayout.to and sap.m.SplitContainer.to PROBE the` && |\n| &&
+             `      // columns with ``getPage( sPageId )``, which compares ``aPages[i].getId()` && |\n| &&
+             `      // == pageId`` - a Control never equals an id string, so every probe` && |\n| &&
+             `      // misses and the trailing ``else`` navigates the LAST column instead of` && |\n| &&
+             `      // the one that owns the page. Measured on samples-controls app 578,` && |\n| &&
+             `      // whose begin column never moved. Handing over the RESOLVED control's` && |\n| &&
+             `      // id serves all three: NavContainer would compute exactly that id` && |\n| &&
+             `      // itself, and the two probing containers finally match.` && |\n| &&
+             `      to: ["pageId", "string"], // target page + optional transitionName` && |\n| &&
              `      back: [],` && |\n| &&
+             `      // Same ``pageId`` kind as ``to``, and MEASURED the same way (2026-08-27,` && |\n| &&
+             `      // samples-controls app 101 on the live Node backend). Unlike ``to``,` && |\n| &&
+             `      // sap.m.NavContainer.backToPage does NOT rescue a raw id:` && |\n| &&
+             `      // ``_backTo`` normalises only a Control (``if (sRequestedPageId instanceof` && |\n| &&
+             `      // Control) sRequestedPageId = sRequestedPageId.getId()``), then hands the` && |\n| &&
+             `      // value to ``_findClosestPreviousPageInfo``, which walks ``_pageStack`` and` && |\n| &&
+             `      // compares ``info.id === sRequestedPreviousPageId`` - strict, no prefixing.` && |\n| &&
+             `      // Every ``_pageStack`` entry was pushed as ``page.getId()``, so it carries` && |\n| &&
+             `      // the view prefix the backend never sees. The unlisted-method path used` && |\n| &&
+             `      // to hand over the raw ABAP literal, which therefore matched nothing:` && |\n| &&
+             `      // UI5 logged "Cannot navigate backToPage('wizardContentPage') because` && |\n| &&
+             `      // target page was not found among the previous pages." and ``_backTo``` && |\n| &&
+             `      // returned without navigating - a SILENT miss, the review page stayed up` && |\n| &&
+             `      // and app 101's four "Edit" links and its Cancel/Submit legs did nothing.` && |\n| &&
+             `      // Resolving to ``mainView--wizardContentPage`` navigates.` && |\n| &&
+             `      backToPage: ["pageId"],` && |\n| &&
              `      toDetail: ["controlId"], // sap.m.SplitApp/SplitContainer: show a detail page` && |\n| &&
              `      toMaster: ["controlId"], // sap.m.SplitApp/SplitContainer: show a master page` && |\n| &&
              `      backDetail: [], // sap.m.SplitApp/SplitContainer: back in the detail stack` && |\n| &&
@@ -202,6 +229,16 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      setSelectedSection: ["controlIdOrNull"], // sap.uxap.ObjectPageLayout: an EMPTY argument clears the association` && |\n| &&
              `      setSelectedItem: ["controlIdOrNull"], // sap.m.List/sap.m.Select/...: an EMPTY argument clears the selection` && |\n| &&
              `      setP13nData: ["object"], // sap.m.p13n.*Panel: JSON array of the panel's items` && |\n| &&
+             `` && |\n| &&
+             `      // sap.m.Button badge bounds. The ``int`` kind is load-bearing, not` && |\n| &&
+             `      // decoration: both setters compare the incoming value against the` && |\n| &&
+             `      // STORED bound (``iMax >= this._badgeMinValue``), so an undeclared` && |\n| &&
+             `      // numeric string makes the second comparison a STRING comparison -` && |\n| &&
+             `      // "50" >= "9" is false - and the setter drops the value into an ``else``` && |\n| &&
+             `      // whose only effect is a Log.warning. min 9 / max 50 is the smallest` && |\n| &&
+             `      // pair that breaks (samples-controls app 249 drives both).` && |\n| &&
+             `      setBadgeMinValue: ["int"], // below this value the badge stays hidden` && |\n| &&
+             `      setBadgeMaxValue: ["int"], // above this value the badge reads "999+"` && |\n| &&
              `` && |\n| &&
              `      css: ["string", "string"], // NOT a UI5 method: set one CSS property on the control's own DOM node` && |\n| &&
              `      enablePostButton: ["bool"], // sap.m.FeedInput: toggle the Post button independent of ``enabled``` && |\n| &&
@@ -387,7 +424,8 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `          // knowledge, so the action only says that the model changed` && |\n| &&
              `          updateModel: [],` && |\n| &&
              `        },` && |\n| &&
-             `        display: (oController, method, aArgs, mOptions, ctx) =>` && |\n| &&
+             `        display: (oController, method, aArgs, mOptions, ctx) =>` && |\n|.
+    result = result &&
              `          Slots.action(method, aArgs[0], aArgs[1], mOptions, ctx?.seq),` && |\n| &&
              `      },` && |\n| &&
              `      // The browser history / URL. Router computes ONE outcome from the whole` && |\n| &&
@@ -424,8 +462,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        get: () => sap.ui.require("sap/ui/core/IconPool"),` && |\n| &&
              `        methods: { registerFont: ["string", "string"] },` && |\n| &&
              `        display: (oController, method, aArgs) =>` && |\n| &&
-             `          registerIconFont(aArgs[0], aArgs[1]),` && |\n|.
-    result = result &&
+             `          registerIconFont(aArgs[0], aArgs[1]),` && |\n| &&
              `      },` && |\n| &&
              `      // sap/ui/core/Theming only exists since UI5 1.118, so it must NOT be a` && |\n| &&
              `      // hard dependency (it 404s on 1.71 and kills the whole component load).` && |\n| &&
@@ -545,6 +582,26 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `          return raw === "true" || raw === "X" || raw === true;` && |\n| &&
              `        case "controlId":` && |\n| &&
              `          return resolveControl(raw, view);` && |\n| &&
+             `        case "pageId": {` && |\n| &&
+             `          // Like ``controlId``, but hands the container the resolved control's` && |\n| &&
+             `          // ID rather than the control. Only for methods whose UI5 signature` && |\n| &&
+             `          // is a page ID and which do NOT normalise a Control themselves -` && |\n| &&
+             `          // see the ``to`` entry in CONTROL_METHODS for the measurement. The` && |\n| &&
+             `          // resolution step is what makes this safe: the rendered id carries` && |\n| &&
+             `          // the view prefix the backend never sees, so passing the raw ABAP` && |\n| &&
+             `          // literal instead would break every existing navigation.` && |\n| &&
+             `          const page = resolveControl(raw, view);` && |\n| &&
+             `          if (page && typeof page.getId === "function") return page.getId();` && |\n| &&
+             `          // No control under that id. Today the container absorbs this` && |\n| &&
+             `          // silently (it just navigates its last column and logs a UI5` && |\n| &&
+             `          // warning nobody reads), so name it here; the raw value is still` && |\n| &&
+             `          // handed over, which is the best effort an already-qualified id` && |\n| &&
+             `          // needs and is never worse than the ``undefined`` this used to pass.` && |\n| &&
+             `          Lib.logError(` && |\n| &&
+             `            ``CONTROL_CALL: no control '${raw}' for the page argument``,` && |\n| &&
+             `          );` && |\n| &&
+             `          return raw;` && |\n| &&
+             `        }` && |\n| &&
              `        case "controlIdOrNull":` && |\n| &&
              `          // an ASSOCIATION cannot be data-bound, so clearing one` && |\n| &&
              `          // (setSelectedSection(null), setSelectedItem(null)) can only travel` && |\n| &&
@@ -768,7 +825,8 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `            ``CONTROL_BY_ID: css property '${args[4]}' not allowed (allowed: ${CSS_PROPERTIES.join(", ")})``,` && |\n| &&
              `          );` && |\n| &&
              `          return;` && |\n| &&
-             `        }` && |\n| &&
+             `        }` && |\n|.
+    result = result &&
              `        const el = control?.getDomRef?.();` && |\n| &&
              `        if (!el) {` && |\n| &&
              `          Lib.logError(``CONTROL_BY_ID: 'css' - control '${id}' has no DOM ref``);` && |\n| &&
@@ -825,8 +883,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        }` && |\n| &&
              `        if (!control || typeof control.setAsyncURLHandler !== "function") {` && |\n| &&
              `          Lib.logError(` && |\n| &&
-             `            ``CONTROL_BY_ID: 'setAsyncURLHandler' not callable on control '${id}'``,` && |\n|.
-    result = result &&
+             `            ``CONTROL_BY_ID: 'setAsyncURLHandler' not callable on control '${id}'``,` && |\n| &&
              `          );` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&

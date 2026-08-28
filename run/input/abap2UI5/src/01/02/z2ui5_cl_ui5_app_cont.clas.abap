@@ -36,6 +36,21 @@ CLASS z2ui5_cl_ui5_app_cont DEFINITION PUBLIC FINAL.
     DATA mv_check_sticky      TYPE abap_bool.
     DATA mv_check_initialized TYPE abap_bool.
 
+    " The model exactly as the client is left holding it after this app's
+    " last response - the full JSON string (`{}` for an empty model), or
+    " INITIAL when unknown: a fresh app, a draft written before this
+    " attribute existed, or an incoming model delta that invalidated it
+    " (z2ui5_cl_ui5_action=>factory_by_frontend). It lives on the app - and
+    " therefore in its draft - so the next roundtrip reuses it as the
+    " pre-main( ) snapshot instead of serializing the whole model a second
+    " time (z2ui5_cl_ui5_handler=>main_process / main_end). Staleness leans
+    " one way only: a value that no longer matches re-serialization causes
+    " at most one redundant model push - it can never suppress a push the
+    " client needs, because it is only ever written to what the client was
+    " actually left holding, and cleared the moment incoming deltas touch
+    " the state it describes.
+    DATA mv_model_client TYPE string.
+
     "! Refresh z2ui5_if_app~id_draft on the wrapped app. Not a courtesy: it is
     "! the handle db_load_by_app( ) resolves an app reference by, so it has to
     "! follow ms_draft-id whenever that changes.
@@ -45,9 +60,17 @@ CLASS z2ui5_cl_ui5_app_cont DEFINITION PUBLIC FINAL.
       RETURNING
         VALUE(result) TYPE string.
 
+    "! Apply the incoming client model to the app's bound attributes and
+    "! return what the delta could NOT apply (see
+    "! z2ui5_if_client=>ty_s_model_skip). The list is RETURNED rather than
+    "! stored on this object on purpose: this object is serialized into the
+    "! draft, and a trace that outlived its roundtrip would be handed to the
+    "! app again after the next restore.
     METHODS model_json_parse
       IMPORTING
-        io_model TYPE REF TO z2ui5_if_ajson.
+        io_model      TYPE REF TO z2ui5_if_ajson
+      RETURNING
+        VALUE(result) TYPE z2ui5_if_client=>ty_t_model_skip.
 
     METHODS all_xml_stringify
       RETURNING
@@ -225,7 +248,9 @@ CLASS z2ui5_cl_ui5_app_cont IMPLEMENTATION.
 
   METHOD model_json_parse.
 
-    create_model( )->main_json_to_attri( io_model ).
+    DATA(lo_model) = create_model( ).
+    lo_model->main_json_to_attri( io_model ).
+    result = lo_model->mt_skipped.
 
   ENDMETHOD.
 
