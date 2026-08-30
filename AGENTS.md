@@ -197,6 +197,43 @@ The `docs/removal-plan.md` half of the check needs an upstream checkout
 (`UPSTREAM_CHECKOUT=/path`, or a sibling `../abap2UI5`); the mirror carries only
 `src` and `app/webapp`, so it skips that half when there is none.
 
+## The UI5 runtime pin (`openui5-dist`) — recorded policy
+
+Referenced from both dependabot configs downstream; this is the policy they
+point at.
+
+`openui5-dist@1.113.0` is declared in `src/package.json` as an **optional peer
+dependency** of the core, and therefore of `core/package.json`. It is not a
+`dependencies` entry, and that is deliberate:
+
+- Nothing in the framework loads it. The only consumer is the `/resources`
+  static mount, which reads files out of it. `engine.ui5_resources_dir()`
+  returns `null` when it is absent and every mount point already guards on
+  that — srv/cap/activate.js warns once and the shell bootstraps UI5 from
+  `https://sdk.openui5.org` instead.
+- It is 611 MB, and being a *distribution* package its own dependencies are
+  its release tooling (`npm@6`, `request`, `jsdom`, `simple-git`), which
+  carried 43 advisories — 3 critical — into any tree that installed it. A
+  deployment serving UI5 from a CDN or a platform destination, which is the
+  normal shape on BTP, was paying all of that for nothing.
+- Declaring it as a hard dependency also over-promised. npm does not install
+  the dependencies of a `file:`-linked local package, so the four adapters
+  here never actually received it — their `/resources` serving has been on
+  the CDN fallback all along. The only consumer that installed it was
+  cap2UI5, and only because builder-cap2UI5's assemble step deliberately
+  merges the core's lock into the app lock. The optional-peer declaration
+  says what was already true.
+
+Consumers who want the local runtime install it themselves (cap2UI5 carries
+it as an app devDependency, which keeps `cds watch` serving `/resources`
+exactly as before).
+
+The **version is a pin, not a range**. 1.113.0 sits between upstream
+abap2UI5's 1.71 floor and the 1.136+ v2 track, so moving it is a
+compatibility decision with a testing story attached, not a routine bump —
+dependabot is configured to leave it alone in both repos. Change it
+deliberately, and say what you tested it against.
+
 ## npm publishing — decided, not executed
 
 The package cannot be published as it stands: `"private": true`, and more
