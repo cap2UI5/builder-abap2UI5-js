@@ -203,6 +203,34 @@ const globalClassSigs = new Map(); // class → Map(method → first importing p
   }
 })(INPUT);
 
+// Global framework class FIELDS — the declared attribute types of the
+// classes the testclasses reach through a reference (`mo_action->ms_actual`).
+// Only method signatures were collected, so a member path had no declared
+// type behind it: `CLEAR mo_action->ms_actual` fell back to the BASE
+// variable's default, which for a REF is `null`, and the next
+// `ms_actual-event = …` died with "Cannot read properties of null". Six
+// upstream tests failed in their setup for that reason alone.
+//
+// Hand-ported classes are NOT skipped here (unlike globalClassSigs, where the
+// skip is about calling convention): the ABAP attribute declaration is the
+// type the test is written against either way, and the hand-port is meant to
+// match it. ~2s over the whole tree, once.
+const globalFields = new Map(); // class → Map(field → {refType, typeTokens, …})
+(function walkClsFields(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== "99") walkClsFields(p);
+    } else if (entry.name.endsWith(".clas.abap") && !entry.name.includes(".testclasses.") && !entry.name.includes(".locals_")) {
+      const clsName = entry.name.replace(/\.clas\.abap$/i, "").toLowerCase();
+      try {
+        const { fields } = transpileClass(fs.readFileSync(p, "utf8"), entry.name, { externTypes });
+        if (fields && fields.size) globalFields.set(clsName, fields);
+      } catch { /* a class we cannot parse simply has no field types */ }
+    }
+  }
+})(INPUT);
+
 const report = [];
 for (const file of walk(INPUT).sort()) {
   const mainClass = path.basename(file).replace(".clas.testclasses.abap", "");
@@ -240,8 +268,21 @@ for (const file of walk(INPUT).sort()) {
   // onto sibling locals (lo_nodes->add('…')) can be wrapped into the
   // destructured-options convention during the real transpile
   const siblingSigs = new Map(globalClassSigs); // class name → Map(method → first importing param)
-  const siblingFields = new Map(); // class name → Map(field → {refType, typeTokens, …})
+  // seeded with the global framework classes, so a member path through a
+  // reference to one of them resolves; a local class of the same name wins
+  const siblingFields = new Map(globalFields); // class name → Map(field → {refType, typeTokens, …})
   const siblingTypes = { structTypes: new Map(), tableTypes: new Map() }; // merged TYPES of all classes
+  // Types a LOCAL class of this include declares, under the qualified key the
+  // testclass writes them with: `DATA ls TYPE ltcl_app_price_editor=>ty_s_product`.
+  // Only interface- and global-class-qualified types were registered above, so
+  // such a DATA resolved to nothing and fell back to `null` — and then every
+  // `CLEAR ls_product` emitted `ls_product = null` instead of an initial
+  // structure, so the next `ls_product-name = …` died with "Cannot set
+  // properties of null". Six upstream tests in ltcl_test_model_skipped failed
+  // that way, in their setup, with no hint that the cause was a type lookup.
+  // Per-include, not merged into the global map: two includes may each have an
+  // `ltcl_*` of the same name with different components.
+  const localExternTypes = new Map(externTypes);
   const intfSigs = new Map(globalIntfSigs);
   for (const [name, src] of interfaces) {
     try {
@@ -254,8 +295,16 @@ for (const file of walk(INPUT).sort()) {
       const { methodSigs, fields, structTypes, tableTypes } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { intfSigs, externTypes });
       siblingSigs.set(name, methodSigs);
       if (fields) siblingFields.set(name, fields);
-      for (const [ty, members] of structTypes || []) siblingTypes.structTypes.set(ty, members);
-      for (const [ty, row] of tableTypes || []) siblingTypes.tableTypes.set(ty, row);
+      const qual = name.toLowerCase();
+      for (const [ty, members] of structTypes || []) {
+        siblingTypes.structTypes.set(ty, members);
+        localExternTypes.set(`${qual}=>${ty}`, members);
+      }
+      for (const [ty, row] of tableTypes || []) {
+        siblingTypes.tableTypes.set(ty, row);
+        // same ":table" marker shape parseInterfaceTypes uses
+        localExternTypes.set(`${qual}=>${ty}:table`, row);
+      }
     } catch {
       /* pass 2 reports it */
     }
@@ -299,7 +348,7 @@ for (const file of walk(INPUT).sort()) {
         skipped.push({ name, reason: "no definition (impl-only relic)" });
         continue;
       }
-      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs, siblingFields, siblingTypes, intfSigs, externTypes });
+      const { code } = transpileClass(`${def}\n\n${impl}`, `${name}.clas.abap`, { siblingSigs, siblingFields, siblingTypes, intfSigs, externTypes: localExternTypes });
       const lines = code.split("\n").filter((l) => !/^module\.exports =/.test(l));
       for (const l of lines) {
         const req = l.match(/^const (\w+) = require\("(.*)"\);$/);

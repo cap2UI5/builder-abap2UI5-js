@@ -109,7 +109,7 @@ class ltcl_test {
     let lv_own = 0;
     let lv_total = 0;
     let lv_total_exp = 0;
-    z2ui5_port.db({ op: `delete`, table: `z2ui5_t_01`, where: [{ field: `id`, op: `eq`, value: `TEST_COUNT_FOREIGN` }] });
+    z2ui5_port.db({ op: `delete`, table: `z2ui5_t_01`, where: [{ field: `id`, op: `eq`, value: (`TEST_COUNT_FOREIGN`) }] });
     sy_subrc = z2ui5_port.sy_subrc;
     z2ui5_port.db({ op: `commit` });
     lo_draft = new z2ui5_cl_ui5_srv_draft();

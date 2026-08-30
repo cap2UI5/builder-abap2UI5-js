@@ -715,6 +715,11 @@ class z2ui5_cl_ui5_client {
         CHECK_LEAVE: this._navStack.length > 0,
       },
       R_EVENT_DATA: sFront.R_EVENT_DATA || null,
+      // Cells this roundtrip's delta refused — {name, row, field} each, filled
+      // by z2ui5_cl_ui5_srv_model.delta_apply_field. Reading it pushes no
+      // model, so the browser goes on showing the refused text until the app
+      // writes something; that is the point, the app decides what to say.
+      T_MODEL_SKIPPED: this.mo_action?.ms_actual?.t_model_skipped || [],
     };
   }
 

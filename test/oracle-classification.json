@@ -5,7 +5,7 @@
   "totals": {
     "BUG": 111,
     "KERNEL": 0,
-    "NOTRUN": 0
+    "NOTRUN": 13
   },
   "entries": [
     {
@@ -134,22 +134,22 @@
       "verdict": "BUG"
     },
     {
-      "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_nest_view_destroy",
-      "category": "port-deviation",
-      "verdict": "BUG"
-    },
-    {
-      "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_nest_view_display",
-      "category": "port-deviation",
-      "verdict": "BUG"
-    },
-    {
       "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_nest2_view_destroy",
       "category": "port-deviation",
       "verdict": "BUG"
     },
     {
       "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_nest2_view_display",
+      "category": "port-deviation",
+      "verdict": "BUG"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_nest_view_destroy",
+      "category": "port-deviation",
+      "verdict": "BUG"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_client::test_nest_view_display",
       "category": "port-deviation",
       "verdict": "BUG"
     },
@@ -562,6 +562,71 @@
       "name": "z2ui5_cx_ui5_util_error::ltcl_unit_test::test_text_full_chain",
       "category": "port-deviation",
       "verdict": "BUG"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_model_skipped::test_accepted_price_silent",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_model_skipped::test_refused_price_reported",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_model_skipped::test_save_no_longer_lies",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_model_skipped::test_trace_is_per_roundtrip",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_model_skipped::test_nested_row_unresolved",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client::ltcl_test_model_skipped::test_bind_path_is_not_name",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_model_client_stored",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_model_client_unchanged",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_snapshot_reuses_client",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_delta_drops_client",
+      "category": "port-gap",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_srv_model::ltcl_test_delta_apply::test_skip_cell_refused",
+      "category": "js-limit",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_srv_model::ltcl_test_delta_apply::test_skip_one_of_two",
+      "category": "js-limit",
+      "verdict": "NOTRUN"
+    },
+    {
+      "name": "z2ui5_cl_ui5_user_exit::ltcl_test_user_exit::test_superseded_intf",
+      "category": "port-deviation",
+      "verdict": "NOTRUN"
     }
   ]
 }

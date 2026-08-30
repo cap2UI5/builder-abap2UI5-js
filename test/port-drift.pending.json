@@ -1,0 +1,125 @@
+{
+  "_comment": "Unreconciled hand-port drift, written by scripts/check-port-drift.js --record. Each entry is an upstream ABAP object that changed after the hand-port in src/srv/z2ui5 was last reconciled against it. Review the upstream diff, update the hand-port where the change matters, then run --update to accept the new state. This file disappearing is the signal that everything is reconciled.",
+  "upstream_commit": "0f913d8fa144b8ca79bac059b2ab08265e4a3540",
+  "drifted": [
+    {
+      "name": "z2ui5_cl_ui5_srv_draft",
+      "abap": "run/input/abap2UI5/src/01/01/z2ui5_cl_ui5_srv_draft.clas.abap",
+      "js": "src/srv/z2ui5/01/01/z2ui5_cl_ui5_srv_draft.js",
+      "was": "a06b87e30eead756",
+      "now": "46ea3cd3bc993bec"
+    },
+    {
+      "name": "z2ui5_cl_ui5_action",
+      "abap": "run/input/abap2UI5/src/01/02/z2ui5_cl_ui5_action.clas.abap",
+      "js": "src/srv/z2ui5/01/02/z2ui5_cl_ui5_action.js",
+      "was": "b4ab2a0bfe780728",
+      "now": "a741953ed6229c45"
+    },
+    {
+      "name": "z2ui5_cl_ui5_app_cont",
+      "abap": "run/input/abap2UI5/src/01/02/z2ui5_cl_ui5_app_cont.clas.abap",
+      "js": "src/srv/z2ui5/01/02/z2ui5_cl_ui5_app_cont.js",
+      "was": "b071f694d49fa58f",
+      "now": "97507151ff870d76"
+    },
+    {
+      "name": "z2ui5_cl_ui5_client",
+      "abap": "run/input/abap2UI5/src/01/02/z2ui5_cl_ui5_client.clas.abap",
+      "js": "src/srv/z2ui5/01/02/z2ui5_cl_ui5_client.js",
+      "was": "976e10a61a5cf65d",
+      "now": "bbe030b9a9b69903"
+    },
+    {
+      "name": "z2ui5_cl_ui5_handler",
+      "abap": "run/input/abap2UI5/src/01/02/z2ui5_cl_ui5_handler.clas.abap",
+      "js": "src/srv/z2ui5/01/02/z2ui5_cl_ui5_handler.js",
+      "was": "5b3c933542f5bce5",
+      "now": "0a86a7f44010fc09"
+    },
+    {
+      "name": "z2ui5_cl_ui5_srv_event",
+      "abap": "run/input/abap2UI5/src/01/02/z2ui5_cl_ui5_srv_event.clas.abap",
+      "js": "src/srv/z2ui5/01/02/z2ui5_cl_ui5_srv_event.js",
+      "was": "7f561b67bfa81b9a",
+      "now": "97e629d6cc349489"
+    },
+    {
+      "name": "z2ui5_cl_ui5_srv_model",
+      "abap": "run/input/abap2UI5/src/01/02/z2ui5_cl_ui5_srv_model.clas.abap",
+      "js": "src/srv/z2ui5/01/02/z2ui5_cl_ui5_srv_model.js",
+      "was": "62f05f7299a9b6f1",
+      "now": "6ecab5e2344abe25"
+    },
+    {
+      "name": "z2ui5_if_ui5_types",
+      "abap": "run/input/abap2UI5/src/01/02/z2ui5_if_ui5_types.intf.abap",
+      "js": "src/srv/z2ui5/01/02/z2ui5_if_ui5_types.js",
+      "was": "6b6c3dbc7b1adc3f",
+      "now": "b0bb554fb207e03b"
+    },
+    {
+      "name": "z2ui5_cl_ui5f_appstate_js",
+      "abap": "run/input/abap2UI5/src/01/03/z2ui5_cl_ui5f_appstate_js.clas.abap",
+      "js": "src/srv/z2ui5/01/03/z2ui5_cl_ui5f_appstate_js.js",
+      "was": "36911b256ea572cf",
+      "now": "398d4f5501512e23"
+    },
+    {
+      "name": "z2ui5_cl_ui5f_comp_js",
+      "abap": "run/input/abap2UI5/src/01/03/z2ui5_cl_ui5f_comp_js.clas.abap",
+      "js": "src/srv/z2ui5/01/03/z2ui5_cl_ui5f_comp_js.js",
+      "was": "c2e2e8e0f6d79989",
+      "now": "c3cad1facfd333a7"
+    },
+    {
+      "name": "z2ui5_cl_ui5f_lib_js",
+      "abap": "run/input/abap2UI5/src/01/03/z2ui5_cl_ui5f_lib_js.clas.abap",
+      "js": "src/srv/z2ui5/01/03/z2ui5_cl_ui5f_lib_js.js",
+      "was": "4b0d8999c938cbab",
+      "now": "c21073bb03f77ac1"
+    },
+    {
+      "name": "z2ui5_cl_ui5f_multiinp_js",
+      "abap": "run/input/abap2UI5/src/01/03/z2ui5_cl_ui5f_multiinp_js.clas.abap",
+      "js": "src/srv/z2ui5/01/03/z2ui5_cl_ui5f_multiinp_js.js",
+      "was": "f8048501e2a2d813",
+      "now": "f8c12be747968a81"
+    },
+    {
+      "name": "z2ui5_cl_ui5f_view1_js",
+      "abap": "run/input/abap2UI5/src/01/03/z2ui5_cl_ui5f_view1_js.clas.abap",
+      "js": "src/srv/z2ui5/01/03/z2ui5_cl_ui5f_view1_js.js",
+      "was": "ac8b422257cc8676",
+      "now": "d6745ed034ca34fb"
+    },
+    {
+      "name": "z2ui5_cl_ui5_app_start",
+      "abap": "run/input/abap2UI5/src/01/04/z2ui5_cl_ui5_app_start.clas.abap",
+      "js": "src/srv/z2ui5/01/04/z2ui5_cl_ui5_app_start.js",
+      "was": "a84c9e4499886274",
+      "now": "276893c7388a57ae"
+    },
+    {
+      "name": "z2ui5_cl_ui5_user_exit",
+      "abap": "run/input/abap2UI5/src/01/04/z2ui5_cl_ui5_user_exit.clas.abap",
+      "js": "src/srv/z2ui5/01/04/z2ui5_cl_ui5_user_exit.js",
+      "was": "0d268265f89ffd4e",
+      "now": "f1a84c75417d3d87"
+    },
+    {
+      "name": "z2ui5_cl_ui5_http_handler",
+      "abap": "run/input/abap2UI5/src/02/z2ui5_cl_ui5_http_handler.clas.abap",
+      "js": "src/srv/z2ui5/02/z2ui5_cl_ui5_http_handler.js",
+      "was": "1e02739e65b69498",
+      "now": "c2f2f13a49846f49"
+    },
+    {
+      "name": "z2ui5_if_client",
+      "abap": "run/input/abap2UI5/src/02/z2ui5_if_client.intf.abap",
+      "js": "src/srv/z2ui5/02/z2ui5_if_client.js",
+      "was": "f3ffa3f6409c94ef",
+      "now": "acc603034db36ba5"
+    }
+  ]
+}

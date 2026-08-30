@@ -73,8 +73,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_client",
-    "classes": 4,
-    "tests": 44,
+    "classes": 6,
+    "tests": 50,
     "todos": 0
   },
   {
@@ -86,7 +86,7 @@
   {
     "main": "z2ui5_cl_ui5_handler",
     "classes": 4,
-    "tests": 41,
+    "tests": 45,
     "todos": 0
   },
   {
@@ -103,8 +103,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_srv_model",
-    "classes": 28,
-    "tests": 54,
+    "classes": 29,
+    "tests": 59,
     "todos": 0
   },
   {
@@ -116,6 +116,12 @@
   {
     "main": "z2ui5_cl_ui5_app_start",
     "classes": 1,
+    "tests": 4,
+    "todos": 0
+  },
+  {
+    "main": "z2ui5_cl_ui5_user_exit",
+    "classes": 2,
     "tests": 4,
     "todos": 0
   },

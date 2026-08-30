@@ -84,7 +84,7 @@ a file-count floor in `publish-core.js` checked *before* it wipes `core/`,
 and the corpus floors below. `test/pipeline-guards.test.js` covers all of it
 against temp fixtures.
 
-Test ratchets: `test/upstream-units.known-failures.json` (111 entries <!-- count:ratchet-units -->) and
+Test ratchets: `test/upstream-units.known-failures.json` (124 entries <!-- count:ratchet-units -->) and
 `test/apps-smoke.known-failures.json` (5 <!-- count:ratchet-smoke -->) — a new failure is a regression (red),
 a fixed entry must be delisted (red). `node scripts/ratchet-update.js`
 reconciles both baselines (delists fixed entries, fails on regressions;

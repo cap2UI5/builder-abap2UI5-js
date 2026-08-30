@@ -3119,9 +3119,23 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         // method( EXPORTING a = x IMPORTING b = y CHANGING c = z RECEIVING r = w )
         // → one merged args object; IMPORTING/CHANGING targets are copied
         // back afterwards (callees sync their out-params onto the object)
-        const parenIdx = toks.findIndex((t) => isParenL(t));
-        const close = parenIdx >= 0 ? matchGroup(toks, parenIdx) : -1;
-        if (parenIdx <= 0 || close !== toks.length - 1) return todo();
+        // The call's OWN argument list is the paren group that CLOSES at the
+        // end of the statement — not simply the first `(` on the line. With a
+        // chained receiver (`cls=>get_instance( )->meth( CHANGING … )`) a
+        // completed group sits in front of it, so taking the first one found
+        // a group ending mid-statement and gave up: the whole statement was
+        // dropped as a `// TODO(abap2js)` comment. Three upstream user-exit
+        // tests then asserted against a config that nothing had filled in,
+        // and read as assertion failures rather than as a missing call.
+        let parenIdx = -1;
+        for (let i = 0; i < toks.length; i++) {
+          if (isParenL(toks[i]) && matchGroup(toks, i) === toks.length - 1) {
+            parenIdx = i;
+            break;
+          }
+        }
+        if (parenIdx <= 0) return todo();
+        const close = toks.length - 1;
         const inner = toks.slice(parenIdx + 1, close);
         const sections = []; // { kind, toks }
         let cur = { kind: "EXPORTING", toks: [] };
@@ -3457,11 +3471,25 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
     }
     case "Clear": {
       const target = txExpr(toks.slice(1), ctx);
+      const nameToks = toks.slice(1);
       // best effort by declared default
       const name = toks[1].str.toLowerCase();
-      const f = ctx.model.fields.get(name);
-      const vt = ctx.varTypes.get(name);
-      const dflt = f ? f.default : vt ? declaredInit(vt, ctx.model, 0, ctx) : "null";
+      let dflt;
+      if (nameToks.length > 1) {
+        // CLEAR of a MEMBER — `mo_action->ms_actual`, `ls_row-t_pos`. The
+        // initial value is the MEMBER's, and the lookup below reads the base
+        // variable's instead: for a REF base that default is "null", so
+        // `CLEAR mo_action->ms_actual` emitted `... = null` and the next
+        // `ms_actual-event = …` died with "Cannot read properties of null".
+        // ABAP CLEAR never unbinds a structure, it resets its components.
+        const entry = resolveMemberEntry(nameToks, ctx);
+        const tt = entry?.typeTokens || targetTypeTokens(nameToks, ctx);
+        dflt = tt ? declaredInit(tt, ctx.model, 0, ctx) : entry?.default ?? "null";
+      } else {
+        const f = ctx.model.fields.get(name);
+        const vt = ctx.varTypes.get(name);
+        dflt = f ? f.default : vt ? declaredInit(vt, ctx.model, 0, ctx) : "null";
+      }
       push(`${target} = ${dflt === "null" && /\.length/.test(target) ? "[]" : dflt};`);
       const shadow = ctx.fsBacked.get(target);
       if (shadow) push(`if (${shadow}) ${shadow}.o[${shadow}.k] = ${target};`);

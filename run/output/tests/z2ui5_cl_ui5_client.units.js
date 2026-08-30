@@ -61,7 +61,8 @@ class lcl_initial_paths_filter {
     if (iv_visit !== z2ui5_if_ajson_filter.visit_type.value) {
       return rv_keep;
     }
-    if (!this.mt_names.some((row) => row.table_line === is_node.name.toUpperCase())) {
+    const lv_name = is_node.name.toUpperCase();
+    if (!this.mt_names.some((row) => row.table_line === lv_name)) {
       return rv_keep;
     }
     if (is_node.type === z2ui5_if_ajson_types.node_type.number) {
@@ -549,8 +550,155 @@ class ltcl_test_client {
 
 
 
+class ltcl_app_price_editor extends z2ui5_if_app {
+  mt_product = [];
+  mv_message = ``;
+  mv_saved = false;
+  mv_bind_path = ``;
+
+  label_of({ field } = {}) {
+    let result = ``;
+    switch (field) {
+      case `PRICE`:
+        result = `Price`;
+        break;
+      case `QTY`:
+        result = `Quantity`;
+        break;
+      default:
+        result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(field));
+        break;
+    }
+    return result;
+  }
+
+  message_add({ val } = {}) {
+    if (!z2ui5_cl_util.abap_is_initial(this.mv_message)) {
+      this.mv_message = this.mv_message + `; `;
+    }
+    this.mv_message = this.mv_message + val;
+  }
+
+  async main(client) {
+    let sy_tabix = 0;
+    let sy_subrc = 0;
+    let ls_row = { name: ``, price: 0, t_pos: [] };
+    const ls_get = client.get();
+    this.mv_message = ``;
+    sy_tabix = 0;
+    for (const ls_skip of ls_get.T_MODEL_SKIPPED) {
+      sy_tabix++;
+      if (ls_skip.name === `MT_PRODUCT`) {
+        {
+          const _t = this.mt_product;
+          const _i = (ls_skip.row) - 1;
+          sy_subrc = _i >= 0 && _i < _t.length ? 0 : 4;
+          if (sy_subrc === 0) ls_row = _t[_i];
+        }
+        if (sy_subrc !== 0) {
+          continue;
+        }
+        this.message_add({ val: `${this.label_of({ field: ls_skip.field })} of '${ls_row.name}' was not accepted` });
+        continue;
+      }
+      if (ls_skip.name === `MT_PRODUCT-T_POS`) {
+        this.message_add({ val: `${this.label_of({ field: ls_skip.field })} in a position row was not accepted` });
+        continue;
+      }
+    }
+    if (ls_get.EVENT === `SAVE`) {
+      this.mv_saved = (z2ui5_cl_util.abap_is_initial(this.mv_message));
+    }
+    this.mv_bind_path = client._bind_edit(this.mt_product);
+  }
+}
+
+
+
+
+
+class ltcl_test_model_skipped {
+  mo_app = null;
+  mo_action = null;
+
+  setup() {
+    let ls_product = { name: ``, price: 0, t_pos: [] };
+    const lo_http = new z2ui5_cl_ui5_handler({ val: `` });
+    this.mo_action = new z2ui5_cl_ui5_action({ val: lo_http });
+    this.mo_app = new ltcl_app_price_editor();
+    ls_product = { name: ``, price: 0, t_pos: [] };
+    ls_product.name = `Notebook`;
+    ls_product.price = `1249.00`;
+    ls_product.t_pos.push(z2ui5_cl_util.abap_copy({ qty: 1 }));
+    this.mo_app.mt_product.push(z2ui5_cl_util.abap_copy(ls_product));
+    ls_product = { name: ``, price: 0, t_pos: [] };
+    ls_product.name = `Monitor`;
+    ls_product.price = `299.00`;
+    this.mo_app.mt_product.push(z2ui5_cl_util.abap_copy(ls_product));
+    this.mo_action.mo_app.mo_app = this.mo_app;
+    this.roundtrip();
+  }
+
+  roundtrip({ model = ``, event = `` } = {}) {
+    this.mo_action.ms_actual = { event: ``, t_event_arg: [], check_on_navigated: false, r_data: null, t_model_skipped: [] };
+    if (!z2ui5_cl_util.abap_is_initial(model)) {
+      this.mo_action.ms_actual.t_model_skipped = this.mo_action.mo_app.model_json_parse((z2ui5_cl_ajson.parse(model)));
+    }
+    this.mo_action.ms_actual.event = z2ui5_cl_util.abap_tab_assign(this.mo_action.ms_actual.event, z2ui5_cl_util.abap_copy(event));
+    const lo_client = new z2ui5_cl_ui5_client({ action: this.mo_action });
+    this.mo_app.main(lo_client);
+  }
+
+  test_accepted_price_silent() {
+    this.roundtrip({ model: `{"MT_PRODUCT":{"__delta":{"1":{"PRICE":"1250.00"}}}}`, event: `SAVE` });
+    cl_abap_unit_assert.assert_equals({ exp: (`1250.00`), act: (this.mo_app.mt_product[(2) - 1].price) });
+    cl_abap_unit_assert.assert_initial(this.mo_app.mv_message);
+    cl_abap_unit_assert.assert_equals({ exp: true, act: this.mo_app.mv_saved });
+  }
+
+  test_refused_price_reported() {
+    this.roundtrip({ model: `{"MT_PRODUCT":{"__delta":{"1":{"PRICE":"1,250.00"}}}}`, event: `SAVE` });
+    cl_abap_unit_assert.assert_equals({ exp: (`299.00`), act: (this.mo_app.mt_product[(2) - 1].price) });
+    cl_abap_unit_assert.assert_equals({ exp: `Price of 'Monitor' was not accepted`, act: this.mo_app.mv_message });
+  }
+
+  test_save_no_longer_lies() {
+    this.roundtrip({ model: `{"MT_PRODUCT":{"__delta":{"0":{"PRICE":"abc"},"1":{"PRICE":"350.00"}}}}`, event: `SAVE` });
+    cl_abap_unit_assert.assert_equals({ exp: (`350.00`), act: (this.mo_app.mt_product[(2) - 1].price) });
+    cl_abap_unit_assert.assert_equals({ exp: (`1249.00`), act: (this.mo_app.mt_product[(1) - 1].price) });
+    cl_abap_unit_assert.assert_equals({ exp: false, act: this.mo_app.mv_saved });
+    cl_abap_unit_assert.assert_equals({ exp: `Price of 'Notebook' was not accepted`, act: this.mo_app.mv_message });
+  }
+
+  test_trace_is_per_roundtrip() {
+    this.roundtrip({ model: `{"MT_PRODUCT":{"__delta":{"1":{"PRICE":"1,250.00"}}}}`, event: `SAVE` });
+    cl_abap_unit_assert.assert_equals({ exp: `Price of 'Monitor' was not accepted`, act: this.mo_app.mv_message });
+    this.roundtrip({ event: `SAVE` });
+    cl_abap_unit_assert.assert_initial(this.mo_app.mv_message);
+    cl_abap_unit_assert.assert_equals({ exp: true, act: this.mo_app.mv_saved });
+  }
+
+  test_nested_row_unresolved() {
+    this.roundtrip({ model: `{"MT_PRODUCT":{"__delta":{"0":{"T_POS":{"__delta":{"0":{"QTY":"seven"}}}}}}}`, event: `SAVE` });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: this.mo_app.mt_product[(1) - 1].t_pos[(1) - 1].qty });
+    cl_abap_unit_assert.assert_equals({ exp: `Quantity in a position row was not accepted`, act: this.mo_app.mv_message });
+    cl_abap_unit_assert.assert_equals({ exp: false, act: this.mo_app.mv_saved });
+  }
+
+  test_bind_path_is_not_name() {
+    cl_abap_unit_assert.assert_equals({ exp: `{/MT_PRODUCT}`, act: this.mo_app.mv_bind_path });
+    this.roundtrip({ model: `{"MT_PRODUCT":{"__delta":{"1":{"PRICE":"1,250.00"}}}}` });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: this.mo_action.ms_actual.t_model_skipped.length });
+    cl_abap_unit_assert.assert_equals({ exp: `MT_PRODUCT`, act: this.mo_action.ms_actual.t_model_skipped[(1) - 1].name });
+  }
+}
+
+
+
+
+
 module.exports = {
   __main: "z2ui5_cl_ui5_client",
-  __classes: { lcl_empty_filter_keep_rows, lcl_initial_paths_filter, ltcl_test_app, ltcl_test_client },
-  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_nest_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_dependent","test_message_box_type","test_message_toast","test_set_nav_routing","test_set_nav_routing_default","test_follow_up_action","test_follow_up_action_ev","test_follow_up_action_nav","test_follow_up_action_ctrl","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_get_event","test_get_event_arg","test_set_app_state_active","test_omit_initial_paths","test_omit_initial_keeps_rows"]},
+  __classes: { lcl_empty_filter_keep_rows, lcl_initial_paths_filter, ltcl_test_app, ltcl_test_client, ltcl_app_price_editor, ltcl_test_model_skipped },
+  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_nest_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_dependent","test_message_box_type","test_message_toast","test_set_nav_routing","test_set_nav_routing_default","test_follow_up_action","test_follow_up_action_ev","test_follow_up_action_nav","test_follow_up_action_ctrl","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_get_event","test_get_event_arg","test_set_app_state_active","test_omit_initial_paths","test_omit_initial_keeps_rows"],"ltcl_test_model_skipped":["test_accepted_price_silent","test_refused_price_reported","test_save_no_longer_lies","test_trace_is_per_roundtrip","test_nested_row_unresolved","test_bind_path_is_not_name"]},
 };
