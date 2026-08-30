@@ -79,6 +79,17 @@ const SY_RUNTIME_FIELDS = {
   sysid: '""', uname: '""', mandt: '"000"', langu: '"E"',
   datum: '""', uzeit: '""', datlo: '""', timlo: '""', zonlo: '""',
   tcode: '""', cprog: '""', repid: '""', host: '""', dbcnt: "0",
+  // `OPEN` is not a placeholder. Upstream reads sy-saprl to tell a REAL ABAP
+  // release from the transpiled-JS runtime, where it is `OPEN`, and branches
+  // on it precisely because get_source_position( ) is unusable there: it
+  // throws a JS TypeError that an ABAP TRY cannot intercept, taking the
+  // request down instead of rendering the error. This port IS that runtime,
+  // so `OPEN` is the truthful answer and the branch upstream wants it to take.
+  // Absent from this table, `sy-saprl` was emitted as an undeclared
+  // identifier and every method reading it died with
+  // "sy_saprl is not defined" — four upstream tests, as of the 2026-08-30
+  // sync that introduced the field.
+  saprl: '"OPEN"',
 };
 
 // ---------------------------------------------------------------------------
@@ -614,6 +625,48 @@ function declaredInit(typeTokens, model, depth = 0, ctx = null) {
   }
   if (!comps) return init;
   return renderComps(comps, model, depth);
+}
+
+/**
+ * Methods whose ABAP body branches on `result IS SUPPLIED` — the functional
+ * form does something DIFFERENT from the statement form, not merely "the same
+ * thing, plus a return value".
+ *
+ * JS cannot see whether a caller consumes a return value, so nothing in the
+ * runtime can tell the two apart. The TRANSPILER can: a consumed call is an
+ * assignment RHS. Each entry maps the method to the port method implementing
+ * its result branch, and only assignment RHSs are rewritten.
+ *
+ * follow_up_action is the case that forced this. Upstream:
+ *
+ *     IF result IS SUPPLIED.
+ *       result = mo_srv_event->get_event_client( … ).   " and queue NOTHING
+ *       RETURN.
+ *     ENDIF.
+ *     … queue the action …
+ *
+ * Called as a statement (61 sites in the corpus) it queues a follow-up action;
+ * consumed (2 sites, both building a view attribute) it only renders the wire
+ * string, and queueing as well would fire the action on load — a REDIRECT in
+ * sample 000, which opens GitHub the moment the gallery renders.
+ *
+ * Returning undefined from the statement form used to be invisible. Upstream
+ * then added `ASSERT v IS SUPPLIED OR b IS SUPPLIED` to the view builder's
+ * a( ), and the seven samples that pass such a result straight into a( )
+ * started failing to start at all.
+ */
+const RESULT_SUPPLIED_FORMS = { follow_up_action: "follow_up_action_result" };
+
+/** Rewrite a consumed call to the method implementing its result branch. */
+function resultSuppliedForm(rhs) {
+  for (const [name, resultName] of Object.entries(RESULT_SUPPLIED_FORMS)) {
+    const at = rhs.indexOf(`.${name}(`);
+    // only when the call IS the whole RHS — `x.m(…)`, not `f(x.m(…)) + 1`
+    if (at > 0 && rhs.endsWith(")") && !rhs.slice(0, at).includes("(")) {
+      return `${rhs.slice(0, at)}.${resultName}(${rhs.slice(at + name.length + 2)}`;
+    }
+  }
+  return rhs;
 }
 
 /** row components of an interface-qualified TABLE type ("intf=>tty":table) */
@@ -1535,7 +1588,10 @@ function namedArgsOf(groupToks, ctx) {
 
 /** render a named-args value that may be a nested Map */
 function renderNamedVal(v) {
-  if (!(v instanceof Map)) return v;
+  // A named argument's value is by definition CONSUMED — `a( v = client->
+  // follow_up_action( … ) )` is the functional form, same as an assignment
+  // RHS. Five samples build a view attribute exactly this way.
+  if (!(v instanceof Map)) return typeof v === "string" ? resultSuppliedForm(v) : v;
   return `{ ${[...v.entries()].map(([k, x]) => `${k}: ${renderNamedVal(x)}`).join(", ")} }`;
 }
 
@@ -2928,6 +2984,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       if (lhsEntry?.refType) ctx.newTargetType = lhsEntry.refType;
       let rhs = txExpr(toks.slice(eq + 1), ctx);
       ctx.newTargetType = null;
+      rhs = resultSuppliedForm(rhs);
       // remember the class of `DATA(x) = NEW cls( … )` for member-path walks
       if (decl) {
         const newCls = rhs.match(/^new ([a-z_][a-z0-9_]*)\(/)?.[1];
@@ -3119,9 +3176,23 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
         // method( EXPORTING a = x IMPORTING b = y CHANGING c = z RECEIVING r = w )
         // → one merged args object; IMPORTING/CHANGING targets are copied
         // back afterwards (callees sync their out-params onto the object)
-        const parenIdx = toks.findIndex((t) => isParenL(t));
-        const close = parenIdx >= 0 ? matchGroup(toks, parenIdx) : -1;
-        if (parenIdx <= 0 || close !== toks.length - 1) return todo();
+        // The call's OWN argument list is the paren group that CLOSES at the
+        // end of the statement — not simply the first `(` on the line. With a
+        // chained receiver (`cls=>get_instance( )->meth( CHANGING … )`) a
+        // completed group sits in front of it, so taking the first one found
+        // a group ending mid-statement and gave up: the whole statement was
+        // dropped as a `// TODO(abap2js)` comment. Three upstream user-exit
+        // tests then asserted against a config that nothing had filled in,
+        // and read as assertion failures rather than as a missing call.
+        let parenIdx = -1;
+        for (let i = 0; i < toks.length; i++) {
+          if (isParenL(toks[i]) && matchGroup(toks, i) === toks.length - 1) {
+            parenIdx = i;
+            break;
+          }
+        }
+        if (parenIdx <= 0) return todo();
+        const close = toks.length - 1;
         const inner = toks.slice(parenIdx + 1, close);
         const sections = []; // { kind, toks }
         let cur = { kind: "EXPORTING", toks: [] };
@@ -3457,11 +3528,25 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
     }
     case "Clear": {
       const target = txExpr(toks.slice(1), ctx);
+      const nameToks = toks.slice(1);
       // best effort by declared default
       const name = toks[1].str.toLowerCase();
-      const f = ctx.model.fields.get(name);
-      const vt = ctx.varTypes.get(name);
-      const dflt = f ? f.default : vt ? declaredInit(vt, ctx.model, 0, ctx) : "null";
+      let dflt;
+      if (nameToks.length > 1) {
+        // CLEAR of a MEMBER — `mo_action->ms_actual`, `ls_row-t_pos`. The
+        // initial value is the MEMBER's, and the lookup below reads the base
+        // variable's instead: for a REF base that default is "null", so
+        // `CLEAR mo_action->ms_actual` emitted `... = null` and the next
+        // `ms_actual-event = …` died with "Cannot read properties of null".
+        // ABAP CLEAR never unbinds a structure, it resets its components.
+        const entry = resolveMemberEntry(nameToks, ctx);
+        const tt = entry?.typeTokens || targetTypeTokens(nameToks, ctx);
+        dflt = tt ? declaredInit(tt, ctx.model, 0, ctx) : entry?.default ?? "null";
+      } else {
+        const f = ctx.model.fields.get(name);
+        const vt = ctx.varTypes.get(name);
+        dflt = f ? f.default : vt ? declaredInit(vt, ctx.model, 0, ctx) : "null";
+      }
       push(`${target} = ${dflt === "null" && /\.length/.test(target) ? "[]" : dflt};`);
       const shadow = ctx.fsBacked.get(target);
       if (shadow) push(`if (${shadow}) ${shadow}.o[${shadow}.k] = ${target};`);

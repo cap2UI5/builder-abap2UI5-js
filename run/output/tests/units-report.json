@@ -31,8 +31,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_util_context",
-    "classes": 5,
-    "tests": 39,
+    "classes": 6,
+    "tests": 47,
     "todos": 0
   },
   {
@@ -50,7 +50,7 @@
   {
     "main": "z2ui5_cx_ui5_util_error",
     "classes": 1,
-    "tests": 12,
+    "tests": 13,
     "todos": 0
   },
   {
@@ -73,8 +73,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_client",
-    "classes": 4,
-    "tests": 44,
+    "classes": 8,
+    "tests": 59,
     "todos": 0
   },
   {
@@ -86,13 +86,13 @@
   {
     "main": "z2ui5_cl_ui5_handler",
     "classes": 4,
-    "tests": 41,
+    "tests": 45,
     "todos": 0
   },
   {
     "main": "z2ui5_cl_ui5_srv_bind",
-    "classes": 4,
-    "tests": 9,
+    "classes": 6,
+    "tests": 17,
     "todos": 0
   },
   {
@@ -103,8 +103,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_srv_model",
-    "classes": 28,
-    "tests": 54,
+    "classes": 29,
+    "tests": 59,
     "todos": 0
   },
   {
@@ -116,6 +116,12 @@
   {
     "main": "z2ui5_cl_ui5_app_start",
     "classes": 1,
+    "tests": 4,
+    "todos": 0
+  },
+  {
+    "main": "z2ui5_cl_ui5_user_exit",
+    "classes": 2,
     "tests": 4,
     "todos": 0
   },

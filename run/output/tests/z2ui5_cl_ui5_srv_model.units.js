@@ -163,7 +163,7 @@ class ltcl_test_get_attri {
   test_first() {
     const lo_app_client = new ltcl_test_app3();
     let lr_value = null;
-    lr_value = lo_app_client.mv_value;
+    lr_value = (lo_app_client.mv_value);
     const lt_attri = {};
     const lo_model = new z2ui5_cl_ui5_srv_model({ attri: (lt_attri), app: lo_app_client });
     const lr_attri = lo_model.attri_get_val_ref(`MV_VALUE`);
@@ -836,6 +836,16 @@ class ltcl_app_tree extends z2ui5_if_app {
 
 
 
+class ltcl_app_typed extends z2ui5_if_app {
+  mt_tab = [];
+
+  async main(client) {
+  }
+}
+
+
+
+
 class ltcl_test_delta_apply {
   test_update_first_row() {
     const lo_app = new ltcl_app_complex();
@@ -928,6 +938,73 @@ class ltcl_test_delta_apply {
     cl_abap_unit_assert.assert_equals({ exp: 1, act: lo_app.mt_tree[(1) - 1].nodes.length });
     cl_abap_unit_assert.assert_equals({ exp: `NEW`, act: lo_app.mt_tree[(1) - 1].nodes[(1) - 1].user });
     cl_abap_unit_assert.assert_equals({ exp: true, act: lo_app.mt_tree[(1) - 1].nodes[(1) - 1].validated });
+  }
+
+  typed_app_create() {
+    let result = null;
+    result = new ltcl_app_typed();
+    result.mt_tab = z2ui5_cl_util.abap_tab_assign(result.mt_tab, [{ name: `Notebook`, price: `1249.00`, t_pos: [{ qty: 1 }] }, { name: `Monitor`, price: `299.00` }]);
+    return result;
+  }
+
+  test_skip_cell_converts() {
+    const lo_app = this.typed_app_create();
+    let lt_attri = [];
+    const lo_model = new z2ui5_cl_ui5_srv_model({ attri: (lt_attri), app: lo_app });
+    const lo_delta = (z2ui5_cl_ajson.parse(`{"__delta":{"0":{"PRICE":"1250.00"}}}`));
+    lo_model.delta_apply_to_table({ io_val_front: lo_delta, iv_name: `MT_TAB` });
+    cl_abap_unit_assert.assert_equals({ exp: (`1250.00`), act: (lo_app.mt_tab[(1) - 1].price) });
+    cl_abap_unit_assert.assert_initial(lo_model.mt_skipped);
+  }
+
+  test_skip_cell_refused() {
+    const lo_app = this.typed_app_create();
+    let lt_attri = [];
+    const lo_model = new z2ui5_cl_ui5_srv_model({ attri: (lt_attri), app: lo_app });
+    const lo_delta = (z2ui5_cl_ajson.parse(`{"__delta":{"1":{"PRICE":"1,250.00"}}}`));
+    lo_model.delta_apply_to_table({ io_val_front: lo_delta, iv_name: `MT_TAB` });
+    cl_abap_unit_assert.assert_equals({ exp: (`299.00`), act: (lo_app.mt_tab[(2) - 1].price) });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: lo_model.mt_skipped.length });
+    cl_abap_unit_assert.assert_equals({ exp: `MT_TAB`, act: lo_model.mt_skipped[(1) - 1].name });
+    cl_abap_unit_assert.assert_equals({ exp: 2, act: lo_model.mt_skipped[(1) - 1].row });
+    cl_abap_unit_assert.assert_equals({ exp: `PRICE`, act: lo_model.mt_skipped[(1) - 1].field });
+  }
+
+  test_skip_one_of_two() {
+    const lo_app = this.typed_app_create();
+    let lt_attri = [];
+    const lo_model = new z2ui5_cl_ui5_srv_model({ attri: (lt_attri), app: lo_app });
+    const lo_delta = (z2ui5_cl_ajson.parse(`{"__delta":{"0":{"PRICE":"abc","NAME":"Laptop"},"1":{"PRICE":"350.00"}}}`));
+    lo_model.delta_apply_to_table({ io_val_front: lo_delta, iv_name: `MT_TAB` });
+    cl_abap_unit_assert.assert_equals({ exp: `Laptop`, act: lo_app.mt_tab[(1) - 1].name });
+    cl_abap_unit_assert.assert_equals({ exp: (`1249.00`), act: (lo_app.mt_tab[(1) - 1].price) });
+    cl_abap_unit_assert.assert_equals({ exp: (`350.00`), act: (lo_app.mt_tab[(2) - 1].price) });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: lo_model.mt_skipped.length });
+    cl_abap_unit_assert.assert_equals({ exp: `PRICE`, act: lo_model.mt_skipped[(1) - 1].field });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: lo_model.mt_skipped[(1) - 1].row });
+  }
+
+  test_skip_absent_field() {
+    const lo_app = this.typed_app_create();
+    let lt_attri = [];
+    const lo_model = new z2ui5_cl_ui5_srv_model({ attri: (lt_attri), app: lo_app });
+    const lo_delta = (z2ui5_cl_ajson.parse(`{"__delta":{"0":{"NAME":"Ultrabook","NOT_A_COMPONENT":"x"}}}`));
+    lo_model.delta_apply_to_table({ io_val_front: lo_delta, iv_name: `MT_TAB` });
+    cl_abap_unit_assert.assert_equals({ exp: `Ultrabook`, act: lo_app.mt_tab[(1) - 1].name });
+    cl_abap_unit_assert.assert_initial(lo_model.mt_skipped);
+  }
+
+  test_skip_nested_name() {
+    const lo_app = this.typed_app_create();
+    let lt_attri = [];
+    const lo_model = new z2ui5_cl_ui5_srv_model({ attri: (lt_attri), app: lo_app });
+    const lo_delta = (z2ui5_cl_ajson.parse(`{"__delta":{"0":{"T_POS":{"__delta":{"0":{"QTY":"seven"}}}}}}`));
+    lo_model.delta_apply_to_table({ io_val_front: lo_delta, iv_name: `MT_TAB` });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: lo_app.mt_tab[(1) - 1].t_pos[(1) - 1].qty });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: lo_model.mt_skipped.length });
+    cl_abap_unit_assert.assert_equals({ exp: `MT_TAB-T_POS`, act: lo_model.mt_skipped[(1) - 1].name });
+    cl_abap_unit_assert.assert_equals({ exp: 1, act: lo_model.mt_skipped[(1) - 1].row });
+    cl_abap_unit_assert.assert_equals({ exp: `QTY`, act: lo_model.mt_skipped[(1) - 1].field });
   }
 }
 
@@ -1148,6 +1225,6 @@ class ltcl_test_json_types {
 
 module.exports = {
   __main: "z2ui5_cl_ui5_srv_model",
-  __classes: { ltcl_test_dissolve, ltcl_test_app_sub, ltcl_test_app3, ltcl_test_get_attri, ltcl_test_app_root_attri, ltcl_test_app_root, ltcl_test_app_root_attri2, ltcl_test_app_root2, ltcl_test_app_root4, ltcl_app_inner, ltcl_app_middle, ltcl_app_complex, ltcl_test_diss_complex, ltcl_app_inner_335, ltcl_app_root_335, ltcl_test_sample335, ltcl_test_attri_create, ltcl_test_json_stringify, ltcl_test_json_to_attri, ltcl_test_attri_refresh, ltcl_test_entry_refs_children, ltcl_app_tree, ltcl_test_delta_apply, ltcl_app_two_tab_drefs, ltcl_test_two_tab_refs, ltcl_test_deep_nesting, ltcl_test_refresh_ext, ltcl_test_json_types },
-  __tests: {"ltcl_test_dissolve":["test_init","test_struc","test_dref","test_struc_dref","test_oref","test_oref_dref_struc","test_oref_dref","test_dref_struc"],"ltcl_test_get_attri":["test_first","test_second","third_test","test4"],"ltcl_test_app_root_attri":["test_obj_tab_ref"],"ltcl_test_app_root_attri2":["test_obj_struc_ref"],"ltcl_test_app_root4":["test_tab_ref_gen"],"ltcl_test_diss_complex":["test_table","test_nested_struc","test_oref_chain","test_table_in_dref","test_mixed_types","test_dissolve_idempotent","test_search_table","test_search_nested_struc","test_name_parent_chain"],"ltcl_test_sample335":["test_two_drefs_to_same_struc"],"ltcl_test_attri_create":["test_string_type_kind","test_table_type_kind","test_oref_type_kind","test_int_kind"],"ltcl_test_json_stringify":["test_simple_string","test_empty_no_bind","test_omit_initial","test_json_node","test_json_invalid"],"ltcl_test_json_to_attri":["test_updates_bound","test_skips_unbound","test_skips_json"],"ltcl_test_attri_refresh":["test_bindings_preserved"],"ltcl_test_entry_refs_children":["test_dref_children_name_ref","test_second_dref_children"],"ltcl_test_delta_apply":["test_update_first_row","test_update_second_row","test_out_of_range","test_nested_cell","test_nested_mixed","test_struct_component","test_subtable_replace"],"ltcl_test_two_tab_refs":["test_both_get_name_ref","test_canonical_search"],"ltcl_test_deep_nesting":["test_deep_struct_writeback","test_deep_oref_writeback"],"ltcl_test_refresh_ext":["test_oref_after_null_refresh"],"ltcl_test_json_types":["test_updates_integer","test_multiple_attrs_same_var"]},
+  __classes: { ltcl_test_dissolve, ltcl_test_app_sub, ltcl_test_app3, ltcl_test_get_attri, ltcl_test_app_root_attri, ltcl_test_app_root, ltcl_test_app_root_attri2, ltcl_test_app_root2, ltcl_test_app_root4, ltcl_app_inner, ltcl_app_middle, ltcl_app_complex, ltcl_test_diss_complex, ltcl_app_inner_335, ltcl_app_root_335, ltcl_test_sample335, ltcl_test_attri_create, ltcl_test_json_stringify, ltcl_test_json_to_attri, ltcl_test_attri_refresh, ltcl_test_entry_refs_children, ltcl_app_tree, ltcl_app_typed, ltcl_test_delta_apply, ltcl_app_two_tab_drefs, ltcl_test_two_tab_refs, ltcl_test_deep_nesting, ltcl_test_refresh_ext, ltcl_test_json_types },
+  __tests: {"ltcl_test_dissolve":["test_init","test_struc","test_dref","test_struc_dref","test_oref","test_oref_dref_struc","test_oref_dref","test_dref_struc"],"ltcl_test_get_attri":["test_first","test_second","third_test","test4"],"ltcl_test_app_root_attri":["test_obj_tab_ref"],"ltcl_test_app_root_attri2":["test_obj_struc_ref"],"ltcl_test_app_root4":["test_tab_ref_gen"],"ltcl_test_diss_complex":["test_table","test_nested_struc","test_oref_chain","test_table_in_dref","test_mixed_types","test_dissolve_idempotent","test_search_table","test_search_nested_struc","test_name_parent_chain"],"ltcl_test_sample335":["test_two_drefs_to_same_struc"],"ltcl_test_attri_create":["test_string_type_kind","test_table_type_kind","test_oref_type_kind","test_int_kind"],"ltcl_test_json_stringify":["test_simple_string","test_empty_no_bind","test_omit_initial","test_json_node","test_json_invalid"],"ltcl_test_json_to_attri":["test_updates_bound","test_skips_unbound","test_skips_json"],"ltcl_test_attri_refresh":["test_bindings_preserved"],"ltcl_test_entry_refs_children":["test_dref_children_name_ref","test_second_dref_children"],"ltcl_test_delta_apply":["test_update_first_row","test_update_second_row","test_out_of_range","test_nested_cell","test_nested_mixed","test_struct_component","test_subtable_replace","test_skip_cell_converts","test_skip_cell_refused","test_skip_one_of_two","test_skip_absent_field","test_skip_nested_name"],"ltcl_test_two_tab_refs":["test_both_get_name_ref","test_canonical_search"],"ltcl_test_deep_nesting":["test_deep_struct_writeback","test_deep_oref_writeback"],"ltcl_test_refresh_ext":["test_oref_after_null_refresh"],"ltcl_test_json_types":["test_updates_integer","test_multiple_attrs_same_var"]},
 };

@@ -122,12 +122,57 @@ const externTypes = new Map(); // "intf=>ty" -> struct members / ":table" marker
   }
 })(srcBase);
 
+// Cross-class call signatures. A positional ABAP call onto ANOTHER framework
+// class — `z2ui5_cl_ui5_util_context=>rtti_check_printable( val )` — has to be
+// wrapped into the destructured-options convention the transpiled callee
+// declares (`({ val } = {})`), exactly as transpile-tests.js already does for
+// the testclasses. Without it the call was emitted positionally, the callee
+// destructured a string, every parameter came out undefined, and the method
+// quietly answered its default: rtti_check_printable( 'text' ) said false, so
+// z2ui5_cx_ui5_util_error dropped the message it was raised with and answered
+// UNKNOWN_ERROR. Latent until upstream started making such calls across class
+// boundaries in the 2026-08-30 sync.
+//
+// Hand-ported classes are excluded, same rule and same reason as there: their
+// JS APIs take positional arguments by hand.
+const handPortedCls = (() => {
+  const set = new Set();
+  const base = path.join(__dirname, "..", "src", "srv", "z2ui5");
+  (function walkSrc(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walkSrc(full);
+      else if (e.name.endsWith(".js")) set.add(e.name.slice(0, -3).toLowerCase());
+    }
+  })(base);
+  return set;
+})();
+const siblingSigs = new Map(); // class → Map(method → first importing param)
+(function walkCls(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== "99") walkCls(full);
+    } else if (entry.name.endsWith(".clas.abap") && !entry.name.includes(".testclasses.") && !entry.name.includes(".locals_")) {
+      const clsName = entry.name.replace(/\.clas\.abap$/i, "").toLowerCase();
+      if (handPortedCls.has(clsName)) continue;
+      try {
+        const defs = parseInterfaceSigs(fs.readFileSync(full, "utf8"), entry.name);
+        const sigs = new Map();
+        for (const [m, def] of defs) sigs.set(m, def.importing[0]?.name ?? null);
+        siblingSigs.set(clsName, sigs);
+      } catch { /* signature-less — the call stays positional, as before */ }
+    }
+  }
+})(srcBase);
+
 fs.rmSync(outBase, { recursive: true, force: true });
 const report = [];
 const failed = [];
 for (const { file, relDir } of targets) {
   try {
-    const { code, todos, name: className } = transpileFile(file, { intfSigs, externTypes });
+    const { code, todos, name: className } = transpileFile(file, { intfSigs, externTypes, siblingSigs });
     const relPath = path.join(relDir, `${className}.js`);
     const outPath = path.join(outBase, relPath);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });

@@ -38,15 +38,12 @@ class ltcl_test_http_handler {
     cl_abap_unit_assert.assert_true(temp5);
   }
 
-  test_http_get_favicon() {
+  test_http_get_title() {
     let ls_result = { body: ``, status_code: 0, status_reason: ``, s_stateful: { active: 0, switched: false } };
     let temp7 = false;
-    let temp8 = false;
     ls_result = z2ui5_cl_ui5_http_handler._http_get();
-    temp7 = (String(ls_result.body).toLowerCase().includes(String(`<link rel="icon" href="`).toLowerCase()));
+    temp7 = (String(ls_result.body).toLowerCase().includes(String(`<title>abap2UI5</title>`).toLowerCase()));
     cl_abap_unit_assert.assert_true(temp7);
-    temp8 = (String(ls_result.body).toLowerCase().includes(String(`data:image/svg+xml,<svg`).toLowerCase()));
-    cl_abap_unit_assert.assert_true(temp8);
   }
 
   test_http_post_ok() {
@@ -197,5 +194,5 @@ class ltcl_test_http_handler {
 module.exports = {
   __main: "z2ui5_cl_ui5_http_handler",
   __classes: { ltcl_test_http_handler },
-  __tests: {"ltcl_test_http_handler":["test_http_get_status","test_http_get_html","test_http_get_ui5_boot","test_http_get_favicon","test_http_post_ok","test_http_post_error","test_main_post_no_app","test_main_get_routing","test_main_post_routing","test_main_unsupported","test_post_no_s_front","test_csrf_inactive","test_csrf_same_origin","test_csrf_cross_origin","test_csrf_no_headers","test_csrf_referer","test_preload_escaping","test_preload_literals"]},
+  __tests: {"ltcl_test_http_handler":["test_http_get_status","test_http_get_html","test_http_get_ui5_boot","test_http_get_title","test_http_post_ok","test_http_post_error","test_main_post_no_app","test_main_get_routing","test_main_post_routing","test_main_unsupported","test_post_no_s_front","test_csrf_inactive","test_csrf_same_origin","test_csrf_cross_origin","test_csrf_no_headers","test_csrf_referer","test_preload_escaping","test_preload_literals"]},
 };

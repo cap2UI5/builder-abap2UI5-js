@@ -445,7 +445,7 @@ class z2ui5_cl_ui5_util_http {
     result.body = this.get_cdata();
     result.method = this.get_method();
     result.path = this.get_header_field({ val: `~path` });
-    result.t_params = z2ui5_cl_ui5_util_context.url_param_get_tab(this.get_header_field({ val: `~request_uri` }));
+    result.t_params = z2ui5_cl_ui5_util_context.url_param_get_tab({ val: this.get_header_field({ val: `~request_uri` }) });
     return result;
   }
 }

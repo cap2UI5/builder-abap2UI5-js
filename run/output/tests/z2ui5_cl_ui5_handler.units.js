@@ -4,6 +4,7 @@ const z2ui5_cl_ajson = require("abap2UI5/z2ui5_cl_ajson");
 const z2ui5_cl_ui5_client = require("abap2UI5/z2ui5_cl_ui5_client");
 const z2ui5_cl_ui5_frontend = require("abap2UI5/z2ui5_cl_ui5_frontend");
 const z2ui5_cl_ui5_handler = require("abap2UI5/z2ui5_cl_ui5_handler");
+const z2ui5_cl_ui5_srv_model = require("abap2UI5/z2ui5_cl_ui5_srv_model");
 const z2ui5_cl_ui5_util_context = require("abap2UI5/z2ui5_cl_ui5_util_context");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
@@ -564,6 +565,66 @@ class ltcl_test_handler_post {
     cl_abap_unit_assert.assert_equals({ exp: true, act: lo_handler.mv_model_before_taken });
   }
 
+  test_model_client_stored() {
+    let sy_subrc = 0;
+    let lo_handler = null;
+    lo_handler = new z2ui5_cl_ui5_handler({ val: `` });
+    const lo_app = new ltcl_app_noop();
+    lo_handler.mo_action.mo_app.mo_app = lo_app;
+    lo_handler.mo_action.mo_app.ms_draft.id = z2ui5_cl_ui5_util_context.uuid_get_c32();
+    const lo_model = new z2ui5_cl_ui5_srv_model({ attri: lo_handler.mo_action.mo_app.mt_attri, app: lo_app });
+    lo_model.dissolve();
+    let lr_attri = {};
+    {
+      const _t = lo_handler.mo_action.mo_app.mt_attri;
+      const _i = _t.findIndex((_r) => _r.name === `CHECK_INIT`);
+      sy_subrc = _i >= 0 && _i < _t.length ? 0 : 4;
+      if (sy_subrc === 0) lr_attri = _t[_i];
+    }
+    if (sy_subrc !== 0) {
+      cl_abap_unit_assert.abort();
+    }
+    lr_attri.bind = true;
+    lr_attri.name_client = `/CHECK_INIT`;
+    lo_handler.mv_model_before_taken = true;
+    lo_handler.mv_model_before = `<other model state>`;
+    lo_handler.main_end();
+    cl_abap_unit_assert.assert_differs({ exp: `{}`, act: lo_handler.ms_response.model });
+    cl_abap_unit_assert.assert_equals({ exp: lo_handler.ms_response.model, act: lo_handler.mo_action.mo_app.mv_model_client });
+  }
+
+  test_model_client_unchanged() {
+    let lo_handler = null;
+    lo_handler = new z2ui5_cl_ui5_handler({ val: `` });
+    lo_handler.mo_action.mo_app.mo_app = new ltcl_app_noop();
+    lo_handler.mo_action.mo_app.ms_draft.id = z2ui5_cl_ui5_util_context.uuid_get_c32();
+    lo_handler.mv_model_before_taken = true;
+    lo_handler.mv_model_before = lo_handler.mo_action.mo_app.model_json_stringify();
+    lo_handler.main_end();
+    cl_abap_unit_assert.assert_equals({ exp: `{}`, act: lo_handler.mo_action.mo_app.mv_model_client });
+  }
+
+  test_snapshot_reuses_client() {
+    let lo_handler = null;
+    lo_handler = new z2ui5_cl_ui5_handler({ val: `` });
+    lo_handler.mo_action.mo_app.mo_app = new ltcl_app_noop();
+    lo_handler.mo_action.mo_app.ms_draft.id = z2ui5_cl_ui5_util_context.uuid_get_c32();
+    lo_handler.mo_action.mo_app.mv_model_client = `{"SENTINEL":true}`;
+    lo_handler.main_process();
+    cl_abap_unit_assert.assert_equals({ exp: `{"SENTINEL":true}`, act: lo_handler.mv_model_before });
+    cl_abap_unit_assert.assert_equals({ exp: true, act: lo_handler.mv_model_before_taken });
+  }
+
+  test_delta_drops_client() {
+    let lo_handler = null;
+    lo_handler = new z2ui5_cl_ui5_handler({ val: `` });
+    lo_handler.mo_action.mo_app.mo_app = new ltcl_app_noop();
+    lo_handler.mo_action.mo_app.mv_model_client = `{"SENTINEL":true}`;
+    lo_handler.ms_request.o_model = z2ui5_cl_ajson.parse(`{"NAME":"changed"}`);
+    const lo_action = lo_handler.mo_action.factory_by_frontend();
+    cl_abap_unit_assert.assert_initial(lo_action.mo_app.mv_model_client);
+  }
+
   test_nav_mode_resent() {
     let lo_handler = null;
     let lo_app = null;
@@ -575,7 +636,7 @@ class ltcl_test_handler_post {
     lo_handler.main_end();
     cl_abap_unit_assert.assert_char_cp({ exp: `*"setNavRouting":"KEEP"*`, act: this.system_actions_of({ val: lo_handler }) });
     lo_handler.ms_request.s_front.id = `SOME_DRAFT`;
-    lo_handler.mo_action.ms_next = null;
+    lo_handler.mo_action.ms_next = { o_app_call: null, o_app_leave: null, next_event: ``, s_action: {}, r_data: null, t_action_front: [], s_nav: {}, s_stateful: {} };
     lo_handler.main_end();
     cl_abap_unit_assert.assert_equals({ exp: false, act: (String(this.system_actions_of({ val: lo_handler })).toLowerCase().includes(String(`setNavRouting`).toLowerCase())) });
     lo_handler = new z2ui5_cl_ui5_handler({ val: `` });
@@ -593,5 +654,5 @@ class ltcl_test_handler_post {
 module.exports = {
   __main: "z2ui5_cl_ui5_handler",
   __classes: { ltcl_app_nav_loop, ltcl_app_noop, ltcl_app_sticky, ltcl_test_handler_post },
-  __tests: {"ltcl_test_handler_post":["load_startup_app","test_dispatch_loop_guard","test_request_parse","test_request_origin","test_request_launchpad","test_parse_body_with_wrapper","test_parse_body_no_wrapper","test_parse_body_model","test_parse_body_model_no_wrap","test_parse_body_config","test_parse_body_no_config","test_parse_body_arg_string","test_parse_body_arg_object","test_request_app_start","test_request_with_id","test_response_json","test_view_update_flag","test_view_update_popup","test_view_update_none","test_constructor","test_hash_app_part","test_route_standalone","test_route_launchpad","test_route_no_route","test_app_state_hash","test_nav_mode_resent","test_auto_update_push","test_auto_update_same","test_nested_display_push","test_auto_update_snapshot","test_session_stored","test_session_location","test_session_launchpad","test_session_from_draft","test_session_new_device","test_response_no_model","test_response_actions_embedded","test_system_slot_order","test_system_last_wins","test_system_empty","test_system_destroy_only"]},
+  __tests: {"ltcl_test_handler_post":["load_startup_app","test_dispatch_loop_guard","test_request_parse","test_request_origin","test_request_launchpad","test_parse_body_with_wrapper","test_parse_body_no_wrapper","test_parse_body_model","test_parse_body_model_no_wrap","test_parse_body_config","test_parse_body_no_config","test_parse_body_arg_string","test_parse_body_arg_object","test_request_app_start","test_request_with_id","test_response_json","test_view_update_flag","test_view_update_popup","test_view_update_none","test_constructor","test_hash_app_part","test_route_standalone","test_route_launchpad","test_route_no_route","test_app_state_hash","test_nav_mode_resent","test_auto_update_push","test_auto_update_same","test_nested_display_push","test_auto_update_snapshot","test_model_client_stored","test_model_client_unchanged","test_snapshot_reuses_client","test_delta_drops_client","test_session_stored","test_session_location","test_session_launchpad","test_session_from_draft","test_session_new_device","test_response_no_model","test_response_actions_embedded","test_system_slot_order","test_system_last_wins","test_system_empty","test_system_destroy_only"]},
 };
