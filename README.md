@@ -65,7 +65,7 @@ core package by overlaying the generated trees on the hand-written `src/` →
 
 ```
              mirror              transpile / prepare        assemble               publish
-upstream ──────────────▶ run/input/ ──────────────▶ run/output/ ──┐
+upstream ──────────────▶ run/input/ ──────────────▶ run/output/ ───┐
  abap2UI5 src/           abap2UI5/src     abap2js    abap2UI5/     │  base + overlays
  samples branch          samples/src      abap2js    samples/      ├─▶ run/output/core ──1:1──▶ core/
  app/webapp              app/webapp        patch      app/         │
