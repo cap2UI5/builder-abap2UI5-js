@@ -450,11 +450,29 @@ INTERFACE z2ui5_if_client
   "! row/column and let the rest through
   "! (`${$parameters>/column}.getId().indexOf('COL_DATE') >= 0`). It wins
   "! over the flag when both are set.
+  "!
+  "! @parameter arg | the ONE-VALUE spelling of t_arg: `arg = x` is exactly
+  "!                  `t_arg = VALUE #( ( x ) )`, byte for byte, and the
+  "!                  handler reads it back with the same `get_event_arg( )`.
+  "!                  It exists because the single argument is what most
+  "!                  wires carry - a row key, a `${$source>/...}`, one event
+  "!                  parameter - and there the table constructor is longer
+  "!                  than the value inside it. From two values on, t_arg is
+  "!                  the right parameter and stays it; arg deliberately does
+  "!                  not grow into arg2/arg3, which would only put the
+  "!                  positional numbering the table already spells out back
+  "!                  into the parameter names.
+  "!                  Passing both APPENDS arg behind the t_arg rows - a
+  "!                  defined composition, not a guess between two readings.
   METHODS _event
     IMPORTING
       val           TYPE clike                              OPTIONAL
       t_arg         TYPE string_table                       OPTIONAL
       s_ctrl        TYPE ty_s_event_control                  OPTIONAL
+      " appended rather than slotted next to t_arg, where it would read
+      " better: rule 5 allows a new optional parameter at the END of the
+      " list - inserting one reorders a public signature
+      arg           TYPE clike                              OPTIONAL
         PREFERRED PARAMETER val
     RETURNING
       VALUE(result) TYPE string.
@@ -484,6 +502,59 @@ INTERFACE z2ui5_if_client
     RETURNING
       VALUE(result) TYPE string.
 
+  "! @parameter tab               | bind ONE CELL of an internal table instead
+  "!                                of a whole attribute: pass the table here
+  "!                                and the row number in tab_index, and the
+  "!                                bound value as val - the row component
+  "!                                itself, e.g.
+  "!                                `_bind( val       = mt_emp[ 1 ]-name
+  "!                                        tab       = mt_emp
+  "!                                        tab_index = 1 )` -> `{/MT_EMP/0/NAME}`.
+  "!                                The cell is identified by REFERENCE: val
+  "!                                has to BE the component of that row, not a
+  "!                                copy of its value (a helper variable holding
+  "!                                the same string is refused with
+  "!                                BINDING_ERROR_TAB_CELL_LEVEL).
+  "!                                One toolchain caveat, not an ABAP one: a
+  "!                                STOCK abaplint downport lowers a table
+  "!                                expression read at COMPONENT level to
+  "!                                `READ TABLE ... INTO <wa>` - a copy - and
+  "!                                the cell is then refused on code that is
+  "!                                correct at the v750 target. This repository
+  "!                                patches that lowering to `ASSIGNING`
+  "!                                (node/setup/patch-abaplint-downport.mjs,
+  "!                                filed upstream), so `tab[ n ]-comp` works
+  "!                                through every build here. An app downported
+  "!                                by an UNPATCHED abaplint has to assign the
+  "!                                row first - `ASSIGN tab[ n ] TO <row>`, then
+  "!                                `val = <row>-comp` - which the same rule
+  "!                                already lowers with ASSIGNING and which is
+  "!                                7.02-native. Measured, not assumed: the
+  "!                                transpiler resolves every form correctly;
+  "!                                only the downport loses the reference.
+  "!                                What travels
+  "!                                is still the whole table - this only writes
+  "!                                a row-qualified path into the view, so the
+  "!                                model keeps the ARRAY shape while the view
+  "!                                addresses single rows. Use it where the
+  "!                                original model is an array but the view
+  "!                                repeats controls instead of binding an
+  "!                                aggregation (six statically written panels
+  "!                                over /Employee/0..5), which is otherwise
+  "!                                written as a series of flat attributes
+  "!                                (emp1_name, emp2_name, ...) and loses that
+  "!                                shape. For a REPEATING aggregation bind the
+  "!                                table itself (`items = _bind( mt_emp )`) and
+  "!                                keep the template's fields relative.
+  "! @parameter tab_index         | the row of tab to address, counted the ABAP
+  "!                                way from 1 - the client path is 0-based, so
+  "!                                tab_index = 1 renders as `/0/`. A row that
+  "!                                does not exist raises
+  "!                                BINDING_ERROR_TAB_CELL_LEVEL instead of
+  "!                                dumping, but note that writing the val
+  "!                                argument as `tab[ n ]` already dumps on the
+  "!                                ABAP side when row n is missing - seed the
+  "!                                table before building the view.
   "! @parameter omit_initial       | keep INITIAL fields out of the serialized
   "!                                model instead of sending them as `` / 0. An
   "!                                ABAP field is never absent - it is initial -
@@ -555,6 +626,28 @@ INTERFACE z2ui5_if_client
       switch_default_model TYPE abap_bool                     DEFAULT abap_false
     RETURNING
       VALUE(result)        TYPE string.
+
+  "! The PATH form of _bind( ) under a name of its own: returns the model
+  "! PATH of val instead of its value - what a bound aggregation, a
+  "! binding_call filter/sorter and bindElement need. Identical to
+  "! `_bind( val = ... path = abap_true )`, byte for byte; it delegates
+  "! rather than repeat the call, so the two can never drift apart.
+  "!
+  "! It exists because the two forms of _bind( ) read nothing alike:
+  "! `_bind( t_products )` says what it does, `_bind( val = t_products
+  "! path = abap_true )` needs a named val and a boolean whose name and
+  "! value mean nothing to a reader who does not already know the method -
+  "! and path being the FIRST optional parameter is what forces `val =`
+  "! along with it.
+  "!
+  "! Deliberately ONE parameter. The moment a second is needed - tab /
+  "! tab_index for a row path, omit_initial, json, switch_default_model -
+  "! _bind( ) is the right call and path stays on it, undeprecated.
+  METHODS _bind_path
+    IMPORTING
+      val           TYPE data
+    RETURNING
+      VALUE(result) TYPE string.
 
   "! Schedule a frontend action to run after the backend response is processed.
   "! Two ways to call it: pass a frontend event as val (e.g. cs_event-set_title)

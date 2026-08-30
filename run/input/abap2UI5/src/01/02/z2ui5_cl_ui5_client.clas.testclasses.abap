@@ -2,10 +2,36 @@ CLASS ltcl_test_app DEFINITION FINAL.
   PUBLIC SECTION.
     INTERFACES z2ui5_if_app.
     DATA mv_name TYPE string ##NEEDED.
+
+    TYPES:
+      BEGIN OF ty_s_emp,
+        name TYPE string,
+        job  TYPE string,
+      END OF ty_s_emp.
+    DATA mt_emp TYPE STANDARD TABLE OF ty_s_emp WITH EMPTY KEY ##NEEDED.
 ENDCLASS.
 
 CLASS ltcl_test_app IMPLEMENTATION.
   METHOD z2ui5_if_app~main.
+  ENDMETHOD.
+ENDCLASS.
+
+
+" deliberately WITHOUT if_serializable_object - the probe for
+" check_raise_new, which must refuse it at bind time (a bound filter is
+" serialized into the draft with mt_attri, and the transpiler does not
+" enforce serializability, so bind time is the only place the suite can
+" prove the refusal)
+CLASS ltcl_bad_filter DEFINITION FINAL.
+  PUBLIC SECTION.
+    INTERFACES z2ui5_if_ajson_filter.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS ltcl_bad_filter IMPLEMENTATION.
+  METHOD z2ui5_if_ajson_filter~keep_node.
+    rv_keep = abap_true.
   ENDMETHOD.
 ENDCLASS.
 
@@ -16,6 +42,9 @@ CLASS ltcl_test_client DEFINITION FINAL
   PRIVATE SECTION.
     DATA mo_client TYPE REF TO z2ui5_cl_ui5_client.
     DATA mo_action TYPE REF TO z2ui5_cl_ui5_action.
+    " typed handle on the app instance - _bind( ) resolves its argument as an
+    " ATTRIBUTE of the running app, so a local variable cannot stand in
+    DATA mo_test_app TYPE REF TO ltcl_test_app.
 
     METHODS setup.
 
@@ -72,6 +101,15 @@ CLASS ltcl_test_client DEFINITION FINAL
     METHODS test_set_app_state_active FOR TESTING RAISING cx_static_check.
     METHODS test_omit_initial_paths   FOR TESTING RAISING cx_static_check.
     METHODS test_omit_initial_keeps_rows FOR TESTING RAISING cx_static_check.
+    METHODS test_omit_filters_serial  FOR TESTING RAISING cx_static_check.
+    METHODS test_bind_filter_not_serial FOR TESTING RAISING cx_static_check.
+    METHODS test_omit_initial_db_save FOR TESTING RAISING cx_static_check.
+    METHODS test_bind_tab_cell        FOR TESTING RAISING cx_static_check.
+    METHODS test_bind_tab_cell_assign FOR TESTING RAISING cx_static_check.
+    METHODS test_event_arg_shorthand  FOR TESTING RAISING cx_static_check.
+    METHODS test_event_arg_appends    FOR TESTING RAISING cx_static_check.
+    METHODS test_event_arg_empty      FOR TESTING RAISING cx_static_check.
+    METHODS test_bind_path_alias      FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 CLASS z2ui5_cl_ui5_client DEFINITION LOCAL FRIENDS ltcl_test_client.
@@ -99,6 +137,7 @@ CLASS ltcl_test_client IMPLEMENTATION.
     lo_http = NEW #( val = `` ).
     mo_action = NEW #( val = lo_http ).
     lo_test_app = NEW #( ).
+    mo_test_app = lo_test_app.
     mo_action->mo_app->mo_app = lo_test_app.
     mo_action->mo_app->mv_check_initialized = abap_false.
     mo_client = NEW #( action = mo_action ).
@@ -769,6 +808,92 @@ CLASS ltcl_test_client IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD test_event_arg_shorthand.
+
+    " the whole contract of arg: the shorthand and the hand-written table
+    " constructor produce the SAME wire, so nothing downstream - the handler,
+    " get_event_arg( ), the linter rules that read these wires - can tell
+    " which spelling an app used
+    DATA li_client TYPE REF TO z2ui5_if_client.
+
+    li_client ?= mo_client.
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = li_client->_event( val   = `PRESSED`
+                                 t_arg = VALUE #( ( `${AUTHOR}` ) ) )
+        act = li_client->_event( val = `PRESSED` arg = `${AUTHOR}` ) ).
+
+  ENDMETHOD.
+
+
+  METHOD test_event_arg_appends.
+
+    " both parameters supplied: arg lands BEHIND the t_arg rows. Documented
+    " composition rather than a guess between two readings - and asserted so
+    " it stays that and does not silently become "arg wins"
+    DATA li_client TYPE REF TO z2ui5_if_client.
+
+    li_client ?= mo_client.
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = li_client->_event( val   = `PRESSED`
+                                 t_arg = VALUE #( ( `first` ) ( `second` ) ) )
+        act = li_client->_event( val   = `PRESSED`
+                                 t_arg = VALUE #( ( `first` ) )
+                                 arg   = `second` ) ).
+
+  ENDMETHOD.
+
+
+  METHOD test_event_arg_empty.
+
+    " read with IS SUPPLIED, not IS NOT INITIAL: an argument passed as empty
+    " on purpose is a filled slot. Were it dropped, every following position
+    " would shift - the defect class this wire has produced before
+    DATA li_client TYPE REF TO z2ui5_if_client.
+
+    li_client ?= mo_client.
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = li_client->_event( val   = `PRESSED`
+                                 t_arg = VALUE #( ( `` ) ) )
+        act = li_client->_event( val = `PRESSED` arg = `` ) ).
+
+    " and the parameter left out is not the same as passed empty
+    cl_abap_unit_assert=>assert_differs(
+        exp = li_client->_event( `PRESSED` )
+        act = li_client->_event( val = `PRESSED` arg = `` ) ).
+
+  ENDMETHOD.
+
+
+  METHOD test_bind_path_alias.
+
+    " _bind_path( ) is _bind( path = abap_true ) and nothing else
+    DATA li_client TYPE REF TO z2ui5_if_client.
+
+    li_client ?= mo_client.
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = li_client->_bind( val  = mo_test_app->mv_name
+                                path = abap_true )
+        act = li_client->_bind_path( mo_test_app->mv_name ) ).
+
+    " and it really is the PATH, not the value - otherwise the assertion
+    " above would also hold for two calls that both return the wrong thing
+    cl_abap_unit_assert=>assert_equals(
+        exp = `/MV_NAME`
+        act = li_client->_bind_path( mo_test_app->mv_name ) ).
+
+    " the braces are exactly the difference the flag makes - the value form
+    " of the same attribute wraps the path, the path form hands it over bare
+    cl_abap_unit_assert=>assert_equals(
+        exp = `{/MV_NAME}`
+        act = li_client->_bind( mo_test_app->mv_name ) ).
+
+  ENDMETHOD.
+
+
   METHOD test_get_event_arg.
 
     DATA temp28 TYPE string_table.
@@ -875,6 +1000,176 @@ CLASS ltcl_test_client IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
         exp = ``
         act = lo_ajson->filter( NEW lcl_empty_filter_keep_rows( ) )->stringify( ) ).
+
+  ENDMETHOD.
+
+
+  METHOD test_omit_filters_serial.
+
+    " every filter the framework itself hands into a binding is serialized
+    " into the draft with mt_attri, so all three local classes have to pass
+    " the same contract check that check_raise_new applies to a caller's
+    " filter. CALL TRANSFORMATION under the transpiler does not enforce
+    " if_serializable_object, so this check IS what the suite can prove -
+    " a real system enforces it at db_save
+    DATA li_omit TYPE REF TO z2ui5_if_ajson_filter.
+    DATA li_paths TYPE REF TO z2ui5_if_ajson_filter.
+
+    li_omit = NEW lcl_empty_filter_keep_rows( ).
+    cl_abap_unit_assert=>assert_true(
+        z2ui5_cl_ui5_util_context=>rtti_check_serializable( li_omit ) ).
+
+    li_paths = NEW lcl_initial_paths_filter( VALUE #( ( `MIN` ) ) ).
+    cl_abap_unit_assert=>assert_true(
+        z2ui5_cl_ui5_util_context=>rtti_check_serializable( li_paths ) ).
+
+    cl_abap_unit_assert=>assert_true(
+        z2ui5_cl_ui5_util_context=>rtti_check_serializable(
+            NEW lcl_and_filter( ii_first  = li_paths
+                                ii_second = li_omit ) ) ).
+
+    " and the probe class is really refused by the same check - otherwise
+    " test_bind_filter_not_serial proves nothing
+    cl_abap_unit_assert=>assert_false(
+        z2ui5_cl_ui5_util_context=>rtti_check_serializable( NEW ltcl_bad_filter( ) ) ).
+
+  ENDMETHOD.
+
+
+  METHOD test_bind_filter_not_serial.
+
+    DATA li_client TYPE REF TO z2ui5_if_client.
+    DATA lo_app TYPE REF TO ltcl_test_app.
+    DATA lx TYPE REF TO z2ui5_cx_ui5_util_error.
+
+    li_client ?= mo_client.
+    lo_app ?= mo_action->mo_app->mo_app.
+
+    TRY.
+        li_client->_bind( val           = lo_app->mv_name
+                          custom_filter = NEW ltcl_bad_filter( ) ).
+        cl_abap_unit_assert=>fail(
+            `a non-serializable custom_filter must be refused at bind time - serialized into the draft it fails only at db_save on a real system` ).
+      CATCH z2ui5_cx_ui5_util_error INTO lx.
+        cl_abap_unit_assert=>assert_true( xsdbool( lx->get_text( ) CS `serializable` ) ).
+    ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD test_omit_initial_db_save.
+
+    " _bind( omit_initial ) -> db_save -> db_load: the filter object rides
+    " on mt_attri into the draft (main_attri_db_save_srtti clears only DATA
+    " references), so the cycle only survives with serializable filter
+    " classes. Under the transpiler the serializer does not enforce that -
+    " what this proves everywhere is that the cycle keeps the app state and
+    " the binding metadata intact with the filter in place
+    DATA li_client TYPE REF TO z2ui5_if_client.
+    DATA lo_app TYPE REF TO ltcl_test_app.
+    DATA lo_cont TYPE REF TO z2ui5_cl_ui5_app_cont.
+    DATA lo_cont_db TYPE REF TO z2ui5_cl_ui5_app_cont.
+    DATA lo_app_db TYPE REF TO ltcl_test_app.
+
+    li_client ?= mo_client.
+    lo_cont = mo_action->mo_app.
+    lo_app ?= lo_cont->mo_app.
+    lo_app->mv_name = `kept across the draft`.
+
+    li_client->_bind( val          = lo_app->mv_name
+                      omit_initial = abap_true ).
+
+    lo_cont->ms_draft-id = `TEST_OMIT_INITIAL_DRAFT`.
+    lo_cont->db_save( ).
+    z2ui5_cl_ui5_app_cont=>db_load_buffer_clear( ).
+
+    lo_cont_db = z2ui5_cl_ui5_app_cont=>db_load( `TEST_OMIT_INITIAL_DRAFT` ).
+    lo_app_db ?= lo_cont_db->mo_app.
+
+    cl_abap_unit_assert=>assert_equals( exp = `kept across the draft`
+                                        act = lo_app_db->mv_name ).
+
+    " the binding metadata came back with the draft
+    DATA lr_attri TYPE REF TO z2ui5_if_ui5_types=>ty_s_attri.
+    lr_attri = REF #( lo_cont_db->mt_attri->*[ name = `MV_NAME` ] OPTIONAL ).
+    cl_abap_unit_assert=>assert_bound( lr_attri ).
+    cl_abap_unit_assert=>assert_equals( exp = abap_true
+                                        act = lr_attri->bind ).
+
+  ENDMETHOD.
+
+
+  METHOD test_bind_tab_cell.
+
+    " The CELL form of _bind, exactly as an app writes it: the bound value
+    " is the row COMPONENT, the table and the row number travel beside it.
+    " ABAP counts rows from 1, the client path from 0.
+    "
+    " This is the one place the app-facing form is proved, and it is also the
+    " CANARY for node/setup/patch-abaplint-downport.mjs. Stock abaplint lowers
+    " `tab[ n ]-comp` to `READ TABLE ... INTO <wa>` - a copy, so the reference
+    " this binding matches on never arrives and the cell is refused. The patch
+    " makes the outline ASSIGNING, which is what the WRITE path of the same
+    " rule already emits; this test is green in the transpiled suite only
+    " because the patch is applied. If it starts failing, look at the patch
+    " before looking at the binding. The cell logic itself is covered
+    " everywhere by ltcl_test_main_cell in z2ui5_cl_ui5_srv_bind
+    DATA li_client TYPE REF TO z2ui5_if_client.
+    DATA lo_app TYPE REF TO ltcl_test_app.
+
+    li_client ?= mo_client.
+    lo_app ?= mo_action->mo_app->mo_app.
+    INSERT VALUE #( name = `Michael Adams`
+                    job  = `Scrum Master` ) INTO TABLE lo_app->mt_emp.
+    INSERT VALUE #( name = `John Miller`
+                    job  = `Product Owner` ) INTO TABLE lo_app->mt_emp.
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = `{/MT_EMP/0/NAME}`
+        act = li_client->_bind( val       = lo_app->mt_emp[ 1 ]-name
+                                tab       = lo_app->mt_emp
+                                tab_index = 1 ) ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = `{/MT_EMP/1/JOB}`
+        act = li_client->_bind( val       = lo_app->mt_emp[ 2 ]-job
+                                tab       = lo_app->mt_emp
+                                tab_index = 2 ) ).
+
+  ENDMETHOD.
+
+
+  METHOD test_bind_tab_cell_assign.
+
+    " The same cell over an ASSIGNED row - the spelling the doc block on
+    " _bind recommends, and the only one that survives a downport: the
+    " whole-row table expression keeps its reference through it
+    " (READ TABLE ... ASSIGNING), the component-level one does not. So this
+    " test runs on every target, including this pipeline
+    DATA li_client TYPE REF TO z2ui5_if_client.
+    DATA lo_app TYPE REF TO ltcl_test_app.
+    FIELD-SYMBOLS <emp> TYPE ltcl_test_app=>ty_s_emp.
+
+    li_client ?= mo_client.
+    lo_app ?= mo_action->mo_app->mo_app.
+    INSERT VALUE #( name = `Michael Adams`
+                    job  = `Scrum Master` ) INTO TABLE lo_app->mt_emp.
+    INSERT VALUE #( name = `John Miller`
+                    job  = `Product Owner` ) INTO TABLE lo_app->mt_emp.
+
+    ASSIGN lo_app->mt_emp[ 1 ] TO <emp>.
+    cl_abap_unit_assert=>assert_equals(
+        exp = `{/MT_EMP/0/NAME}`
+        act = li_client->_bind( val       = <emp>-name
+                                tab       = lo_app->mt_emp
+                                tab_index = 1 ) ).
+
+    ASSIGN lo_app->mt_emp[ 2 ] TO <emp>.
+    cl_abap_unit_assert=>assert_equals(
+        exp = `{/MT_EMP/1/JOB}`
+        act = li_client->_bind( val       = <emp>-job
+                                tab       = lo_app->mt_emp
+                                tab_index = 2 ) ).
 
   ENDMETHOD.
 
