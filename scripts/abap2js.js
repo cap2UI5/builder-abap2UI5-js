@@ -627,6 +627,48 @@ function declaredInit(typeTokens, model, depth = 0, ctx = null) {
   return renderComps(comps, model, depth);
 }
 
+/**
+ * Methods whose ABAP body branches on `result IS SUPPLIED` — the functional
+ * form does something DIFFERENT from the statement form, not merely "the same
+ * thing, plus a return value".
+ *
+ * JS cannot see whether a caller consumes a return value, so nothing in the
+ * runtime can tell the two apart. The TRANSPILER can: a consumed call is an
+ * assignment RHS. Each entry maps the method to the port method implementing
+ * its result branch, and only assignment RHSs are rewritten.
+ *
+ * follow_up_action is the case that forced this. Upstream:
+ *
+ *     IF result IS SUPPLIED.
+ *       result = mo_srv_event->get_event_client( … ).   " and queue NOTHING
+ *       RETURN.
+ *     ENDIF.
+ *     … queue the action …
+ *
+ * Called as a statement (61 sites in the corpus) it queues a follow-up action;
+ * consumed (2 sites, both building a view attribute) it only renders the wire
+ * string, and queueing as well would fire the action on load — a REDIRECT in
+ * sample 000, which opens GitHub the moment the gallery renders.
+ *
+ * Returning undefined from the statement form used to be invisible. Upstream
+ * then added `ASSERT v IS SUPPLIED OR b IS SUPPLIED` to the view builder's
+ * a( ), and the seven samples that pass such a result straight into a( )
+ * started failing to start at all.
+ */
+const RESULT_SUPPLIED_FORMS = { follow_up_action: "follow_up_action_result" };
+
+/** Rewrite a consumed call to the method implementing its result branch. */
+function resultSuppliedForm(rhs) {
+  for (const [name, resultName] of Object.entries(RESULT_SUPPLIED_FORMS)) {
+    const at = rhs.indexOf(`.${name}(`);
+    // only when the call IS the whole RHS — `x.m(…)`, not `f(x.m(…)) + 1`
+    if (at > 0 && rhs.endsWith(")") && !rhs.slice(0, at).includes("(")) {
+      return `${rhs.slice(0, at)}.${resultName}(${rhs.slice(at + name.length + 2)}`;
+    }
+  }
+  return rhs;
+}
+
 /** row components of an interface-qualified TABLE type ("intf=>tty":table) */
 function externRowComponents(typeTokens, model) {
   const arrowIdx = typeTokens.findIndex((t) => String(t) === "=>");
@@ -1546,7 +1588,10 @@ function namedArgsOf(groupToks, ctx) {
 
 /** render a named-args value that may be a nested Map */
 function renderNamedVal(v) {
-  if (!(v instanceof Map)) return v;
+  // A named argument's value is by definition CONSUMED — `a( v = client->
+  // follow_up_action( … ) )` is the functional form, same as an assignment
+  // RHS. Five samples build a view attribute exactly this way.
+  if (!(v instanceof Map)) return typeof v === "string" ? resultSuppliedForm(v) : v;
   return `{ ${[...v.entries()].map(([k, x]) => `${k}: ${renderNamedVal(x)}`).join(", ")} }`;
 }
 
@@ -2939,6 +2984,7 @@ function emitStatement(s, ctx, st, push, assignedTwice, methodDef) {
       if (lhsEntry?.refType) ctx.newTargetType = lhsEntry.refType;
       let rhs = txExpr(toks.slice(eq + 1), ctx);
       ctx.newTargetType = null;
+      rhs = resultSuppliedForm(rhs);
       // remember the class of `DATA(x) = NEW cls( … )` for member-path walks
       if (decl) {
         const newCls = rhs.match(/^new ([a-z_][a-z0-9_]*)\(/)?.[1];

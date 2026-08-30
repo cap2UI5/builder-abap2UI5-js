@@ -672,6 +672,7 @@ class z2ui5_cl_ui5_util_context {
 
   static error_get_source_position({ val } = {}) {
     let result = ``;
+    let sy_saprl = "OPEN";
     let lv_program = ``;
     let lv_include = ``;
     let lv_line = 0;

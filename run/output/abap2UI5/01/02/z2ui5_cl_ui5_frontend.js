@@ -167,8 +167,8 @@ class z2ui5_cl_ui5_frontend {
     if (z2ui5_cl_util.abap_is_initial(z2ui5_cl_ui5_frontend.ct_box_type)) {
       z2ui5_cl_ui5_frontend.ct_box_type = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_frontend.ct_box_type, [`show`, `alert`, `confirm`, `information`, `warning`, `error`, `success`]);
     }
-    if (!(z2ui5_cl_ui5_util_context.rtti_check_clike(text) === true || z2ui5_cl_ui5_util_context.rtti_check_clike(text) === `X`)) {
-      result = z2ui5_cl_ui5_util_context.ui5_msg_box_format(text);
+    if (!(z2ui5_cl_ui5_util_context.rtti_check_clike({ val: text }) === true || z2ui5_cl_ui5_util_context.rtti_check_clike({ val: text }) === `X`)) {
+      result = z2ui5_cl_ui5_util_context.ui5_msg_box_format({ val: text });
       if ((result.skip === true || result.skip === `X`)) {
         return result;
       }

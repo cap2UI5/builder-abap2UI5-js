@@ -239,7 +239,7 @@ class z2ui5_cl_smp_app_000 extends z2ui5_if_app {
 
   open_url({ href } = {}) {
     let result = ``;
-    result = this.client.follow_up_action(z2ui5_if_client.cs_event.urlhelper, [`REDIRECT`, `{ URL: '${href}', NEW_WINDOW: true }`]);
+    result = this.client.follow_up_action_result(z2ui5_if_client.cs_event.urlhelper, [`REDIRECT`, `{ URL: '${href}', NEW_WINDOW: true }`]);
     return result;
   }
 
