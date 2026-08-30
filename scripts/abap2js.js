@@ -79,6 +79,17 @@ const SY_RUNTIME_FIELDS = {
   sysid: '""', uname: '""', mandt: '"000"', langu: '"E"',
   datum: '""', uzeit: '""', datlo: '""', timlo: '""', zonlo: '""',
   tcode: '""', cprog: '""', repid: '""', host: '""', dbcnt: "0",
+  // `OPEN` is not a placeholder. Upstream reads sy-saprl to tell a REAL ABAP
+  // release from the transpiled-JS runtime, where it is `OPEN`, and branches
+  // on it precisely because get_source_position( ) is unusable there: it
+  // throws a JS TypeError that an ABAP TRY cannot intercept, taking the
+  // request down instead of rendering the error. This port IS that runtime,
+  // so `OPEN` is the truthful answer and the branch upstream wants it to take.
+  // Absent from this table, `sy-saprl` was emitted as an undeclared
+  // identifier and every method reading it died with
+  // "sy_saprl is not defined" — four upstream tests, as of the 2026-08-30
+  // sync that introduced the field.
+  saprl: '"OPEN"',
 };
 
 // ---------------------------------------------------------------------------

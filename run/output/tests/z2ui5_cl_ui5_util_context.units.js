@@ -331,8 +331,62 @@ class ltcl_msg {
 
 
 
+class ltcl_msg_rap {
+  test_fail_text_known() {
+    cl_abap_unit_assert.assert_equals({ exp: `Entity not found`, act: z2ui5_cl_ui5_util_context.msg_get_rap_fail_text({ cause: 1 }) });
+    cl_abap_unit_assert.assert_equals({ exp: `Authorization failure`, act: z2ui5_cl_ui5_util_context.msg_get_rap_fail_text({ cause: 3 }) });
+    cl_abap_unit_assert.assert_equals({ exp: z2ui5_cl_ui5_util_context.msg_get_rap_fail_text({ cause: 4 }), act: z2ui5_cl_ui5_util_context.msg_get_rap_fail_text({ cause: 5 }) });
+  }
+
+  test_fail_text_unknown() {
+    const lv_text = z2ui5_cl_ui5_util_context.msg_get_rap_fail_text({ cause: 99 });
+    cl_abap_unit_assert.assert_char_cp({ exp: `*99*`, act: lv_text });
+    cl_abap_unit_assert.assert_char_cp({ exp: `*Operation failed*`, act: lv_text });
+  }
+
+  test_fail_text_all_causes() {
+    let lv_text;
+    let lv_cause = 0;
+    for (let sy_index = 1; sy_index <= 12; sy_index++) {
+      lv_cause = sy_index - 1;
+      lv_text = z2ui5_cl_ui5_util_context.msg_get_rap_fail_text({ cause: lv_cause });
+      cl_abap_unit_assert.assert_not_initial({ act: lv_text, msg: `cause ${lv_cause} renders no text` });
+      cl_abap_unit_assert.assert_false({ act: (String(lv_text).toLowerCase().includes(String(`cause code`).toLowerCase())), msg: `cause ${lv_cause} fell through to the ELSE branch` });
+    }
+  }
+
+  test_flatten_pairs() {
+    const ls_tky = { product_uuid: `ABC-1`, product_id: `4711` };
+    cl_abap_unit_assert.assert_equals({ exp: `PRODUCT_UUID=ABC-1, PRODUCT_ID=4711`, act: z2ui5_cl_ui5_util_context.msg_get_rap_flatten({ val: ls_tky }) });
+  }
+
+  test_flatten_skips_empty() {
+    const ls_tky = { product_id: `4711` };
+    cl_abap_unit_assert.assert_equals({ exp: `PRODUCT_ID=4711`, act: z2ui5_cl_ui5_util_context.msg_get_rap_flatten({ val: ls_tky }) });
+  }
+
+  test_flatten_nested() {
+    const ls_nested = { inner: { a: `1`, b: `2` }, c: `3` };
+    cl_abap_unit_assert.assert_equals({ exp: `A=1, B=2, C=3`, act: z2ui5_cl_ui5_util_context.msg_get_rap_flatten({ val: ls_nested }) });
+  }
+
+  test_flatten_not_a_struct() {
+    const lv_scalar = `not a structure`;
+    cl_abap_unit_assert.assert_initial(z2ui5_cl_ui5_util_context.msg_get_rap_flatten({ val: lv_scalar }));
+  }
+
+  test_is_rap_struct_plain() {
+    const ls_plain = { name: `Ada`, city: `London` };
+    cl_abap_unit_assert.assert_equals({ exp: false, act: z2ui5_cl_ui5_util_context.check_is_rap_struct({ val: ls_plain }) });
+  }
+}
+
+
+
+
+
 module.exports = {
   __main: "z2ui5_cl_ui5_util_context",
-  __classes: { ltcl_test, ltcl_string, ltcl_rtti, ltcl_itab, ltcl_msg },
-  __tests: {"ltcl_test":["test_bool_abap_true","test_bool_abap_false","test_bool_char_non_bool","test_bool_string_empty","test_bool_string_literal","test_bool_string_binding","test_bool_check_by_data","test_bool_cache_hit","test_url_param_case","test_url_param_no_phantom","test_url_param_startup","test_app_url_hash_app","test_app_url_hash_shell"],"ltcl_string":["test_trim_spaces","test_trim_tabs","test_trim_inner_kept","test_trim_case","test_bool_by_name","test_url_create","test_url_create_empty","test_url_roundtrip"],"ltcl_rtti":["test_check_clike","test_check_table","test_check_structure","test_check_ref_data","test_bound_not_init","test_struc_to_pairs","test_scan_flag"],"ltcl_itab":["test_filter_all_fields","test_filter_ignore_case","test_filter_named_field","test_filter_no_match","test_filter_elementary","test_corresponding"],"ltcl_msg":["test_msg_type_mapping","test_box_empty_skips","test_box_single","test_box_multiple","test_token_by_range"]},
+  __classes: { ltcl_test, ltcl_string, ltcl_rtti, ltcl_itab, ltcl_msg, ltcl_msg_rap },
+  __tests: {"ltcl_test":["test_bool_abap_true","test_bool_abap_false","test_bool_char_non_bool","test_bool_string_empty","test_bool_string_literal","test_bool_string_binding","test_bool_check_by_data","test_bool_cache_hit","test_url_param_case","test_url_param_no_phantom","test_url_param_startup","test_app_url_hash_app","test_app_url_hash_shell"],"ltcl_string":["test_trim_spaces","test_trim_tabs","test_trim_inner_kept","test_trim_case","test_bool_by_name","test_url_create","test_url_create_empty","test_url_roundtrip"],"ltcl_rtti":["test_check_clike","test_check_table","test_check_structure","test_check_ref_data","test_bound_not_init","test_struc_to_pairs","test_scan_flag"],"ltcl_itab":["test_filter_all_fields","test_filter_ignore_case","test_filter_named_field","test_filter_no_match","test_filter_elementary","test_corresponding"],"ltcl_msg":["test_msg_type_mapping","test_box_empty_skips","test_box_single","test_box_multiple","test_token_by_range"],"ltcl_msg_rap":["test_fail_text_known","test_fail_text_unknown","test_fail_text_all_causes","test_flatten_pairs","test_flatten_skips_empty","test_flatten_nested","test_flatten_not_a_struct","test_is_rap_struct_plain"]},
 };

@@ -2,8 +2,10 @@
 const cl_abap_unit_assert = require("abap2UI5/cl_abap_unit_assert");
 const z2ui5_cl_ajson = require("abap2UI5/z2ui5_cl_ajson");
 const z2ui5_cl_ui5_action = require("abap2UI5/z2ui5_cl_ui5_action");
+const z2ui5_cl_ui5_app_cont = require("abap2UI5/z2ui5_cl_ui5_app_cont");
 const z2ui5_cl_ui5_client = require("abap2UI5/z2ui5_cl_ui5_client");
 const z2ui5_cl_ui5_handler = require("abap2UI5/z2ui5_cl_ui5_handler");
+const z2ui5_cl_ui5_util_context = require("abap2UI5/z2ui5_cl_ui5_util_context");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_if_ajson_filter = require("abap2UI5/z2ui5_if_ajson_filter");
 const z2ui5_if_ajson_types = require("abap2UI5/z2ui5_if_ajson_types");
@@ -78,8 +80,32 @@ class lcl_initial_paths_filter {
 
 
 
+class lcl_and_filter {
+  mi_first = null;
+  mi_second = null;
+
+  constructor({ ii_first, ii_second } = {}) {
+    this.mi_first = ii_first;
+    this.mi_second = ii_second;
+  }
+
+  keep_node({ is_node, iv_visit = z2ui5_if_ajson_filter.visit_type.value } = {}) {
+    let rv_keep = false;
+    rv_keep = this.mi_first.keep_node({ is_node, iv_visit });
+    if ((rv_keep === true || rv_keep === `X`)) {
+      rv_keep = this.mi_second.keep_node({ is_node, iv_visit });
+    }
+    return rv_keep;
+  }
+}
+
+
+
+
+
 class ltcl_test_app extends z2ui5_if_app {
   mv_name = ``;
+  mt_emp = [];
 
   async main(client) {
   }
@@ -88,9 +114,22 @@ class ltcl_test_app extends z2ui5_if_app {
 
 
 
+class ltcl_bad_filter {
+  keep_node({ is_node, iv_visit = z2ui5_if_ajson_filter.visit_type.value } = {}) {
+    let rv_keep = false;
+    rv_keep = true;
+    return rv_keep;
+  }
+}
+
+
+
+
+
 class ltcl_test_client {
   mo_client = null;
   mo_action = null;
+  mo_test_app = null;
 
   system_actions() {
     let result = ``;
@@ -115,6 +154,7 @@ class ltcl_test_client {
     lo_http = new z2ui5_cl_ui5_handler({ val: `` });
     this.mo_action = new z2ui5_cl_ui5_action({ val: lo_http });
     lo_test_app = new ltcl_test_app();
+    this.mo_test_app = lo_test_app;
     this.mo_action.mo_app.mo_app = lo_test_app;
     this.mo_action.mo_app.mv_check_initialized = false;
     this.mo_client = new z2ui5_cl_ui5_client({ action: this.mo_action });
@@ -498,6 +538,33 @@ class ltcl_test_client {
     cl_abap_unit_assert.assert_equals({ exp: `BUTTON_PRESS`, act: li_client.get_event() });
   }
 
+  test_event_arg_shorthand() {
+    let li_client = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    cl_abap_unit_assert.assert_equals({ exp: li_client._event({ val: `PRESSED`, t_arg: [`\${AUTHOR}`] }), act: li_client._event({ val: `PRESSED`, arg: `\${AUTHOR}` }) });
+  }
+
+  test_event_arg_appends() {
+    let li_client = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    cl_abap_unit_assert.assert_equals({ exp: li_client._event({ val: `PRESSED`, t_arg: [`first`, `second`] }), act: li_client._event({ val: `PRESSED`, t_arg: [`first`], arg: `second` }) });
+  }
+
+  test_event_arg_empty() {
+    let li_client = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    cl_abap_unit_assert.assert_equals({ exp: li_client._event({ val: `PRESSED`, t_arg: [``] }), act: li_client._event({ val: `PRESSED`, arg: `` }) });
+    cl_abap_unit_assert.assert_differs({ exp: li_client._event(`PRESSED`), act: li_client._event({ val: `PRESSED`, arg: `` }) });
+  }
+
+  test_bind_path_alias() {
+    let li_client = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    cl_abap_unit_assert.assert_equals({ exp: li_client._bind({ val: this.mo_test_app.mv_name, path: true }), act: li_client._bind_path(this.mo_test_app.mv_name) });
+    cl_abap_unit_assert.assert_equals({ exp: `/MV_NAME`, act: li_client._bind_path(this.mo_test_app.mv_name) });
+    cl_abap_unit_assert.assert_equals({ exp: `{/MV_NAME}`, act: li_client._bind(this.mo_test_app.mv_name) });
+  }
+
   test_get_event_arg() {
     let temp28 = [];
     let temp30 = null;
@@ -534,6 +601,86 @@ class ltcl_test_client {
     lo_ajson = (z2ui5_cl_ajson.create_empty());
     lo_ajson.set({ iv_ignore_empty: false, iv_path: `/sub`, iv_val: ls_nest });
     cl_abap_unit_assert.assert_equals({ exp: ``, act: lo_ajson.filter(new lcl_empty_filter_keep_rows()).stringify() });
+  }
+
+  test_omit_filters_serial() {
+    let li_omit = null;
+    let li_paths = null;
+    li_omit = new lcl_empty_filter_keep_rows();
+    cl_abap_unit_assert.assert_true(z2ui5_cl_ui5_util_context.rtti_check_serializable({ val: li_omit }));
+    li_paths = new lcl_initial_paths_filter([`MIN`]);
+    cl_abap_unit_assert.assert_true(z2ui5_cl_ui5_util_context.rtti_check_serializable({ val: li_paths }));
+    cl_abap_unit_assert.assert_true(z2ui5_cl_ui5_util_context.rtti_check_serializable({ val: new lcl_and_filter({ ii_first: li_paths, ii_second: li_omit }) }));
+    cl_abap_unit_assert.assert_false(z2ui5_cl_ui5_util_context.rtti_check_serializable({ val: new ltcl_bad_filter() }));
+  }
+
+  test_bind_filter_not_serial() {
+    let li_client = null;
+    let lo_app = null;
+    let lx = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    lo_app = z2ui5_cl_util.abap_cast(this.mo_action.mo_app.mo_app);
+    try {
+      li_client._bind({ val: lo_app.mv_name, custom_filter: new ltcl_bad_filter() });
+      cl_abap_unit_assert.fail(`a non-serializable custom_filter must be refused at bind time - serialized into the draft it fails only at db_save on a real system`);
+    } catch (_caught1) {
+      lx = _caught1;
+      cl_abap_unit_assert.assert_true((String(lx.get_text()).toLowerCase().includes(String(`serializable`).toLowerCase())));
+    }
+  }
+
+  test_omit_initial_db_save() {
+    let li_client = null;
+    let lo_app = null;
+    let lo_cont = null;
+    let lo_cont_db = null;
+    let lo_app_db = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    lo_cont = this.mo_action.mo_app;
+    lo_app = z2ui5_cl_util.abap_cast(lo_cont.mo_app);
+    lo_app.mv_name = `kept across the draft`;
+    li_client._bind({ val: lo_app.mv_name, omit_initial: true });
+    lo_cont.ms_draft.id = `TEST_OMIT_INITIAL_DRAFT`;
+    lo_cont.db_save();
+    z2ui5_cl_ui5_app_cont.db_load_buffer_clear();
+    lo_cont_db = z2ui5_cl_ui5_app_cont.db_load(`TEST_OMIT_INITIAL_DRAFT`);
+    lo_app_db = z2ui5_cl_util.abap_cast(lo_cont_db.mo_app);
+    cl_abap_unit_assert.assert_equals({ exp: `kept across the draft`, act: lo_app_db.mv_name });
+    let lr_attri = null;
+    lr_attri = (() => { try { return lo_cont_db.mt_attri.find((row) => row.name === `MV_NAME`) ?? null; } catch { return null; } })();
+    cl_abap_unit_assert.assert_bound(lr_attri);
+    cl_abap_unit_assert.assert_equals({ exp: true, act: lr_attri.bind });
+  }
+
+  test_bind_tab_cell() {
+    let li_client = null;
+    let lo_app = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    lo_app = z2ui5_cl_util.abap_cast(this.mo_action.mo_app.mo_app);
+    lo_app.mt_emp.push(z2ui5_cl_util.abap_copy({ name: `Michael Adams`, job: `Scrum Master` }));
+    lo_app.mt_emp.push(z2ui5_cl_util.abap_copy({ name: `John Miller`, job: `Product Owner` }));
+    cl_abap_unit_assert.assert_equals({ exp: `{/MT_EMP/0/NAME}`, act: li_client._bind({ val: lo_app.mt_emp[(1) - 1].name, tab: lo_app.mt_emp, tab_index: 1 }) });
+    cl_abap_unit_assert.assert_equals({ exp: `{/MT_EMP/1/JOB}`, act: li_client._bind({ val: lo_app.mt_emp[(2) - 1].job, tab: lo_app.mt_emp, tab_index: 2 }) });
+  }
+
+  test_bind_tab_cell_assign() {
+    let sy_subrc = 0;
+    let fs_emp = null;
+    let _fs$fs_emp = null;
+    let li_client = null;
+    let lo_app = null;
+    li_client = z2ui5_cl_util.abap_cast(this.mo_client);
+    lo_app = z2ui5_cl_util.abap_cast(this.mo_action.mo_app.mo_app);
+    lo_app.mt_emp.push(z2ui5_cl_util.abap_copy({ name: `Michael Adams`, job: `Scrum Master` }));
+    lo_app.mt_emp.push(z2ui5_cl_util.abap_copy({ name: `John Miller`, job: `Product Owner` }));
+    fs_emp = lo_app.mt_emp[(1) - 1];
+    _fs$fs_emp = null;
+    sy_subrc = 0;
+    cl_abap_unit_assert.assert_equals({ exp: `{/MT_EMP/0/NAME}`, act: li_client._bind({ val: fs_emp.name, tab: lo_app.mt_emp, tab_index: 1 }) });
+    fs_emp = lo_app.mt_emp[(2) - 1];
+    _fs$fs_emp = null;
+    sy_subrc = 0;
+    cl_abap_unit_assert.assert_equals({ exp: `{/MT_EMP/1/JOB}`, act: li_client._bind({ val: fs_emp.job, tab: lo_app.mt_emp, tab_index: 2 }) });
   }
 
   test_set_app_state_active() {
@@ -699,6 +846,6 @@ class ltcl_test_model_skipped {
 
 module.exports = {
   __main: "z2ui5_cl_ui5_client",
-  __classes: { lcl_empty_filter_keep_rows, lcl_initial_paths_filter, ltcl_test_app, ltcl_test_client, ltcl_app_price_editor, ltcl_test_model_skipped },
-  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_nest_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_dependent","test_message_box_type","test_message_toast","test_set_nav_routing","test_set_nav_routing_default","test_follow_up_action","test_follow_up_action_ev","test_follow_up_action_nav","test_follow_up_action_ctrl","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_get_event","test_get_event_arg","test_set_app_state_active","test_omit_initial_paths","test_omit_initial_keeps_rows"],"ltcl_test_model_skipped":["test_accepted_price_silent","test_refused_price_reported","test_save_no_longer_lies","test_trace_is_per_roundtrip","test_nested_row_unresolved","test_bind_path_is_not_name"]},
+  __classes: { lcl_empty_filter_keep_rows, lcl_initial_paths_filter, lcl_and_filter, ltcl_test_app, ltcl_bad_filter, ltcl_test_client, ltcl_app_price_editor, ltcl_test_model_skipped },
+  __tests: {"ltcl_test_client":["test_instantiation","test_view_display","test_view_destroy","test_view_model_update","test_nest_model_update","test_popup_display","test_popup_destroy","test_popup_model_update","test_popover_display","test_popover_destroy","test_popover_model_update","test_nest_view_display","test_nest_view_destroy","test_nest2_view_display","test_nest2_view_destroy","test_message_box_display","test_message_box_dependent","test_message_box_type","test_message_toast","test_set_nav_routing","test_set_nav_routing_default","test_follow_up_action","test_follow_up_action_ev","test_follow_up_action_nav","test_follow_up_action_ctrl","test_check_on_init","test_check_on_init_done","test_check_on_event","test_check_on_event_empty","test_check_on_navigated","test_nav_app_call","test_nav_app_call_id_stable","test_nav_app_leave_event","test_nav_app_leave_r_data","test_nav_leave_r_data_empty","test_nav_leave_r_data_not_sup","test_nav_leave_r_data_unbound","test_check_app_prev_stack","test_set_push_state","test_get_event","test_get_event_arg","test_set_app_state_active","test_omit_initial_paths","test_omit_initial_keeps_rows","test_omit_filters_serial","test_bind_filter_not_serial","test_omit_initial_db_save","test_bind_tab_cell","test_bind_tab_cell_assign","test_event_arg_shorthand","test_event_arg_appends","test_event_arg_empty","test_bind_path_alias"],"ltcl_test_model_skipped":["test_accepted_price_silent","test_refused_price_reported","test_save_no_longer_lies","test_trace_is_per_roundtrip","test_nested_row_unresolved","test_bind_path_is_not_name"]},
 };

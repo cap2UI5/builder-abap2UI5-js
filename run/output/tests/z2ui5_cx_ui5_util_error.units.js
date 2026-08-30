@@ -23,7 +23,6 @@ class ltcl_unit_test {
     } catch (_caught1) {
       lx = _caught1;
       cl_abap_unit_assert.assert_bound(lx);
-      cl_abap_unit_assert.assert_not_initial(lx.ms_error.uuid);
       cl_abap_unit_assert.assert_equals({ exp: `UNKNOWN_ERROR`, act: lx.get_text() });
     }
   }
@@ -62,12 +61,29 @@ class ltcl_unit_test {
 
   test_uuid_populated() {
     let lx;
+    let lv_text;
     try {
       throw new z2ui5_cx_ui5_util_error({ val: `test` });
     } catch (_caught1) {
       lx = _caught1;
+      cl_abap_unit_assert.assert_initial(lx.ms_error.uuid);
+      lv_text = z2ui5_cx_ui5_util_error.get_text_full({ val: lx });
       cl_abap_unit_assert.assert_not_initial(lx.ms_error.uuid);
       cl_abap_unit_assert.assert_equals({ exp: 32, act: lx.ms_error.uuid.length });
+      cl_abap_unit_assert.assert_true((String(lv_text).toLowerCase().includes(String(lx.ms_error.uuid).toLowerCase())));
+    }
+  }
+
+  test_structured_val_no_dump() {
+    let lx;
+    let ls_probe = { a: 0, b: `` };
+    ls_probe.a = 1;
+    ls_probe.b = `not printable as a whole`;
+    try {
+      throw new z2ui5_cx_ui5_util_error({ val: ls_probe });
+    } catch (_caught1) {
+      lx = _caught1;
+      cl_abap_unit_assert.assert_equals({ exp: `UNKNOWN_ERROR`, act: lx.get_text() });
     }
   }
 
@@ -149,5 +165,5 @@ class ltcl_unit_test {
 module.exports = {
   __main: "z2ui5_cx_ui5_util_error",
   __classes: { ltcl_unit_test },
-  __tests: {"ltcl_unit_test":["test_raise","test_raise_empty","test_raise_with_prev","test_raise_with_cx","test_uuid_populated","test_chain_texts","test_cause_kept_by_val","test_no_duplicate_text","test_text_full_chain","test_text_full_any_cx","test_text_full_unbound","test_chain_bounded"]},
+  __tests: {"ltcl_unit_test":["test_raise","test_raise_empty","test_raise_with_prev","test_raise_with_cx","test_uuid_populated","test_structured_val_no_dump","test_chain_texts","test_cause_kept_by_val","test_no_duplicate_text","test_text_full_chain","test_text_full_any_cx","test_text_full_unbound","test_chain_bounded"]},
 };

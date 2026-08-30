@@ -151,6 +151,20 @@ class z2ui5_cl_ui5_util_http {
       }
     } catch (_caught1) {
       x = _caught1;
+      if (lo_client != null) {
+        try {
+          {
+            const _dynr = (lo_client);
+            const _dynm = _dynr ? _dynr[String(`CLOSE`).toLowerCase()] : undefined;
+            sy_subrc = typeof _dynm === "function" ? 0 : 4;
+            if (typeof _dynm === "function") {
+              const _dynargs = {  };
+              const _dynret = _dynm.call(_dynr, _dynargs);
+            }
+          }
+        } catch (error) {
+        }
+      }
       throw new z2ui5_cx_ui5_util_error({ val: x });
     }
     return result;

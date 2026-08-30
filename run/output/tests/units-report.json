@@ -31,8 +31,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_util_context",
-    "classes": 5,
-    "tests": 39,
+    "classes": 6,
+    "tests": 47,
     "todos": 0
   },
   {
@@ -50,7 +50,7 @@
   {
     "main": "z2ui5_cx_ui5_util_error",
     "classes": 1,
-    "tests": 12,
+    "tests": 13,
     "todos": 0
   },
   {
@@ -73,8 +73,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_client",
-    "classes": 6,
-    "tests": 50,
+    "classes": 8,
+    "tests": 59,
     "todos": 0
   },
   {
@@ -91,8 +91,8 @@
   },
   {
     "main": "z2ui5_cl_ui5_srv_bind",
-    "classes": 4,
-    "tests": 9,
+    "classes": 6,
+    "tests": 17,
     "todos": 0
   },
   {
