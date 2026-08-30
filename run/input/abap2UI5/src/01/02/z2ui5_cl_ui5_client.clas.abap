@@ -73,6 +73,9 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
         " an empty argument list switches it ON - a single space is how an
         " app switches it off again, since an empty t_arg cannot say `false`
         mo_action->ms_next-s_nav-set_app_state_active = xsdbool( lv_arg <> ` ` ).
+        " and remember it on the app, so main_end can re-assert it on the
+        " next response (see z2ui5_cl_ui5_app_cont->mv_app_state_active)
+        mo_action->mo_app->mv_app_state_active = mo_action->ms_next-s_nav-set_app_state_active.
         RETURN.
     ENDCASE.
 
@@ -418,8 +421,11 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
             li_omit = NEW lcl_empty_filter_keep_rows( ).
           ENDIF.
           IF li_filter IS BOUND.
-            li_filter = z2ui5_cl_ajson_filter_lib=>create_and_filter(
-                            VALUE #( ( li_filter ) ( li_omit ) ) ).
+            " NOT the vendored create_and_filter: its class is not
+            " serializable and the combined ref ends up in the draft -
+            " see the local class
+            li_filter = NEW lcl_and_filter( ii_first  = li_filter
+                                            ii_second = li_omit ).
           ELSE.
             li_filter = li_omit.
           ENDIF.
@@ -439,6 +445,17 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
                                     tab_index            = tab_index
                                     switch_default_model = switch_default_model
                                     check_json           = json ) ).
+
+  ENDMETHOD.
+
+
+  METHOD z2ui5_if_client~_bind_path.
+
+    " delegate instead of repeating the _bind( ) call, same reason as
+    " _bind_edit right below: one behaviour, so the two spellings can never
+    " drift apart. Deliberately no further parameters - see the interface.
+    result = z2ui5_if_client~_bind( val  = val
+                                    path = abap_true ).
 
   ENDMETHOD.
 
@@ -463,8 +480,18 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~_event.
 
+    " arg is folded into t_arg HERE, not in the event service: get_event( )
+    " then sees exactly the table a caller would have written by hand, so the
+    " two spellings cannot produce different wires. IS SUPPLIED rather than
+    " IS NOT INITIAL - an argument passed as empty on purpose is a filled
+    " slot, and dropping it would shift every following position.
+    DATA(lt_arg) = t_arg.
+    IF arg IS SUPPLIED.
+      APPEND CONV string( arg ) TO lt_arg.
+    ENDIF.
+
     result = mo_srv_event->get_event( val   = val
-                                      t_arg = t_arg
+                                      t_arg = lt_arg
                                       s_cnt = s_ctrl ).
 
   ENDMETHOD.
@@ -494,6 +521,9 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
     " writes - only that path needs the single-space encoding to squeeze
     " `false` through a string argument; a typed abap_bool does not
     mo_action->ms_next-s_nav-set_app_state_active = val.
+    " and remember it on the app, so main_end can re-assert it on the next
+    " response (see z2ui5_cl_ui5_app_cont->mv_app_state_active)
+    mo_action->mo_app->mv_app_state_active = val.
 
   ENDMETHOD.
 
