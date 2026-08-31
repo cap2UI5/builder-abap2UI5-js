@@ -39,6 +39,7 @@ jobs:
     needs: [mirror, prepare, build_core, trigger_cap]
     if: failure() && github.event_name == 'schedule'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       issues: write
     steps:

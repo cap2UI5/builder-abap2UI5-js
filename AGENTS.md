@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 31 suites <!-- count:suites --> (3 skipped)
+npm test                         # 32 suites <!-- count:suites --> (3 skipped)
 ```
 
 The `(cd adapters/cap && npm install)` line is a hard precondition, not a

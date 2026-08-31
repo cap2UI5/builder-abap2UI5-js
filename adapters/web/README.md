@@ -7,11 +7,15 @@ interceptor (installed before UI5 boots) answers it in-page via
 `engine.roundtrip()`.
 
 ```
-build.js:  registry (205 app classes) → esbuild → dist/z2ui5-bundle.js (~1.3 MB)
+build.js:  registry (every loadable app class) → esbuild → dist/z2ui5-bundle.js
            webapp copied 1:1 into dist/, index.html patched (bundle first)
 entry.js:  set_store(in-memory Map) + fetch interceptor + window.abap2UI5
-shims/:    fs (no-op), path (posix mini), crypto (globalThis.crypto)
+shims/:    fs (no-op), path (posix), crypto (globalThis.crypto), async_hooks
 ```
+
+The class count and the bundle size are whatever `npm run build` prints —
+a number copied into this page is one nothing re-measures, and the one that
+used to sit here had drifted to almost double the real count.
 
 Server-only classes (e.g. `z2ui5_cl_app_read_odata`, which needs `@sap/cds`)
 are skipped at registry load with a console warning — everything else runs.

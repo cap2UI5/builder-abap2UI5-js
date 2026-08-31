@@ -1,41 +1,38 @@
-/**
- * async_hooks shim for the browser bundle — the framework only needs
- * AsyncLocalStorage, and only to isolate the user-exit context per request
- * (z2ui5_cl_ui5_user_exit._als).
- *
- * A page is single-threaded and answers one roundtrip at a time, so a single
- * current-store slot is an exact stand-in: run( ) sets it for the duration of
- * the callback (including its awaits) and restores the previous one after,
- * which is the only nesting the framework produces.
- */
+// Browser stub for node:async_hooks - the framework only needs
+// AsyncLocalStorage, and only to isolate the user-exit HTTP context per
+// request (z2ui5_cl_ui5_user_exit). A page is single-threaded and answers
+// one roundtrip at a time, so a single current-store slot is an exact
+// stand-in: run( ) sets it for the duration of the callback - kept alive
+// until a returned promise settles, which covers the awaits inside one
+// roundtrip - and restores the previous one after, the only nesting the
+// framework produces. A read outside that window sees getStore( ) ===
+// undefined, which routes the framework onto its static-context fallback.
+// Shared byte-identical between builder-abap2UI5-js/adapters/web/shims/
+// (the source) and builder-cap2UI5-web/stubs/ - see fs for why.
 "use strict";
 
 class AsyncLocalStorage {
-  constructor() {
-    this._store = undefined;
+  getStore() {
+    return this._store;
   }
 
   run(store, fn, ...args) {
     const previous = this._store;
     this._store = store;
+    let result;
     try {
-      const out = fn(...args);
-      // async callback: keep the store alive until it settles
-      if (out && typeof out.then === "function") {
-        return out.finally(() => {
-          this._store = previous;
-        });
-      }
+      result = fn(...args);
+    } catch (err) {
       this._store = previous;
-      return out;
-    } catch (e) {
-      this._store = previous;
-      throw e;
+      throw err;
     }
-  }
-
-  getStore() {
-    return this._store;
+    if (result && typeof result.finally === "function") {
+      return result.finally(() => {
+        this._store = previous;
+      });
+    }
+    this._store = previous;
+    return result;
   }
 
   enterWith(store) {
