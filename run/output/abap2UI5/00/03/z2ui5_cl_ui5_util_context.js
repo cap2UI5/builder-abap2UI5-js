@@ -881,36 +881,6 @@ class z2ui5_cl_ui5_util_context {
     return result;
   }
 
-  static app_get_url({ classname, origin, pathname, search, hash = `` } = {}) {
-    let result = ``;
-    let lv_content;
-    let lv_off;
-    const lt_param = z2ui5_cl_ui5_util_context.url_param_get_tab({ val: search });
-    for (let _i = lt_param.length - 1; _i >= 0; _i--) { const row = lt_param[_i]; if (row.n === `app_start`) lt_param.splice(_i, 1); }
-    lt_param.push(z2ui5_cl_util.abap_copy({ n: `app_start`, v: classname.toLowerCase() }));
-    let lv_hash = (hash);
-    if (!z2ui5_cl_util.abap_is_initial(lv_hash)) {
-      lv_content = z2ui5_cl_util.abap_copy(lv_hash);
-      if (String(lv_content).substr(0, 1) === `#`) {
-        lv_content = lv_content.substr(1);
-      }
-      if (z2ui5_cl_util.abap_is_initial(lv_content) || String(lv_content).substr(0, 1) === `/`) {
-        lv_hash = ``;
-      } else {
-        lv_off = this.find({ val: lv_content, sub: `&/` });
-        if (lv_off === 0) {
-          lv_hash = ``;
-        } else if (lv_off > 0) {
-          lv_hash = `#${String(lv_content).substr(0, lv_off)}`;
-        } else {
-          lv_hash = `#${lv_content}`;
-        }
-      }
-    }
-    result = `${origin}${pathname}?` + z2ui5_cl_ui5_util_context.url_param_create_url({ t_params: lt_param }) + lv_hash;
-    return result;
-  }
-
   static check_abap_cloud() {
     let result = false;
     if ((z2ui5_cl_ui5_util_context.gv_check_cloud_cached === true || z2ui5_cl_ui5_util_context.gv_check_cloud_cached === `X`)) {

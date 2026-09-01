@@ -34,13 +34,22 @@ class z2ui5_cl_ui5f_router_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function getHash() {` + `
-` + `      const app = appHashOf(hashChanger().getHash());` + `
+` + `      return appHashNormalized(hashChanger().getHash());` + `
+` + `    }` + `
+` + `` + `
+` + `    function appHashNormalized(sHash) {` + `
+` + `      const app = appHashOf(sHash);` + `
+` + `` + `
+` + `      if (app === "/") return "";` + `
 ` + `      return app && !app.startsWith("/") ? \`/\${app}\` : app;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function hrefFor(sAppHash) {` + `
 ` + `      const base = window.location.href.split("#")[0];` + `
-` + `      const shell = splitHash(window.location.hash).shell;` + `
+` + `      const raw = String(window.location.hash || "").replace(/^#/, "");` + `
+` + `      let shell = splitHash(raw).shell;` + `
+` + `` + `
+` + `      if (!shell && raw && !raw.startsWith("/")) shell = raw;` + `
 ` + `      if (!shell) return \`\${base}#\${sAppHash}\`;` + `
 ` + `` + `
 ` + `      return \`\${base}#\${shell}\${SHELL_SEPARATOR}\${String(sAppHash).replace(/^\\/+/, "")}\`;` + `
@@ -88,10 +97,21 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function navBack(sFallback) {` + `
+` + `      if (!sFallback || AppState.state.hashPushCount > 0) {` + `
+` + `        window.history.back();` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      navTo(sFallback, true);` + `
+` + `    }` + `
+` + `` + `
 ` + `    function onHashChanged(sNewHash) {` + `
 ` + `      const state = AppState.state;` + `
 ` + `` + `
-` + `      if (!state.navRouting) return;` + `
+` + `      if (!state.navRouting) {` + `
+` + `        dispatchAppHashChange(sNewHash);` + `
+` + `        return;` + `
+` + `      }` + `
 ` + `` + `
 ` + `      const route = parse(sNewHash);` + `
 ` + `      if (!route) return;` + `
@@ -106,6 +126,26 @@ class z2ui5_cl_ui5f_router_js {
 ` + `` + `
 ` + `      state.navFromHash = true;` + `
 ` + `      if (_fnNavigate) _fnNavigate();` + `
+` + `    }` + `
+` + `` + `
+` + `    function applyHashEvent(mOptions) {` + `
+` + `      if (!mOptions.setHashEvent) return;` + `
+` + `      const state = AppState.state;` + `
+` + `      const sEvent = String(mOptions.setHashEvent).trim();` + `
+` + `      state.hashEvent = sEvent || null;` + `
+` + `` + `
+` + `      state.appHash = appHashNormalized(getRawHash());` + `
+` + `    }` + `
+` + `` + `
+` + `    function dispatchAppHashChange(sNewHash) {` + `
+` + `      const state = AppState.state;` + `
+` + `      if (!state.hashEvent) return;` + `
+` + `      const appHash = appHashNormalized(sNewHash);` + `
+` + `      if (appHash === state.appHash) return;` + `
+` + `      state.appHash = appHash;` + `
+` + `      const controller = state.oController;` + `
+` + `      if (!controller || Lib.isDestroyed(controller)) return;` + `
+` + `      controller.eB([state.hashEvent]);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function repointCallerEntry(mOptions, draftForRoute) {` + `
@@ -140,7 +180,7 @@ class z2ui5_cl_ui5f_router_js {
 ` + `        state.navFromHash = false;` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      if (mOptions.setPushState) return;` + `
+` + `      if (mOptions.setPushState || mOptions.setHashReplace) return;` + `
 ` + `` + `
 ` + `      const route = patternFor(app, draftForRoute);` + `
 ` + `      if (mOptions.checkNavAppCall) {` + `
@@ -157,21 +197,61 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      const ID = mOptions.id;` + `
 ` + `      try {` + `
 ` + `        applyMode(mOptions);` + `
+` + `        applyHashEvent(mOptions);` + `
 ` + `` + `
 ` + `        const state = AppState.state;` + `
 ` + `        if (state.navRouting) {` + `
 ` + `          const app = state.oResponse?.APP;` + `
 ` + `          if (app) updateAppRoute(mOptions, ID, app);` + `
 ` + `` + `
-` + `          if (!mOptions.setPushState) return;` + `
+` + `          if (!mOptions.setPushState && !mOptions.setHashReplace) return;` + `
+` + `` + `
+` + `          if (state.currentDraftId) {` + `
+` + `            if (mOptions.setPushState) {` + `
+` + `              state.hashPushCount += 1;` + `
+` + `              navTo(` + `
+` + `                patternFor(state.currentApp, state.currentDraftId) +` + `
+` + `                  mOptions.setPushState,` + `
+` + `              );` + `
+` + `            } else {` + `
+` + `              navTo(` + `
+` + `                patternFor(state.currentApp, state.currentDraftId) +` + `
+` + `                  mOptions.setHashReplace,` + `
+` + `                true,` + `
+` + `              );` + `
+` + `            }` + `
+` + `            return;` + `
+` + `          }` + `
 ` + `        }` + `
 ` + `` + `
 ` + `        if (mOptions.setPushState) {` + `
+` + `          if (state.hashEvent) {` + `
+` + `            state.appHash = appHashNormalized(mOptions.setPushState);` + `
+` + `            state.hashPushCount += 1;` + `
+` + `            navTo(mOptions.setPushState);` + `
+` + `            return;` + `
+` + `          }` + `
+` + `` + `
 ` + `          const newUrl = \`\${window.location.pathname}\${window.location.search}#\${getRawHash()}\${mOptions.setPushState}\`;` + `
+` + `          state.hashPushCount += 1;` + `
 ` + `          history.pushState(null, "", newUrl);` + `
 ` + `` + `
 ` + `          return;` + `
 ` + `        }` + `
+` + `` + `
+` + `        if (mOptions.setHashReplace) {` + `
+` + `          if (state.hashEvent) {` + `
+` + `            state.appHash = appHashNormalized(mOptions.setHashReplace);` + `
+` + `            navTo(mOptions.setHashReplace, true);` + `
+` + `            return;` + `
+` + `          }` + `
+` + `` + `
+` + `          const replUrl = \`\${window.location.pathname}\${window.location.search}#\${getRawHash()}\${mOptions.setHashReplace}\`;` + `
+` + `          history.replaceState(null, "", replUrl);` + `
+` + `          return;` + `
+` + `        }` + `
+` + `` + `
+` + `        if (state.hashEvent) return;` + `
 ` + `` + `
 ` + `        const newHash = mOptions.setAppStateActive` + `
 ` + `          ? \`/z2ui5-xapp-state=\${ID || ""}\`` + `
@@ -210,6 +290,7 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      appOf,` + `
 ` + `      draftOf,` + `
 ` + `      navTo,` + `
+` + `      navBack,` + `
 ` + `      onHashChanged,` + `
 ` + `      sync,` + `
 ` + `    };` + `

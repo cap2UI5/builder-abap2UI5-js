@@ -239,9 +239,19 @@ class z2ui5_cl_ui5_util_http {
   }
 
   set_header_field({ n, v } = {}) {
+    let lv_cr;
+    let lv_lf;
     let object;
     const lv_n = (n);
     const lv_v = (v);
+    if ([...String(lv_n)].some(($c) => String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf).includes($c)) || [...String(lv_v)].some(($c) => String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf).includes($c))) {
+      lv_cr = (String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf).substr(0, 1));
+      lv_lf = (String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf).substr(1, 1));
+      lv_n = String(lv_n).replaceAll(lv_cr, `` ?? ``);
+      lv_n = String(lv_n).replaceAll(lv_lf, `` ?? ``);
+      lv_v = String(lv_v).replaceAll(lv_cr, `` ?? ``);
+      lv_v = String(lv_v).replaceAll(lv_lf, `` ?? ``);
+    }
     if (this.mo_server_onprem != null) {
       object = this.get_response_onprem();
       {

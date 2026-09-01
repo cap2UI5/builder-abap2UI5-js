@@ -119,6 +119,18 @@ class z2ui5_cl_ui5_view_builder {
     result = this.root.render();
     return result;
   }
+
+  static escape_literal({ val } = {}) {
+    let result = ``;
+    result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
+    if (![...String(result)].some(($c) => String(`{}`).includes($c))) {
+      return result;
+    }
+    result = result.replaceAll(`\\`, `\\\\`);
+    result = result.replaceAll(`{`, `\\{`);
+    result = result.replaceAll(`}`, `\\}`);
+    return result;
+  }
 }
 
 module.exports = z2ui5_cl_ui5_view_builder;
@@ -131,6 +143,7 @@ require("abap2UI5/z2ui5_preferred_param")(z2ui5_cl_ui5_view_builder, {
   ele: { preferred: `n`, params: [`n`, `ns`] },
   tag: { preferred: `n`, params: [`n`, `ns`] },
   a: { preferred: `n`, params: [`n`, `v`, `b`] },
+  escape_literal: { preferred: `val`, params: [`val`] },
   xml_escape: { preferred: `val`, params: [`val`] },
 });
 

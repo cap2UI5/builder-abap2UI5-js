@@ -68,6 +68,10 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function evHashBack(oController, args) {` + `
+` + `      Router.navBack(args ? args[1] : undefined);` + `
+` + `    }` + `
+` + `` + `
 ` + `    function evLocationReload(oController, args) {` + `
 ` + `      if (Lib.isValidRedirectURL(args[1])) {` + `
 ` + `        window.location.href = args[1];` + `
@@ -245,6 +249,7 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `      CLIPBOARD_APP_STATE: evClipboardAppState,` + `
 ` + `      DOWNLOAD_B64_FILE: evDownloadB64File,` + `
 ` + `      STORE_DATA: evStoreData,` + `
+` + `      HASH_BACK: evHashBack,` + `
 ` + `      LOCATION_RELOAD: evLocationReload,` + `
 ` + `      SYSTEM_LOGOUT: evSystemLogout,` + `
 ` + `      OPEN_NEW_TAB: evOpenNewTab,` + `

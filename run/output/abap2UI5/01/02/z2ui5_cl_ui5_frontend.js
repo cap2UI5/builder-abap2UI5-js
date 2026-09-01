@@ -104,11 +104,11 @@ class z2ui5_cl_ui5_frontend {
       li_opt = (z2ui5_cl_ajson.create_empty());
       this.set_opt_bool({ json: li_opt, name: `setAppStateActive`, val: ls_nav.set_app_state_active });
       this.set_opt_bool({ json: li_opt, name: `checkNavAppCall`, val: ls_nav.check_nav_app_call });
-      this.set_opt_strings({ json: li_opt, opt: [{ name: `setPushState`, val: ls_nav.set_push_state }, { name: `setNavRouting`, val: ls_nav.set_nav_routing }, { name: `navAppCallPrevApp`, val: ls_nav.nav_app_call_prev_app }, { name: `navAppCallPrevId`, val: ls_nav.nav_app_call_prev_id }] });
+      this.set_opt_strings({ json: li_opt, opt: [{ name: `setPushState`, val: ls_nav.set_push_state }, { name: `setHashReplace`, val: ls_nav.hash_replace }, { name: `setNavRouting`, val: ls_nav.set_nav_routing }, { name: `setHashEvent`, val: ls_nav.set_hash_listener }, { name: `navAppCallPrevApp`, val: ls_nav.nav_app_call_prev_app }, { name: `navAppCallPrevId`, val: ls_nav.nav_app_call_prev_id }] });
       if ((li_opt.is_empty() === true || li_opt.is_empty() === `X`)) {
         return;
       }
-      this.queue_system({ t_arg: [`ROUTER`, `sync`], opt: li_opt });
+      this.queue_system({ t_arg: [z2ui5_if_ui5_types.cs_global_target.router, `sync`], opt: li_opt });
     } catch (_caught1) {
       lx_json = _caught1;
       throw new z2ui5_cx_ui5_util_error({ val: `NAV_OPTIONS_INVALID`, previous: lx_json });
@@ -125,7 +125,7 @@ class z2ui5_cl_ui5_frontend {
       this.set_opt_strings({ json: li_opt, opt: [{ name: `width`, val: width }, { name: `my`, val: my }, { name: `at`, val: at }, { name: `of`, val: of }, { name: `offset`, val: offset }, { name: `collision`, val: collision }, { name: `onClose`, val: onclose }, { name: `animationTimingFunction`, val: animationtimingfunction }, { name: `class`, val: class_ }] });
       this.set_opt_bool({ json: li_opt, name: `autoClose`, val: autoclose, default_val: true });
       this.set_opt_bool({ json: li_opt, name: `closeOnBrowserNavigation`, val: closeonbrowsernavigation, default_val: true });
-      this.queue_app({ t_arg: [`MESSAGE_TOAST`, `show`, (text)], opt: li_opt });
+      this.queue_app({ t_arg: [z2ui5_if_ui5_types.cs_global_target.message_toast, `show`, (text)], opt: li_opt });
     } catch (_caught1) {
       lx_json = _caught1;
       throw new z2ui5_cx_ui5_util_error({ val: `MESSAGE_TOAST_OPTIONS_INVALID`, previous: lx_json });
@@ -155,7 +155,7 @@ class z2ui5_cl_ui5_frontend {
         }
       }
       this.set_opt_bool({ json: li_opt, name: `closeOnNavigation`, val: closeonnavigation, default_val: true });
-      this.queue_app({ t_arg: [`MESSAGE_BOX`, ls_msg.type, ls_msg.text], opt: li_opt });
+      this.queue_app({ t_arg: [z2ui5_if_ui5_types.cs_global_target.message_box, ls_msg.type, ls_msg.text], opt: li_opt });
     } catch (_caught1) {
       lx_json = _caught1;
       throw new z2ui5_cx_ui5_util_error({ val: `MESSAGE_BOX_OPTIONS_INVALID`, previous: lx_json });
