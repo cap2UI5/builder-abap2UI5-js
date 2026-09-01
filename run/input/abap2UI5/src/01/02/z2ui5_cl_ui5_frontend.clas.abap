@@ -423,7 +423,9 @@ CLASS z2ui5_cl_ui5_frontend IMPLEMENTATION.
         set_opt_strings(
             json = li_opt
             opt  = VALUE #( ( name = `setPushState`      val = ls_nav-set_push_state )
+                            ( name = `setHashReplace`    val = ls_nav-hash_replace )
                             ( name = `setNavRouting`     val = ls_nav-set_nav_routing )
+                            ( name = `setHashEvent`      val = ls_nav-set_hash_listener )
                             ( name = `navAppCallPrevApp` val = ls_nav-nav_app_call_prev_app )
                             ( name = `navAppCallPrevId`  val = ls_nav-nav_app_call_prev_id ) ) ).
 
@@ -433,7 +435,7 @@ CLASS z2ui5_cl_ui5_frontend IMPLEMENTATION.
           RETURN.
         ENDIF.
 
-        queue_system( t_arg = VALUE #( ( `ROUTER` )
+        queue_system( t_arg = VALUE #( ( z2ui5_if_ui5_types=>cs_global_target-router )
                                        ( `sync` ) )
                       opt   = li_opt ).
 
@@ -491,7 +493,7 @@ CLASS z2ui5_cl_ui5_frontend IMPLEMENTATION.
 
         " sap.m.MessageToast is a global object, so the toast rides the
         " generic whitelisted global call
-        queue_app( t_arg = VALUE #( ( `MESSAGE_TOAST` )
+        queue_app( t_arg = VALUE #( ( z2ui5_if_ui5_types=>cs_global_target-message_toast )
                                     ( `show` )
                                     ( CONV string( text ) ) )
                    opt   = li_opt ).
@@ -560,7 +562,7 @@ CLASS z2ui5_cl_ui5_frontend IMPLEMENTATION.
 
         " sap.m.MessageBox is a global too - and its display methods are the
         " box types, so the type IS the method of the global call
-        queue_app( t_arg = VALUE #( ( `MESSAGE_BOX` )
+        queue_app( t_arg = VALUE #( ( z2ui5_if_ui5_types=>cs_global_target-message_box )
                                     ( ls_msg-type )
                                     ( ls_msg-text ) )
                    opt   = li_opt ).

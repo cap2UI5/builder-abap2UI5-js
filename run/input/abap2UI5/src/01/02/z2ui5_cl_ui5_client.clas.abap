@@ -9,9 +9,12 @@ CLASS z2ui5_cl_ui5_client DEFINITION PUBLIC FINAL.
       IMPORTING
         action TYPE REF TO z2ui5_cl_ui5_action.
 
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+
     DATA mo_srv_bind  TYPE REF TO z2ui5_cl_ui5_srv_bind.
     DATA mo_srv_event TYPE REF TO z2ui5_cl_ui5_srv_event.
-    DATA mo_action_front   TYPE REF TO z2ui5_cl_ui5_frontend.
+    DATA mo_frontend  TYPE REF TO z2ui5_cl_ui5_frontend.
 
     METHODS nav_app_set_id
       IMPORTING
@@ -22,9 +25,6 @@ CLASS z2ui5_cl_ui5_client DEFINITION PUBLIC FINAL.
     METHODS get_if_app
       RETURNING
         VALUE(result) TYPE REF TO z2ui5_if_app.
-
-  PROTECTED SECTION.
-  PRIVATE SECTION.
 
 ENDCLASS.
 
@@ -37,7 +37,7 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
     mo_action = action.
     mo_srv_bind = NEW #( mo_action->mo_app ).
     mo_srv_event = NEW #( ).
-    mo_action_front = NEW #( mo_action ).
+    mo_frontend = NEW #( mo_action ).
 
   ENDMETHOD.
 
@@ -65,8 +65,27 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
         mo_action->mo_app->mv_nav_mode           = lv_arg.
         RETURN.
 
-      WHEN z2ui5_if_client=>cs_event-set_push_state.
+      WHEN z2ui5_if_client=>cs_event-hash_set.
+        " same value as the obsolete cs_event-set_push_state - one branch
+        " serves both spellings
         mo_action->ms_next-s_nav-set_push_state = lv_arg.
+        RETURN.
+
+      WHEN z2ui5_if_client=>cs_event-hash_replace.
+        " HashChanger#replaceHash: the same write as hash_set, minus the
+        " history entry - the router's navTo( ..., true )
+        mo_action->ms_next-s_nav-hash_replace = lv_arg.
+        RETURN.
+
+      WHEN z2ui5_if_client=>cs_event-hash_attach_changed.
+        " app-owned hash routing: the event name registered for hash changes.
+        " Empty on the wire means "no change", so an unregister (no t_arg)
+        " travels as a single space - the app_state_set_active encoding. Not
+        " remembered on the app: the registration dies with an app switch,
+        " and an app asserts it in view_display( ), so every render carries it
+        mo_action->ms_next-s_nav-set_hash_listener = COND #( WHEN lv_arg IS INITIAL
+                                                             THEN ` `
+                                                             ELSE lv_arg ).
         RETURN.
 
       WHEN z2ui5_if_client=>cs_event-set_app_state_active.
@@ -94,11 +113,11 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
       " a framework event travels as pure data - a JSON array built and
       " escaped entirely in ABAP; only a raw JS expression passed by the app
       " keeps the code form (the legacy formats, a STRING entry of the list)
-      mo_action_front->queue_app_event( val   = val
-                                        view  = view
-                                        t_arg = t_arg ).
+      mo_frontend->queue_app_event( val   = val
+                                    view  = view
+                                    t_arg = t_arg ).
     ELSE.
-      mo_action_front->queue_app_js( val ).
+      mo_frontend->queue_app_js( val ).
     ENDIF.
 
   ENDMETHOD.
@@ -118,15 +137,15 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
   METHOD z2ui5_if_client~get.
 
     result = VALUE #( event                  = mo_action->ms_actual-event
-                      check_launchpad_active = mo_action->mo_http_post->ms_request-s_control-check_launchpad
+                      check_launchpad_active = mo_action->mo_handler->ms_request-s_control-check_launchpad
                       t_event_arg            = mo_action->ms_actual-t_event_arg
                       s_draft                = CORRESPONDING #( mo_action->mo_app->ms_draft )
                       check_on_navigated     = mo_action->ms_actual-check_on_navigated
-                      s_config               = CORRESPONDING #( mo_action->mo_http_post->ms_request-s_front )
-                      s_device               = mo_action->mo_http_post->ms_request-s_front-s_device
-                      s_focus                = mo_action->mo_http_post->ms_request-s_front-s_focus
-                      s_scroll               = mo_action->mo_http_post->ms_request-s_front-s_scroll
-                      s_ui5                  = mo_action->mo_http_post->ms_request-s_front-s_ui5
+                      s_config               = CORRESPONDING #( mo_action->mo_handler->ms_request-s_front )
+                      s_device               = mo_action->mo_handler->ms_request-s_front-s_device
+                      s_focus                = mo_action->mo_handler->ms_request-s_front-s_focus
+                      s_scroll               = mo_action->mo_handler->ms_request-s_front-s_scroll
+                      s_ui5                  = mo_action->mo_handler->ms_request-s_front-s_ui5
                       r_event_data           = mo_action->ms_actual-r_data
                       t_model_skipped        = mo_action->ms_actual-t_model_skipped
                       _s_nav-check_call      = xsdbool( mo_action->ms_next-o_app_call IS NOT INITIAL )
@@ -134,7 +153,7 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
     TRY.
 
-        DATA(lo_comp) = mo_action->mo_http_post->ms_request-s_front-o_comp_data.
+        DATA(lo_comp) = mo_action->mo_handler->ms_request-s_front-o_comp_data.
         IF lo_comp IS NOT BOUND.
           RETURN.
         ENDIF.
@@ -143,6 +162,15 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
         IF lo_params IS NOT BOUND.
           RETURN.
         ENDIF.
+        " FLP startupParameters arrive as one ARRAY per parameter name
+        " ({"foo":["bar"], ...}), and the names are the launchpad tile's own -
+        " unknowable here, so no typed to_abap mapping can collect them. The
+        " node table is walked directly instead: the array ELEMENT nodes are
+        " the ones whose name is their array index, and `name = '1'` picks
+        " each parameter's first value (the FLP convention; further array
+        " entries of a multi-value parameter are deliberately dropped). The
+        " element's path is `/foo/` - the parameter name between two slashes,
+        " which the two shifts below strip off.
         LOOP AT lo_params->mt_json_tree                 "#EC CI_SORTSEQ
              REFERENCE INTO DATA(lr_comp)
              WHERE name = `1`.
@@ -189,40 +217,40 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~message_box_display.
 
-    mo_action_front->msg_box( text              = text
-                              type              = type
-                              title             = title
-                              styleclass        = styleclass
-                              onclose           = onclose
-                              actions           = actions
-                              emphasizedaction  = emphasizedaction
-                              initialfocus      = initialfocus
-                              textdirection     = textdirection
-                              icon              = icon
-                              details           = details
-                              closeonnavigation = closeonnavigation
-                              dependenton       = dependenton
-                              contentwidth      = contentwidth ).
+    mo_frontend->msg_box( text              = text
+                          type              = type
+                          title             = title
+                          styleclass        = styleclass
+                          onclose           = onclose
+                          actions           = actions
+                          emphasizedaction  = emphasizedaction
+                          initialfocus      = initialfocus
+                          textdirection     = textdirection
+                          icon              = icon
+                          details           = details
+                          closeonnavigation = closeonnavigation
+                          dependenton       = dependenton
+                          contentwidth      = contentwidth ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~message_toast_display.
 
-    mo_action_front->msg_toast( text                     = text
-                                duration                 = duration
-                                width                    = width
-                                my                       = my
-                                at                       = at
-                                of                       = of
-                                offset                   = offset
-                                collision                = collision
-                                onclose                  = onclose
-                                autoclose                = autoclose
-                                animationtimingfunction  = animationtimingfunction
-                                animationduration        = animationduration
-                                closeonbrowsernavigation = closeonbrowsernavigation
-                                class                    = class ).
+    mo_frontend->msg_toast( text                     = text
+                            duration                 = duration
+                            width                    = width
+                            my                       = my
+                            at                       = at
+                            of                       = of
+                            offset                   = offset
+                            collision                = collision
+                            onclose                  = onclose
+                            autoclose                = autoclose
+                            animationtimingfunction  = animationtimingfunction
+                            animationduration        = animationduration
+                            closeonbrowsernavigation = closeonbrowsernavigation
+                            class                    = class ).
 
   ENDMETHOD.
 
@@ -273,18 +301,18 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~nest2_view_destroy.
 
-    mo_action_front->slot_destroy( z2ui5_if_client=>cs_view-nested2 ).
+    mo_frontend->slot_destroy( z2ui5_if_client=>cs_view-nested2 ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~nest2_view_display.
 
-    mo_action_front->slot_display( slot = z2ui5_if_client=>cs_view-nested2
-                  xml                   = val
-                  id                    = id
-                  method_insert         = method_insert
-                  method_destroy        = method_destroy ).
+    mo_frontend->slot_display( slot           = z2ui5_if_client=>cs_view-nested2
+                               xml            = val
+                               id             = id
+                               method_insert  = method_insert
+                               method_destroy = method_destroy ).
 
   ENDMETHOD.
 
@@ -300,18 +328,18 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~nest_view_destroy.
 
-    mo_action_front->slot_destroy( z2ui5_if_client=>cs_view-nested ).
+    mo_frontend->slot_destroy( z2ui5_if_client=>cs_view-nested ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~nest_view_display.
 
-    mo_action_front->slot_display( slot = z2ui5_if_client=>cs_view-nested
-                  xml                   = val
-                  id                    = id
-                  method_insert         = method_insert
-                  method_destroy        = method_destroy ).
+    mo_frontend->slot_display( slot           = z2ui5_if_client=>cs_view-nested
+                               xml            = val
+                               id             = id
+                               method_insert  = method_insert
+                               method_destroy = method_destroy ).
 
   ENDMETHOD.
 
@@ -325,16 +353,16 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~popover_destroy.
 
-    mo_action_front->slot_destroy( z2ui5_if_client=>cs_view-popover ).
+    mo_frontend->slot_destroy( z2ui5_if_client=>cs_view-popover ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~popover_display.
 
-    mo_action_front->slot_display( slot = z2ui5_if_client=>cs_view-popover
-                  xml                   = xml
-                  open_by_id            = by_id ).
+    mo_frontend->slot_display( slot       = z2ui5_if_client=>cs_view-popover
+                               xml        = xml
+                               open_by_id = by_id ).
 
   ENDMETHOD.
 
@@ -349,15 +377,15 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~popup_destroy.
 
-    mo_action_front->slot_destroy( z2ui5_if_client=>cs_view-popup ).
+    mo_frontend->slot_destroy( z2ui5_if_client=>cs_view-popup ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~popup_display.
 
-    mo_action_front->slot_display( slot = z2ui5_if_client=>cs_view-popup
-                  xml                   = val ).
+    mo_frontend->slot_display( slot = z2ui5_if_client=>cs_view-popup
+                               xml  = val ).
 
   ENDMETHOD.
 
@@ -372,17 +400,17 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
 
   METHOD z2ui5_if_client~view_destroy.
 
-    mo_action_front->slot_destroy( z2ui5_if_client=>cs_view-main ).
+    mo_frontend->slot_destroy( z2ui5_if_client=>cs_view-main ).
 
   ENDMETHOD.
 
 
   METHOD z2ui5_if_client~view_display.
 
-    mo_action_front->slot_display( slot         = z2ui5_if_client=>cs_view-main
-                  xml                           = val
-                  switch_default_model_path     = switch_default_model_path
-                  switch_default_model_anno_uri = switch_default_model_anno_uri ).
+    mo_frontend->slot_display( slot                          = z2ui5_if_client=>cs_view-main
+                               xml                           = val
+                               switch_default_model_path     = switch_default_model_path
+                               switch_default_model_anno_uri = switch_default_model_anno_uri ).
 
   ENDMETHOD.
 
@@ -506,24 +534,77 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD z2ui5_if_client~set_push_state.
+  METHOD z2ui5_if_client~hash_set.
 
-    " same field the cs_event-set_push_state branch of follow_up_action
-    " writes - the typed method just skips the string-argument detour
+    " same field the cs_event-hash_set branch of follow_up_action writes -
+    " the typed method just skips the string-argument detour
     mo_action->ms_next-s_nav-set_push_state = val.
 
   ENDMETHOD.
 
 
-  METHOD z2ui5_if_client~set_app_state_active.
+  METHOD z2ui5_if_client~hash_replace.
 
-    " same field the cs_event-set_app_state_active branch of follow_up_action
+    " HashChanger#replaceHash - hash_set minus the history entry
+    mo_action->ms_next-s_nav-hash_replace = val.
+
+  ENDMETHOD.
+
+
+  METHOD z2ui5_if_client~set_push_state.
+
+    " obsolete spelling - delegates to keep exactly one write path
+    z2ui5_if_client~hash_set( val ).
+
+  ENDMETHOD.
+
+
+  METHOD z2ui5_if_client~app_state_set_active.
+
+    " same field the cs_event-app_state_set_active branch of follow_up_action
     " writes - only that path needs the single-space encoding to squeeze
     " `false` through a string argument; a typed abap_bool does not
     mo_action->ms_next-s_nav-set_app_state_active = val.
     " and remember it on the app, so main_end can re-assert it on the next
     " response (see z2ui5_cl_ui5_app_cont->mv_app_state_active)
     mo_action->mo_app->mv_app_state_active = val.
+
+  ENDMETHOD.
+
+
+  METHOD z2ui5_if_client~set_app_state_active.
+
+    " obsolete spelling - delegates to keep exactly one write path
+    z2ui5_if_client~app_state_set_active( val ).
+
+  ENDMETHOD.
+
+
+  METHOD z2ui5_if_client~app_state_get_href.
+
+    " The absolute link to the CURRENT app state, composed the way the
+    " frontend's Router.hrefFor builds it - from the browser's OWN location
+    " (origin/pathname/search ride with the requests and are session-merged)
+    " plus this roundtrip's draft id. Inside the FLP the shell owns the front
+    " of the hash - keeping that shell part is what makes the link land in
+    " this app instead of on the launchpad home page. The split itself lives
+    " in ONE backend place, next to its app-part half (see
+    " z2ui5_cl_ui5_handler=>hash_get_shell_part, which mirrors
+    " Router.splitHash) - never re-implement it here.
+    DATA(ls_front) = mo_action->mo_handler->ms_request-s_front.
+    DATA(lv_state) = |z2ui5-xapp-state={ mo_action->mo_app->ms_draft-id }|.
+
+    " check_bare_is_shell: s_front-hash is the RAW location hash, so a bare
+    " '#So-action' (FLP intent, no app part yet) is all shell - without it
+    " the composed link would be FLP-URL#/state, which the launchpad cannot
+    " route back into this app
+    DATA(lv_shell) = z2ui5_cl_ui5_handler=>hash_get_shell_part(
+                         iv_hash             = ls_front-hash
+                         check_bare_is_shell = abap_true ).
+
+    result = COND #( WHEN lv_shell IS INITIAL
+                     THEN |{ ls_front-origin }{ ls_front-pathname }{ ls_front-search }#/{ lv_state }|
+                     ELSE |{ ls_front-origin }{ ls_front-pathname }{ ls_front-search }#{ lv_shell }&/{ lv_state }| ).
 
   ENDMETHOD.
 
@@ -536,6 +617,13 @@ CLASS z2ui5_cl_ui5_client IMPLEMENTATION.
     mo_action->ms_next-s_stateful-active = COND #( WHEN val = abap_true THEN 1 ELSE 0 ).
     mo_action->mo_app->mv_check_sticky = val.
 
+    " a TOGGLE on purpose, not `= abap_true`: switched says "the state at the
+    " END of this roundtrip differs from the state at its start". Two calls
+    " in one roundtrip (on, then off - the early RETURN above lets only real
+    " changes through) cancel out to abap_false, and
+    " z2ui5_cl_ui5_http_handler=>set_response then skips its
+    " set_session_stateful call entirely - while `active` always carries the
+    " final state for the roundtrips where switched stays abap_true
     mo_action->ms_next-s_stateful-switched = xsdbool( mo_action->ms_next-s_stateful-switched = abap_false ).
 
   ENDMETHOD.
