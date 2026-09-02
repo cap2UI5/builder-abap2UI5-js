@@ -56,6 +56,70 @@ sap.ui.define(
       return null;
     }
 
+    // Probe for the sap/ui/core/Theming module (since 1.118) - the ONLY way
+    // it may be reached (rule 12: a hard sap.ui.define dependency 404s on
+    // 1.71 and kills the whole component load). On modern UI5 the core has
+    // it loaded so the probing require finds it; on older releases it
+    // returns null and the caller falls back or reports "not available".
+    function getThemingModule() {
+      return sap.ui.require("sap/ui/core/Theming") || null;
+    }
+
+    // The running theme, version-independently. sap/ui/core/Theming is the
+    // only API left in UI5 2.x; older releases expose the theme through the
+    // Configuration singleton. Returns "" when neither answers (bare test
+    // bootstraps) - never throws, so a diagnostic caller cannot be the
+    // thing that breaks.
+    function getTheme() {
+      try {
+        const Theming = getThemingModule();
+        if (Theming?.getTheme) return Theming.getTheme();
+        /* ui5lint-disable no-globals, no-deprecated-api --
+         deliberate fallback for UI5 releases without sap/ui/core/Theming
+         (added in 1.118); the modern API is used in the branch above. */
+        if (sap.ui.getCore) {
+          const config = sap.ui.getCore().getConfiguration?.();
+          if (config?.getTheme) return config.getTheme();
+        }
+        /* ui5lint-enable no-globals, no-deprecated-api */
+      } catch (e) {
+        logError("Lib: reading theme failed", e);
+      }
+      return "";
+    }
+
+    // Language and text direction, version-independently - the same probe
+    // for sap/base/i18n/Localization (since 1.118, the only API left in
+    // UI5 2.x); older releases expose both through the Configuration.
+    function getLocale() {
+      try {
+        const Localization = sap.ui.require("sap/base/i18n/Localization");
+        if (Localization?.getLanguage) {
+          return {
+            language: Localization.getLanguage(),
+            rtl: Boolean(Localization.getRTL?.()),
+          };
+        }
+        /* ui5lint-disable no-globals, no-deprecated-api --
+         deliberate fallback for UI5 releases without
+         sap/base/i18n/Localization (added in 1.118); the modern API is used
+         in the branch above. */
+        if (sap.ui.getCore) {
+          const config = sap.ui.getCore().getConfiguration?.();
+          if (config?.getLanguage) {
+            return {
+              language: config.getLanguage(),
+              rtl: Boolean(config.getRTL?.()),
+            };
+          }
+        }
+        /* ui5lint-enable no-globals, no-deprecated-api */
+      } catch (e) {
+        logError("Lib: reading locale failed", e);
+      }
+      return { language: "", rtl: false };
+    }
+
     // True when the running UI5 ships the sap/ui/core/Messaging module (added
     // in 1.118). Callers use it to skip warm-loading that module on older
     // releases (e.g. 1.71) where an async require would 404 and make the
@@ -99,7 +163,35 @@ sap.ui.define(
       if (state.errors.length > MAX_ERRORS) state.errors.shift();
     }
 
+    // True while `oController` is one of the slot controllers the CURRENT
+    // app state owns. This is the liveness test for a View1 controller,
+    // and isDestroyed( ) below is NOT: sap.ui.core.mvc.Controller is no
+    // ManagedObject - it has neither isDestroyed() nor bIsDestroyed on any
+    // release (checked on 1.71 and 1.144) - and the five controllers are
+    // created once per component (App.controller) and never destroyed, so
+    // isDestroyed( controller ) answered "alive" for a torn-down app and
+    // every guard on it was dead code: variant poll chains kept resolving
+    // the NEXT app's controls after an FLP teardown. What does end a
+    // controller's life is Component.exit -> AppState.reset( ): the state
+    // is rebuilt with the slot fields null and the next launch registers a
+    // fresh set. Membership in the current state is the test, so it holds
+    // across every release and needs no flag on the controller.
+    const CONTROLLER_FIELDS = [
+      "oController",
+      "oControllerNest",
+      "oControllerNest2",
+      "oControllerPopup",
+      "oControllerPopover",
+    ];
+    function isControllerAlive(oController) {
+      if (!oController) return false;
+      const state = AppState.state;
+      return CONTROLLER_FIELDS.some((field) => state[field] === oController);
+    }
+
     // True when the object supports isDestroyed() and reports destroyed.
+    // For a CONTROL (a ManagedObject). A controller is asked with
+    // isControllerAlive( ) above - see there for why this one cannot tell.
     function isDestroyed(obj) {
       if (!obj) return false;
       // ManagedObject#isDestroyed( ) is @since 1.93 - on the 1.71 floor the
@@ -659,6 +751,7 @@ sap.ui.define(
     return {
       logError,
       isDestroyed,
+      isControllerAlive,
       isAlive,
       claimOnce,
       isTextInput,
@@ -682,6 +775,9 @@ sap.ui.define(
       getElementById,
       getMessaging,
       hasMessagingModule,
+      getThemingModule,
+      getTheme,
+      getLocale,
       isRootModelSlot,
       effectiveSizeLimit,
       renderInvisibleSpan,
