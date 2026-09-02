@@ -265,7 +265,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      },` + `
 ` + `` + `
 ` + `      THEMING: {` + `
-` + `        get: () => sap.ui.require("sap/ui/core/Theming"),` + `
+` + `        get: () => Lib.getThemingModule(),` + `
 ` + `        methods: { setTheme: ["string"] },` + `
 ` + `      },` + `
 ` + `` + `

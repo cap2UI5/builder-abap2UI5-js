@@ -42,15 +42,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function getTheme() {` + `
-` + `      const Theming = sap.ui.require("sap/ui/core/Theming");` + `
-` + `      if (Theming?.getTheme) return Theming.getTheme();` + `
-` + `` + `
-` + `      if (sap.ui.getCore) {` + `
-` + `        const config = sap.ui.getCore().getConfiguration?.();` + `
-` + `        if (config?.getTheme) return config.getTheme();` + `
-` + `      }` + `
-` + `` + `
-` + `      return "";` + `
+` + `      return Lib.getTheme();` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function bootstrapElement() {` + `
@@ -74,25 +66,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function getLocale() {` + `
-` + `      const Localization = sap.ui.require("sap/base/i18n/Localization");` + `
-` + `      if (Localization?.getLanguage) {` + `
-` + `        return {` + `
-` + `          language: Localization.getLanguage(),` + `
-` + `          rtl: Boolean(Localization.getRTL?.()),` + `
-` + `        };` + `
-` + `      }` + `
-` + `` + `
-` + `      if (sap.ui.getCore) {` + `
-` + `        const config = sap.ui.getCore().getConfiguration?.();` + `
-` + `        if (config?.getLanguage) {` + `
-` + `          return {` + `
-` + `            language: config.getLanguage(),` + `
-` + `            rtl: Boolean(config.getRTL?.()),` + `
-` + `          };` + `
-` + `        }` + `
-` + `      }` + `
-` + `` + `
-` + `      return { language: "", rtl: false };` + `
+` + `      return Lib.getLocale();` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function getContentDensity() {` + `
@@ -402,8 +376,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        out.push("  (none)");` + `
 ` + `        return out;` + `
 ` + `      }` + `
-`;
-    result = result + `      list.forEach((item, index) => {` + `
+` + `      list.forEach((item, index) => {` + `
 ` + `        const number = String(index + 1).padStart(3);` + `
 ` + `        if (!Array.isArray(item)) {` + `
 ` + `          out.push(\`\${number}  [legacy JS] \${truncate(item, MAX_ARG_CHARS)}\`);` + `
@@ -429,7 +402,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      );` + `
 ` + `      out.push(...renderActionList(sAction?.T_CUSTOM, "T_CUSTOM (app)"));` + `
 ` + `      return out.join("\\n");` + `
-` + `    }` + `
+`;
+    result = result + `    }` + `
 ` + `` + `
 ` + `    const LEVEL_LABEL = {` + `
 ` + `      error: "ERROR",` + `
@@ -803,8 +777,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(` + `
 ` + `        line(` + `
 ` + `          "Roundtrips",` + `
-`;
-    result = result + `          last` + `
+` + `          last` + `
 ` + `            ? \`\${records.length} recorded, last \${formatOverviewMs(last)}\` +` + `
 ` + `                " (Roundtrips > History)"` + `
 ` + `            : "none recorded yet",` + `
@@ -830,7 +803,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        ),` + `
 ` + `      );` + `
 ` + `      out.push(line("Theme", getTheme()));` + `
-` + `` + `
+`;
+    result = result + `` + `
 ` + `      out.push(section("View slots"));` + `
 ` + `      out.push(...formatSlots());` + `
 ` + `` + `
