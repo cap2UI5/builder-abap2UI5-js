@@ -42,15 +42,28 @@ sap.ui.define(
     // UI5 2.x; older releases expose the same interface (getMessageModel,
     // registerObject, unregisterObject) via the MessageManager singleton.
     // Returns null when neither is available (bare test bootstraps).
+    // Memoised once resolved - both facades are singletons, and every slot
+    // attach and every slot teardown asks for it (a MAIN rebuild is five
+    // teardowns and a build), so the loader lookup ran ~6x per roundtrip.
+    // Only a truthy answer is kept: before Component.init's warm-load
+    // resolves, the module may legitimately not be there yet.
+    let messagingFacade = null;
     function getMessaging() {
+      if (messagingFacade) return messagingFacade;
       const Messaging = sap.ui.require("sap/ui/core/Messaging");
-      if (Messaging) return Messaging;
+      if (Messaging) {
+        messagingFacade = Messaging;
+        return Messaging;
+      }
       /* ui5lint-disable no-globals, no-deprecated-api --
        deliberate fallback for UI5 releases without sap/ui/core/Messaging
        (added in 1.118); the modern API is used in the branch above. */
       if (sap.ui.getCore) {
         const core = sap.ui.getCore();
-        if (core?.getMessageManager) return core.getMessageManager();
+        if (core?.getMessageManager) {
+          messagingFacade = core.getMessageManager();
+          return messagingFacade;
+        }
       }
       /* ui5lint-enable no-globals, no-deprecated-api */
       return null;
@@ -269,6 +282,28 @@ sap.ui.define(
     // Run every callback in `callbacks` (the shared callback arrays above),
     // swallowing individual failures so one bad callback cannot break the
     // whole event sequence.
+    // Runs `fn` once the roundtrip a control just started has landed - right
+    // away when it started none (state.isBusy is set synchronously by
+    // View1.eB, so the answer is known the moment the event was fired). A
+    // control that reports several files/values one roundtrip each hands
+    // the next one over from here; firing them back to back lost every one
+    // but the first on the busy guard. The one-shot hook takes itself off
+    // the onAfterRendering list again; `owner` destroyed meanwhile ends it.
+    // Returns a function that cancels the wait (for the owner's exit).
+    function afterRoundtrip(owner, fn) {
+      if (!AppState.state.isBusy) {
+        fn();
+        return () => {};
+      }
+      const once = () => {
+        unregisterCallback("onAfterRendering", once);
+        if (isDestroyed(owner)) return;
+        fn();
+      };
+      registerCallback("onAfterRendering", once);
+      return () => unregisterCallback("onAfterRendering", once);
+    }
+
     function runCallbacks(callbacks, ...args) {
       if (!callbacks) return;
       for (const fn of callbacks) {
@@ -752,6 +787,7 @@ sap.ui.define(
       logError,
       isDestroyed,
       isControllerAlive,
+      afterRoundtrip,
       isAlive,
       claimOnce,
       isTextInput,

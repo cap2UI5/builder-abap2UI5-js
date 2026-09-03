@@ -11,10 +11,9 @@ sap.ui.define(
 
     // A roundtrip already in flight makes View1.eB DROP the event (its
     // isBusy guard), so everything the control reports is queued and
-    // delivered one item per roundtrip instead of being lost in a burst.
-    // This is the retry interval of the drain loop - it only runs while
-    // items are actually waiting.
-    const DRAIN_RETRY_MS = 50;
+    // delivered one item per roundtrip instead of being lost in a burst -
+    // the queue waits for the roundtrip to land (Lib.afterRoundtrip, see
+    // _scheduleDrain) instead of polling for it.
 
     // Reconnect policy for a connection the app did not close: exponential
     // backoff starting here, capped there, and after MAX_CONNECT_ATTEMPTS
@@ -93,9 +92,22 @@ sap.ui.define(
           // a NEW target gets a fresh set of attempts - the give-up above
           // is about hammering the same dead endpoint
           this._failedAttempts = 0;
+          this._doneAfterFirst = false;
         }
         this._url = url;
-        if (this.getProperty("checkActive")) {
+        const active = this.getProperty("checkActive");
+        // checkActive switched back on is the app asking for a new attempt
+        // (the ICF node was activated meanwhile) - the give-up is about
+        // hammering the same dead endpoint unasked, and this is the second
+        // trigger the contract above promises next to a path change
+        if (active && this._wasInactive) {
+          this._failedAttempts = 0;
+          this._doneAfterFirst = false;
+        }
+        this._wasInactive = !active;
+        // checkRepeat back on: the app wants to listen again
+        if (this.getProperty("checkRepeat")) this._doneAfterFirst = false;
+        if (active) {
           this._connect();
         } else {
           this._disconnect();
@@ -103,6 +115,8 @@ sap.ui.define(
       },
       exit() {
         clearTimeout(this._drainId);
+        this._cancelWait?.();
+        this._cancelWait = null;
         clearTimeout(this._reconnectId);
         this._disconnect();
       },
@@ -117,6 +131,12 @@ sap.ui.define(
       _connect() {
         if (this._ws || !this._url) return;
         if (this._failedAttempts >= MAX_CONNECT_ATTEMPTS) return;
+        // "close after the first message" (checkRepeat = false) has to hold
+        // past the next re-render: every roundtrip runs onAfterRendering,
+        // and reconnecting from there turned "once" into "once per
+        // roundtrip". A path change or a checkActive/checkRepeat toggle
+        // (above) is what asks for the next one
+        if (this._doneAfterFirst) return;
         const url = this._url;
         let ws;
         try {
@@ -143,7 +163,10 @@ sap.ui.define(
             Lib.logError("Websocket: ignored a non-text message");
             return;
           }
-          if (!this.getProperty("checkRepeat")) this._disconnect();
+          if (!this.getProperty("checkRepeat")) {
+            this._doneAfterFirst = true;
+            this._disconnect();
+          }
           this._report({ kind: "message", value: event.data });
         };
         ws.onerror = () => {
@@ -256,12 +279,28 @@ sap.ui.define(
         }
         if (this._queue.length) this._scheduleDrain();
       },
+      // Wait for the roundtrip in flight to land instead of polling for it:
+      // a 50 ms retry timer used to wake the main thread up to twenty times
+      // a second for the whole roundtrip. Lib.afterRoundtrip calls back
+      // from the after-rendering hooks, which View1 runs BEFORE its finally
+      // clears the busy flag - a synchronous fireReceived from there would
+      // be dropped by eB's busy guard again - so the drain is deferred one
+      // macrotask past that (setTimeout 0). With no roundtrip in flight the
+      // hook calls back right away, and the same deferral lets the event
+      // the previous item fired start its roundtrip first: an event nobody
+      // answers with one leaves the flag clear, and the next item follows
+      // on the next tick instead of waiting for a roundtrip that never
+      // comes.
       _scheduleDrain() {
-        clearTimeout(this._drainId);
-        this._drainId = setTimeout(() => {
-          if (Lib.isDestroyed(this)) return;
-          this._drain();
-        }, DRAIN_RETRY_MS);
+        this._cancelWait?.();
+        this._cancelWait = Lib.afterRoundtrip(this, () => {
+          this._cancelWait = null;
+          clearTimeout(this._drainId);
+          this._drainId = setTimeout(() => {
+            if (Lib.isDestroyed(this)) return;
+            this._drain();
+          }, 0);
+        });
       },
       renderer: {
         apiVersion: 2,
