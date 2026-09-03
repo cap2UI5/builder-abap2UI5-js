@@ -15,6 +15,7 @@ CLASS z2ui5_cl_ui5_srv_bind DEFINITION PUBLIC FINAL.
         VALUE(result) TYPE string.
 
   PROTECTED SECTION.
+  PRIVATE SECTION.
     METHODS get_client_name
       RETURNING
         VALUE(result) TYPE string.
@@ -27,21 +28,47 @@ CLASS z2ui5_cl_ui5_srv_bind DEFINITION PUBLIC FINAL.
     " carry yet. See the method body for what used to be dropped.
     METHODS adopt_new_options.
 
-  PRIVATE SECTION.
     DATA mr_attri  TYPE REF TO z2ui5_if_ui5_types=>ty_s_attri.
     DATA ms_config TYPE z2ui5_if_ui5_types=>ty_s_bind_config.
+    " one model service for the life of this bind service - the client
+    " keeps one bind service per render, so the search index the model
+    " builds on the first _bind( ) serves every _bind( ) of that render
+    DATA mo_model  TYPE REF TO z2ui5_cl_ui5_srv_model.
+
+    " the component names of the table the last cell bind addressed - a
+    " memo for bind_tab_cell, which used to describe the row type and copy
+    " the component table out of the RTTI cache for EVERY cell of the same
+    " table (six panels over /Employee/0..5 are dozens of cells per render).
+    " Keyed on the table reference: a bind against another table replaces
+    " it, and the service lives one render, so it cannot go stale
+    DATA mr_cell_tab   TYPE REF TO data.
+    DATA mt_cell_names TYPE string_table.
+
+    METHODS get_model
+      RETURNING
+        VALUE(result) TYPE REF TO z2ui5_cl_ui5_srv_model.
 
     METHODS main_cell
       IMPORTING
-        val           TYPE data
+        val           TYPE REF TO data
         config        TYPE z2ui5_if_ui5_types=>ty_s_bind_config OPTIONAL
+      RETURNING
+        VALUE(result) TYPE string.
+
+    " The attribute half of main( ): the row the value lives in, its
+    " binding recorded or adopted, the path decorated by config. main_cell
+    " calls it for the table before it addresses the cell
+    METHODS bind_attri
+      IMPORTING
+        val           TYPE REF TO data
+        config        TYPE z2ui5_if_ui5_types=>ty_s_bind_config
       RETURNING
         VALUE(result) TYPE string.
 
     METHODS bind_tab_cell
       IMPORTING
         iv_name       TYPE string
-        iv_val        TYPE data
+        iv_val        TYPE REF TO data
       RETURNING
         VALUE(result) TYPE string.
 
@@ -92,18 +119,37 @@ CLASS z2ui5_cl_ui5_srv_bind IMPLEMENTATION.
           val = `BINDING_ERROR_TAB_CELL_LEVEL - Row index out of range`.
     ENDIF.
 
-    DATA(lt_attri) = z2ui5_cl_ui5_util_context=>rtti_get_t_attri_by_any( ms_config-tab ).
-    LOOP AT lt_attri ASSIGNING FIELD-SYMBOL(<comp>).
+    " a table of an elementary line type (string_table) has no components
+    " to bind a cell of; rtti_get_t_attri_by_any would answer that with a
+    " raw CX_SY_MOVE_CAST_ERROR instead of the binding error it is
+    DATA(lv_kind) = z2ui5_cl_ui5_util_context=>rtti_get_type_kind( <row> ).
+    IF lv_kind <> z2ui5_cl_ui5_util_context=>cv_typedescr_typekind_struct1
+        AND lv_kind <> z2ui5_cl_ui5_util_context=>cv_typedescr_typekind_struct2.
+      RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
+        EXPORTING
+          val = `BINDING_ERROR_TAB_CELL_LEVEL - the row of the bound table is not a structure`.
+    ENDIF.
 
-      ASSIGN COMPONENT <comp>-name OF STRUCTURE <row> TO <ele>.
+    IF mr_cell_tab <> ms_config-tab OR mt_cell_names IS INITIAL.
+      CLEAR mt_cell_names.
+      DATA(lt_attri) = z2ui5_cl_ui5_util_context=>rtti_get_t_attri_by_any( ms_config-tab ).
+      LOOP AT lt_attri ASSIGNING FIELD-SYMBOL(<comp>).
+        APPEND <comp>-name TO mt_cell_names.
+      ENDLOOP.
+      mr_cell_tab = ms_config-tab.
+    ENDIF.
+
+    LOOP AT mt_cell_names INTO DATA(lv_comp_name).
+
+      ASSIGN COMPONENT lv_comp_name OF STRUCTURE <row> TO <ele>.
       IF sy-subrc <> 0.
         RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
-          EXPORTING val = |Binding Error - component '{ <comp>-name }' not found in the bound row|.
+          EXPORTING val = |Binding Error - component '{ lv_comp_name }' not found in the bound row|.
       ENDIF.
       lr_ref_in = REF #( <ele> ).
 
       IF iv_val = lr_ref_in.
-        result = |{ iv_name }/{ shift_right( CONV string( ms_config-tab_index - 1 ) ) }/{ <comp>-name }|.
+        result = |{ iv_name }/{ ms_config-tab_index - 1 }/{ lv_comp_name }|.
         RETURN.
       ENDIF.
 
@@ -175,6 +221,16 @@ CLASS z2ui5_cl_ui5_srv_bind IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_model.
+
+    IF mo_model IS NOT BOUND.
+      mo_model = NEW z2ui5_cl_ui5_srv_model( attri = mo_app->mt_attri
+                                             app   = mo_app->mo_app ).
+    ENDIF.
+    result = mo_model.
+
+  ENDMETHOD.
+
   METHOD get_client_name.
 
     result = replace( val  = replace( val  = mr_attri->name
@@ -191,26 +247,30 @@ CLASS z2ui5_cl_ui5_srv_bind IMPLEMENTATION.
   METHOD main.
 
     IF z2ui5_cl_ui5_util_context=>check_bound_a_not_initial( config-tab ).
-
       result = main_cell( val    = val
                           config = config ).
-
-      RETURN.
+    ELSE.
+      result = bind_attri( val    = val
+                           config = config ).
     ENDIF.
+
+  ENDMETHOD.
+
+  METHOD bind_attri.
 
     ms_config = config.
 
-    DATA(lo_model) = NEW z2ui5_cl_ui5_srv_model( attri = mo_app->mt_attri
-                                                  app  = mo_app->mo_app ).
-
-    mr_attri = lo_model->main_attri_search( val ).
+    mr_attri = get_model( )->main_attri_search( val ).
 
     IF mr_attri->name_ref IS NOT INITIAL.
       " name_ref may be a synthetic child name that no longer maps to a row
       " (e.g. dissolve stopped at max depth); raise the binding error rather
-      " than dumping CX_SY_ITAB_LINE_NOT_FOUND while rendering the field
-      DATA(lr_ref_attri) = REF #( mo_app->mt_attri->*[ name = mr_attri->name_ref ] OPTIONAL ). "#EC CI_SORTSEQ
-      IF lr_ref_attri IS NOT BOUND.
+      " than dumping CX_SY_ITAB_LINE_NOT_FOUND while rendering the field.
+      " name is the table's unique primary key - a keyed read, spelled as
+      " one (a free-key table expression reads as a sequential access)
+      READ TABLE mo_app->mt_attri->* REFERENCE INTO DATA(lr_ref_attri)
+           WITH TABLE KEY name = mr_attri->name_ref.
+      IF sy-subrc <> 0.
         RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
           EXPORTING
             val = |Binding Error - referenced attribute '{ mr_attri->name_ref }' not found|.
@@ -231,14 +291,13 @@ CLASS z2ui5_cl_ui5_srv_bind IMPLEMENTATION.
 
   METHOD main_cell.
 
+    " the table first, as a bare path - bind_attri sets ms_config to that
+    " call's config, so THIS call's config (switch_default_model,
+    " path_only) is put in place afterwards for the cell and its
+    " decoration
+    result = bind_attri( val    = config-tab
+                         config = VALUE #( path_only = abap_true ) ).
     ms_config = config.
-
-    " a SECOND srv_bind instance on purpose, not main( ) on me: main( )
-    " overwrites ms_config with its own config, and the finalize_path( )
-    " below still needs THIS call's config (switch_default_model/path_only)
-    DATA(lo_bind) = NEW z2ui5_cl_ui5_srv_bind( mo_app ).
-    result = lo_bind->main( val    = config-tab
-                            config = VALUE #( path_only = abap_true ) ).
 
     result = bind_tab_cell( iv_name = result
                             iv_val  = val ).

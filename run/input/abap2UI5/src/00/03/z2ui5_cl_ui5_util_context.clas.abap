@@ -57,7 +57,18 @@ CLASS z2ui5_cl_ui5_util_context DEFINITION
 
     CLASS-DATA cv_typedescr_typekind_struct2 TYPE c LENGTH 1 READ-ONLY.
 
+    " the three elementary kinds whose JSON form is not their ABAP form (ISO
+    " date/time strings, ISO timestamps) - what a delta cell must convert
+    " before assigning (see z2ui5_cl_ui5_srv_model=>delta_apply_scalar)
+    CLASS-DATA cv_typedescr_typekind_date    TYPE c LENGTH 1 READ-ONLY.
+
+    CLASS-DATA cv_typedescr_typekind_time    TYPE c LENGTH 1 READ-ONLY.
+
+    CLASS-DATA cv_typedescr_typekind_packed  TYPE c LENGTH 1 READ-ONLY.
+
     CLASS-DATA cv_typedescr_kind_struct      TYPE c LENGTH 1 READ-ONLY.
+
+    CLASS-DATA cv_typedescr_kind_elem        TYPE c LENGTH 1 READ-ONLY.
 
     CLASS-DATA cv_typedescr_kind_ref         TYPE c LENGTH 1 READ-ONLY.
 
@@ -184,6 +195,15 @@ CLASS z2ui5_cl_ui5_util_context DEFINITION
         val           TYPE REF TO data
       RETURNING
         VALUE(result) TYPE REF TO cl_abap_typedescr.
+
+    "! Is the data object behind the reference a STANDARD table - false for
+    "! a sorted or hashed table, for anything that is no table, and for a
+    "! reference RTTI cannot describe
+    CLASS-METHODS rtti_check_table_standard
+      IMPORTING
+        val           TYPE REF TO data
+      RETURNING
+        VALUE(result) TYPE abap_bool.
 
     CLASS-METHODS rtti_get_typedescr_by_data
       IMPORTING
@@ -509,7 +529,7 @@ CLASS z2ui5_cl_ui5_util_context DEFINITION
       RETURNING
         VALUE(result) TYPE string.
 
-    " FROZEN-ONLY: no caller in src/00 - src/02, kept for src/99
+    " the view builder's xml_escape builds its control-character set with it
     CLASS-METHODS conv_get_string_by_xstring
       IMPORTING
         val           TYPE xstring
@@ -777,7 +797,11 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
     cv_typedescr_typekind_oref       = cl_abap_typedescr=>typekind_oref.
     cv_typedescr_typekind_struct1    = cl_abap_typedescr=>typekind_struct1.
     cv_typedescr_typekind_struct2    = cl_abap_typedescr=>typekind_struct2.
+    cv_typedescr_typekind_date       = cl_abap_typedescr=>typekind_date.
+    cv_typedescr_typekind_time       = cl_abap_typedescr=>typekind_time.
+    cv_typedescr_typekind_packed     = cl_abap_typedescr=>typekind_packed.
     cv_typedescr_kind_struct         = cl_abap_typedescr=>kind_struct.
+    cv_typedescr_kind_elem           = cl_abap_typedescr=>kind_elem.
     cv_typedescr_kind_ref            = cl_abap_typedescr=>kind_ref.
     cv_objectdescr_public            = cl_abap_objectdescr=>public.
 
@@ -909,12 +933,20 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
 
   METHOD c_trim.
 
-    result = shift_left( shift_right( CONV string( val ) ) ).
-    result = shift_right( val = result
-                          sub = cv_char_util_horizontal_tab ).
-    result = shift_left( val = result
-                         sub = cv_char_util_horizontal_tab ).
-    result = shift_left( shift_right( result ) ).
+    result = CONV string( val ).
+    " spaces and tabs alternate at either end (`\t \tx`) - one pass of each
+    " leaves the inner layer standing, so strip until nothing changes
+    DO 10 TIMES.
+      DATA(lv_before) = result.
+      result = shift_left( shift_right( result ) ).
+      result = shift_right( val = result
+                            sub = cv_char_util_horizontal_tab ).
+      result = shift_left( val = result
+                           sub = cv_char_util_horizontal_tab ).
+      IF result = lv_before.
+        EXIT.
+      ENDIF.
+    ENDDO.
 
   ENDMETHOD.
 
@@ -1080,7 +1112,16 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
         " cl_abap_refdescr covers data and object references alike, and so
         " does kind_ref
         DATA(lo_typdescr) = cl_abap_typedescr=>describe_by_data( val ).
-        result = xsdbool( lo_typdescr->kind = cl_abap_typedescr=>kind_ref ).
+        IF lo_typdescr->kind <> cl_abap_typedescr=>kind_ref.
+          RETURN.
+        ENDIF.
+        " kind_ref covers object references too, and the one caller that
+        " dereferences on a true answer (conv_copy_ref_data: `from->*`)
+        " cannot do that to an object reference - nav_app_leave( r_data =
+        " lo_object ) reached it. Only a reference to DATA answers true
+        DATA(lo_referenced) = CAST cl_abap_refdescr( lo_typdescr )->get_referenced_type( ).
+        result = xsdbool( lo_referenced->kind <> cl_abap_typedescr=>kind_class
+                      AND lo_referenced->kind <> cl_abap_typedescr=>kind_intf ).
       CATCH cx_root ##NO_HANDLER.
     ENDTRY.
 
@@ -1269,36 +1310,49 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
 
   METHOD url_param_get_tab.
 
-    DATA(lv_search) = replace( val  = val
-                               sub  = `%3D`
-                               with = `=`
-                               occ  = 0 ).
+    " a full URL or a request URI carries a path before its query: cut at
+    " the FIRST `?` only. A later `?` is a legal, unencoded character of a
+    " value (`title=why?`) - cutting there dropped every parameter before
+    " it, app_start included, and the shell fell back to the start page
+    " declared, not inline: DATA( ) from a generic CLIKE parameter is
+    " "fixed type STRING used for generic type CLIKE" in the extended check
+    DATA lv_search TYPE string.
+    lv_search = val.
+    IF lv_search CS `?`.
+      lv_search = substring_after( val = lv_search
+                                   sub = `?` ).
+    ENDIF.
 
-    " RFC 3986 allows lowercase hex digits in percent-encodings, so decode
-    " %3d the same way as %3D (%26 contains no letters and needs no twin)
-    lv_search = replace( val  = lv_search
-                         sub  = `%3d`
-                         with = `=`
-                         occ  = 0 ).
-
-    lv_search = replace( val  = lv_search
-                         sub  = `%26`
-                         with = `&`
-                         occ  = 0 ).
-
-    lv_search = shift_left( val = lv_search
-                            sub = `?` ).
-
-    " prepend & before searching so sap-startup-params is also unwrapped
-    " when it is the first/only query parameter (typical FLP target mapping)
-    DATA(lv_search2) = substring_after( val = |&{ lv_search }|
+    " The FLP packs the target's own parameters into ONE value,
+    " sap-startup-params, with its `=` and `&` percent-encoded. Prepend &
+    " before searching so it is also unwrapped when it is the first/only
+    " query parameter (typical FLP target mapping). Only THAT value is
+    " decoded: decoding the whole query first tore every legitimately
+    " encoded `&` or `=` in any other value apart (`a=x%26y` became the
+    " two parameters a=x and y=), and app_get_url wrote the damage back
+    " into every generated link
+    DATA(lv_startup) = substring_after( val = |&{ lv_search }|
                                         sub = `&sap-startup-params=` ).
-    lv_search = COND #( WHEN lv_search2 IS NOT INITIAL THEN lv_search2 ELSE lv_search ).
-
-    lv_search2 = substring_after( val = lv_search
-                                  sub = `?` ).
-    IF lv_search2 IS NOT INITIAL.
-      lv_search = lv_search2.
+    IF lv_startup IS NOT INITIAL.
+      SPLIT lv_startup AT `&` INTO DATA(lv_packed) DATA(lv_rest).
+      lv_packed = replace( val  = lv_packed
+                           sub  = `%3D`
+                           with = `=`
+                           occ  = 0 ).
+      " RFC 3986 allows lowercase hex digits in percent-encodings, so decode
+      " %3d the same way as %3D (%26 contains no letters and needs no twin)
+      lv_packed = replace( val  = lv_packed
+                           sub  = `%3d`
+                           with = `=`
+                           occ  = 0 ).
+      lv_packed = replace( val  = lv_packed
+                           sub  = `%26`
+                           with = `&`
+                           occ  = 0 ).
+      lv_search = lv_packed.
+      IF lv_rest IS NOT INITIAL.
+        lv_search = |{ lv_packed }&{ lv_rest }|.
+      ENDIF.
     ENDIF.
 
     SPLIT lv_search AT `&` INTO TABLE DATA(lt_param).
@@ -1608,6 +1662,22 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
   METHOD rtti_get_typedescr_by_data_ref.
 
     result = cl_abap_typedescr=>describe_by_data_ref( val ).
+
+  ENDMETHOD.
+
+  METHOD rtti_check_table_standard.
+
+    DATA lo_tab TYPE REF TO cl_abap_tabledescr.
+
+    TRY.
+        DATA(lo_type) = cl_abap_typedescr=>describe_by_data_ref( val ).
+        IF lo_type->kind <> cl_abap_typedescr=>kind_table.
+          RETURN.
+        ENDIF.
+        lo_tab ?= lo_type.
+        result = xsdbool( lo_tab->table_kind = cl_abap_tabledescr=>tablekind_std ).
+      CATCH cx_root ##NO_HANDLER.
+    ENDTRY.
 
   ENDMETHOD.
 

@@ -42,13 +42,21 @@ CLASS z2ui5_cl_ui5f_lib_js IMPLEMENTATION.
              `      return null;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
+             `    let messagingFacade = null;` && |\n| &&
              `    function getMessaging() {` && |\n| &&
+             `      if (messagingFacade) return messagingFacade;` && |\n| &&
              `      const Messaging = sap.ui.require("sap/ui/core/Messaging");` && |\n| &&
-             `      if (Messaging) return Messaging;` && |\n| &&
+             `      if (Messaging) {` && |\n| &&
+             `        messagingFacade = Messaging;` && |\n| &&
+             `        return Messaging;` && |\n| &&
+             `      }` && |\n| &&
              `` && |\n| &&
              `      if (sap.ui.getCore) {` && |\n| &&
              `        const core = sap.ui.getCore();` && |\n| &&
-             `        if (core?.getMessageManager) return core.getMessageManager();` && |\n| &&
+             `        if (core?.getMessageManager) {` && |\n| &&
+             `          messagingFacade = core.getMessageManager();` && |\n| &&
+             `          return messagingFacade;` && |\n| &&
+             `        }` && |\n| &&
              `      }` && |\n| &&
              `` && |\n| &&
              `      return null;` && |\n| &&
@@ -117,6 +125,19 @@ CLASS z2ui5_cl_ui5f_lib_js IMPLEMENTATION.
              `      if (state.errors.length > MAX_ERRORS) state.errors.shift();` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
+             `    const CONTROLLER_FIELDS = [` && |\n| &&
+             `      "oController",` && |\n| &&
+             `      "oControllerNest",` && |\n| &&
+             `      "oControllerNest2",` && |\n| &&
+             `      "oControllerPopup",` && |\n| &&
+             `      "oControllerPopover",` && |\n| &&
+             `    ];` && |\n| &&
+             `    function isControllerAlive(oController) {` && |\n| &&
+             `      if (!oController) return false;` && |\n| &&
+             `      const state = AppState.state;` && |\n| &&
+             `      return CONTROLLER_FIELDS.some((field) => state[field] === oController);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
              `    function isDestroyed(obj) {` && |\n| &&
              `      if (!obj) return false;` && |\n| &&
              `` && |\n| &&
@@ -167,6 +188,20 @@ CLASS z2ui5_cl_ui5f_lib_js IMPLEMENTATION.
              `      }));` && |\n| &&
              `      control.setProperty("addedTokens", isRemoved ? [] : tokens);` && |\n| &&
              `      control.setProperty("removedTokens", isRemoved ? tokens : []);` && |\n| &&
+             `    }` && |\n| &&
+             `` && |\n| &&
+             `    function afterRoundtrip(owner, fn) {` && |\n| &&
+             `      if (!AppState.state.isBusy) {` && |\n| &&
+             `        fn();` && |\n| &&
+             `        return () => {};` && |\n| &&
+             `      }` && |\n| &&
+             `      const once = () => {` && |\n| &&
+             `        unregisterCallback("onAfterRendering", once);` && |\n| &&
+             `        if (isDestroyed(owner)) return;` && |\n| &&
+             `        fn();` && |\n| &&
+             `      };` && |\n| &&
+             `      registerCallback("onAfterRendering", once);` && |\n| &&
+             `      return () => unregisterCallback("onAfterRendering", once);` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    function runCallbacks(callbacks, ...args) {` && |\n| &&
@@ -389,7 +424,8 @@ CLASS z2ui5_cl_ui5f_lib_js IMPLEMENTATION.
              `        (li) => !li.parentElement?.closest("li"),` && |\n| &&
              `      );` && |\n| &&
              `      if (items.length > 0) {` && |\n| &&
-             `        const safeItems = items.map((li) => {` && |\n| &&
+             `        const safeItems = items.map((li) => {` && |\n|.
+    result = result &&
              `          _sanitizeEl.textContent = li.textContent;` && |\n| &&
              `          return ``<li>${_sanitizeEl.innerHTML}</li>``;` && |\n| &&
              `        });` && |\n| &&
@@ -424,8 +460,7 @@ CLASS z2ui5_cl_ui5f_lib_js IMPLEMENTATION.
              `      oRm.close("span");` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    const EMPTY_RENDERER = { apiVersion: 2, render() {} };` && |\n|.
-    result = result &&
+             `    const EMPTY_RENDERER = { apiVersion: 2, render() {} };` && |\n| &&
              `` && |\n| &&
              `    function hookCallback(owner, callbackName, method) {` && |\n| &&
              `      const bound = owner[method].bind(owner);` && |\n| &&
@@ -487,6 +522,8 @@ CLASS z2ui5_cl_ui5f_lib_js IMPLEMENTATION.
              `    return {` && |\n| &&
              `      logError,` && |\n| &&
              `      isDestroyed,` && |\n| &&
+             `      isControllerAlive,` && |\n| &&
+             `      afterRoundtrip,` && |\n| &&
              `      isAlive,` && |\n| &&
              `      claimOnce,` && |\n| &&
              `      isTextInput,` && |\n| &&

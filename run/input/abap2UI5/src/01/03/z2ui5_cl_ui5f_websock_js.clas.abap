@@ -30,8 +30,6 @@ CLASS z2ui5_cl_ui5f_websock_js IMPLEMENTATION.
              `  (Control, Lib, AppState) => {` && |\n| &&
              `    "use strict";` && |\n| &&
              `` && |\n| &&
-             `    const DRAIN_RETRY_MS = 50;` && |\n| &&
-             `` && |\n| &&
              `    const RECONNECT_BASE_MS = 500;` && |\n| &&
              `    const RECONNECT_MAX_MS = 30000;` && |\n| &&
              `    const MAX_CONNECT_ATTEMPTS = 5;` && |\n| &&
@@ -86,9 +84,19 @@ CLASS z2ui5_cl_ui5f_websock_js IMPLEMENTATION.
              `          this._disconnect();` && |\n| &&
              `` && |\n| &&
              `          this._failedAttempts = 0;` && |\n| &&
+             `          this._doneAfterFirst = false;` && |\n| &&
              `        }` && |\n| &&
              `        this._url = url;` && |\n| &&
-             `        if (this.getProperty("checkActive")) {` && |\n| &&
+             `        const active = this.getProperty("checkActive");` && |\n| &&
+             `` && |\n| &&
+             `        if (active && this._wasInactive) {` && |\n| &&
+             `          this._failedAttempts = 0;` && |\n| &&
+             `          this._doneAfterFirst = false;` && |\n| &&
+             `        }` && |\n| &&
+             `        this._wasInactive = !active;` && |\n| &&
+             `` && |\n| &&
+             `        if (this.getProperty("checkRepeat")) this._doneAfterFirst = false;` && |\n| &&
+             `        if (active) {` && |\n| &&
              `          this._connect();` && |\n| &&
              `        } else {` && |\n| &&
              `          this._disconnect();` && |\n| &&
@@ -96,6 +104,8 @@ CLASS z2ui5_cl_ui5f_websock_js IMPLEMENTATION.
              `      },` && |\n| &&
              `      exit() {` && |\n| &&
              `        clearTimeout(this._drainId);` && |\n| &&
+             `        this._cancelWait?.();` && |\n| &&
+             `        this._cancelWait = null;` && |\n| &&
              `        clearTimeout(this._reconnectId);` && |\n| &&
              `        this._disconnect();` && |\n| &&
              `      },` && |\n| &&
@@ -110,6 +120,8 @@ CLASS z2ui5_cl_ui5f_websock_js IMPLEMENTATION.
              `      _connect() {` && |\n| &&
              `        if (this._ws || !this._url) return;` && |\n| &&
              `        if (this._failedAttempts >= MAX_CONNECT_ATTEMPTS) return;` && |\n| &&
+             `` && |\n| &&
+             `        if (this._doneAfterFirst) return;` && |\n| &&
              `        const url = this._url;` && |\n| &&
              `        let ws;` && |\n| &&
              `        try {` && |\n| &&
@@ -134,7 +146,10 @@ CLASS z2ui5_cl_ui5f_websock_js IMPLEMENTATION.
              `            Lib.logError("Websocket: ignored a non-text message");` && |\n| &&
              `            return;` && |\n| &&
              `          }` && |\n| &&
-             `          if (!this.getProperty("checkRepeat")) this._disconnect();` && |\n| &&
+             `          if (!this.getProperty("checkRepeat")) {` && |\n| &&
+             `            this._doneAfterFirst = true;` && |\n| &&
+             `            this._disconnect();` && |\n| &&
+             `          }` && |\n| &&
              `          this._report({ kind: "message", value: event.data });` && |\n| &&
              `        };` && |\n| &&
              `        ws.onerror = () => {` && |\n| &&
@@ -233,12 +248,17 @@ CLASS z2ui5_cl_ui5f_websock_js IMPLEMENTATION.
              `        }` && |\n| &&
              `        if (this._queue.length) this._scheduleDrain();` && |\n| &&
              `      },` && |\n| &&
+             `` && |\n| &&
              `      _scheduleDrain() {` && |\n| &&
-             `        clearTimeout(this._drainId);` && |\n| &&
-             `        this._drainId = setTimeout(() => {` && |\n| &&
-             `          if (Lib.isDestroyed(this)) return;` && |\n| &&
-             `          this._drain();` && |\n| &&
-             `        }, DRAIN_RETRY_MS);` && |\n| &&
+             `        this._cancelWait?.();` && |\n| &&
+             `        this._cancelWait = Lib.afterRoundtrip(this, () => {` && |\n| &&
+             `          this._cancelWait = null;` && |\n| &&
+             `          clearTimeout(this._drainId);` && |\n| &&
+             `          this._drainId = setTimeout(() => {` && |\n| &&
+             `            if (Lib.isDestroyed(this)) return;` && |\n| &&
+             `            this._drain();` && |\n| &&
+             `          }, 0);` && |\n| &&
+             `        });` && |\n| &&
              `      },` && |\n| &&
              `      renderer: {` && |\n| &&
              `        apiVersion: 2,` && |\n| &&

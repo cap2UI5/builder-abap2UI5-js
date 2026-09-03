@@ -85,6 +85,10 @@ CLASS z2ui5_cl_ui5_handler DEFINITION PUBLIC FINAL.
 
     METHODS main_end.
 
+    "! the draft save at the end of main_end - a sticky app saves only when
+    "! a route or app-state link carries its draft id
+    METHODS main_end_save.
+
     METHODS response_abap_to_json
       IMPORTING
         val           TYPE z2ui5_if_ui5_types=>ty_s_response
@@ -242,9 +246,19 @@ CLASS z2ui5_cl_ui5_handler IMPLEMENTATION.
                                  THEN `/value` ).
 
     " the whole view model is transported back under the MODEL container
-    " (symmetric to the response); the frontend ships only the edited delta
-    result-o_model = lo_ajson->slice( lv_root && `/MODEL` ).
-    IF result-o_model IS NOT BOUND.
+    " (symmetric to the response); the frontend ships only the edited delta.
+    " The container is not sliced off: slice( ) walks every node of the
+    " parsed request (a CP compare per node - the sorted key is no help)
+    " and copies the whole subtree, and on a mass edit the model IS most of
+    " the request, so the delta was materialized twice. The root tree
+    " travels with the path of its MODEL node instead, and the model service
+    " reads the attributes below that path (z2ui5_if_ui5_types names the
+    " contract). The S_FRONT slice below still walks the tree once
+    DATA(lv_model_path) = lv_root && `/MODEL`.
+    IF lo_ajson->exists( lv_model_path ) = abap_true.
+      result-o_model    = lo_ajson.
+      result-model_path = lv_model_path.
+    ELSE.
       result-o_model = z2ui5_cl_ajson=>create_empty( ).
     ENDIF.
 
@@ -362,6 +376,14 @@ CLASS z2ui5_cl_ui5_handler IMPLEMENTATION.
     result = z2ui5_cl_ui5_util_context=>c_trim_upper(
         z2ui5_cl_ui5_util_context=>url_param_get( val = `app_start`
                                                url    = iv_search ) ).
+    " a namespaced class name carries slashes, and a client that
+    " percent-encodes the value (%2Fns%2Fclass) is well within the URL
+    " rules; url_param_get leaves values encoded, so the one encoding a
+    " class name can carry is unpacked here
+    result = replace( val  = result
+                      sub  = `%2F`
+                      with = `/`
+                      occ  = 0 ).
   ENDMETHOD.
 
   METHOD hash_get_app_part.
@@ -684,13 +706,19 @@ CLASS z2ui5_cl_ui5_handler IMPLEMENTATION.
                           len = 300 ) && `...`.
     ENDIF.
 
+    " app_start is client-controlled and is reflected into the error body:
+    " the same class-name-safe strip as z2ui5_cl_ui5_action=>factory_first_start
+    " applies, so a crafted value cannot smuggle markup into the response
+    DATA(lv_app_start) = ms_request-s_control-app_start.
+    REPLACE ALL OCCURRENCES OF REGEX `[^A-Za-z0-9_/]` IN lv_app_start WITH `` ##REGEX_POSIX.
+
     result = |Request failed| &&
              COND #( WHEN lv_app   IS NOT INITIAL THEN | in app { lv_app }| ) &&
              COND #( WHEN lv_event IS NOT INITIAL THEN |, event { lv_event }|
                      ELSE |, no event (initial rendering)| ) &&
              COND #( WHEN lv_draft IS NOT INITIAL THEN |, draft { lv_draft }| ) &&
-             COND #( WHEN ms_request-s_control-app_start IS NOT INITIAL
-                     THEN |, app_start { ms_request-s_control-app_start }| ) &&
+             COND #( WHEN lv_app_start IS NOT INITIAL
+                     THEN |, app_start { lv_app_start }| ) &&
              COND #( WHEN lv_url IS NOT INITIAL THEN |, url { lv_url }| ).
 
   ENDMETHOD.
@@ -835,12 +863,11 @@ CLASS z2ui5_cl_ui5_handler IMPLEMENTATION.
     ms_request-s_front-s_device = ls_device.
     ms_request-s_front-s_ui5    = mo_action->mo_app->ms_session-s_ui5.
 
-    IF mo_action->mo_app->ms_session-comp_data IS NOT INITIAL.
-      TRY.
-          ms_request-s_front-o_comp_data = z2ui5_cl_ajson=>parse( mo_action->mo_app->ms_session-comp_data ).
-        CATCH cx_root ##NO_HANDLER.
-      ENDTRY.
-    ENDIF.
+    " the stored launchpad ComponentData is NOT parsed back into
+    " o_comp_data here: its only reader after the merge is
+    " z2ui5_cl_ui5_client=>get( ), which parses the session string itself
+    " when it needs it - every event roundtrip of an FLP session used to
+    " parse a tree nobody looked at (z2ui5_if_ui5_types names the contract)
 
   ENDMETHOD.
 
@@ -894,9 +921,17 @@ CLASS z2ui5_cl_ui5_handler IMPLEMENTATION.
     " should keep routing INHERITS the caller's mode before this runs (see
     " z2ui5_cl_ui5_action), and a fresh page load needs nothing because the
     " frontend state starts clean (AppState.reset on component init).
+    " Only a HOP says so - a request that carries a draft id. A fresh start
+    " (no id: a reload, or Back/Forward under FRESH routing re-creating an
+    " app that only INHERITED its mode) sets check_on_navigated as well, and
+    " an explicit DEFAULT there switched routing off for the rest of the
+    " session: the next event wiped '#/app/<CLASS>' and Back/Forward stopped
+    " navigating between the apps. The frontend already is in the mode that
+    " produced the route, so a fresh start leaves it alone.
     IF mo_action->ms_next-s_nav-set_nav_routing IS INITIAL
         AND mo_action->mo_app->mv_nav_mode IS INITIAL
-        AND mo_action->ms_actual-check_on_navigated = abap_true.
+        AND mo_action->ms_actual-check_on_navigated = abap_true
+        AND ms_request-s_front-id IS NOT INITIAL.
       mo_action->ms_next-s_nav-set_nav_routing = z2ui5_if_client=>cs_nav_mode-default.
     ENDIF.
 
@@ -975,7 +1010,23 @@ CLASS z2ui5_cl_ui5_handler IMPLEMENTATION.
 
     mv_response = response_abap_to_json( ms_response ).
 
+    main_end_save( ).
+
+  ENDMETHOD.
+
+  METHOD main_end_save.
+
     IF mo_action->mo_app->mv_check_sticky = abap_false.
+      mo_action->mo_app->db_save( ).
+    ELSEIF mo_action->mo_app->mv_nav_mode = z2ui5_if_client=>cs_nav_mode-keep
+        OR mo_action->mo_app->mv_app_state_active = abap_true.
+      " a sticky app whose route (KEEP) or app-state link carries this
+      " draft id: the id is written into the URL and into copied links
+      " either way, and without a saved draft every Back/Forward, reload or
+      " shared link landed in factory_first_start's CATCH - "bookmarked app
+      " state expired" and a fresh app. The draft is saved for exactly
+      " these two modes; a sticky app that asked for neither keeps skipping
+      " the serialization
       mo_action->mo_app->db_save( ).
     ELSE.
       " a sticky session skips the draft save, but the lifecycle latch must
@@ -1040,6 +1091,21 @@ CLASS z2ui5_cl_ui5_handler IMPLEMENTATION.
 
     IF mo_action->mo_app->mv_check_sticky = abap_false.
       z2ui5_cl_ui5_util_context=>db_rollback( ).
+    ENDIF.
+
+    " a ROOT app leaving without a target: nav_app_leave( ) resolves the
+    " target through get_app( id_prev_app_stack ), and with nothing on the
+    " stack get_app( ) answers the CURRENT app - so the leave went to itself:
+    " a second container chained to its own draft (id_prev = its own id),
+    " main( ) run once more with check_on_navigated and no event, the draft
+    " parsed and saved twice. A leave with nowhere to go is the end of the
+    " roundtrip instead; check_app_prev_stack( ) is the question an app with
+    " a back button asks first. The intent stays recorded on ms_next (the
+    " shipped src/99 popups assert on it), only the hop is not taken
+    IF mo_action->ms_next-o_app_leave IS NOT INITIAL
+        AND mo_action->ms_next-o_app_leave = mo_action->mo_app->mo_app
+        AND mo_action->mo_app->ms_draft-id_prev_app_stack IS INITIAL.
+      CLEAR mo_action->ms_next-o_app_leave.
     ENDIF.
 
     IF mo_action->ms_next-o_app_leave IS NOT INITIAL.

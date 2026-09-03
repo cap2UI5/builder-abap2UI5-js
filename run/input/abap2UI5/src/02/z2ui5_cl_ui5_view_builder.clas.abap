@@ -118,9 +118,14 @@ CLASS z2ui5_cl_ui5_view_builder DEFINITION PUBLIC CREATE PRIVATE.
     DATA parent  TYPE REF TO z2ui5_cl_ui5_view_builder.
     DATA root    TYPE REF TO z2ui5_cl_ui5_view_builder.
 
-    METHODS render
-      RETURNING
-        VALUE(result) TYPE string.
+    " Append this node's markup to ct_out - the open tag, the children (by
+    " the same call), the close tag. One accumulator for the whole tree,
+    " concatenated once by stringify( ): a render that returned a string
+    " per node copied every subtree once per ancestor (view size times
+    " nesting depth on every render); appending moves each character once
+    METHODS render_into
+      CHANGING
+        ct_out TYPE string_table.
 
     METHODS xml_escape
       IMPORTING
@@ -134,6 +139,7 @@ CLASS z2ui5_cl_ui5_view_builder DEFINITION PUBLIC CREATE PRIVATE.
     " template per call otherwise). Lazily filled on first use - a public
     " class_constructor is the alternative and abap-check names it a trap
     CLASS-DATA gv_escape_specials TYPE string.
+    CLASS-DATA gv_escape_controls TYPE string.
 ENDCLASS.
 
 
@@ -218,38 +224,39 @@ CLASS z2ui5_cl_ui5_view_builder IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD render.
+  METHOD render_into.
 
-    " collect the children in a table and concatenate once - the string
-    " template accumulator would re-copy everything rendered so far on every
-    " sibling, which grows quadratic on wide views
-    DATA lt_inner TYPE string_table.
-    LOOP AT t_child INTO DATA(child).
-      INSERT child->render( ) INTO TABLE lt_inner.
-    ENDLOOP.
-    DATA(inner) = concat_lines_of( lt_inner ).
+    DATA child TYPE REF TO z2ui5_cl_ui5_view_builder.
 
     " empty builder root - render only the children
     IF name IS INITIAL.
-      result = inner.
+      LOOP AT t_child INTO child.
+        child->render_into( CHANGING ct_out = ct_out ).
+      ENDLOOP.
       RETURN.
     ENDIF.
 
     DATA(qname) = COND string( WHEN prefix IS INITIAL THEN name ELSE |{ prefix }:{ name }| ).
-    " same table-then-concat form as the children above, same reason: the
-    " template accumulator re-copied every attribute rendered so far on
-    " each further one, quadratic on attribute-heavy elements
+    " table-then-concat for the attributes: a string template accumulator
+    " re-copied every attribute rendered so far on each further one,
+    " quadratic on attribute-heavy elements. REFERENCE INTO - the loop used
+    " to copy a two-string structure per attribute
     DATA lt_attr TYPE string_table.
-    LOOP AT t_pair INTO DATA(pair).
-      INSERT | { pair-n }="{ xml_escape( pair-v ) }"| INTO TABLE lt_attr.
+    LOOP AT t_pair REFERENCE INTO DATA(lr_pair).
+      INSERT | { lr_pair->n }="{ xml_escape( lr_pair->v ) }"| INTO TABLE lt_attr.
     ENDLOOP.
     DATA(attrs) = concat_lines_of( lt_attr ).
 
     IF t_child IS INITIAL.
-      result = |<{ qname }{ attrs }/>|.
-    ELSE.
-      result = |<{ qname }{ attrs }>{ inner }</{ qname }>|.
+      APPEND |<{ qname }{ attrs }/>| TO ct_out.
+      RETURN.
     ENDIF.
+
+    APPEND |<{ qname }{ attrs }>| TO ct_out.
+    LOOP AT t_child INTO child.
+      child->render_into( CHANGING ct_out = ct_out ).
+    ENDLOOP.
+    APPEND |</{ qname }>| TO ct_out.
 
   ENDMETHOD.
 
@@ -262,10 +269,16 @@ CLASS z2ui5_cl_ui5_view_builder IMPLEMENTATION.
     " seven full copies. A value that does carry one still runs all seven
     " replaces below, unchanged
     IF gv_escape_specials IS INITIAL.
+      " the XML-illegal control characters as one string, so the CA scan
+      " stays a single statement; built from their UTF-8 bytes through the
+      " context class (the one door to the codepage API)
+      gv_escape_controls = z2ui5_cl_ui5_util_context=>conv_get_string_by_xstring(
+          CONV xstring( `0102030405060708` && `0B0C` && `0E0F101112131415161718191A1B1C1D1E1F` ) ).
       gv_escape_specials = `&<>"`
           && z2ui5_cl_ui5_util_context=>cv_char_util_newline
           && z2ui5_cl_ui5_util_context=>cv_char_util_cr_lf(1)
-          && z2ui5_cl_ui5_util_context=>cv_char_util_horizontal_tab.
+          && z2ui5_cl_ui5_util_context=>cv_char_util_horizontal_tab
+          && gv_escape_controls.
     ENDIF.
     IF val NA gv_escape_specials.
       result = val.
@@ -307,12 +320,36 @@ CLASS z2ui5_cl_ui5_view_builder IMPLEMENTATION.
                       with = `&#x9;`
                       occ  = 0 ).
 
+    " what is left of the control range is illegal in XML 1.0 outright -
+    " U+0000-U+0008, U+000B, U+000C, U+000E-U+001F cannot even be written
+    " as character references, and UI5's XMLView parser rejects the whole
+    " document over one such byte (a form feed or record separator out of a
+    " legacy long text blanks the view). They carry no meaning in an
+    " attribute value, so they are dropped. Only reached for a value that
+    " passed the CA scan above - see gv_escape_specials
+    IF result CA gv_escape_controls.
+      " one replace per character, no regex: [[:cntrl:]] is not a class every
+      " runtime this code runs on knows (the transpiled one left every byte
+      " in place), and this branch is the rare one
+      DATA(lv_off) = 0.
+      DATA(lv_len) = strlen( gv_escape_controls ).
+      WHILE lv_off < lv_len.
+        result = replace( val  = result
+                          sub  = gv_escape_controls+lv_off(1)
+                          with = ``
+                          occ  = 0 ).
+        lv_off = lv_off + 1.
+      ENDWHILE.
+    ENDIF.
+
   ENDMETHOD.
 
 
   METHOD stringify.
 
-    result = root->render( ).
+    DATA lt_out TYPE string_table.
+    root->render_into( CHANGING ct_out = lt_out ).
+    result = concat_lines_of( lt_out ).
 
   ENDMETHOD.
 

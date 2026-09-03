@@ -75,12 +75,30 @@ CLASS z2ui5_cl_ui5f_upldset_js IMPLEMENTATION.
              `` && |\n| &&
              `      init() {` && |\n| &&
              `        this._unhook = Lib.hookCallback(this, "onAfterRendering", "setControl");` && |\n| &&
+             `        this._queue = [];` && |\n| &&
+             `        this._reading = false;` && |\n| &&
              `      },` && |\n| &&
              `      exit() {` && |\n| &&
              `        this._unhook();` && |\n| &&
+             `        this._queue = [];` && |\n| &&
+             `        if (this._cancelWait) {` && |\n| &&
+             `          this._cancelWait();` && |\n| &&
+             `          this._cancelWait = null;` && |\n| &&
+             `        }` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
              `      _readFile(file) {` && |\n| &&
+             `        this._queue.push(file);` && |\n| &&
+             `        if (!this._reading) this._readNext();` && |\n| &&
+             `      },` && |\n| &&
+             `` && |\n| &&
+             `      _readNext() {` && |\n| &&
+             `        const file = this._queue.shift();` && |\n| &&
+             `        if (!file) {` && |\n| &&
+             `          this._reading = false;` && |\n| &&
+             `          return;` && |\n| &&
+             `        }` && |\n| &&
+             `        this._reading = true;` && |\n| &&
              `        Lib.readFileAsDataURL(` && |\n| &&
              `          file,` && |\n| &&
              `          this,` && |\n| &&
@@ -90,6 +108,10 @@ CLASS z2ui5_cl_ui5f_upldset_js IMPLEMENTATION.
              `            this.setProperty("mediaType", file.type);` && |\n| &&
              `            this.setProperty("fileSize", String(file.size));` && |\n| &&
              `            this.fireChange();` && |\n| &&
+             `            this._cancelWait = Lib.afterRoundtrip(this, () => {` && |\n| &&
+             `              this._cancelWait = null;` && |\n| &&
+             `              this._readNext();` && |\n| &&
+             `            });` && |\n| &&
              `          },` && |\n| &&
              `          "UploadSetExt",` && |\n| &&
              `        );` && |\n| &&

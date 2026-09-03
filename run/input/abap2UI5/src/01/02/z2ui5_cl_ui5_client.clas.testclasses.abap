@@ -1,3 +1,14 @@
+" ---------------------------------------------------------------------------
+" The API contract of z2ui5_if_client as an app sees it: what each method
+" answers, what it queues, what it refuses. Where a case here also proves
+" the model underneath (a binding path, a cell, a mapper or filter across
+" the draft), the systematic coverage is in the structured suites of
+" z2ui5_cl_ui5_srv_bind (ltcl_01_path, ltcl_02_cell, ltcl_03_options) and
+" z2ui5_cl_ui5_srv_model (ltcl_01_dissolve to ltcl_05_draft); this file
+" keeps the call through the client as the app writes it - test_bind_tab_cell
+" doubles as the canary for the downport patch that keeps the cell form
+" working (node/setup/patch-abaplint-downport.mjs).
+" ---------------------------------------------------------------------------
 CLASS ltcl_test_app DEFINITION FINAL.
   PUBLIC SECTION.
     INTERFACES z2ui5_if_app.
@@ -106,6 +117,7 @@ CLASS ltcl_test_client DEFINITION FINAL
     METHODS test_set_app_state_active FOR TESTING RAISING cx_static_check.
     METHODS test_omit_initial_paths   FOR TESTING RAISING cx_static_check.
     METHODS test_omit_initial_keeps_rows FOR TESTING RAISING cx_static_check.
+    METHODS test_omit_initial_decimals FOR TESTING RAISING cx_static_check.
     METHODS test_omit_filters_serial  FOR TESTING RAISING cx_static_check.
     METHODS test_bind_filter_not_serial FOR TESTING RAISING cx_static_check.
     METHODS test_omit_initial_db_save FOR TESTING RAISING cx_static_check.
@@ -1122,6 +1134,42 @@ CLASS ltcl_test_client IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD test_omit_initial_decimals.
+
+    " the "price" column the parameter is documented for: an initial
+    " p DECIMALS serializes as 0.00 and was kept by a compare against `0`
+    TYPES:
+      BEGIN OF ty_s_row,
+        name   TYPE string,
+        price  TYPE p LENGTH 9 DECIMALS 2,
+        weight TYPE f,
+        count  TYPE i,
+      END OF ty_s_row.
+
+    DATA(ls_row) = VALUE ty_s_row( name = `A` ).
+
+    DATA(lo_ajson) = CAST z2ui5_if_ajson( z2ui5_cl_ajson=>create_empty( ) ).
+    lo_ajson->set( iv_ignore_empty = abap_false
+                   iv_path         = `/row`
+                   iv_val          = ls_row ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = `{"row":{"name":"A"}}`
+        act = lo_ajson->filter( NEW lcl_empty_filter_keep_rows( ) )->stringify( ) ).
+
+    " a non-zero value in the same spelling survives
+    ls_row-price = '0.01'.
+    lo_ajson = CAST z2ui5_if_ajson( z2ui5_cl_ajson=>create_empty( ) ).
+    lo_ajson->set( iv_ignore_empty = abap_false
+                   iv_path         = `/row`
+                   iv_val          = ls_row ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = `{"row":{"name":"A","price":0.01}}`
+        act = lo_ajson->filter( NEW lcl_empty_filter_keep_rows( ) )->stringify( ) ).
+
+  ENDMETHOD.
+
   METHOD test_omit_initial_keeps_rows.
 
     " the filter behind _bind( omit_initial = abap_true ): initial FIELDS are
@@ -1285,7 +1333,7 @@ CLASS ltcl_test_client IMPLEMENTATION.
     " rule already emits; this test is green in the transpiled suite only
     " because the patch is applied. If it starts failing, look at the patch
     " before looking at the binding. The cell logic itself is covered
-    " everywhere by ltcl_test_main_cell in z2ui5_cl_ui5_srv_bind
+    " everywhere by ltcl_02_cell in z2ui5_cl_ui5_srv_bind
     DATA li_client TYPE REF TO z2ui5_if_client.
     DATA lo_app TYPE REF TO ltcl_test_app.
 
@@ -1392,6 +1440,9 @@ CLASS ltcl_app_price_editor DEFINITION FINAL.
     TYPES ty_t_product TYPE STANDARD TABLE OF ty_s_product WITH EMPTY KEY.
 
     DATA mt_product TYPE ty_t_product.
+    " a bound SCALAR of a numeric type - the shape whose refusal used to
+    " fail the whole roundtrip instead of landing in the trace
+    DATA mv_discount TYPE p LENGTH 9 DECIMALS 2.
 
     " what the user is told - empty exactly when the write-back was complete
     DATA mv_message TYPE string.
@@ -1481,6 +1532,7 @@ CLASS ltcl_app_price_editor IMPLEMENTATION.
     ENDIF.
 
     mv_bind_path = client->_bind_edit( mt_product ).
+    client->_bind( mv_discount ).
 
   ENDMETHOD.
 
@@ -1512,6 +1564,7 @@ CLASS ltcl_test_model_skipped DEFINITION FINAL
     METHODS test_trace_is_per_roundtrip FOR TESTING RAISING cx_static_check.
     METHODS test_nested_row_unresolved  FOR TESTING RAISING cx_static_check.
     METHODS test_bind_path_is_not_name  FOR TESTING RAISING cx_static_check.
+    METHODS test_refused_scalar_reported FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 CLASS ltcl_test_model_skipped IMPLEMENTATION.
@@ -1570,6 +1623,30 @@ CLASS ltcl_test_model_skipped IMPLEMENTATION.
     cl_abap_unit_assert=>assert_initial( mo_app->mv_message ).
     cl_abap_unit_assert=>assert_equals( exp = abap_true
                                         act = mo_app->mv_saved ).
+
+  ENDMETHOD.
+
+  METHOD test_refused_scalar_reported.
+
+    " `1,250.00` typed into an Input bound to a packed SCALAR: the same
+    " refusal a table cell gets - traced with the attribute name, row 0 and
+    " the raw value, the old value kept, the roundtrip alive. It used to
+    " raise JSON_PARSING_ERROR and end in the fatal overlay
+    mo_app->mv_discount = '5.00'.
+    roundtrip( model = `{"MV_DISCOUNT":"1,250.00"}`
+               event = `SAVE` ).
+
+    DATA(lt_skipped) = mo_action->ms_actual-t_model_skipped.
+    cl_abap_unit_assert=>assert_equals( exp = 1
+                                        act = lines( lt_skipped ) ).
+    cl_abap_unit_assert=>assert_equals( exp = `MV_DISCOUNT`
+                                        act = lt_skipped[ 1 ]-name ).
+    cl_abap_unit_assert=>assert_equals( exp = 0
+                                        act = lt_skipped[ 1 ]-row ).
+    cl_abap_unit_assert=>assert_equals( exp = `1,250.00`
+                                        act = lt_skipped[ 1 ]-value ).
+    cl_abap_unit_assert=>assert_equals( exp = CONV decfloat34( '5.00' )
+                                        act = CONV decfloat34( mo_app->mv_discount ) ).
 
   ENDMETHOD.
 
