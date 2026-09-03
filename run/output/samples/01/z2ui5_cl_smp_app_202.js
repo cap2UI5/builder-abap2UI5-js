@@ -1,6 +1,8 @@
 const z2ui5_if_app = require("abap2UI5/z2ui5_if_app");
 
 class z2ui5_cl_smp_app_202 extends z2ui5_if_app {
+  next_step = ``;
+
   view_display({ client } = {}) {
     let lr_view = z2ui5_cl_ui5_view_builder.factory()
       .ele({ n: `View`, ns: `mvc` })
@@ -47,6 +49,9 @@ class z2ui5_cl_smp_app_202 extends z2ui5_if_app {
     const lr_wiz_step3 = lr_wizard.ele(`WizardStep`).a({ n: `title`, v: `STEP3` }).a({ n: `validated`, b: true });
     lr_wiz_step3.tag(`MessageStrip`).a({ n: `text`, v: `STEP3` });
     client.view_display(lr_view.stringify());
+    if (!z2ui5_cl_util.abap_is_initial(this.next_step)) {
+      client.follow_up_action(z2ui5_if_client.cs_event.control_by_id, [`STEP2`, `setNextStep`, this.next_step]);
+    }
   }
 
   async main(client) {
@@ -59,8 +64,9 @@ class z2ui5_cl_smp_app_202 extends z2ui5_if_app {
     switch (client.get_event()) {
       case `STEP22`:
       case `STEP23`:
+        this.next_step = client.get_event();
         client.follow_up_action(z2ui5_if_client.cs_event.control_by_id, [`wiz`, `discardProgress`, `STEP2`]);
-        client.follow_up_action(z2ui5_if_client.cs_event.control_by_id, [`STEP2`, `setNextStep`, client.get_event()]);
+        client.follow_up_action(z2ui5_if_client.cs_event.control_by_id, [`STEP2`, `setNextStep`, this.next_step]);
         break;
     }
   }
@@ -69,5 +75,6 @@ class z2ui5_cl_smp_app_202 extends z2ui5_if_app {
 module.exports = z2ui5_cl_smp_app_202;
 
 const z2ui5_cl_ui5_view_builder = require("abap2UI5/z2ui5_cl_ui5_view_builder");
+const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_if_client = require("abap2UI5/z2ui5_if_client");
 

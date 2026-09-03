@@ -70,9 +70,7 @@ class z2ui5_cl_smp_app_144 extends z2ui5_if_app {
   async main(client) {
     this.client = client;
     if (client.check_on_init()) {
-      for (let sy_index = 1; sy_index <= 1; sy_index++) {
-        this.t_tab = z2ui5_cl_util.abap_tab_assign(this.t_tab, [...(this.t_tab ?? []),{ title: `entry 01`, value: `red` }, { title: `entry 02`, value: `blue` }]);
-      }
+      this.t_tab = z2ui5_cl_util.abap_tab_assign(this.t_tab, [...(this.t_tab ?? []),{ title: `entry 01`, value: `red` }, { title: `entry 02`, value: `blue` }]);
       this.set_view();
     } else if (client.check_on_navigated()) {
       this.set_view();
