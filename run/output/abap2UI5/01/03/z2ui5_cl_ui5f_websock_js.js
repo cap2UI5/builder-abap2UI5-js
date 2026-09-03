@@ -7,8 +7,6 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `  (Control, Lib, AppState) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
-` + `    const DRAIN_RETRY_MS = 50;` + `
-` + `` + `
 ` + `    const RECONNECT_BASE_MS = 500;` + `
 ` + `    const RECONNECT_MAX_MS = 30000;` + `
 ` + `    const MAX_CONNECT_ATTEMPTS = 5;` + `
@@ -63,9 +61,19 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `          this._disconnect();` + `
 ` + `` + `
 ` + `          this._failedAttempts = 0;` + `
+` + `          this._doneAfterFirst = false;` + `
 ` + `        }` + `
 ` + `        this._url = url;` + `
-` + `        if (this.getProperty("checkActive")) {` + `
+` + `        const active = this.getProperty("checkActive");` + `
+` + `` + `
+` + `        if (active && this._wasInactive) {` + `
+` + `          this._failedAttempts = 0;` + `
+` + `          this._doneAfterFirst = false;` + `
+` + `        }` + `
+` + `        this._wasInactive = !active;` + `
+` + `` + `
+` + `        if (this.getProperty("checkRepeat")) this._doneAfterFirst = false;` + `
+` + `        if (active) {` + `
 ` + `          this._connect();` + `
 ` + `        } else {` + `
 ` + `          this._disconnect();` + `
@@ -73,6 +81,8 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `      },` + `
 ` + `      exit() {` + `
 ` + `        clearTimeout(this._drainId);` + `
+` + `        this._cancelWait?.();` + `
+` + `        this._cancelWait = null;` + `
 ` + `        clearTimeout(this._reconnectId);` + `
 ` + `        this._disconnect();` + `
 ` + `      },` + `
@@ -87,6 +97,8 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `      _connect() {` + `
 ` + `        if (this._ws || !this._url) return;` + `
 ` + `        if (this._failedAttempts >= MAX_CONNECT_ATTEMPTS) return;` + `
+` + `` + `
+` + `        if (this._doneAfterFirst) return;` + `
 ` + `        const url = this._url;` + `
 ` + `        let ws;` + `
 ` + `        try {` + `
@@ -111,7 +123,10 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `            Lib.logError("Websocket: ignored a non-text message");` + `
 ` + `            return;` + `
 ` + `          }` + `
-` + `          if (!this.getProperty("checkRepeat")) this._disconnect();` + `
+` + `          if (!this.getProperty("checkRepeat")) {` + `
+` + `            this._doneAfterFirst = true;` + `
+` + `            this._disconnect();` + `
+` + `          }` + `
 ` + `          this._report({ kind: "message", value: event.data });` + `
 ` + `        };` + `
 ` + `        ws.onerror = () => {` + `
@@ -210,12 +225,17 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `        }` + `
 ` + `        if (this._queue.length) this._scheduleDrain();` + `
 ` + `      },` + `
+` + `` + `
 ` + `      _scheduleDrain() {` + `
-` + `        clearTimeout(this._drainId);` + `
-` + `        this._drainId = setTimeout(() => {` + `
-` + `          if (Lib.isDestroyed(this)) return;` + `
-` + `          this._drain();` + `
-` + `        }, DRAIN_RETRY_MS);` + `
+` + `        this._cancelWait?.();` + `
+` + `        this._cancelWait = Lib.afterRoundtrip(this, () => {` + `
+` + `          this._cancelWait = null;` + `
+` + `          clearTimeout(this._drainId);` + `
+` + `          this._drainId = setTimeout(() => {` + `
+` + `            if (Lib.isDestroyed(this)) return;` + `
+` + `            this._drain();` + `
+` + `          }, 0);` + `
+` + `        });` + `
 ` + `      },` + `
 ` + `      renderer: {` + `
 ` + `        apiVersion: 2,` + `

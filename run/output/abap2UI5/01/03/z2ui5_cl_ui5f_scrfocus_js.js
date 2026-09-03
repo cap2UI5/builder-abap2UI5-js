@@ -127,12 +127,19 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      return Object.keys(out).length ? out : undefined;` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function reset() {` + `
+` + `      _scrollCache.target = undefined;` + `
+` + `      _scrollCache.ui5El = undefined;` + `
+` + `      _scrollCache.slotKey = undefined;` + `
+` + `    }` + `
+` + `` + `
 ` + `    return {` + `
 ` + `      getFocusInfo,` + `
 ` + `      getScrollInfo,` + `
 ` + `      onScrollCapture,` + `
 ` + `      closestUi5Element,` + `
 ` + `      focusTextInput,` + `
+` + `      reset,` + `
 ` + `      _scrollCache,` + `
 ` + `    };` + `
 ` + `  },` + `

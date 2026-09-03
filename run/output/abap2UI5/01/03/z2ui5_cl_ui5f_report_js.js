@@ -45,8 +45,7 @@ class z2ui5_cl_ui5f_report_js {
 ` + `      return sections.join("\\n\\n") || "(nothing to export)";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function buildMarkdown(abapSource) {` + `
-` + `      const plain = buildExport(abapSource);` + `
+` + `    function buildMarkdown(abapSource, plain = buildExport(abapSource)) {` + `
 ` + `      const blocks = plain.split(/^===== (.+) =====$/m);` + `
 ` + `` + `
 ` + `      const out = ["## abap2UI5 - Developer Tools export", ""];` + `
@@ -126,7 +125,7 @@ class z2ui5_cl_ui5f_report_js {
 ` + `                type: "Emphasized",` + `
 ` + `` + `
 ` + `                press: (oEvent) => {` + `
-` + `                  copyMarkdown(abapSource);` + `
+` + `                  copyMarkdown(abapSource, text);` + `
 ` + `                  confirmOnButton(oEvent.getSource());` + `
 ` + `                },` + `
 ` + `              }),` + `
@@ -163,9 +162,9 @@ class z2ui5_cl_ui5f_report_js {
 ` + `      );` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function copyMarkdown(abapSource) {` + `
+` + `    function copyMarkdown(abapSource, plain) {` + `
 ` + `      try {` + `
-` + `        Lib.copyToClipboard(buildMarkdown(abapSource));` + `
+` + `        Lib.copyToClipboard(buildMarkdown(abapSource, plain));` + `
 ` + `        return "Bug report copied as Markdown - paste it into a GitHub issue.";` + `
 ` + `      } catch (e) {` + `
 ` + `        Lib.logError("DevTools Report: markdown export failed", e);` + `

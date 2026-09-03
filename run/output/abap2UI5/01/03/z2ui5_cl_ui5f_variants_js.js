@@ -45,7 +45,7 @@ class z2ui5_cl_ui5f_variants_js {
 ` + `    const finish = () => activeInits.delete(key);` + `
 ` + `    let tries = 0;` + `
 ` + `    const run = () => {` + `
-` + `      if (Lib.isDestroyed(oController)) {` + `
+` + `      if (!Lib.isControllerAlive(oController)) {` + `
 ` + `        finish();` + `
 ` + `        return;` + `
 ` + `      }` + `
@@ -189,7 +189,7 @@ class z2ui5_cl_ui5f_variants_js {
 ` + `    const finish = () => activeInits.delete(key);` + `
 ` + `    let tries = 0;` + `
 ` + `    const run = () => {` + `
-` + `      if (Lib.isDestroyed(oController)) {` + `
+` + `      if (!Lib.isControllerAlive(oController)) {` + `
 ` + `        finish();` + `
 ` + `        return;` + `
 ` + `      }` + `

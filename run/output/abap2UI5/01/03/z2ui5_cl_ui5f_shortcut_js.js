@@ -23,7 +23,10 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `` + `
 ` + `    function shortcutToken(part) {` + `
 ` + `      const t = part.trim().toLowerCase();` + `
-` + `      return SHORTCUT_ALIASES[t] ?? t;` + `
+` + `` + `
+` + `      return Object.prototype.hasOwnProperty.call(SHORTCUT_ALIASES, t)` + `
+` + `        ? SHORTCUT_ALIASES[t]` + `
+` + `        : t;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function normalizeShortcut(combo) {` + `
@@ -85,7 +88,7 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `          const entry = shortcutEntry(shortcutFromEvent(oEvent));` + `
 ` + `          if (!entry) return;` + `
 ` + `` + `
-` + `          if (Lib.isDestroyed(entry.controller)) return;` + `
+` + `          if (!Lib.isControllerAlive(entry.controller)) return;` + `
 ` + `` + `
 ` + `          oEvent.preventDefault();` + `
 ` + `          entry.controller.eB([entry.event]);` + `

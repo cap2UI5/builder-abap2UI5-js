@@ -58,9 +58,17 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      return ViewSlots.trackedModel(oView);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function createViewModel() {` + `
-` + `      const data = AppState.state.oResponse?.OVIEWMODEL;` + `
-` + `      return trackChanges(new JSONModel(data));` + `
+` + `    function dataForSlot(slotKey, data) {` + `
+` + `      if (!data || Lib.isRootModelSlot(slotKey)) return data;` + `
+` + `      if (typeof structuredClone === "function") return structuredClone(data);` + `
+` + `      return JSON.parse(JSON.stringify(data));` + `
+` + `    }` + `
+` + `` + `
+` + `    function createViewModel(` + `
+` + `      slotKey = "MAIN",` + `
+` + `      data = AppState.state.oResponse?.OVIEWMODEL,` + `
+` + `    ) {` + `
+` + `      return trackChanges(new JSONModel(dataForSlot(slotKey, data)));` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function isSuperseded(seq) {` + `
@@ -68,7 +76,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    async function loadSlotFragment(slotKey, fragmentId, xml, seq) {` + `
-` + `      const oModel = createViewModel();` + `
+` + `      const oModel = createViewModel(slotKey);` + `
 ` + `      applyStoredSizeLimit(slotKey, oModel);` + `
 ` + `      const oFragment = await Fragment.load({` + `
 ` + `        definition: xml,` + `
@@ -163,7 +171,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    async function displayView(xml, viewModel, reqSeq, mOptions = {}) {` + `
-` + `      const oViewModel = trackChanges(new JSONModel(viewModel));` + `
+` + `      const oViewModel = createViewModel("MAIN", viewModel);` + `
 ` + `` + `
 ` + `      const switchPath = mOptions.switchDefaultModelPath;` + `
 ` + `` + `
@@ -240,14 +248,33 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      const oView = ViewSlots.getView(slotKey);` + `
 ` + `      if (!oView) return;` + `
 ` + `` + `
+` + `      const sSlotApp = ViewSlots.getViewApp(slotKey);` + `
+` + `      const sResponseApp = AppState.state.oResponse?.APP;` + `
+` + `      if (sSlotApp && sResponseApp && sSlotApp !== sResponseApp) return;` + `
+` + `` + `
 ` + `      const tracked = resolveTrackedModel(oView);` + `
 ` + `      if (tracked) {` + `
 ` + `        applyStoredSizeLimit(slotKey, tracked);` + `
-` + `        tracked.setData(AppState.state.oResponse?.OVIEWMODEL);` + `
+` + `` + `
+` + `        const pending = tracked._z2ui5ChangedPaths;` + `
+` + `        const keep = [];` + `
+` + `        if (pending?.size) {` + `
+` + `          for (const path of pending)` + `
+` + `            keep.push([path, tracked.getProperty(path)]);` + `
+` + `        }` + `
+` + `        tracked.setData(` + `
+` + `          dataForSlot(slotKey, AppState.state.oResponse?.OVIEWMODEL),` + `
+` + `        );` + `
+` + `` + `
+` + `        keep.forEach(([path, value], i) => {` + `
+` + `          if (value !== undefined) {` + `
+` + `            tracked.setProperty(path, value, undefined, i < keep.length - 1);` + `
+` + `          }` + `
+` + `        });` + `
 ` + `        return;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const oModel = createViewModel();` + `
+` + `      const oModel = createViewModel(slotKey);` + `
 ` + `      applyStoredSizeLimit(slotKey, oModel);` + `
 ` + `      oView.setModel(oModel);` + `
 ` + `    }` + `

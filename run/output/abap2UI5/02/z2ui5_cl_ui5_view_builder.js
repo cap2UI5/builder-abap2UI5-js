@@ -1,6 +1,7 @@
 
 class z2ui5_cl_ui5_view_builder {
   static gv_escape_specials = ``;
+  static gv_escape_controls = ``;
 
   name = ``;
   prefix = ``;
@@ -63,41 +64,54 @@ class z2ui5_cl_ui5_view_builder {
     return result;
   }
 
-  render() {
-    let result = ``;
+  render_into(_args = {}) {
+    let { ct_out } = _args;
     let sy_tabix = 0;
-    let lt_inner = [];
-    sy_tabix = 0;
-    for (const child of this.t_child) {
-      sy_tabix++;
-      lt_inner.push(z2ui5_cl_util.abap_copy(child.render()));
-    }
-    const inner = lt_inner.join(``);
+    let child = null;
     if (z2ui5_cl_util.abap_is_initial(this.name)) {
-      result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(inner));
-      return result;
+      sy_tabix = 0;
+      for (const child of this.t_child) {
+        sy_tabix++;
+        const _out0 = { ct_out };
+        child.render_into(_out0);
+        if ("ct_out" in _out0) ct_out = _out0.ct_out;
+      }
+      Object.assign(_args, { ct_out });
+      return;
     }
     const qname = (z2ui5_cl_util.abap_is_initial(this.prefix) ? this.name : `${this.prefix}:${this.name}`);
     let lt_attr = [];
     sy_tabix = 0;
-    for (const pair of this.t_pair) {
+    for (const lr_pair of this.t_pair) {
       sy_tabix++;
-      lt_attr.push(z2ui5_cl_util.abap_copy(` ${pair.n}="${this.xml_escape({ val: pair.v })}"`));
+      lt_attr.push(z2ui5_cl_util.abap_copy(` ${lr_pair.n}="${this.xml_escape({ val: lr_pair.v })}"`));
     }
     const attrs = lt_attr.join(``);
     if (z2ui5_cl_util.abap_is_initial(this.t_child)) {
-      result = `<${qname}${attrs}/>`;
-    } else {
-      result = `<${qname}${attrs}>${inner}</${qname}>`;
+      ct_out.push(z2ui5_cl_util.abap_copy(`<${qname}${attrs}/>`));
+      Object.assign(_args, { ct_out });
+      return;
     }
-    return result;
+    ct_out.push(z2ui5_cl_util.abap_copy(`<${qname}${attrs}>`));
+    sy_tabix = 0;
+    for (const child of this.t_child) {
+      sy_tabix++;
+      const _out1 = { ct_out };
+      child.render_into(_out1);
+      if ("ct_out" in _out1) ct_out = _out1.ct_out;
+    }
+    ct_out.push(z2ui5_cl_util.abap_copy(`</${qname}>`));
+    Object.assign(_args, { ct_out });
   }
 
   xml_escape({ val } = {}) {
     let result = ``;
+    let lv_off;
+    let lv_len;
     if (z2ui5_cl_util.abap_is_initial(z2ui5_cl_ui5_view_builder.gv_escape_specials)) {
+      z2ui5_cl_ui5_view_builder.gv_escape_controls = z2ui5_cl_ui5_util_context.conv_get_string_by_xstring({ val: (`0102030405060708` + `0B0C` + `0E0F101112131415161718191A1B1C1D1E1F`) });
       z2ui5_cl_ui5_view_builder.gv_escape_specials = `&<>"` + z2ui5_cl_ui5_util_context.cv_char_util_newline + String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf)
-        .substr(0, 1) + z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab;
+        .substr(0, 1) + z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab + z2ui5_cl_ui5_view_builder.gv_escape_controls;
     }
     if (![...String(val)].some(($c) => String(z2ui5_cl_ui5_view_builder.gv_escape_specials).includes($c))) {
       result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
@@ -111,12 +125,24 @@ class z2ui5_cl_ui5_view_builder {
     result = result.replaceAll(z2ui5_cl_ui5_util_context.cv_char_util_newline, `&#xA;`);
     result = result.replaceAll(String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf).substr(0, 1), `&#xD;`);
     result = result.replaceAll(z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab, `&#x9;`);
+    if ([...String(result)].some(($c) => String(z2ui5_cl_ui5_view_builder.gv_escape_controls).includes($c))) {
+      lv_off = 0;
+      lv_len = z2ui5_cl_util.abap_copy(z2ui5_cl_ui5_view_builder.gv_escape_controls.length);
+      while (lv_off < lv_len) {
+        result = result.replaceAll(String(z2ui5_cl_ui5_view_builder.gv_escape_controls).substr(lv_off, 1), ``);
+        lv_off = lv_off + 1;
+      }
+    }
     return result;
   }
 
   stringify() {
     let result = ``;
-    result = this.root.render();
+    let lt_out = [];
+    const _out0 = { ct_out: lt_out };
+    this.root.render_into(_out0);
+    if ("ct_out" in _out0) lt_out = _out0.ct_out;
+    result = lt_out.join(``);
     return result;
   }
 

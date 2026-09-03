@@ -12,6 +12,8 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `  (ODataModel, Lib, ViewSlots, AppState) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
+` + `    const TIMER_BUSY_RETRY_MS = 50;` + `
+` + `` + `
 ` + `    const SMOOTH_SCROLL_MS = 300;` + `
 ` + `` + `
 ` + `    function evSetSizeLimit(oController, args) {` + `
@@ -20,11 +22,14 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      const limit = hasLimit ? Number(args[1]) : NaN;` + `
 ` + `` + `
 ` + `      const isValidLimit = Number.isFinite(limit) && limit > 0;` + `
+` + `      const previous = AppState.state.viewSizeLimits[viewKey];` + `
 ` + `      if (isValidLimit) {` + `
 ` + `        AppState.state.viewSizeLimits[viewKey] = limit;` + `
 ` + `      } else {` + `
 ` + `        delete AppState.state.viewSizeLimits[viewKey];` + `
 ` + `      }` + `
+` + `` + `
+` + `      if (previous === AppState.state.viewSizeLimits[viewKey]) return;` + `
 ` + `` + `
 ` + `      const modelKey = Lib.isRootModelSlot(viewKey) ? "MAIN" : viewKey;` + `
 ` + `` + `
@@ -103,13 +108,19 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      const delay = Number(args[2]) || 0;` + `
 ` + `      const timers = AppState.state.timers;` + `
 ` + `      clearTimeout(timers[timerKey]);` + `
-` + `      timers[timerKey] = setTimeout(() => {` + `
+` + `      const fire = () => {` + `
 ` + `        delete timers[timerKey];` + `
 ` + `` + `
-` + `        if (Lib.isDestroyed(oController)) return;` + `
+` + `        if (!Lib.isControllerAlive(oController)) return;` + `
+` + `` + `
+` + `        if (AppState.state.isBusy) {` + `
+` + `          timers[timerKey] = setTimeout(fire, TIMER_BUSY_RETRY_MS);` + `
+` + `          return;` + `
+` + `        }` + `
 ` + `` + `
 ` + `        oController.eB([callbackEvent, false, true]);` + `
-` + `      }, delay);` + `
+` + `      };` + `
+` + `      timers[timerKey] = setTimeout(fire, delay);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function evSetFocus(oController, args) {` + `
@@ -148,7 +159,7 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `            oElement.removeEventDelegate(delegate);` + `
 ` + `` + `
 ` + `            setTimeout(() => {` + `
-` + `              if (Lib.isDestroyed(oController)) return;` + `
+` + `              if (!Lib.isControllerAlive(oController)) return;` + `
 ` + `` + `
 ` + `              if (!samePlace(document.activeElement)) return;` + `
 ` + `              applyFocus();` + `

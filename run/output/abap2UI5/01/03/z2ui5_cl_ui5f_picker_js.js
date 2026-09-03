@@ -17,6 +17,9 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `    let boundClick = null;` + `
 ` + `    let boundKey = null;` + `
 ` + `` + `
+` + `    let lastNode = null;` + `
+` + `    let frameId = 0;` + `
+` + `` + `
 ` + `    let lastPickReport = "";` + `
 ` + `` + `
 ` + `    function truncate(value, max) {` + `
@@ -184,6 +187,13 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `      boundMove = null;` + `
 ` + `      boundClick = null;` + `
 ` + `      boundKey = null;` + `
+` + `      if (frameId) {` + `
+` + `        cancelAnimationFrame(frameId);` + `
+` + `        frameId = 0;` + `
+` + `      }` + `
+` + `      lastNode = null;` + `
+` + `` + `
+` + `      onDone = null;` + `
 ` + `      removeOverlay();` + `
 ` + `    }` + `
 ` + `` + `
@@ -193,7 +203,13 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `      onDone = callback;` + `
 ` + `` + `
 ` + `      boundMove = (event) => {` + `
-` + `        highlight(controlFromDom(event.target));` + `
+` + `        if (event.target === lastNode) return;` + `
+` + `        lastNode = event.target;` + `
+` + `        if (frameId) return;` + `
+` + `        frameId = requestAnimationFrame(() => {` + `
+` + `          frameId = 0;` + `
+` + `          if (active) highlight(controlFromDom(lastNode));` + `
+` + `        });` + `
 ` + `      };` + `
 ` + `      boundClick = (event) => {` + `
 ` + `        event.preventDefault();` + `
@@ -208,15 +224,17 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `        }` + `
 ` + `` + `
 ` + `        lastPickReport = report;` + `
+` + `        const done = onDone;` + `
 ` + `        stop();` + `
-` + `        if (onDone) onDone(report);` + `
+` + `        if (done) done(report);` + `
 ` + `      };` + `
 ` + `      boundKey = (event) => {` + `
 ` + `        if (event.key !== "Escape") return;` + `
 ` + `        event.preventDefault();` + `
 ` + `        event.stopPropagation();` + `
+` + `        const done = onDone;` + `
 ` + `        stop();` + `
-` + `        if (onDone) onDone(null);` + `
+` + `        if (done) done(null);` + `
 ` + `      };` + `
 ` + `` + `
 ` + `      document.addEventListener("mousemove", boundMove, true);` + `

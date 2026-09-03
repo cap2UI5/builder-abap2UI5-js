@@ -571,14 +571,15 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `` + `
 ` + `      const changed = model._z2ui5ChangedPaths;` + `
 ` + `      const dirty = changed ? new Set(changed) : new Set();` + `
+` + `` + `
+` + `      const dirtyAttrs = new Set(` + `
+` + `        Array.from(dirty, (p) => p.split("/")[1]).filter(Boolean),` + `
+` + `      );` + `
 ` + `      const keys = Object.keys(data).sort();` + `
 ` + `      if (!keys.length) out.push("  (model is empty)");` + `
 ` + `      for (const key of keys) {` + `
 ` + `        const path = \`/\${key}\`;` + `
-` + `` + `
-` + `        const isDirty = Array.from(dirty).some(` + `
-` + `          (p) => p === path || p.startsWith(\`\${path}/\`),` + `
-` + `        );` + `
+` + `        const isDirty = dirtyAttrs.has(key);` + `
 ` + `        out.push(` + `
 ` + `          \`  \${isDirty ? "*" : " "} \${path.padEnd(30)}\${describeValue(data[key])}\`,` + `
 ` + `        );` + `
@@ -802,9 +803,9 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `          getDistribution((AppState.getGlobal("oConfig") || {}).S_UI5),` + `
 ` + `        ),` + `
 ` + `      );` + `
-` + `      out.push(line("Theme", getTheme()));` + `
 `;
-    result = result + `` + `
+    result = result + `      out.push(line("Theme", getTheme()));` + `
+` + `` + `
 ` + `      out.push(section("View slots"));` + `
 ` + `      out.push(...formatSlots());` + `
 ` + `` + `

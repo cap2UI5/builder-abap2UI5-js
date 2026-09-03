@@ -142,10 +142,24 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      if (!state.hashEvent) return;` + `
 ` + `      const appHash = appHashNormalized(sNewHash);` + `
 ` + `      if (appHash === state.appHash) return;` + `
-` + `      state.appHash = appHash;` + `
 ` + `      const controller = state.oController;` + `
-` + `      if (!controller || Lib.isDestroyed(controller)) return;` + `
+` + `      if (!controller || !Lib.isControllerAlive(controller)) return;` + `
+` + `` + `
+` + `      if (state.isBusy) {` + `
+` + `        state.pendingAppHash = sNewHash;` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      state.pendingAppHash = null;` + `
+` + `      state.appHash = appHash;` + `
 ` + `      controller.eB([state.hashEvent]);` + `
+` + `    }` + `
+` + `` + `
+` + `    function dispatchPendingAppHash() {` + `
+` + `      const state = AppState.state;` + `
+` + `      const pending = state.pendingAppHash;` + `
+` + `      if (pending === null || pending === undefined) return;` + `
+` + `      state.pendingAppHash = null;` + `
+` + `      dispatchAppHashChange(pending);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function repointCallerEntry(mOptions, draftForRoute) {` + `
@@ -292,6 +306,7 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      navTo,` + `
 ` + `      navBack,` + `
 ` + `      onHashChanged,` + `
+` + `      dispatchPendingAppHash,` + `
 ` + `      sync,` + `
 ` + `    };` + `
 ` + `  },` + `

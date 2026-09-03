@@ -16,7 +16,7 @@ class z2ui5_cl_ui5_util_json_fl {
             rv_keep = (is_node.value !== `false`);
             break;
           case z2ui5_if_ajson_types.node_type.number:
-            rv_keep = (is_node.value !== `0`);
+            rv_keep = (![...String(is_node.value)].every(($c) => String(`0.-+Ee`).includes($c)));
             break;
           case z2ui5_if_ajson_types.node_type.string:
             rv_keep = (is_node.value !== ``);

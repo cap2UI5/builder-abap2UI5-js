@@ -9,7 +9,11 @@ class z2ui5_cl_ui5_util_context {
   static cv_typedescr_typekind_oref = ``;
   static cv_typedescr_typekind_struct1 = ``;
   static cv_typedescr_typekind_struct2 = ``;
+  static cv_typedescr_typekind_date = ``;
+  static cv_typedescr_typekind_time = ``;
+  static cv_typedescr_typekind_packed = ``;
   static cv_typedescr_kind_struct = ``;
+  static cv_typedescr_kind_elem = ``;
   static cv_typedescr_kind_ref = ``;
   static cv_objectdescr_public = ``;
   static mt_bool_cache = [];
@@ -30,7 +34,11 @@ class z2ui5_cl_ui5_util_context {
     z2ui5_cl_ui5_util_context.cv_typedescr_typekind_oref = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_typekind_oref, z2ui5_cl_util.abap_copy(cl_abap_typedescr.typekind_oref));
     z2ui5_cl_ui5_util_context.cv_typedescr_typekind_struct1 = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_typekind_struct1, z2ui5_cl_util.abap_copy(cl_abap_typedescr.typekind_struct1));
     z2ui5_cl_ui5_util_context.cv_typedescr_typekind_struct2 = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_typekind_struct2, z2ui5_cl_util.abap_copy(cl_abap_typedescr.typekind_struct2));
+    z2ui5_cl_ui5_util_context.cv_typedescr_typekind_date = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_typekind_date, z2ui5_cl_util.abap_copy(cl_abap_typedescr.typekind_date));
+    z2ui5_cl_ui5_util_context.cv_typedescr_typekind_time = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_typekind_time, z2ui5_cl_util.abap_copy(cl_abap_typedescr.typekind_time));
+    z2ui5_cl_ui5_util_context.cv_typedescr_typekind_packed = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_typekind_packed, z2ui5_cl_util.abap_copy(cl_abap_typedescr.typekind_packed));
     z2ui5_cl_ui5_util_context.cv_typedescr_kind_struct = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_kind_struct, z2ui5_cl_util.abap_copy(cl_abap_typedescr.kind_struct));
+    z2ui5_cl_ui5_util_context.cv_typedescr_kind_elem = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_kind_elem, z2ui5_cl_util.abap_copy(cl_abap_typedescr.kind_elem));
     z2ui5_cl_ui5_util_context.cv_typedescr_kind_ref = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_typedescr_kind_ref, z2ui5_cl_util.abap_copy(cl_abap_typedescr.kind_ref));
     z2ui5_cl_ui5_util_context.cv_objectdescr_public = z2ui5_cl_util.abap_tab_assign(z2ui5_cl_ui5_util_context.cv_objectdescr_public, z2ui5_cl_util.abap_copy(cl_abap_objectdescr.public));
   }
@@ -168,10 +176,17 @@ class z2ui5_cl_ui5_util_context {
 
   static c_trim({ val } = {}) {
     let result = ``;
-    result = (val).replace(/\s+$/, ``).replace(/^\s+/, ``);
-    result = (result.endsWith(z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab) ? result.slice(0, -(z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab).length) : result);
-    result = (result.startsWith(z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab) ? result.slice((z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab).length) : result);
-    result = result.replace(/\s+$/, ``).replace(/^\s+/, ``);
+    let lv_before;
+    result = (val);
+    for (let sy_index = 1; sy_index <= 10; sy_index++) {
+      lv_before = z2ui5_cl_util.abap_copy(result);
+      result = result.replace(/\s+$/, ``).replace(/^\s+/, ``);
+      result = (result.endsWith(z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab) ? result.slice(0, -(z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab).length) : result);
+      result = (result.startsWith(z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab) ? result.slice((z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab).length) : result);
+      if (result === lv_before) {
+        break;
+      }
+    }
     return result;
   }
 
@@ -312,9 +327,14 @@ class z2ui5_cl_ui5_util_context {
   static rtti_check_ref_data({ val } = {}) {
     let result = false;
     let lo_typdescr;
+    let lo_referenced;
     try {
       lo_typdescr = cl_abap_typedescr.describe_by_data(val);
-      result = (lo_typdescr.kind === cl_abap_typedescr.kind_ref);
+      if (lo_typdescr.kind !== cl_abap_typedescr.kind_ref) {
+        return result;
+      }
+      lo_referenced = (lo_typdescr).get_referenced_type();
+      result = (lo_referenced.kind !== cl_abap_typedescr.kind_class && lo_referenced.kind !== cl_abap_typedescr.kind_intf);
     } catch (error) {
     }
     return result;
@@ -492,15 +512,21 @@ class z2ui5_cl_ui5_util_context {
   static url_param_get_tab({ val } = {}) {
     let result = [];
     let sy_tabix = 0;
-    let lv_search = val.replaceAll(`%3D`, `=`);
-    lv_search = lv_search.replaceAll(`%3d`, `=`);
-    lv_search = lv_search.replaceAll(`%26`, `&`);
-    lv_search = (lv_search.startsWith(`?`) ? lv_search.slice((`?`).length) : lv_search);
-    let lv_search2 = (($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? `` : $v.slice($i + $s.length); })(`&${lv_search}`, `&sap-startup-params=`);
-    lv_search = (!z2ui5_cl_util.abap_is_initial(lv_search2) ? lv_search2 : lv_search);
-    lv_search2 = (($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? `` : $v.slice($i + $s.length); })(lv_search, `?`);
-    if (!z2ui5_cl_util.abap_is_initial(lv_search2)) {
-      lv_search = z2ui5_cl_util.abap_tab_assign(lv_search, z2ui5_cl_util.abap_copy(lv_search2));
+    let lv_search = ``;
+    lv_search = z2ui5_cl_util.abap_tab_assign(lv_search, z2ui5_cl_util.abap_copy(val));
+    if (String(lv_search).toLowerCase().includes(String(`?`).toLowerCase())) {
+      lv_search = (($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? `` : $v.slice($i + $s.length); })(lv_search, `?`);
+    }
+    const lv_startup = (($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? `` : $v.slice($i + $s.length); })(`&${lv_search}`, `&sap-startup-params=`);
+    if (!z2ui5_cl_util.abap_is_initial(lv_startup)) {
+      let [lv_packed, lv_rest] = lv_startup.split(`&`);
+      lv_packed = lv_packed.replaceAll(`%3D`, `=`);
+      lv_packed = lv_packed.replaceAll(`%3d`, `=`);
+      lv_packed = lv_packed.replaceAll(`%26`, `&`);
+      lv_search = z2ui5_cl_util.abap_tab_assign(lv_search, z2ui5_cl_util.abap_copy(lv_packed));
+      if (!z2ui5_cl_util.abap_is_initial(lv_rest)) {
+        lv_search = `${lv_packed}&${lv_rest}`;
+      }
     }
     let lt_param = lv_search.split(`&`);
     sy_tabix = 0;
@@ -780,6 +806,22 @@ class z2ui5_cl_ui5_util_context {
   static rtti_get_typedescr_by_data_ref({ val } = {}) {
     let result = null;
     result = cl_abap_typedescr.describe_by_data_ref(val);
+    return result;
+  }
+
+  static rtti_check_table_standard({ val } = {}) {
+    let result = false;
+    let lo_type;
+    let lo_tab = null;
+    try {
+      lo_type = cl_abap_typedescr.describe_by_data_ref(val);
+      if (lo_type.kind !== cl_abap_typedescr.kind_table) {
+        return result;
+      }
+      lo_tab = z2ui5_cl_util.abap_cast(lo_type);
+      result = (lo_tab.table_kind === cl_abap_tabledescr.tablekind_std);
+    } catch (error) {
+    }
     return result;
   }
 

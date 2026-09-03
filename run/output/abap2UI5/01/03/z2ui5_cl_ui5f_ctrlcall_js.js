@@ -569,7 +569,11 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `    function evControlCall(oController, args, ctx) {` + `
 ` + `      const [, name, method] = args;` + `
 ` + `      const target = GLOBAL_TARGETS[name];` + `
-` + `      const kinds = target?.methods[method];` + `
+` + `` + `
+` + `      const kinds =` + `
+` + `        target && Object.prototype.hasOwnProperty.call(target.methods, method)` + `
+` + `          ? target.methods[method]` + `
+` + `          : undefined;` + `
 ` + `      if (!kinds) {` + `
 ` + `        Lib.logError(\`CONTROL_GLOBAL: '\${name}.\${method}' not allowed\`);` + `
 ` + `        return;` + `
