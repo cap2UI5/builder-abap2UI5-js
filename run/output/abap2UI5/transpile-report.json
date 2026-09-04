@@ -40,7 +40,7 @@
     {
       "class": "z2ui5_cl_ui5_util_context",
       "path": "00/03/z2ui5_cl_ui5_util_context.js",
-      "todos": 36,
+      "todos": 38,
       "todoDetails": [
         "unsupported statement: ROLLBACK WORK.",
         "unsupported statement: DELETE tab INDEX lv_tabix.",
@@ -57,6 +57,8 @@
         "unsupported statement: CALL TRANSFORMATION id SOURCE srtti = srtti dobj = data RESULT XML result.",
         "unsupported statement: CALL TRANSFORMATION id SOURCE data = any RESULT XML result OPTIONS data_refs = `heap-or-create`.",
         "unsupported statement: MOVE-CORRESPONDING <row_in> TO <row_out>.",
+        "sy-fdpos used — provide manually",
+        "sy-fdpos used — provide manually",
         "unsupported statement: CALL METHOD (lv_web_http_name)=>(`DECODE_X_BASE64`) EXPORTING encoded = val RECEIVING decoded = result.",
         "unsupported statement: CALL METHOD (classname)=>(`DECODE_X_BASE64`) EXPORTING encoded = val RECEIVING decoded = result.",
         "unsupported statement: CALL METHOD (lv_web_http_name)=>(`ENCODE_X_BASE64`) EXPORTING unencoded = val RECEIVING encoded = result.",

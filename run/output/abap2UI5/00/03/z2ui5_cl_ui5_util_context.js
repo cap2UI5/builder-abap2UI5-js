@@ -22,6 +22,9 @@ class z2ui5_cl_ui5_util_context {
   static gv_check_cloud = false;
   static gv_check_cloud_cached = false;
   static gv_uuid_failed = false;
+  static cv_data_max_rows = 100;
+  static cv_data_max_depth = 5;
+  static cv_data_max_text = 200;
   static cs_ui5_msg_type = { e: `Error`, s: `Success`, w: `Warning`, i: `Information` };
 
   static class_constructor() {
@@ -401,6 +404,7 @@ class z2ui5_cl_ui5_util_context {
     let sy_subrc = 0;
     let lo_struct = null;
     let lo_type = null;
+    let lv_absolute_name = ``;
     try {
       lo_type = cl_abap_typedescr.describe_by_data(val);
       if (lo_type.kind === cl_abap_typedescr.kind_ref) {
@@ -424,7 +428,7 @@ class z2ui5_cl_ui5_util_context {
         lo_struct = z2ui5_cl_util.abap_cast(lo_type);
         break;
     }
-    const lv_absolute_name = (lo_struct.absolute_name);
+    lv_absolute_name = z2ui5_cl_util.abap_tab_assign(lv_absolute_name, z2ui5_cl_util.abap_copy(lo_struct.absolute_name));
     let lr_cache = {};
     {
       const _t = z2ui5_cl_ui5_util_context.mt_attri_cache;
@@ -736,7 +740,7 @@ class z2ui5_cl_ui5_util_context {
     let fs_comp = null;
     let _fs$fs_comp = null;
     let lt_attri;
-    let lv_name;
+    let lv_name = ``;
     if (val == null) {
       return result;
     }
@@ -757,7 +761,7 @@ class z2ui5_cl_ui5_util_context {
           continue;
           break;
       }
-      lv_name = (lr_attri.name);
+      lv_name = z2ui5_cl_util.abap_tab_assign(lv_name, z2ui5_cl_util.abap_copy(lr_attri.name));
       _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(val, lv_name);
       fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
       sy_subrc = _fs$fs_comp ? 0 : 4;
@@ -884,6 +888,7 @@ class z2ui5_cl_ui5_util_context {
     let result = {};
     let sy_tabix = 0;
     const lt_msg = z2ui5_cl_ui5_util_context.msg_get_t({ val: val });
+    for (let _i = lt_msg.length - 1; _i >= 0; _i--) { const row = lt_msg[_i]; if (z2ui5_cl_util.abap_is_initial(row.text)) lt_msg.splice(_i, 1); }
     const lv_lines = z2ui5_cl_util.abap_copy(lt_msg.length);
     if (lv_lines === 0) {
       result.skip = true;
@@ -904,6 +909,317 @@ class z2ui5_cl_ui5_util_context {
       lt_detail_items.push(z2ui5_cl_util.abap_copy(`<li>${lr_msg.text}</li>`));
     }
     result.details = `<ul>` + lt_detail_items.join(``) + `</ul>`;
+    return result;
+  }
+
+  static ui5_data_box_format({ val } = {}) {
+    let result = {};
+    if ((z2ui5_cl_ui5_util_context.rtti_check_clike({ val: val }) === true || z2ui5_cl_ui5_util_context.rtti_check_clike({ val: val }) === `X`)) {
+      if ((z2ui5_cl_ui5_util_context.html_check({ val: val }) === true || z2ui5_cl_ui5_util_context.html_check({ val: val }) === `X`)) {
+        result.text = z2ui5_cl_ui5_util_context.html_get_plain({ val: val });
+        result.details = z2ui5_cl_util.abap_tab_assign(result.details, z2ui5_cl_util.abap_copy(val));
+      } else {
+        result.text = z2ui5_cl_util.abap_tab_assign(result.text, z2ui5_cl_util.abap_copy(val));
+      }
+      return result;
+    }
+    if ((z2ui5_cl_ui5_util_context.rtti_check_printable({ val: val }) === true || z2ui5_cl_ui5_util_context.rtti_check_printable({ val: val }) === `X`)) {
+      result.text = z2ui5_cl_ui5_util_context.data_get_string({ val: val });
+      return result;
+    }
+    if (z2ui5_cl_util.abap_is_initial(val)) {
+      result.skip = true;
+      return result;
+    }
+    result.text = z2ui5_cl_ui5_util_context.data_get_headline({ val: val });
+    result.details = z2ui5_cl_ui5_util_context.data_render({ val, depth: 0 });
+    if (z2ui5_cl_util.abap_is_initial(result.text) && z2ui5_cl_util.abap_is_initial(result.details)) {
+      result.skip = true;
+    }
+    return result;
+  }
+
+  static data_render({ val, depth } = {}) {
+    let result = ``;
+    if (depth > z2ui5_cl_ui5_util_context.cv_data_max_depth) {
+      result = `<em>...</em>`;
+      return result;
+    }
+    switch (z2ui5_cl_ui5_util_context.rtti_get_type_kind({ val: val })) {
+      case cl_abap_datadescr.typekind_table:
+        result = z2ui5_cl_ui5_util_context.data_render_tab({ val, depth });
+        break;
+      case cl_abap_datadescr.typekind_struct1:
+      case cl_abap_datadescr.typekind_struct2:
+        result = z2ui5_cl_ui5_util_context.data_render_struc({ val, depth });
+        break;
+      case cl_abap_datadescr.typekind_oref:
+        result = z2ui5_cl_ui5_util_context.data_render_oref({ val, depth });
+        break;
+      case cl_abap_datadescr.typekind_dref:
+        result = z2ui5_cl_ui5_util_context.data_render_dref({ val, depth });
+        break;
+      default:
+        result = z2ui5_cl_ui5_util_context.c_escape_html({ val: z2ui5_cl_ui5_util_context.data_get_string({ val: val }) });
+        break;
+    }
+    return result;
+  }
+
+  static data_render_tab({ val, depth } = {}) {
+    let result = ``;
+    let sy_tabix = 0;
+    let sy_subrc = 0;
+    let fs_tab = null;
+    let _fs$fs_tab = null;
+    let lt_item = [];
+    let lv_no = 0;
+    fs_tab = val;
+    _fs$fs_tab = null;
+    sy_subrc = 0;
+    if (sy_subrc !== 0) {
+      return result;
+    }
+    sy_tabix = 0;
+    for (const symbol of fs_tab) {
+      sy_tabix++;
+      lv_no = lv_no + 1;
+      if (lv_no > z2ui5_cl_ui5_util_context.cv_data_max_rows) {
+        lt_item.push(z2ui5_cl_util.abap_copy(`<li><em>... ${fs_tab.length - z2ui5_cl_ui5_util_context.cv_data_max_rows} more entries</em></li>`));
+        break;
+      }
+      lt_item.push(z2ui5_cl_util.abap_copy(`<li>${z2ui5_cl_ui5_util_context.data_render({ val: fs_row, depth: depth + 1 })}</li>`));
+    }
+    result = z2ui5_cl_ui5_util_context.html_get_list({ items: lt_item, ordered: true });
+    return result;
+  }
+
+  static data_render_struc({ val, depth } = {}) {
+    let result = ``;
+    let sy_tabix = 0;
+    let sy_subrc = 0;
+    let fs_comp = null;
+    let _fs$fs_comp = null;
+    let lt_attri;
+    let lt_item = [];
+    let lv_name = ``;
+    try {
+      lt_attri = z2ui5_cl_ui5_util_context.rtti_get_t_attri_by_any({ val: val });
+    } catch (error) {
+      return result;
+    }
+    sy_tabix = 0;
+    for (const lr_attri of lt_attri) {
+      sy_tabix++;
+      lv_name = z2ui5_cl_util.abap_tab_assign(lv_name, z2ui5_cl_util.abap_copy(lr_attri.name));
+      _fs$fs_comp = ((_o, _c) => { if (_o == null) return null; const _k = typeof _c === "number" ? Object.keys(_o)[_c - 1] : String(_c).toLowerCase(); return _k != null && _k in _o ? { o: _o, k: _k } : null; })(val, lv_name);
+      fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
+      sy_subrc = _fs$fs_comp ? 0 : 4;
+      if (sy_subrc !== 0) {
+        continue;
+      }
+      lt_item.push(z2ui5_cl_util.abap_copy(z2ui5_cl_ui5_util_context.data_render_item({ name: lv_name, val: fs_comp, depth })));
+    }
+    result = z2ui5_cl_ui5_util_context.html_get_list({ items: lt_item });
+    return result;
+  }
+
+  static data_render_oref({ val, depth } = {}) {
+    let result = ``;
+    let sy_tabix = 0;
+    let sy_subrc = 0;
+    let fs_comp = null;
+    let _fs$fs_comp = null;
+    let lt_attri;
+    let lo_obj = null;
+    let lt_item = [];
+    let lv_name = ``;
+    try {
+      lo_obj = val;
+    } catch (error) {
+      return result;
+    }
+    if (lo_obj == null) {
+      return result;
+    }
+    result = z2ui5_cl_ui5_util_context.data_get_exc_text({ val: lo_obj });
+    if (!z2ui5_cl_util.abap_is_initial(result)) {
+      result = z2ui5_cl_ui5_util_context.c_escape_html({ val: result });
+      return result;
+    }
+    try {
+      lt_attri = z2ui5_cl_ui5_util_context.rtti_get_t_attri_by_oref({ val: lo_obj });
+    } catch (error) {
+      return result;
+    }
+    sy_tabix = 0;
+    for (const lr_attri of lt_attri) {
+      sy_tabix++;
+      if (!(lr_attri.visibility === z2ui5_cl_ui5_util_context.cv_objectdescr_public && !(lr_attri.is_constant === true || lr_attri.is_constant === `X`) && !(lr_attri.is_class === true || lr_attri.is_class === `X`))) continue;
+      lv_name = z2ui5_cl_util.abap_tab_assign(lv_name, z2ui5_cl_util.abap_copy(lr_attri.name));
+      _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(lo_obj, lv_name);
+      fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
+      sy_subrc = _fs$fs_comp ? 0 : 4;
+      if (sy_subrc !== 0) {
+        continue;
+      }
+      lt_item.push(z2ui5_cl_util.abap_copy(z2ui5_cl_ui5_util_context.data_render_item({ name: lv_name, val: fs_comp, depth })));
+    }
+    result = z2ui5_cl_ui5_util_context.html_get_list({ items: lt_item });
+    return result;
+  }
+
+  static data_render_dref({ val, depth } = {}) {
+    let result = ``;
+    let sy_subrc = 0;
+    let fs_val = null;
+    let _fs$fs_val = null;
+    let lr_data = null;
+    try {
+      lr_data = val;
+    } catch (error) {
+      return result;
+    }
+    if (lr_data == null) {
+      return result;
+    }
+    fs_val = lr_data;
+    _fs$fs_val = null;
+    sy_subrc = 0;
+    if (sy_subrc !== 0) {
+      return result;
+    }
+    result = z2ui5_cl_ui5_util_context.data_render({ val: fs_val, depth: depth + 1 });
+    return result;
+  }
+
+  static data_render_item({ name, val, depth } = {}) {
+    let result = ``;
+    const lv_val = z2ui5_cl_ui5_util_context.data_render({ val, depth: depth + 1 });
+    result = `<li><strong>${z2ui5_cl_ui5_util_context.c_escape_html({ val: name })}</strong>: ${lv_val}</li>`;
+    return result;
+  }
+
+  static data_get_headline({ val } = {}) {
+    let result = ``;
+    let sy_subrc = 0;
+    let fs_tab = null;
+    let _fs$fs_tab = null;
+    let lv_lines;
+    let lt_attri;
+    switch (z2ui5_cl_ui5_util_context.rtti_get_type_kind({ val: val })) {
+      case cl_abap_datadescr.typekind_table:
+        fs_tab = val;
+        _fs$fs_tab = null;
+        sy_subrc = 0;
+        lv_lines = z2ui5_cl_util.abap_copy(fs_tab.length);
+        if (lv_lines === 1) {
+          result = `Table with 1 entry`;
+        } else {
+          result = `Table with ${lv_lines} entries`;
+        }
+        break;
+      case cl_abap_datadescr.typekind_struct1:
+      case cl_abap_datadescr.typekind_struct2:
+        try {
+          lt_attri = z2ui5_cl_ui5_util_context.rtti_get_t_attri_by_any({ val: val });
+          result = `Structure with ${lt_attri.length} fields`;
+        } catch (error) {
+          result = `Structure`;
+        }
+        break;
+      case cl_abap_datadescr.typekind_oref:
+        let lo_obj = null;
+        try {
+          lo_obj = val;
+          result = `Object ${z2ui5_cl_ui5_util_context.rtti_get_classname_by_ref({ val: lo_obj })}`;
+        } catch (error) {
+          result = `Object`;
+        }
+        break;
+      default:
+        result = `Data`;
+        break;
+    }
+    return result;
+  }
+
+  static data_get_string({ val } = {}) {
+    let result = ``;
+    try {
+      result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
+    } catch (error) {
+    }
+    result = z2ui5_cl_ui5_util_context.c_trim({ val: result });
+    return result;
+  }
+
+  static data_get_exc_text({ val } = {}) {
+    let result = ``;
+    let lx;
+    try {
+      lx = (val);
+      result = lx.get_text();
+    } catch (error) {
+    }
+    return result;
+  }
+
+  static html_get_list({ items, ordered = false } = {}) {
+    let result = ``;
+    if (z2ui5_cl_util.abap_is_initial(items)) {
+      return result;
+    }
+    if ((ordered === true || ordered === `X`)) {
+      result = `<ol>` + items.join(``) + `</ol>`;
+    } else {
+      result = `<ul>` + items.join(``) + `</ul>`;
+    }
+    return result;
+  }
+
+  static c_escape_html({ val } = {}) {
+    let result = ``;
+    result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
+    result = String(result).replaceAll(`&`, `&amp;` ?? ``);
+    result = String(result).replaceAll(`<`, `&lt;` ?? ``);
+    result = String(result).replaceAll(`>`, `&gt;` ?? ``);
+    result = String(result).replaceAll(`"`, `&quot;` ?? ``);
+    result = String(result).replaceAll(`'`, `&#39;` ?? ``);
+    return result;
+  }
+
+  static html_check({ val } = {}) {
+    let result = false;
+    result = (String(val).toLowerCase().includes(String(`</`).toLowerCase()) || String(val).toLowerCase().includes(String(`<br`).toLowerCase()) || String(val).toLowerCase().includes(String(`<hr`).toLowerCase()) || String(val).toLowerCase().includes(String(`<img`).toLowerCase()));
+    return result;
+  }
+
+  static html_get_plain({ val } = {}) {
+    let result = ``;
+    let lv_rest = ``;
+    let lv_pos = 0;
+    lv_rest = z2ui5_cl_util.abap_tab_assign(lv_rest, z2ui5_cl_util.abap_copy(val));
+    while (String(lv_rest).toLowerCase().includes(String(`<`).toLowerCase())) {
+      lv_pos = z2ui5_cl_util.abap_tab_assign(lv_pos, z2ui5_cl_util.abap_copy(sy_fdpos));
+      result = result + lv_rest.substr(0, lv_pos) + ` `;
+      lv_rest = lv_rest.substr(lv_pos);
+      if (String(lv_rest).toLowerCase().includes(String(`>`).toLowerCase())) {
+        lv_pos = sy_fdpos + 1;
+        lv_rest = lv_rest.substr(lv_pos);
+      } else {
+        lv_rest = ``;
+      }
+    }
+    result = result + lv_rest;
+    result = String(result).replaceAll(`&nbsp;`, ` ` ?? ``);
+    result = String(result).replaceAll(`&lt;`, `<` ?? ``);
+    result = String(result).replaceAll(`&gt;`, `>` ?? ``);
+    result = String(result).replaceAll(`&amp;`, `&` ?? ``);
+    result = String(result).replace(/^ +| +$/g, "").replace(/ +/g, ` `);
+    if (result.length > z2ui5_cl_ui5_util_context.cv_data_max_text) {
+      result = result.substr(0, z2ui5_cl_ui5_util_context.cv_data_max_text) + `...`;
+    }
     return result;
   }
 

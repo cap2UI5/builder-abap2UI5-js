@@ -63,13 +63,30 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      else sap.ui.require(["sap/m/MessageToast"], doShow);` + `
 ` + `    }` + `
 ` + `` + `
+` + `    let iBoxNo = 0;` + `
+` + `` + `
+` + `    function expandBoxDetails(sDialogId) {` + `
+` + `      const oDialog = Lib.getElementById(sDialogId);` + `
+` + `      const oLayout = oDialog?.getContent?.()[0];` + `
+` + `      if (!oLayout?.getItems) return;` + `
+` + `      for (const oItem of oLayout.getItems()) {` + `
+` + `        if (!oItem?.isA) continue;` + `
+` + `` + `
+` + `        if (oItem.isA("sap.m.FormattedText")) oItem.setVisible(true);` + `
+` + `        else if (oItem.isA("sap.m.Link")) oItem.setVisible(false);` + `
+` + `      }` + `
+` + `    }` + `
+` + `` + `
 ` + `    function showBox(sType, sText, mOptions, oController) {` + `
 ` + `      const o = { ...(mOptions || {}) };` + `
 ` + `      if (o.onClose) {` + `
 ` + `        const sEvent = o.onClose;` + `
 ` + `        o.onClose = (sAction) => oController.eB([sEvent], sAction);` + `
 ` + `      }` + `
-` + `      if (o.details) o.details = Lib.sanitizeMessageDetails(o.details);` + `
+` + `      if (o.details) {` + `
+` + `        o.details = Lib.sanitizeMessageDetails(o.details);` + `
+` + `        if (!o.id) o.id = \`z2ui5MessageBox\${++iBoxNo}\`;` + `
+` + `      }` + `
 ` + `      if (o.dependentOn) {` + `
 ` + `        const oDependentOn = ViewSlots.resolveById(o.dependentOn);` + `
 ` + `        if (oDependentOn) o.dependentOn = oDependentOn;` + `
@@ -86,6 +103,8 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `      if (Object.keys(o).length) showFn(sText, o);` + `
 ` + `      else showFn(sText);` + `
+` + `` + `
+` + `      if (o.details) expandBoxDetails(o.id);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    const CONTROL_METHODS = {` + `
@@ -383,7 +402,8 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `    function castArgs(kinds, rawArgs, view, target) {` + `
 ` + `      if (kinds === null) {` + `
 ` + `        const keepString = setsStringProperty(target?.control, target?.method);` + `
-` + `        return rawArgs.map((raw, i) =>` + `
+`;
+    result = result + `        return rawArgs.map((raw, i) =>` + `
 ` + `          i === 0 && keepString ? raw : castArgAuto(raw),` + `
 ` + `        );` + `
 ` + `      }` + `
@@ -402,8 +422,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      const IconPool = sap.ui.require("sap/ui/core/IconPool");` + `
 ` + `      if (!IconPool) {` + `
 ` + `        Lib.logError("ICON_POOL: sap/ui/core/IconPool is not loaded");` + `
-`;
-    result = result + `        return;` + `
+` + `        return;` + `
 ` + `      }` + `
 ` + `      if (!fontFamily || !fontURI) {` + `
 ` + `        Lib.logError(` + `
