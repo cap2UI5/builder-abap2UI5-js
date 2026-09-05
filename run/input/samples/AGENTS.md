@@ -717,7 +717,7 @@ over there, which meant a pull request HERE could add a stale or invented link
 and stay green until somebody regenerated the documentation; and the first half
 existed nowhere at all. The scan refuses a URL that is not on the documentation
 site, which catches a typo in the **host** and nothing whatsoever about the
-path — and 97 classes carry one of these lines. Nothing fails when a page is
+path — and 95 classes carry one of these lines. Nothing fails when a page is
 renamed: the class compiles, `SAMPLES.md` renders the link, and it 404s for
 every reader who follows it.
 
@@ -759,7 +759,7 @@ newcomer would actually type:
 
 | Header | What belongs in it |
 |--------|--------------------|
-| `Basics I` … `IV` | the entry point — first app, lifecycle, the minimum loop. The only numbered series: the Roman numeral orders them as a learning path (rule 5 sorts by `header`), and `header_base( )` still renders them as one block |
+| `Basics I` … `VI` | the entry point — first app, lifecycle, the minimum loop, and what you reach for around it (the developer tools, a unit test on the app's own logic). The only numbered series: the Roman numeral orders them as a learning path (rule 5 sorts by `header`), and `header_base( )` still renders them as one block |
 | `Binding` | `_bind( )`, binding syntax, UI5 model types, the model itself |
 | `Browser` | the browser page and tab: URL, title, favicon, reload, clipboard, storage, logout |
 | `Control Behaviour` | one UI5 control is the topic — how it *behaves* and how the backend drives it, typically by calling its methods by ID. **Not** a control reference: that is [samples-controls](https://github.com/abap2UI5/samples-controls), and the header says so (§1) |
@@ -1003,7 +1003,7 @@ By hand, because no script covers it:
 - Run: `npm run check:abap2ui5`
 - CI: `abap2UI5` — as opposed to `abap-standard` / `abap-cloud` /
   `abap-702`, which lint ABAP itself against three target releases
-- **The gate is effective**: 148 app classes, 172 reconstructed views, and
+- **The gate is effective**: 150 app classes, 173 reconstructed views, and
   an `abap2ui5lint-baseline.json` that froze the adoption-time debt (#753)
   until every entry was fixed — empty since 0.6.1, kept so the next adoption
   has its shape. It was
@@ -1017,22 +1017,36 @@ By hand, because no script covers it:
   histogram, what the baseline swallowed and per rule, the phase times:
 
   ```
-  sources    148 app classes
-  views      172 documents reconstructed, nested 11 deep, 7 classes produced none
-  judged     2,178 controls of 106 types, 551 bindings, 68 icons, 4,178 attributes
-  gates      properties 148 files, render 172 documents
+  sources    150 app classes
+  views      173 documents reconstructed, nested 11 deep, 7 classes produced none
+  judged     2,313 controls of 106 types, 563 bindings, 72 icons, 4,353 attributes
+  gates      properties 150 files, render 173 documents
   ```
 
   (No `baselined` line any more: `abap2ui5lint-baseline.json` has been empty
   since 0.6.1 — the one frozen finding was fixed rather than carried.)
 
-  A `judged` line of zeroes, or `148 classes produced none`, is the earlier
+  A `judged` line of zeroes, or `150 classes produced none`, is the earlier
   failure repeating itself — and now it says so instead of printing
   "Success! No findings detected."
+
+  **The seven that produce none are one shape, and they are these seven**
+  (measured 2026-09-04): `117`, `131`, `185`, `191`, `195`, `211`, `338` — all
+  in `src/00/98` ("testing"), all the same "main app calling subapps" scaffold.
+  Each builds a page, keeps the handle in an instance attribute, creates the
+  sub-app with `CREATE OBJECT mo_app TYPE (t002->class)` and hands the handle
+  over through ``CALL METHOD mo_app->(`SET_APP_DATA`)``; the sub-app builds into
+  it and a dynamic ``ASSIGN mo_app->(`MV_VIEW_DISPLAY`)`` decides when to
+  display. The linter resolves each builder statement against the handle it is
+  written on, so a handle that leaves the class through a dynamic call is
+  unfollowable — by design, not by oversight, and nothing in `src/01` does it.
+  Written out so the next run can tell **the same seven** from *seven different
+  ones*: a name appearing here that is not on this list is a sample that lost
+  its view, which is the failure the count exists to catch.
 - **The two README badges** (`.github/badges/abap2ui5.json` and
   `.github/badges/check-abap2ui5.json`, shields.io endpoint files) carry the
-  same statement, split along what they mean: *abap2UI5 | 148 apps · 172 views
-  · 2,178 controls* is what is here, blue, a fact; *check-abap2UI5 | 86 rules
+  same statement, split along what they mean: *abap2UI5 | 150 apps · 173 views
+  · 2,313 controls* is what is here, blue, a fact; *check-abap2UI5 | 111 rules
   passed* is what the gate made of it, green (or *3 problems*, *7 errors*,
   red). A run that finds nothing checkable turns both grey and says so. Every
   run rewrites them, `check-abap2UI5` commits them onto the pull request

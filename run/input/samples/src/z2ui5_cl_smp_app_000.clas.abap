@@ -694,6 +694,7 @@ CLASS z2ui5_cl_smp_app_000 IMPLEMENTATION.
         sub = `The Developer Tools (Ctrl+F12)`
         keywords = `developer tools devtools ctrl f12 debug inspect payload previous request response view xml view model source code log error adt export`
         path = `src/01` app = `z2ui5_cl_smp_app_496` )
+      ( group = `samples` header = `Basics VI` sub = `Unit Tests for the App Logic` keywords = `unit test abapunit testclasses assert testable logic method` path = `src/01` app = `z2ui5_cl_smp_app_503` )
       ( group = `samples` header = `Binding`
         sub = `A View Built From RTTI, No Field Named`
         keywords = `rtti generic view runtime columns get_components describe_by_data no field name itab structure column cell binding`
@@ -759,6 +760,7 @@ CLASS z2ui5_cl_smp_app_000 IMPLEMENTATION.
       ( group = `samples` header = `Menu` sub = `Full Path of the Selected Item (A)` keywords = `menuitem nested submenu textpath controller path` path = `src/01` app = `z2ui5_cl_smp_app_473` )
       ( group = `samples` header = `Menu` sub = `Menu Button with core:require` keywords = `menubutton menuitem popover messagetoast require module` path = `src/01` app = `z2ui5_cl_smp_app_163` )
       ( group = `samples` header = `Message` sub = `Message Model and MessageManager (C)` keywords = `messagemanager validation target field state central model` path = `src/01` app = `z2ui5_cl_smp_app_467` )
+      ( group = `samples` header = `Message` sub = `MessageBox for Any Data` keywords = `messagebox details table structure tree object reference escape limit action onclose` path = `src/01` app = `z2ui5_cl_smp_app_502` )
       ( group = `samples` header = `Message` sub = `MessageBox from SY, BAPIRET2 or Exception` keywords = `t100 message class number exception cx_root error abend` path = `src/01` app = `z2ui5_cl_smp_app_008` )
       ( group = `samples` header = `Message` sub = `MessageBox, Types and Custom Actions` keywords = `confirm warning error success information dialog action` path = `src/01` app = `z2ui5_cl_smp_app_382` )
       ( group = `samples` header = `Message` sub = `MessagePopover URL Policy (A)` keywords = `url policy link security validator relative allow deny` path = `src/01` app = `z2ui5_cl_smp_app_474` )
