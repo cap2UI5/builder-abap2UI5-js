@@ -42,9 +42,12 @@ CLASS ltcl_test_user_exit DEFINITION FINAL
     METHODS teardown.
 
     METHODS test_defaults_http_get   FOR TESTING RAISING cx_static_check.
+    METHODS test_no_secure_ctx_header FOR TESTING RAISING cx_static_check.
     METHODS test_defaults_http_post  FOR TESTING RAISING cx_static_check.
     METHODS test_expiry_clamped      FOR TESTING RAISING cx_static_check.
     METHODS test_superseded_intf     FOR TESTING RAISING cx_static_check.
+    METHODS test_broken_exit_closed  FOR TESTING RAISING cx_static_check.
+    METHODS test_context_app_start   FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 
@@ -93,6 +96,28 @@ CLASS ltcl_test_user_exit IMPLEMENTATION.
     cl_abap_unit_assert=>assert_true( temp1 ).
 
     cl_abap_unit_assert=>assert_not_initial( ls_config-t_security_header ).
+
+  ENDMETHOD.
+
+  METHOD test_no_secure_ctx_header.
+
+    DATA ls_config TYPE z2ui5_if_ui5_exit=>ty_s_http_config.
+    DATA temp2 TYPE xsdboolean.
+
+    z2ui5_cl_ui5_user_exit=>get_instance( )->set_config_http_get( CHANGING cs_config = ls_config ).
+
+    " a secure-context-only header must not be in the shipped defaults: the
+    " plain-HTTP on-premise system ignores it and logs a console error on
+    " every app start (reasoning at set_config_http_get). HTTPS installations
+    " add it in their own exit
+    temp2 = xsdbool( line_exists(
+        ls_config-t_security_header[ n = `Cross-Origin-Opener-Policy` ] ) ). "#EC CI_SORTSEQ
+    cl_abap_unit_assert=>assert_false( temp2 ).
+
+    " ... while the one that IS honoured over plain HTTP stays
+    temp2 = xsdbool( line_exists(
+        ls_config-t_security_header[ n = `Cross-Origin-Resource-Policy` ] ) ). "#EC CI_SORTSEQ
+    cl_abap_unit_assert=>assert_true( temp2 ).
 
   ENDMETHOD.
 
@@ -152,6 +177,45 @@ CLASS ltcl_test_user_exit IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_equals( exp = 9
                                         act = ls_post-draft_exp_time_in_hours ).
+
+  ENDMETHOD.
+
+  METHOD test_context_app_start.
+
+    " the exit sees the app the way the handler resolves it: a case change
+    " or an encoded namespace used to bypass an exit keyed on the name
+    z2ui5_cl_ui5_user_exit=>init_context( VALUE #(
+        path     = `/sap/bc/z2ui5`
+        t_params = VALUE #( ( n = `app_start` v = ` zcl_my_app ` ) ) ) ).
+    cl_abap_unit_assert=>assert_equals( exp = `ZCL_MY_APP`
+                                        act = z2ui5_cl_ui5_user_exit=>context-app_start ).
+    cl_abap_unit_assert=>assert_equals( exp = `/sap/bc/z2ui5`
+                                        act = z2ui5_cl_ui5_user_exit=>context-path ).
+
+    z2ui5_cl_ui5_user_exit=>init_context( VALUE #(
+        t_params = VALUE #( ( n = `app_start` v = `%2Fns%2Fzcl_my_app` ) ) ) ).
+    cl_abap_unit_assert=>assert_equals( exp = `/NS/ZCL_MY_APP`
+                                        act = z2ui5_cl_ui5_user_exit=>context-app_start ).
+
+    " a POST carries no app_start - the context says so instead of guessing
+    z2ui5_cl_ui5_user_exit=>init_context( VALUE #( ) ).
+    cl_abap_unit_assert=>assert_initial( z2ui5_cl_ui5_user_exit=>context-app_start ).
+
+  ENDMETHOD.
+
+  METHOD test_broken_exit_closed.
+
+    " an exit class the lookup named but that implements neither interface
+    " (or cannot be instantiated at all) fails closed: a chained exception
+    " instead of a silent run on the shipped defaults
+    TRY.
+        z2ui5_cl_ui5_user_exit=>exit_instantiate( `Z2UI5_CL_UI5_SRV_DRAFT` ).
+        cl_abap_unit_assert=>fail( `a class that is no exit was accepted as one` ).
+      CATCH z2ui5_cx_ui5_util_error ##NO_HANDLER.
+    ENDTRY.
+
+    cl_abap_unit_assert=>assert_not_bound( z2ui5_cl_ui5_user_exit=>gi_user_exit ).
+    cl_abap_unit_assert=>assert_not_bound( z2ui5_cl_ui5_user_exit=>gi_user_exit_dep ).
 
   ENDMETHOD.
 

@@ -66,6 +66,13 @@ CLASS z2ui5_cl_ui5_app_start DEFINITION PUBLIC.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
+    " what the page shows for a class that could not be instantiated - the
+    " exception text, or a plain sentence where the exit hides error details
+    METHODS error_text_for_user
+      IMPORTING
+        ix            TYPE REF TO cx_root
+      RETURNING
+        VALUE(result) TYPE string.
     METHODS header_icon
       IMPORTING
         toolbar TYPE REF TO z2ui5_cl_ui5_view_builder
@@ -139,9 +146,8 @@ CLASS z2ui5_cl_ui5_app_start DEFINITION PUBLIC.
     " the same place in every row - the alignment the samples app has
     CONSTANTS c_link_width TYPE string VALUE `12rem`.
 
-    " the two icons the page names twice - once in the title row, once in the
+    " the icon the page names twice - once in the title row, once in the
     " "Learn more" section - so the header and the section cannot drift apart
-    CONSTANTS c_icon_docs TYPE string VALUE `sap-icon://learning-assistant`.
     CONSTANTS c_icon_repo TYPE string VALUE `sap-icon://globe`.
 
     " the icon of a row belongs to the link behind it, so it carries the link's
@@ -154,12 +160,6 @@ CLASS z2ui5_cl_ui5_app_start DEFINITION PUBLIC.
     " the samples overview renders its header icons at this size; a stock
     " core:Icon is 1rem and looks undersized next to the page title
     CONSTANTS c_icon_size_header TYPE string VALUE `1.125rem`.
-
-    " What sets the outbound icons apart from the system ones: a gap, not a
-    " rule. A sap.m.ToolbarSeparator would draw the rule, but it renders a
-    " <div> and only lays out as expected inside a flex container - see
-    " render_header_toolbar( ), which is where that matters.
-    CONSTANTS c_icon_class_group TYPE string VALUE `sapUiMediumMarginBegin sapUiTinyMarginEnd`.
 
     " a form row of Label + [ icon, link ] - the shape the sample rows and the
     " documentation row share. Returns the HBox, so the caller can append
@@ -190,15 +190,6 @@ CLASS z2ui5_cl_ui5_app_start DEFINITION PUBLIC.
         class     TYPE string
         class_old TYPE string OPTIONAL.
 
-    " the press wire of a button whose target is EXTERNAL: a Button carries no
-    " href, and cs_event-open_new_tab is same-origin only (isValidRedirectURL),
-    " so the new tab is opened by the URLHELPER frontend action - client-side,
-    " inside the click handler, which is what keeps the popup blocker quiet
-    METHODS open_url
-      IMPORTING
-        href          TYPE string
-      RETURNING
-        VALUE(result) TYPE string.
 ENDCLASS.
 
 
@@ -298,11 +289,32 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
         ms_home-url               = get_app_url( ms_home-classname ).
 
       CATCH cx_root INTO DATA(lx).
-        ms_home-class_value_state_text = lx->get_text( ).
+        ms_home-class_value_state_text = error_text_for_user( lx ).
         ms_home-class_value_state      = `Warning`.
         client->message_box_display( text = ms_home-class_value_state_text
                                      type = `error` ).
     ENDTRY.
+
+  ENDMETHOD.
+
+  METHOD error_text_for_user.
+
+    " the exception text of a CREATE OBJECT for a class name the user typed
+    " goes onto the page - with the same switch the 500 body honours: an
+    " installation whose exit hides error details gets a plain sentence
+    " here too, not the raw system text. The exit is asked the way the
+    " draft cleanup asks it; an exit that raises leaves the switch at its
+    " default (details shown)
+    DATA ls_config TYPE z2ui5_if_ui5_exit=>ty_s_http_config_post.
+    TRY.
+        z2ui5_cl_ui5_user_exit=>get_instance( )->set_config_http_post( CHANGING cs_config = ls_config ).
+      CATCH cx_root ##NO_HANDLER.
+    ENDTRY.
+    IF ls_config-check_hide_error_details = abap_true.
+      result = `The class could not be instantiated - see the system log for details`.
+    ELSE.
+      result = ix->get_text( ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -409,28 +421,12 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
                  tooltip = `System information - backend settings, user exit, drafts (frontend info: Ctrl+F12)`
                  press   = client->_event( c_event_system ) ).
 
-    IF z2ui5_cl_ui5_util_context=>rtti_check_class_exists( c_class_icf_config ).
-      header_icon( toolbar = toolbar
-                   icon    = `sap-icon://settings`
-                   tooltip = `Configuration`
-                   press   = client->_event( cs_event-set_config ) ).
-    ENDIF.
-
-    " ... then, set apart by a wider gap, the entries that leave the system:
-    " the icons above open something in this system, these two open a site.
-    " The gap rides on the first of them (c_icon_class_group) instead of on a
-    " separator control of its own - see the note above on what a block-level
-    " child does to this bar on 1.71
-    header_icon( toolbar = toolbar
-                 icon    = c_icon_docs
-                 tooltip = `Documentation - guides, tutorials and the API reference on abap2UI5.org`
-                 press   = open_url( `https://abap2UI5.org` )
-                 class   = c_icon_class_group ).
-
-    header_icon( toolbar = toolbar
-                 icon    = c_icon_repo
-                 tooltip = `The abap2UI5 repository on GitHub - source code, issues, releases and the abapGit installation`
-                 press   = open_url( `https://github.com/abap2UI5/abap2UI5` ) ).
+*    IF z2ui5_cl_ui5_util_context=>rtti_check_class_exists( c_class_icf_config ).
+*      header_icon( toolbar = toolbar
+*                   icon    = `sap-icon://settings`
+*                   tooltip = `Configuration`
+*                   press   = client->_event( cs_event-set_config ) ).
+*    ENDIF.
 
   ENDMETHOD.
 
@@ -458,25 +454,25 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
     render_section( form  = form
                     title = `Learn more` ).
 
-    render_icon_row( form    = form
-                     label   = `GitHub`
-                     icon    = c_icon_repo
-                     text    = `abap2UI5`
-                     href    = `https://github.com/abap2UI5/abap2UI5`
-                     new_tab = abap_true
-        )->tag( `Text`
-            )->a( n = `text`   v = `The repository itself - source code, issues, releases, and what abapGit installs from`
-            )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
+*    render_icon_row( form    = form
+*                     label   = `GitHub`
+*                     icon    = c_icon_repo
+*                     text    = `abap2UI5`
+*                     href    = `https://github.com/abap2UI5/abap2UI5`
+*                     new_tab = abap_true
+*        )->tag( `Text`
+*            )->a( n = `text`   v = `The repository itself - source code, issues, releases, and what abapGit installs from`
+*            )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
 
     render_icon_row( form    = form
                      label   = `Docs`
-                     icon    = c_icon_docs
+                     icon    = c_icon_repo
                      text    = `abap2UI5.org`
                      href    = `https://abap2UI5.org`
                      new_tab = abap_true
-        )->tag( `Text`
-            )->a( n = `text`   v = `Guides, tutorials and the API reference - from your first app to the full client API`
-            )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
+    )->tag( `Text`
+        )->a( n = `text`   v = `Guides, tutorials and the Sample reference - from your first app to the full client API`
+        )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
 
   ENDMETHOD.
 
@@ -680,17 +676,6 @@ CLASS z2ui5_cl_ui5_app_start IMPLEMENTATION.
     row->tag( `Text`
         )->a( n = `text`   v = descr
         )->a( n = `class`  v = `sapUiSmallMarginBegin` ).
-
-  ENDMETHOD.
-
-  METHOD open_url.
-
-    " REDIRECT takes a { URL, NEW_WINDOW } object literal - NEW_WINDOW true is
-    " what target="_blank" does on a Link
-    result = client->follow_up_action(
-                 val   = client->cs_event-urlhelper
-                 t_arg = VALUE #( ( `REDIRECT` )
-                                  ( |\{ URL: '{ href }', NEW_WINDOW: true \}| ) ) ).
 
   ENDMETHOD.
 
