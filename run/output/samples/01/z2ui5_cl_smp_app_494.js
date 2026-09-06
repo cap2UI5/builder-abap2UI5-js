@@ -14,6 +14,7 @@ class z2ui5_cl_smp_app_494 extends z2ui5_if_app {
       this.view_display();
     } else if (client.check_on_event(`GREET`)) {
       this.greeting = `Hello ${this.name}!`;
+      client.message_box_display(`Roundtrip done: the backend read NAME = '${this.name}' and wrote GREETING back into the view.`);
     }
   }
 
@@ -32,7 +33,7 @@ class z2ui5_cl_smp_app_494 extends z2ui5_if_app {
       .a({ n: `showNavButton`, b: this.client.check_app_prev_stack() })
       .a({ n: `navButtonPress`, v: this.client._event_nav_app_leave() });
     page.tag(`MessageStrip`)
-      .a({ n: `text`, v: `client->_bind( name ) connects the public attribute NAME with the input ` + `below. Type a name and leave the field: the text ` + `next to it changes without any ABAP code, because both are bound to the ` + `same attribute. Press Greet and the backend reads NAME - already filled ` + `in, no event argument needed - and writes GREETING back into the view.` })
+      .a({ n: `text`, v: `client->_bind( name ) connects the public attribute NAME with the input ` + `below. Type a name and leave the field: the text ` + `next to it changes without any ABAP code, because both are bound to the ` + `same attribute. Press Greet and the backend reads NAME - already filled ` + `in, no event argument needed -, writes GREETING back into the view and ` + `confirms the roundtrip with a MessageBox.` })
       .a({ n: `type`, v: `Information` })
       .a({ n: `showIcon`, b: true })
       .a({ n: `class`, v: `sapUiSmallMargin` });
