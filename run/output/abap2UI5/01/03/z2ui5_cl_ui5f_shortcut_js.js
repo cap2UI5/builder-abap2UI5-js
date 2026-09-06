@@ -67,8 +67,11 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function shortcutEntry(combo) {` + `
-` + `      const scopes = AppState.state.shortcuts[combo];` + `
-` + `      if (!scopes) return undefined;` + `
+` + `      const shortcuts = AppState.state.shortcuts;` + `
+` + `      if (!Object.prototype.hasOwnProperty.call(shortcuts, combo)) {` + `
+` + `        return undefined;` + `
+` + `      }` + `
+` + `      const scopes = shortcuts[combo];` + `
 ` + `      for (const key of Object.keys(scopes)) {` + `
 ` + `        if (key === SHORTCUT_GLOBAL || SHORTCUT_SLOTS.includes(key)) continue;` + `
 ` + `        if (scopeControlOpen(key)) return scopes[key];` + `
@@ -113,6 +116,13 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `        ? raw.toUpperCase()` + `
 ` + `        : raw;` + `
 ` + `      const shortcuts = AppState.state.shortcuts;` + `
+` + `` + `
+` + `      if (combo in Object.prototype) {` + `
+` + `        Lib.logError(` + `
+` + `          \`KEYBOARD_SHORTCUT: '\${args[1]}' is not a key combination\`,` + `
+` + `        );` + `
+` + `        return;` + `
+` + `      }` + `
 ` + `      const scopes = shortcuts[combo] ?? (shortcuts[combo] = {});` + `
 ` + `      if (!args[2]) {` + `
 ` + `        delete scopes[scope];` + `

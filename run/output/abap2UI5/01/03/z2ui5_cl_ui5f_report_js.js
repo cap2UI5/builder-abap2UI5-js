@@ -20,8 +20,8 @@ class z2ui5_cl_ui5f_report_js {
 ` + `        if (body.length > MAX_SECTION) {` + `
 ` + `          body =` + `
 ` + `            \`\${body.slice(0, MAX_SECTION)}\\n\\n... [truncated \` +` + `
-` + `            \`\${body.length - MAX_SECTION} more characters - open the \` +` + `
-` + `            \`\${title} tab for the full content]\`;` + `
+` + `            \`\${body.length - MAX_SECTION} more characters - the developer \` +` + `
+` + `            \`tools show the full \${title} content]\`;` + `
 ` + `        }` + `
 ` + `        sections.push(\`===== \${title} =====\\n\${body}\`);` + `
 ` + `      };` + `
@@ -175,6 +175,7 @@ class z2ui5_cl_ui5f_report_js {
 ` + `    return {` + `
 ` + `      buildExport,` + `
 ` + `      buildMarkdown,` + `
+` + `      confirmOnButton,` + `
 ` + `      copyMarkdown,` + `
 ` + `      downloadText,` + `
 ` + `      exportFileName,` + `

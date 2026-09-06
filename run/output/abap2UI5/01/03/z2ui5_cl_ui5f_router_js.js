@@ -46,7 +46,7 @@ class z2ui5_cl_ui5f_router_js {
 ` + `` + `
 ` + `    function hrefFor(sAppHash) {` + `
 ` + `      const base = window.location.href.split("#")[0];` + `
-` + `      const raw = String(window.location.hash || "").replace(/^#/, "");` + `
+` + `      const raw = getRawHash();` + `
 ` + `      let shell = splitHash(raw).shell;` + `
 ` + `` + `
 ` + `      if (!shell && raw && !raw.startsWith("/")) shell = raw;` + `
@@ -78,22 +78,27 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      return { app: parts[0], draft: parts.length > 1 ? parts[1] : "" };` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function appOf(sHash) {` + `
-` + `      const route = parse(sHash);` + `
-` + `      return route ? route.app : "";` + `
-` + `    }` + `
-` + `` + `
-` + `    function draftOf(sHash) {` + `
-` + `      const route = parse(sHash);` + `
-` + `      return route ? route.draft : "";` + `
-` + `    }` + `
-` + `` + `
 ` + `    function navTo(sRoute, bReplace) {` + `
 ` + `      const sHash = String(sRoute || "").replace(/^\\/+/, "");` + `
 ` + `      if (bReplace) {` + `
 ` + `        hashChanger().replaceHash(sHash);` + `
 ` + `      } else {` + `
 ` + `        hashChanger().setHash(sHash);` + `
+` + `      }` + `
+` + `    }` + `
+` + `` + `
+` + `    function writeHash(sHash, bPush) {` + `
+` + `      if (bPush) AppState.state.hashPushCount += 1;` + `
+` + `      navTo(sHash, !bPush);` + `
+` + `    }` + `
+` + `` + `
+` + `    function writeLegacyUrl(sSuffix, bPush) {` + `
+` + `      const url = \`\${window.location.pathname}\${window.location.search}#\${getRawHash()}\${sSuffix}\`;` + `
+` + `      if (bPush) {` + `
+` + `        AppState.state.hashPushCount += 1;` + `
+` + `        history.pushState(null, "", url);` + `
+` + `      } else {` + `
+` + `        history.replaceState(null, "", url);` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
@@ -214,54 +219,34 @@ class z2ui5_cl_ui5f_router_js {
 ` + `        applyHashEvent(mOptions);` + `
 ` + `` + `
 ` + `        const state = AppState.state;` + `
+` + `` + `
+` + `        const sAppWrite = mOptions.setPushState || mOptions.setHashReplace;` + `
+` + `        const bPush = Boolean(mOptions.setPushState);` + `
+` + `` + `
 ` + `        if (state.navRouting) {` + `
 ` + `          const app = state.oResponse?.APP;` + `
 ` + `          if (app) updateAppRoute(mOptions, ID, app);` + `
 ` + `` + `
-` + `          if (!mOptions.setPushState && !mOptions.setHashReplace) return;` + `
+` + `          if (!sAppWrite) return;` + `
 ` + `` + `
 ` + `          if (state.currentDraftId) {` + `
-` + `            if (mOptions.setPushState) {` + `
-` + `              state.hashPushCount += 1;` + `
-` + `              navTo(` + `
-` + `                patternFor(state.currentApp, state.currentDraftId) +` + `
-` + `                  mOptions.setPushState,` + `
-` + `              );` + `
-` + `            } else {` + `
-` + `              navTo(` + `
-` + `                patternFor(state.currentApp, state.currentDraftId) +` + `
-` + `                  mOptions.setHashReplace,` + `
-` + `                true,` + `
-` + `              );` + `
-` + `            }` + `
+` + `            writeHash(` + `
+` + `              patternFor(state.currentApp, state.currentDraftId) + sAppWrite,` + `
+` + `              bPush,` + `
+` + `            );` + `
 ` + `            return;` + `
 ` + `          }` + `
 ` + `        }` + `
 ` + `` + `
-` + `        if (mOptions.setPushState) {` + `
+` + `        if (sAppWrite) {` + `
 ` + `          if (state.hashEvent) {` + `
-` + `            state.appHash = appHashNormalized(mOptions.setPushState);` + `
-` + `            state.hashPushCount += 1;` + `
-` + `            navTo(mOptions.setPushState);` + `
+` + `            state.appHash = appHashNormalized(sAppWrite);` + `
+` + `            writeHash(sAppWrite, bPush);` + `
 ` + `            return;` + `
 ` + `          }` + `
 ` + `` + `
-` + `          const newUrl = \`\${window.location.pathname}\${window.location.search}#\${getRawHash()}\${mOptions.setPushState}\`;` + `
-` + `          state.hashPushCount += 1;` + `
-` + `          history.pushState(null, "", newUrl);` + `
+` + `          writeLegacyUrl(sAppWrite, bPush);` + `
 ` + `` + `
-` + `          return;` + `
-` + `        }` + `
-` + `` + `
-` + `        if (mOptions.setHashReplace) {` + `
-` + `          if (state.hashEvent) {` + `
-` + `            state.appHash = appHashNormalized(mOptions.setHashReplace);` + `
-` + `            navTo(mOptions.setHashReplace, true);` + `
-` + `            return;` + `
-` + `          }` + `
-` + `` + `
-` + `          const replUrl = \`\${window.location.pathname}\${window.location.search}#\${getRawHash()}\${mOptions.setHashReplace}\`;` + `
-` + `          history.replaceState(null, "", replUrl);` + `
 ` + `          return;` + `
 ` + `        }` + `
 ` + `` + `
@@ -301,8 +286,6 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      hrefFor,` + `
 ` + `      patternFor,` + `
 ` + `      parse,` + `
-` + `      appOf,` + `
-` + `      draftOf,` + `
 ` + `      navTo,` + `
 ` + `      navBack,` + `
 ` + `      onHashChanged,` + `

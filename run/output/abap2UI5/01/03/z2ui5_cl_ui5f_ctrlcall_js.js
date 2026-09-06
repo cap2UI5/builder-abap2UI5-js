@@ -52,7 +52,11 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      delete o.class;` + `
 ` + `      if (o.onClose) {` + `
 ` + `        const sEvent = o.onClose;` + `
-` + `        o.onClose = () => oController.eB([sEvent]);` + `
+` + `` + `
+` + `        o.onClose = () => {` + `
+` + `          if (!Lib.isControllerAlive(oController)) return;` + `
+` + `          oController.eB([sEvent]);` + `
+` + `        };` + `
 ` + `      }` + `
 ` + `      const doShow = (MT) => {` + `
 ` + `        if (Object.keys(o).length) MT.show(sText, o);` + `
@@ -81,7 +85,11 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      const o = { ...(mOptions || {}) };` + `
 ` + `      if (o.onClose) {` + `
 ` + `        const sEvent = o.onClose;` + `
-` + `        o.onClose = (sAction) => oController.eB([sEvent], sAction);` + `
+` + `` + `
+` + `        o.onClose = (sAction) => {` + `
+` + `          if (!Lib.isControllerAlive(oController)) return;` + `
+` + `          oController.eB([sEvent], sAction);` + `
+` + `        };` + `
 ` + `      }` + `
 ` + `      if (o.details) {` + `
 ` + `        o.details = Lib.sanitizeMessageDetails(o.details);` + `
@@ -279,8 +287,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      ICON_POOL: {` + `
 ` + `        get: () => sap.ui.require("sap/ui/core/IconPool"),` + `
 ` + `        methods: { registerFont: ["string", "string"] },` + `
-` + `        display: (oController, method, aArgs) =>` + `
-` + `          registerIconFont(aArgs[0], aArgs[1]),` + `
+` + `` + `
+` + `        display: (oController, method, aArgs, mOptions, ctx, oIconPool) =>` + `
+` + `          registerIconFont(oIconPool, aArgs[0], aArgs[1]),` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      THEMING: {` + `
@@ -344,6 +353,11 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      return item;` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function resolveControlOrNull(raw, view) {` + `
+` + `      if (raw === "" || raw === undefined || raw === null) return null;` + `
+` + `      return resolveControl(raw, view) || null;` + `
+` + `    }` + `
+` + `` + `
 ` + `    function castArg(kind, raw, view) {` + `
 ` + `      switch (kind) {` + `
 ` + `        case "int":` + `
@@ -362,13 +376,11 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `          return raw;` + `
 ` + `        }` + `
 ` + `        case "controlIdOrNull":` + `
-` + `          if (raw === "" || raw === undefined || raw === null) return null;` + `
-` + `          return resolveControl(raw, view) || null;` + `
+` + `          return resolveControlOrNull(raw, view);` + `
 ` + `        case "anchor":` + `
 ` + `          return resolveControl(raw, view);` + `
 ` + `        case "within":` + `
-` + `          if (raw === "" || raw === undefined || raw === null) return null;` + `
-` + `          return resolveControl(raw, view) || null;` + `
+` + `          return resolveControlOrNull(raw, view);` + `
 ` + `        case "object":` + `
 ` + `          if (raw && typeof raw === "object") return raw;` + `
 ` + `          try {` + `
@@ -390,7 +402,8 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    function setsStringProperty(control, method) {` + `
 ` + `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` + `
-` + `        return false;` + `
+`;
+    result = result + `        return false;` + `
 ` + `      const prop = control.getMetadata?.()?.getAllProperties?.()[` + `
 ` + `        method.charAt(3).toLowerCase() + method.slice(4)` + `
 ` + `      ];` + `
@@ -402,8 +415,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `    function castArgs(kinds, rawArgs, view, target) {` + `
 ` + `      if (kinds === null) {` + `
 ` + `        const keepString = setsStringProperty(target?.control, target?.method);` + `
-`;
-    result = result + `        return rawArgs.map((raw, i) =>` + `
+` + `        return rawArgs.map((raw, i) =>` + `
 ` + `          i === 0 && keepString ? raw : castArgAuto(raw),` + `
 ` + `        );` + `
 ` + `      }` + `
@@ -418,12 +430,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    const registeredIconFonts = new Set();` + `
 ` + `` + `
-` + `    function registerIconFont(fontFamily, fontURI) {` + `
-` + `      const IconPool = sap.ui.require("sap/ui/core/IconPool");` + `
-` + `      if (!IconPool) {` + `
-` + `        Lib.logError("ICON_POOL: sap/ui/core/IconPool is not loaded");` + `
-` + `        return;` + `
-` + `      }` + `
+` + `    function registerIconFont(IconPool, fontFamily, fontURI) {` + `
 ` + `      if (!fontFamily || !fontURI) {` + `
 ` + `        Lib.logError(` + `
 ` + `          "ICON_POOL: registerFont needs a fontFamily AND a fontURI",` + `
@@ -456,12 +463,127 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function whenAnchorRendered(anchor, oController, fn) {` + `
-` + `      if (anchor && typeof anchor.getDomRef === "function") {` + `
-` + `        Lib.whenRendered(anchor, oController, fn);` + `
-` + `      } else {` + `
+` + `      const guarded = () => {` + `
+` + `        if (!Lib.isControllerAlive(oController)) return;` + `
 ` + `        fn();` + `
+` + `      };` + `
+` + `      if (anchor && typeof anchor.getDomRef === "function") {` + `
+` + `        Lib.whenRendered(anchor, oController, guarded);` + `
+` + `      } else {` + `
+` + `        guarded();` + `
 ` + `      }` + `
 ` + `    }` + `
+` + `` + `
+` + `    function pseudoToggleBy({ control, id, view, kinds, args, oController }) {` + `
+` + `      if (!control || typeof control.openBy !== "function") {` + `
+` + `        Lib.logError(` + `
+` + `          \`CONTROL_BY_ID: 'toggleBy' not callable on control '\${id}'\`,` + `
+` + `        );` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      const anchor = castArgs(kinds, args.slice(4), view)[0];` + `
+` + `` + `
+` + `      whenAnchorRendered(anchor, oController, () => {` + `
+` + `        if (control.isOpen?.()) control.close();` + `
+` + `        else control.openBy(anchor);` + `
+` + `      });` + `
+` + `    }` + `
+` + `` + `
+` + `    function pseudoOpenBy({ control, id, view, kinds, args, oController }) {` + `
+` + `      if (` + `
+` + `        !control ||` + `
+` + `        (typeof control.openBy !== "function" &&` + `
+` + `          typeof control.open !== "function")` + `
+` + `      ) {` + `
+` + `        Lib.logError(\`CONTROL_BY_ID: 'openBy' not callable on control '\${id}'\`);` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      const anchor = castArgs(kinds, args.slice(4), view)[0];` + `
+` + `` + `
+` + `      whenAnchorRendered(anchor, oController, () => {` + `
+` + `        if (typeof control.openBy === "function") control.openBy(anchor);` + `
+` + `        else control.open(false, anchor, "begin top", "begin bottom", anchor);` + `
+` + `      });` + `
+` + `    }` + `
+` + `` + `
+` + `    function pseudoCss({ control, id, args }) {` + `
+` + `      const prop = String(args[4] ?? "").toLowerCase();` + `
+` + `      if (!CSS_PROPERTIES.includes(prop)) {` + `
+` + `        Lib.logError(` + `
+` + `          \`CONTROL_BY_ID: css property '\${args[4]}' not allowed (allowed: \${CSS_PROPERTIES.join(", ")})\`,` + `
+` + `        );` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      const el = control?.getDomRef?.();` + `
+` + `      if (!el) {` + `
+` + `        Lib.logError(\`CONTROL_BY_ID: 'css' - control '\${id}' has no DOM ref\`);` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      el.style.setProperty(prop, String(args[5] ?? ""));` + `
+` + `    }` + `
+` + `` + `
+` + `    function pseudoExpandCollapse({ control, id, method }) {` + `
+` + `      const op = method === "expandSelected" ? "expand" : "collapse";` + `
+` + `      if (!control || typeof control[op] !== "function") {` + `
+` + `        Lib.logError(` + `
+` + `          \`CONTROL_BY_ID: '\${method}' not callable on control '\${id}'\`,` + `
+` + `        );` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      const indices = selectedIndicesOf(control);` + `
+` + `      if (indices === null) {` + `
+` + `        Lib.logError(` + `
+` + `          \`CONTROL_BY_ID: '\${method}' - control '\${id}' exposes no selection\`,` + `
+` + `        );` + `
+` + `        return;` + `
+` + `      }` + `
+` + `` + `
+` + `      if (indices.length) control[op](indices);` + `
+` + `    }` + `
+` + `` + `
+` + `    function pseudoSetAsyncURLHandler({ control, id, args }) {` + `
+` + `      const policy = String(args[4] ?? "").toUpperCase();` + `
+` + `      const isAllowed = URL_POLICIES[policy];` + `
+` + `      if (!isAllowed) {` + `
+` + `        Lib.logError(` + `
+` + `          \`CONTROL_BY_ID: unknown URL policy '\${args[4]}' (allowed: \${Object.keys(URL_POLICIES).join(", ")})\`,` + `
+` + `        );` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      if (!control || typeof control.setAsyncURLHandler !== "function") {` + `
+` + `        Lib.logError(` + `
+` + `          \`CONTROL_BY_ID: 'setAsyncURLHandler' not callable on control '\${id}'\`,` + `
+` + `        );` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      control.setAsyncURLHandler((config) => {` + `
+` + `        config?.promise?.resolve({` + `
+` + `          allowed: isAllowed(config.url),` + `
+` + `          id: config.id,` + `
+` + `        });` + `
+` + `      });` + `
+` + `    }` + `
+` + `` + `
+` + `    function isRootPrototypeMethod(obj, method) {` + `
+` + `      let owner = obj;` + `
+` + `      while (` + `
+` + `        owner !== null &&` + `
+` + `        owner !== undefined &&` + `
+` + `        !Object.prototype.hasOwnProperty.call(owner, method)` + `
+` + `      ) {` + `
+` + `        owner = Object.getPrototypeOf(owner);` + `
+` + `      }` + `
+` + `      return !!owner && Object.getPrototypeOf(owner) === null;` + `
+` + `    }` + `
+` + `` + `
+` + `    const PSEUDO_METHODS = Object.assign(Object.create(null), {` + `
+` + `      toggleBy: pseudoToggleBy,` + `
+` + `      openBy: pseudoOpenBy,` + `
+` + `      css: pseudoCss,` + `
+` + `      expandSelected: pseudoExpandCollapse,` + `
+` + `      collapseSelected: pseudoExpandCollapse,` + `
+` + `      setAsyncURLHandler: pseudoSetAsyncURLHandler,` + `
+` + `    });` + `
 ` + `` + `
 ` + `    function evControlCallById(oController, args) {` + `
 ` + `      const [, id, view, method] = args;` + `
@@ -474,107 +596,16 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        kinds = null;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const control = view` + `
-` + `        ? (ViewSlots.byId(view.toUpperCase(), id) ?? ViewSlots.resolveById(id))` + `
-` + `        : ViewSlots.resolveById(id);` + `
-` + `` + `
-` + `      if (method === "toggleBy") {` + `
-` + `        if (!control || typeof control.openBy !== "function") {` + `
-` + `          Lib.logError(` + `
-` + `            \`CONTROL_BY_ID: 'toggleBy' not callable on control '\${id}'\`,` + `
-` + `          );` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        const anchor = castArgs(kinds, args.slice(4), view)[0];` + `
-` + `` + `
-` + `        whenAnchorRendered(anchor, oController, () => {` + `
-` + `          if (control.isOpen?.()) control.close();` + `
-` + `          else control.openBy(anchor);` + `
-` + `        });` + `
+` + `      const control = resolveControl(id, view);` + `
+` + `      const pseudo = PSEUDO_METHODS[method];` + `
+` + `      if (pseudo) {` + `
+` + `        pseudo({ control, id, view, method, kinds, args, oController });` + `
 ` + `        return;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      if (method === "css") {` + `
-` + `        const prop = String(args[4] ?? "").toLowerCase();` + `
-` + `        if (!CSS_PROPERTIES.includes(prop)) {` + `
-` + `          Lib.logError(` + `
-` + `            \`CONTROL_BY_ID: css property '\${args[4]}' not allowed (allowed: \${CSS_PROPERTIES.join(", ")})\`,` + `
-` + `          );` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        const el = control?.getDomRef?.();` + `
-` + `        if (!el) {` + `
-` + `          Lib.logError(\`CONTROL_BY_ID: 'css' - control '\${id}' has no DOM ref\`);` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        el.style.setProperty(prop, String(args[5] ?? ""));` + `
-` + `        return;` + `
-` + `      }` + `
-` + `` + `
-` + `      if (method === "expandSelected" || method === "collapseSelected") {` + `
-` + `        const op = method === "expandSelected" ? "expand" : "collapse";` + `
-` + `        if (!control || typeof control[op] !== "function") {` + `
-` + `          Lib.logError(` + `
-` + `            \`CONTROL_BY_ID: '\${method}' not callable on control '\${id}'\`,` + `
-` + `          );` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        const indices = selectedIndicesOf(control);` + `
-` + `        if (indices === null) {` + `
-` + `          Lib.logError(` + `
-` + `            \`CONTROL_BY_ID: '\${method}' - control '\${id}' exposes no selection\`,` + `
-` + `          );` + `
-` + `          return;` + `
-` + `        }` + `
-` + `` + `
-` + `        if (indices.length) control[op](indices);` + `
-` + `        return;` + `
-` + `      }` + `
-` + `` + `
-` + `      if (method === "setAsyncURLHandler") {` + `
-` + `        const policy = String(args[4] ?? "").toUpperCase();` + `
-` + `        const isAllowed = URL_POLICIES[policy];` + `
-` + `        if (!isAllowed) {` + `
-` + `          Lib.logError(` + `
-` + `            \`CONTROL_BY_ID: unknown URL policy '\${args[4]}' (allowed: \${Object.keys(URL_POLICIES).join(", ")})\`,` + `
-` + `          );` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        if (!control || typeof control.setAsyncURLHandler !== "function") {` + `
-` + `          Lib.logError(` + `
-` + `            \`CONTROL_BY_ID: 'setAsyncURLHandler' not callable on control '\${id}'\`,` + `
-` + `          );` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        control.setAsyncURLHandler((config) => {` + `
-` + `          config?.promise?.resolve({` + `
-` + `            allowed: isAllowed(config.url),` + `
-` + `            id: config.id,` + `
-` + `          });` + `
-` + `        });` + `
-` + `        return;` + `
-` + `      }` + `
-` + `` + `
-` + `      if (method === "openBy") {` + `
-` + `        if (` + `
-` + `          !control ||` + `
-` + `          (typeof control.openBy !== "function" &&` + `
-` + `            typeof control.open !== "function")` + `
-` + `        ) {` + `
-` + `          Lib.logError(` + `
-` + `            \`CONTROL_BY_ID: 'openBy' not callable on control '\${id}'\`,` + `
-` + `          );` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        const anchor = castArgs(kinds, args.slice(4), view)[0];` + `
-` + `` + `
-` + `        whenAnchorRendered(anchor, oController, () => {` + `
-` + `          if (typeof control.openBy === "function") control.openBy(anchor);` + `
-` + `          else control.open(false, anchor, "begin top", "begin bottom", anchor);` + `
-` + `        });` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      if (!control || typeof control[method] !== "function") {` + `
+` + `      const inherited =` + `
+` + `        method === "constructor" || isRootPrototypeMethod(control, method);` + `
+` + `      if (!control || inherited || typeof control[method] !== "function") {` + `
 ` + `        Lib.logError(` + `
 ` + `          \`CONTROL_BY_ID: '\${method}' not callable on control '\${id}'\`,` + `
 ` + `        );` + `
@@ -618,7 +649,14 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      }` + `
 ` + `` + `
 ` + `      if (target.display) {` + `
-` + `        return target.display(oController, method, raw, mOptions || {}, ctx);` + `
+` + `        return target.display(` + `
+` + `          oController,` + `
+` + `          method,` + `
+` + `          raw,` + `
+` + `          mOptions || {},` + `
+` + `          ctx,` + `
+` + `          obj,` + `
+` + `        );` + `
 ` + `      }` + `
 ` + `      if (typeof obj[method] !== "function") {` + `
 ` + `        Lib.logError(\`CONTROL_GLOBAL: '\${name}.\${method}' not available\`);` + `
@@ -765,7 +803,8 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    return { handlers };` + `
 ` + `  },` + `
-` + `);` + `
+`;
+    result = result + `);` + `
 ` + `` + `
 ` + ``;
     return result;

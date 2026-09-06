@@ -60,9 +60,14 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `          const name = args[2] || undefined;` + `
 ` + `` + `
 ` + `          const previous = oView.getModel(name);` + `
-` + `          oModel._z2ui5OwnedOData = true;` + `
 ` + `          oView.setModel(oModel, name);` + `
-` + `          if (previous?._z2ui5OwnedOData && previous !== oModel) {` + `
+` + `          AppState.state.odataClients.add(oModel);` + `
+` + `` + `
+` + `          if (` + `
+` + `            previous !== oModel &&` + `
+` + `            AppState.state.odataClients.has(previous)` + `
+` + `          ) {` + `
+` + `            AppState.state.odataClients.delete(previous);` + `
 ` + `            previous.destroy();` + `
 ` + `          }` + `
 ` + `        } else {` + `
@@ -71,6 +76,7 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      } catch (e) {` + `
 ` + `        Lib.logError(\`SET_ODATA_MODEL: failed for '\${args[1]}'\`, e);` + `
 ` + `` + `
+` + `        AppState.state.odataClients.delete(oModel);` + `
 ` + `        oModel?.destroy?.();` + `
 ` + `      }` + `
 ` + `    }` + `
@@ -123,8 +129,14 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      timers[timerKey] = setTimeout(fire, delay);` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function resolveTarget(action, id) {` + `
+` + `      const oElement = ViewSlots.resolveById(id);` + `
+` + `      if (!oElement) Lib.logError(\`\${action}: no control '\${id}'\`);` + `
+` + `      return oElement;` + `
+` + `    }` + `
+` + `` + `
 ` + `    function evSetFocus(oController, args) {` + `
-` + `      const oElement = ViewSlots.resolveById(args[1]);` + `
+` + `      const oElement = resolveTarget("SET_FOCUS", args[1]);` + `
 ` + `      if (!oElement) return;` + `
 ` + `` + `
 ` + `      const applyFocus = () => {` + `
@@ -172,7 +184,7 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `` + `
 ` + `    function evScrollTo(oController, args) {` + `
 ` + `      try {` + `
-` + `        const oElement = ViewSlots.resolveById(args[1]);` + `
+` + `        const oElement = resolveTarget("SCROLL_TO", args[1]);` + `
 ` + `        if (!oElement) return;` + `
 ` + `        const y = Number(args[2]) || 0;` + `
 ` + `        const x = Number(args[3]) || 0;` + `
@@ -208,7 +220,7 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `` + `
 ` + `    function evScrollIntoView(oController, args) {` + `
 ` + `      try {` + `
-` + `        const oElement = ViewSlots.resolveById(args[1]);` + `
+` + `        const oElement = resolveTarget("SCROLL_INTO_VIEW", args[1]);` + `
 ` + `        if (!oElement) return;` + `
 ` + `        const dom = oElement.getDomRef();` + `
 ` + `        if (!dom || !dom.scrollIntoView) return;` + `

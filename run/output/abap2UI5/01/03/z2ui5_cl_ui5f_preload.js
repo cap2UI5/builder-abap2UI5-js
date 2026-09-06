@@ -1,5 +1,7 @@
 
 class z2ui5_cl_ui5f_preload {
+  static build_hash = `a1ffe172f0bebbe9`;
+
   static get({ styles_css, custom_js } = {}) {
     let result = ``;
     result = `      "z2ui5/Component.js": function(){${z2ui5_cl_ui5f_comp_js.get()}${custom_js}},` + `

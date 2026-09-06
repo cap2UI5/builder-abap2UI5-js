@@ -353,14 +353,16 @@ class z2ui5_cl_ui5_util_http {
 
   set_cdata({ val } = {}) {
     let object;
+    let lv_data;
     if (this.mo_server_onprem != null) {
       object = this.get_response_onprem();
+      lv_data = (val);
       {
         const _dynr = (object);
         const _dynm = _dynr ? _dynr[String(`SET_CDATA`).toLowerCase()] : undefined;
         if (typeof _dynm !== "function") throw new Error(`CALL METHOD: ${String(`SET_CDATA`)} not found`);
         {
-          const _dynargs = { data: val };
+          const _dynargs = { data: lv_data };
           const _dynret = _dynm.call(_dynr, _dynargs);
         }
       }

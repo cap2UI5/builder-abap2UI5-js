@@ -41,10 +41,6 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return \`\${str.slice(0, max)}... (\${str.length} chars)\`;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function getTheme() {` + `
-` + `      return Lib.getTheme();` + `
-` + `    }` + `
-` + `` + `
 ` + `    function bootstrapElement() {` + `
 ` + `      try {` + `
 ` + `        return document.getElementById("sap-ui-bootstrap");` + `
@@ -63,10 +59,6 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      } catch {` + `
 ` + `        return "";` + `
 ` + `      }` + `
-` + `    }` + `
-` + `` + `
-` + `    function getLocale() {` + `
-` + `      return Lib.getLocale();` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function getContentDensity() {` + `
@@ -155,8 +147,9 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `` + `
 ` + `      out.push(line("Distribution", getDistribution(sUi5)));` + `
 ` + `      out.push(line("Build timestamp", sUi5?.BUILDTIMESTAMP));` + `
-` + `      out.push(line("Theme", getTheme()));` + `
-` + `      const locale = getLocale();` + `
+` + `` + `
+` + `      out.push(line("Theme", Lib.getTheme()));` + `
+` + `      const locale = Lib.getLocale();` + `
 ` + `      out.push(line("Language", locale.language));` + `
 ` + `      out.push(line("Text direction", locale.rtl ? "RTL" : "LTR"));` + `
 ` + `      out.push(line("Content density", getContentDensity()));` + `
@@ -277,6 +270,14 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return out;` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function slotXml(slotKey) {` + `
+` + `      return (` + `
+` + `        ViewSlots.getView(slotKey)?.mProperties?.viewContent ||` + `
+` + `        ViewSlots.getViewXml(slotKey) ||` + `
+` + `        ""` + `
+` + `      );` + `
+` + `    }` + `
+` + `` + `
 ` + `    function scrapeEvents(xml) {` + `
 ` + `      if (!xml) return [];` + `
 ` + `      const found = new Set();` + `
@@ -321,11 +322,13 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(timers.length ? \`  \${timers.join(", ")}\` : "  (none pending)");` + `
 ` + `` + `
 ` + `      out.push(section("Framework callbacks registered"));` + `
+` + `` + `
 ` + `      for (const name of [` + `
 ` + `        "onBeforeRoundtrip",` + `
 ` + `        "onAfterRoundtrip",` + `
 ` + `        "onAfterRendering",` + `
 ` + `        "onBeforeEventFrontend",` + `
+` + `        "onErrorDetails",` + `
 ` + `      ]) {` + `
 ` + `        out.push(line(name, String((state[name] || []).length)));` + `
 ` + `      }` + `
@@ -339,10 +342,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(section("Backend events bound in the current views"));` + `
 ` + `      let any = false;` + `
 ` + `      for (const slot of ViewSlots.slots) {` + `
-` + `        const xml =` + `
-` + `          ViewSlots.getView(slot.key)?.mProperties?.viewContent ||` + `
-` + `          ViewSlots.getViewXml(slot.key);` + `
-` + `        const events = scrapeEvents(xml);` + `
+` + `        const events = scrapeEvents(slotXml(slot.key));` + `
 ` + `        if (!events.length) continue;` + `
 ` + `        any = true;` + `
 ` + `        out.push(\`  [\${slot.key}]\`);` + `
@@ -609,10 +609,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function formatBindingCheck(slotKey, data) {` + `
-` + `      const xml =` + `
-` + `        ViewSlots.getView(slotKey)?.mProperties?.viewContent ||` + `
-` + `        ViewSlots.getViewXml(slotKey);` + `
-` + `      const bound = scrapeBindingAttributes(xml);` + `
+` + `      const bound = scrapeBindingAttributes(slotXml(slotKey));` + `
 ` + `      if (!bound.length) return [];` + `
 ` + `      const missing = bound.filter((name) => !(name in data));` + `
 ` + `      const out = [];` + `
@@ -803,11 +800,11 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `          getDistribution((AppState.getGlobal("oConfig") || {}).S_UI5),` + `
 ` + `        ),` + `
 ` + `      );` + `
-`;
-    result = result + `      out.push(line("Theme", getTheme()));` + `
+` + `      out.push(line("Theme", Lib.getTheme()));` + `
 ` + `` + `
 ` + `      out.push(section("View slots"));` + `
-` + `      out.push(...formatSlots());` + `
+`;
+    result = result + `      out.push(...formatSlots());` + `
 ` + `` + `
 ` + `      out.push(section("Getting around"));` + `
 ` + `      out.push("  Ctrl+F12          open / close these tools");` + `

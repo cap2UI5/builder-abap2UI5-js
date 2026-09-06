@@ -149,7 +149,7 @@ class z2ui5_cl_ui5_view_builder {
   static escape_literal({ val } = {}) {
     let result = ``;
     result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
-    if (![...String(result)].some(($c) => String(`{}`).includes($c))) {
+    if (![...String(result)].some(($c) => String(`{}\\`).includes($c))) {
       return result;
     }
     result = result.replaceAll(`\\`, `\\\\`);

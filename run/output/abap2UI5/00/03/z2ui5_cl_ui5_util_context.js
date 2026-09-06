@@ -21,7 +21,6 @@ class z2ui5_cl_ui5_util_context {
   static gt_class_exists = [];
   static gv_check_cloud = false;
   static gv_check_cloud_cached = false;
-  static gv_uuid_failed = false;
   static cv_data_max_rows = 100;
   static cv_data_max_depth = 5;
   static cv_data_max_text = 200;
@@ -405,17 +404,9 @@ class z2ui5_cl_ui5_util_context {
     let lo_struct = null;
     let lo_type = null;
     let lv_absolute_name = ``;
-    try {
-      lo_type = cl_abap_typedescr.describe_by_data(val);
-      if (lo_type.kind === cl_abap_typedescr.kind_ref) {
-        lo_type = cl_abap_typedescr.describe_by_data_ref(val);
-      }
-    } catch (error) {
-      try {
-        lo_type = cl_abap_typedescr.describe_by_data_ref(val);
-      } catch (error) {
-        lo_type = cl_abap_structdescr.describe_by_name(val);
-      }
+    lo_type = cl_abap_typedescr.describe_by_data(val);
+    if (lo_type.kind === cl_abap_typedescr.kind_ref) {
+      lo_type = cl_abap_typedescr.describe_by_data_ref(val);
     }
     switch (lo_type.kind) {
       case cl_abap_typedescr.kind_struct:
@@ -556,6 +547,56 @@ class z2ui5_cl_ui5_util_context {
     Object.assign(_args, { any });
   }
 
+  static xml_srtti_descr({ data } = {}) {
+    let result = null;
+    const lv_classname = ((z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: `ZCL_SRTTI_TYPEDESCR` }) === true || z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: `ZCL_SRTTI_TYPEDESCR` }) === `X`) ? `ZCL_SRTTI_TYPEDESCR` : `Z2UI5_CL_SRT_TYPEDESCR`);
+    // TODO(abap2js): CALL METHOD (lv_classname)=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = result.
+    return result;
+  }
+
+  static xml_srtti_stringify_pair(_args = {}) {
+    let { data, ev_type, ev_data } = _args;
+    let lo_srtti;
+    let lx_srtti;
+    try {
+      lo_srtti = z2ui5_cl_ui5_util_context.xml_srtti_descr({ data: data });
+      // TODO(abap2js): CALL TRANSFORMATION id SOURCE srtti = lo_srtti RESULT XML ev_type.
+      // TODO(abap2js): CALL TRANSFORMATION id SOURCE dobj = data RESULT XML ev_data.
+    } catch (_caught1) {
+      lx_srtti = _caught1;
+      throw new z2ui5_cx_ui5_util_error({ val: `UNSUPPORTED_FEATURE`, previous: lx_srtti });
+    }
+    Object.assign(_args, { ev_type, ev_data });
+  }
+
+  static xml_srtti_parse_pair({ iv_type, iv_data } = {}) {
+    let result = null;
+    let sy_subrc = 0;
+    let fs_variable = null;
+    let _fs$fs_variable = null;
+    let srtti = null;
+    // TODO(abap2js): CALL TRANSFORMATION id SOURCE XML iv_type RESULT srtti = srtti.
+    let rtti_type = null;
+    {
+      const _dynr = (srtti);
+      const _dynm = _dynr ? _dynr[String(`GET_RTTI`).toLowerCase()] : undefined;
+      if (typeof _dynm !== "function") throw new Error(`CALL METHOD: ${String(`GET_RTTI`)} not found`);
+      {
+        const _dynargs = {  };
+        const _dynret = _dynm.call(_dynr, _dynargs);
+        rtti_type = _dynret !== undefined ? _dynret : _dynargs.rtti;
+      }
+    }
+    let lo_datadescr = null;
+    lo_datadescr = z2ui5_cl_util.abap_cast(rtti_type);
+    // TODO(abap2js): CREATE DATA result TYPE HANDLE lo_datadescr.
+    fs_variable = result;
+    _fs$fs_variable = null;
+    sy_subrc = 0;
+    // TODO(abap2js): CALL TRANSFORMATION id SOURCE XML iv_data RESULT dobj = <variable>.
+    return result;
+  }
+
   static xml_srtti_parse({ rtti_data } = {}) {
     let result = null;
     let sy_subrc = 0;
@@ -693,6 +734,8 @@ class z2ui5_cl_ui5_util_context {
       case cl_abap_datadescr.typekind_int2:
       case cl_abap_datadescr.typekind_packed:
       case cl_abap_datadescr.typekind_float:
+      case cl_abap_datadescr.typekind_decfloat16:
+      case cl_abap_datadescr.typekind_decfloat34:
       case cl_abap_datadescr.typekind_hex:
         result = true;
         break;
@@ -906,7 +949,7 @@ class z2ui5_cl_ui5_util_context {
     sy_tabix = 0;
     for (const lr_msg of lt_msg) {
       sy_tabix++;
-      lt_detail_items.push(z2ui5_cl_util.abap_copy(`<li>${lr_msg.text}</li>`));
+      lt_detail_items.push(z2ui5_cl_util.abap_copy(`<li>${z2ui5_cl_ui5_util_context.c_escape_html({ val: lr_msg.text })}</li>`));
     }
     result.details = `<ul>` + lt_detail_items.join(``) + `</ul>`;
     return result;
@@ -1197,21 +1240,13 @@ class z2ui5_cl_ui5_util_context {
 
   static html_get_plain({ val } = {}) {
     let result = ``;
-    let lv_rest = ``;
-    let lv_pos = 0;
-    lv_rest = z2ui5_cl_util.abap_tab_assign(lv_rest, z2ui5_cl_util.abap_copy(val));
-    while (String(lv_rest).toLowerCase().includes(String(`<`).toLowerCase())) {
-      lv_pos = z2ui5_cl_util.abap_tab_assign(lv_pos, z2ui5_cl_util.abap_copy(sy_fdpos));
-      result = result + lv_rest.substr(0, lv_pos) + ` `;
-      lv_rest = lv_rest.substr(lv_pos);
-      if (String(lv_rest).toLowerCase().includes(String(`>`).toLowerCase())) {
-        lv_pos = sy_fdpos + 1;
-        lv_rest = lv_rest.substr(lv_pos);
-      } else {
-        lv_rest = ``;
-      }
+    let sy_subrc = 0;
+    result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
+    // TODO(abap2js): REPLACE ALL OCCURRENCES OF REGEX `<[^>]*>` IN result WITH ` ` .
+    // TODO(abap2js): FIND `<` IN result MATCH OFFSET DATA(lv_open).
+    if (sy_subrc === 0) {
+      result = result.substr(0, lv_open) + ` `;
     }
-    result = result + lv_rest;
     result = String(result).replaceAll(`&nbsp;`, ` ` ?? ``);
     result = String(result).replaceAll(`&lt;`, `<` ?? ``);
     result = String(result).replaceAll(`&gt;`, `>` ?? ``);
@@ -1383,14 +1418,14 @@ class z2ui5_cl_ui5_util_context {
     fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
     sy_subrc = _fs$fs_any ? 0 : 4;
     if (sy_subrc !== 0) {
-      throw new cx_sy_dyn_call_illegal_class();
+      return result;
     }
     obj = fs_any;
     _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(obj, `IF_XCO_INTF_IMPLEMENTATIONS_FC~ALL`);
     fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
     sy_subrc = _fs$fs_any ? 0 : 4;
     if (sy_subrc !== 0) {
-      throw new cx_sy_dyn_call_illegal_class();
+      return result;
     }
     obj = fs_any;
     {
@@ -1642,16 +1677,7 @@ class z2ui5_cl_ui5_util_context {
       result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(lv_uuid));
     } catch (_caught1) {
       lx_uuid = _caught1;
-      if ((z2ui5_cl_ui5_util_context.gv_uuid_failed === true || z2ui5_cl_ui5_util_context.gv_uuid_failed === `X`)) {
-        return result;
-      }
-      z2ui5_cl_ui5_util_context.gv_uuid_failed = true;
-      try {
-        throw new z2ui5_cx_ui5_util_error({ val: lx_uuid });
-      } catch (_caught2) {
-        z2ui5_cl_ui5_util_context.gv_uuid_failed = false;
-        throw _caught2;
-      }
+      throw new z2ui5_cx_ui5_util_error({ val: lx_uuid });
     }
     return result;
   }
@@ -1691,7 +1717,7 @@ class z2ui5_cl_ui5_util_context {
     return result;
   }
 
-  static msg_get_internal({ val } = {}) {
+  static msg_get_internal({ val, iv_check_rap = true } = {}) {
     let result = [];
     let sy_tabix = 0;
     let sy_subrc = 0;
@@ -1699,7 +1725,6 @@ class z2ui5_cl_ui5_util_context {
     let _fs$fs_tab = null;
     let fs_comp = null;
     let _fs$fs_comp = null;
-    let lt_tab;
     let lt_attri;
     let ls_result;
     const lv_kind = z2ui5_cl_ui5_util_context.rtti_get_type_kind({ val: val });
@@ -1708,19 +1733,14 @@ class z2ui5_cl_ui5_util_context {
         fs_tab = val;
         _fs$fs_tab = null;
         sy_subrc = 0;
-        sy_tabix = 0;
-        for (const symbol of fs_tab) {
-          sy_tabix++;
-          lt_tab = z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_row });
-          result.push(...lt_tab.map((_r) => z2ui5_cl_util.abap_copy(_r)));
-        }
+        result = z2ui5_cl_ui5_util_context.msg_get_internal_tab({ it_tab: fs_tab });
         break;
       case cl_abap_datadescr.typekind_struct1:
       case cl_abap_datadescr.typekind_struct2:
         if (z2ui5_cl_util.abap_is_initial(val)) {
           return result;
         }
-        if ((z2ui5_cl_ui5_util_context.check_is_rap_struct({ val: val }) === true || z2ui5_cl_ui5_util_context.check_is_rap_struct({ val: val }) === `X`)) {
+        if ((iv_check_rap === true || iv_check_rap === `X`) && (z2ui5_cl_ui5_util_context.check_is_rap_struct({ val: val }) === true || z2ui5_cl_ui5_util_context.check_is_rap_struct({ val: val }) === `X`)) {
           result = z2ui5_cl_ui5_util_context.msg_get_rap({ val: val });
           return result;
         }
@@ -1736,8 +1756,7 @@ class z2ui5_cl_ui5_util_context {
             continue;
           }
           if (ls_attri.name === `ITEM`) {
-            lt_tab = z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_comp });
-            result.push(...lt_tab.map((_r) => z2ui5_cl_util.abap_copy(_r)));
+            result.push(...z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_comp }).map((_r) => z2ui5_cl_util.abap_copy(_r)));
             return result;
           } else {
             ls_result = z2ui5_cl_ui5_util_context.msg_map({ name: ls_attri.name, val: fs_comp, msg: ls_result });
@@ -1750,7 +1769,9 @@ class z2ui5_cl_ui5_util_context {
         result.push(z2ui5_cl_util.abap_copy(ls_result));
         break;
       case cl_abap_datadescr.typekind_oref:
-        result = z2ui5_cl_ui5_util_context.msg_get_by_oref({ val: val });
+        if (!z2ui5_cl_util.abap_is_initial(val)) {
+          result = z2ui5_cl_ui5_util_context.msg_get_by_oref({ val: val });
+        }
         break;
       default:
         if (z2ui5_cl_ui5_util_context.rtti_check_clike({ val: val }) && !z2ui5_cl_util.abap_is_initial(val)) {
@@ -1761,94 +1782,109 @@ class z2ui5_cl_ui5_util_context {
     return result;
   }
 
+  static msg_get_internal_tab({ it_tab } = {}) {
+    let result = [];
+    let sy_tabix = 0;
+    let lv_row_kind;
+    let lv_rap = false;
+    let lv_first = true;
+    sy_tabix = 0;
+    for (const symbol of it_tab) {
+      sy_tabix++;
+      if ((lv_first === true || lv_first === `X`)) {
+        lv_first = false;
+        lv_row_kind = z2ui5_cl_ui5_util_context.rtti_get_type_kind({ val: fs_row });
+        if (lv_row_kind === cl_abap_datadescr.typekind_struct1 || lv_row_kind === cl_abap_datadescr.typekind_struct2) {
+          lv_rap = z2ui5_cl_ui5_util_context.check_is_rap_struct({ val: fs_row });
+        }
+      }
+      if ((lv_rap === true || lv_rap === `X`) && !z2ui5_cl_util.abap_is_initial(fs_row)) {
+        result.push(...z2ui5_cl_ui5_util_context.msg_get_rap({ val: fs_row }).map((_r) => z2ui5_cl_util.abap_copy(_r)));
+      } else {
+        result.push(...z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_row, iv_check_rap: false }).map((_r) => z2ui5_cl_util.abap_copy(_r)));
+      }
+    }
+    return result;
+  }
+
   static msg_get_by_oref({ val } = {}) {
     let result = [];
+    let sy_subrc = 0;
+    let fs_tab = null;
+    let _fs$fs_tab = null;
+    let lx;
+    try {
+      lx = (val);
+      result.push(z2ui5_cl_util.abap_copy(z2ui5_cl_ui5_util_context.msg_get_by_oref_attri({ io_obj: lx, is_msg: { type: `E`, text: lx.get_text(), id: ``, no: ``, v1: ``, v2: ``, v3: ``, v4: ``, timestampl: 0, t_meta: [] } })));
+      return result;
+    } catch (error) {
+    }
+    let obj = null;
+    obj = val;
+    let lr_tab = null;
+    try {
+      // TODO(abap2js): CREATE DATA lr_tab TYPE (`if_bali_log=>ty_item_table`).
+      fs_tab = lr_tab;
+      _fs$fs_tab = null;
+      sy_subrc = 0;
+      {
+        const _dynr = (obj);
+        const _dynm = _dynr ? _dynr[String(`IF_BALI_LOG~GET_ALL_ITEMS`).toLowerCase()] : undefined;
+        if (typeof _dynm !== "function") throw new Error(`CALL METHOD: ${String(`IF_BALI_LOG~GET_ALL_ITEMS`)} not found`);
+        {
+          const _dynargs = {  };
+          const _dynret = _dynm.call(_dynr, _dynargs);
+          fs_tab = _dynret !== undefined ? _dynret : _dynargs.item_table;
+        }
+      }
+      result.push(...z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_tab }).map((_r) => z2ui5_cl_util.abap_copy(_r)));
+      return result;
+    } catch (error) {
+    }
+    try {
+      // TODO(abap2js): CREATE DATA lr_tab TYPE (`BAPIRETTAB`).
+      fs_tab = lr_tab;
+      _fs$fs_tab = null;
+      sy_subrc = 0;
+      {
+        const _dynr = (obj);
+        const _dynm = _dynr ? _dynr[String(`ZIF_LOGGER~EXPORT_TO_TABLE`).toLowerCase()] : undefined;
+        if (typeof _dynm !== "function") throw new Error(`CALL METHOD: ${String(`ZIF_LOGGER~EXPORT_TO_TABLE`)} not found`);
+        {
+          const _dynargs = {  };
+          const _dynret = _dynm.call(_dynr, _dynargs);
+          fs_tab = _dynret !== undefined ? _dynret : _dynargs.rt_bapiret;
+        }
+      }
+      result.push(...z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_tab }).map((_r) => z2ui5_cl_util.abap_copy(_r)));
+      return result;
+    } catch (error) {
+    }
+    result.push(z2ui5_cl_util.abap_copy(z2ui5_cl_ui5_util_context.msg_get_by_oref_attri({ io_obj: obj, is_msg: {} })));
+    return result;
+  }
+
+  static msg_get_by_oref_attri({ io_obj, is_msg } = {}) {
+    let result = {};
     let sy_tabix = 0;
     let sy_subrc = 0;
     let fs_comp = null;
     let _fs$fs_comp = null;
-    let fs_tab2 = null;
-    let _fs$fs_tab2 = null;
-    let lx;
-    let ls_result;
-    let lt_attri_o;
     let lv_name;
-    let lt_tab2;
-    try {
-      lx = (val);
-      ls_result = { type: `E`, text: lx.get_text() };
-      lt_attri_o = z2ui5_cl_ui5_util_context.rtti_get_t_attri_by_oref({ val: val });
-      sy_tabix = 0;
-      for (const ls_attri_o of lt_attri_o) {
-        sy_tabix++;
-        if (!(ls_attri_o.visibility === z2ui5_cl_ui5_util_context.cv_objectdescr_public)) continue;
-        lv_name = z2ui5_cl_util.abap_copy(ls_attri_o.name);
-        _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(lx, lv_name);
-        fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
-        sy_subrc = _fs$fs_comp ? 0 : 4;
-        if (sy_subrc !== 0) {
-          continue;
-        }
-        ls_result = z2ui5_cl_ui5_util_context.msg_map({ name: ls_attri_o.name, val: fs_comp, msg: ls_result });
+    result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(is_msg));
+    const lt_attri_o = z2ui5_cl_ui5_util_context.rtti_get_t_attri_by_oref({ val: io_obj });
+    sy_tabix = 0;
+    for (const ls_attri_o of lt_attri_o) {
+      sy_tabix++;
+      if (!(ls_attri_o.visibility === z2ui5_cl_ui5_util_context.cv_objectdescr_public)) continue;
+      lv_name = z2ui5_cl_util.abap_copy(ls_attri_o.name);
+      _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(io_obj, lv_name);
+      fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
+      sy_subrc = _fs$fs_comp ? 0 : 4;
+      if (sy_subrc !== 0) {
+        continue;
       }
-      result.push(z2ui5_cl_util.abap_copy(ls_result));
-    } catch (error) {
-      let obj = null;
-      obj = val;
-      try {
-        let lr_tab = null;
-        // TODO(abap2js): CREATE DATA lr_tab TYPE (`if_bali_log=>ty_item_table`).
-        fs_tab2 = lr_tab;
-        _fs$fs_tab2 = null;
-        sy_subrc = 0;
-        {
-          const _dynr = (obj);
-          const _dynm = _dynr ? _dynr[String(`IF_BALI_LOG~GET_ALL_ITEMS`).toLowerCase()] : undefined;
-          if (typeof _dynm !== "function") throw new Error(`CALL METHOD: ${String(`IF_BALI_LOG~GET_ALL_ITEMS`)} not found`);
-          {
-            const _dynargs = {  };
-            const _dynret = _dynm.call(_dynr, _dynargs);
-            fs_tab2 = _dynret !== undefined ? _dynret : _dynargs.item_table;
-          }
-        }
-        lt_tab2 = z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_tab2 });
-        result.push(...lt_tab2.map((_r) => z2ui5_cl_util.abap_copy(_r)));
-      } catch (error) {
-        try {
-          // TODO(abap2js): CREATE DATA lr_tab TYPE (`BAPIRETTAB`).
-          fs_tab2 = lr_tab;
-          _fs$fs_tab2 = null;
-          sy_subrc = 0;
-          {
-            const _dynr = (obj);
-            const _dynm = _dynr ? _dynr[String(`ZIF_LOGGER~EXPORT_TO_TABLE`).toLowerCase()] : undefined;
-            if (typeof _dynm !== "function") throw new Error(`CALL METHOD: ${String(`ZIF_LOGGER~EXPORT_TO_TABLE`)} not found`);
-            {
-              const _dynargs = {  };
-              const _dynret = _dynm.call(_dynr, _dynargs);
-              fs_tab2 = _dynret !== undefined ? _dynret : _dynargs.rt_bapiret;
-            }
-          }
-          lt_tab2 = z2ui5_cl_ui5_util_context.msg_get_internal({ val: fs_tab2 });
-          result.push(...lt_tab2.map((_r) => z2ui5_cl_util.abap_copy(_r)));
-        } catch (error) {
-          lt_attri_o = z2ui5_cl_ui5_util_context.rtti_get_t_attri_by_oref({ val: val });
-          sy_tabix = 0;
-          for (const ls_attri_o of lt_attri_o) {
-            sy_tabix++;
-            if (!(ls_attri_o.visibility === z2ui5_cl_ui5_util_context.cv_objectdescr_public)) continue;
-            lv_name = z2ui5_cl_util.abap_tab_assign(lv_name, z2ui5_cl_util.abap_copy(ls_attri_o.name));
-            _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(obj, lv_name);
-            fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
-            sy_subrc = _fs$fs_comp ? 0 : 4;
-            if (sy_subrc !== 0) {
-              continue;
-            }
-            ls_result = z2ui5_cl_ui5_util_context.msg_map({ name: ls_attri_o.name, val: fs_comp, msg: ls_result });
-          }
-          result.push(z2ui5_cl_util.abap_copy(ls_result));
-        }
-      }
+      result = z2ui5_cl_ui5_util_context.msg_map({ name: ls_attri_o.name, val: fs_comp, msg: result });
     }
     return result;
   }
@@ -2240,7 +2276,6 @@ const cl_abap_structdescr = require("abap2UI5/cl_abap_structdescr");
 const cl_abap_tabledescr = require("abap2UI5/cl_abap_tabledescr");
 const cl_abap_tstmp = require("abap2UI5/cl_abap_tstmp");
 const cl_abap_typedescr = require("abap2UI5/cl_abap_typedescr");
-const cx_sy_dyn_call_illegal_class = require("abap2UI5/cx_sy_dyn_call_illegal_class");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
 const z2ui5_cx_ui5_util_error = require("abap2UI5/z2ui5_cx_ui5_util_error");
 

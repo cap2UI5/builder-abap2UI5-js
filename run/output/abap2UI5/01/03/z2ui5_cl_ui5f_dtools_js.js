@@ -142,12 +142,7 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `          return;` + `
 ` + `        }` + `
 ` + `` + `
-` + `        this.displayEditor(` + `
-` + `          oModel,` + `
-` + `          Tabs.render(key),` + `
-` + `          tab.kind,` + `
-` + `          Tabs.renderTemplated(key),` + `
-` + `        );` + `
+` + `        this.displayEditor(oModel, Tabs.render(key), tab.kind);` + `
 ` + `` + `
 ` + `        data.canApply = LiveEdit.canApply(key);` + `
 ` + `        oModel.refresh();` + `
@@ -178,7 +173,7 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `        this.renderTab("SEARCH", oModel);` + `
 ` + `      },` + `
 ` + `` + `
-` + `      displayEditor(oModel, content, type, xcontent = "") {` + `
+` + `      displayEditor(oModel, content, type) {` + `
 ` + `        const data = oModel.getData();` + `
 ` + `        data.editor_visible = true;` + `
 ` + `        data.source_visible = false;` + `
@@ -189,7 +184,7 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `        data.templatingSource = false;` + `
 ` + `        data.value = content;` + `
 ` + `        data.previousValue = content;` + `
-` + `        data.xContent = xcontent;` + `
+` + `        data.xContent = "";` + `
 ` + `        data.type = type;` + `
 ` + `        oModel.refresh();` + `
 ` + `      },` + `
@@ -199,7 +194,14 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `        const oModel = oSource.getModel();` + `
 ` + `        const data = oModel.getData();` + `
 ` + `` + `
-` + `        data.value = oSource.getPressed() ? data.xContent : data.previousValue;` + `
+` + `        if (oSource.getPressed()) {` + `
+` + `          if (!data.xContent) {` + `
+` + `            data.xContent = Tabs.renderTemplated(data.selectedTab);` + `
+` + `          }` + `
+` + `          data.value = data.xContent;` + `
+` + `        } else {` + `
+` + `          data.value = data.previousValue;` + `
+` + `        }` + `
 ` + `        oModel.refresh();` + `
 ` + `      },` + `
 ` + `` + `
@@ -249,15 +251,17 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `        Report.openDialog(AbapSource.appName(), source);` + `
 ` + `      },` + `
 ` + `` + `
-` + `      onCopyTab(oEvent) {` + `
+` + `      async onCopyTab(oEvent) {` + `
 ` + `        const oSource = oEvent.getSource();` + `
-` + `        Lib.copyToClipboard(oSource.getModel().getData().value || "");` + `
+` + `        const data = oSource.getModel().getData();` + `
+` + `        let text = data.value || "";` + `
+` + `        if (data.isSourceView) {` + `
+` + `          text = await AbapSource.fetchSource();` + `
+` + `          if (Lib.isDestroyed(oSource)) return;` + `
+` + `        }` + `
+` + `        Lib.copyToClipboard(text);` + `
 ` + `` + `
-` + `        const original = oSource.getText();` + `
-` + `        oSource.setText("Copied");` + `
-` + `        setTimeout(() => {` + `
-` + `          if (!Lib.isDestroyed(oSource)) oSource.setText(original);` + `
-` + `        }, 1500);` + `
+` + `        Report.confirmOnButton(oSource);` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      onErrorRetry() {` + `
@@ -306,15 +310,35 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `          this.showStatus(oModel, "A roundtrip is running - try again.");` + `
 ` + `          return;` + `
 ` + `        }` + `
-` + `        const result = await LiveEdit.apply(data.selectedTab, data.value);` + `
+` + `        const tabKey = data.selectedTab;` + `
+` + `` + `
+` + `        const before = this.backendXml(tabKey);` + `
+` + `        const result = await LiveEdit.apply(tabKey, data.value);` + `
 ` + `        if (Lib.isDestroyed(this)) return;` + `
+` + `        if (!this._appliedXml) this._appliedXml = {};` + `
+` + `        this._appliedXml[tabKey] = {` + `
+` + `          original: before,` + `
+` + `` + `
+` + `          applied: Tabs.render(tabKey),` + `
+` + `        };` + `
 ` + `        this.showStatus(oModel, result);` + `
+` + `      },` + `
+` + `` + `
+` + `      backendXml(tabKey) {` + `
+` + `        const current = Tabs.render(tabKey);` + `
+` + `        const record = this._appliedXml?.[tabKey];` + `
+` + `        if (!record) return current;` + `
+` + `        if (record.applied !== current) {` + `
+` + `          delete this._appliedXml[tabKey];` + `
+` + `          return current;` + `
+` + `        }` + `
+` + `        return record.original;` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      onResetXml(oEvent) {` + `
 ` + `        const oModel = oEvent.getSource().getModel();` + `
 ` + `        const data = oModel.getData();` + `
-` + `        const xml = Tabs.render(data.selectedTab);` + `
+` + `        const xml = this.backendXml(data.selectedTab);` + `
 ` + `        data.value = xml;` + `
 ` + `        data.previousValue = xml;` + `
 ` + `        oModel.refresh();` + `
@@ -378,7 +402,8 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `            return;` + `
 ` + `          }` + `
 ` + `` + `
-` + `          const requested =` + `
+`;
+    result = result + `          const requested =` + `
 ` + `            typeof initialTab === "string" && initialTab` + `
 ` + `              ? initialTab` + `
 ` + `              : readLastTab();` + `
@@ -402,8 +427,7 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `            isSearch: false,` + `
 ` + `            isErrorView: false,` + `
 ` + `            isSourceView: false,` + `
-`;
-    result = result + `            hasRetry: false,` + `
+` + `            hasRetry: false,` + `
 ` + `            canApply: false,` + `
 ` + `            isTemplating: false,` + `
 ` + `            templatingSource: false,` + `
@@ -451,6 +475,7 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `      exit() {` + `
 ` + `        this.reopenErrorOnClose = false;` + `
 ` + `        clearTimeout(this._statusTimer);` + `
+` + `        this._appliedXml = null;` + `
 ` + `        if (this.oDialog) {` + `
 ` + `          this.oDialog.close();` + `
 ` + `          this.oDialog.destroy();` + `

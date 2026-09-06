@@ -68,7 +68,12 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      slotKey = "MAIN",` + `
 ` + `      data = AppState.state.oResponse?.OVIEWMODEL,` + `
 ` + `    ) {` + `
-` + `      return trackChanges(new JSONModel(dataForSlot(slotKey, data)));` + `
+` + `      const oModel = trackChanges(new JSONModel(dataForSlot(slotKey, data)));` + `
+` + `` + `
+` + `      if (data && data === AppState.state.oResponse?.OVIEWMODEL) {` + `
+` + `        oModel._z2ui5BuiltFrom = AppState.state.oResponse;` + `
+` + `      }` + `
+` + `      return oModel;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function isSuperseded(seq) {` + `
@@ -182,7 +187,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `          annotationURI: mOptions.switchDefaultModelAnnoUri || "",` + `
 ` + `        });` + `
 ` + `` + `
-` + `        oModel._z2ui5OwnedOData = true;` + `
+` + `        AppState.state.odataClients.add(oModel);` + `
 ` + `      } else {` + `
 ` + `        oModel = oViewModel;` + `
 ` + `      }` + `
@@ -200,6 +205,8 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `` + `
 ` + `      const discardBuild = () => {` + `
 ` + `        oView.destroy();` + `
+` + `` + `
+` + `        AppState.state.odataClients.delete(oModel);` + `
 ` + `        oModel.destroy();` + `
 ` + `        if (switchPath) oViewModel.destroy();` + `
 ` + `      };` + `
@@ -228,9 +235,9 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `            return undefined;` + `
 ` + `          }` + `
 ` + `` + `
-` + `          const oldMainDefault = ViewSlots.getView("MAIN")?.getModel?.();` + `
 ` + `          ViewSlots.destroy("MAIN");` + `
-` + `          if (oldMainDefault?._z2ui5OwnedOData) oldMainDefault.destroy();` + `
+` + `          for (const oClient of AppState.state.odataClients) oClient.destroy();` + `
+` + `          AppState.state.odataClients.clear();` + `
 ` + `` + `
 ` + `          ViewSlots.destroy("POPUP");` + `
 ` + `          ViewSlots.destroy("POPOVER");` + `
@@ -254,6 +261,12 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `` + `
 ` + `      const tracked = resolveTrackedModel(oView);` + `
 ` + `      if (tracked) {` + `
+` + `        if (` + `
+` + `          tracked._z2ui5BuiltFrom &&` + `
+` + `          tracked._z2ui5BuiltFrom === AppState.state.oResponse` + `
+` + `        ) {` + `
+` + `          return;` + `
+` + `        }` + `
 ` + `        applyStoredSizeLimit(slotKey, tracked);` + `
 ` + `` + `
 ` + `        const pending = tracked._z2ui5ChangedPaths;` + `
@@ -280,6 +293,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function action(method, slotKey, xml, mOptions, seq) {` + `
+` + `      const options = mOptions || {};` + `
 ` + `      if (method === "destroy") {` + `
 ` + `        ViewSlots.destroy(slotKey);` + `
 ` + `        return undefined;` + `
@@ -294,15 +308,15 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      if (isSuperseded(seq)) return undefined;` + `
 ` + `` + `
 ` + `      if (slotKey === "MAIN") {` + `
-` + `        AppState.state.lastMainDisplayOptions = mOptions || {};` + `
-` + `        return displayMain(xml, mOptions, seq);` + `
+` + `        AppState.state.lastMainDisplayOptions = options;` + `
+` + `        return displayMain(xml, options, seq);` + `
 ` + `      }` + `
 ` + `      ViewSlots.destroy(slotKey);` + `
 ` + `      if (slotKey === "POPUP") return displayFragment(xml, seq);` + `
 ` + `      if (slotKey === "POPOVER") {` + `
-` + `        return displayPopover(xml, mOptions.openById, seq);` + `
+` + `        return displayPopover(xml, options.openById, seq);` + `
 ` + `      }` + `
-` + `      return displayNestedView(xml, slotKey, mOptions, seq);` + `
+` + `      return displayNestedView(xml, slotKey, options, seq);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    return {` + `

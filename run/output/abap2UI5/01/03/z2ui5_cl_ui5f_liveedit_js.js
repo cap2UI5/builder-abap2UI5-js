@@ -8,20 +8,14 @@ class z2ui5_cl_ui5f_liveedit_js {
 ` + `    "z2ui5/core/AppState",` + `
 ` + `    "z2ui5/core/Lib",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
+` + `    "z2ui5/devtools/Tabs",` + `
 ` + `  ],` + `
-` + `  (Slots, AppState, Lib, ViewSlots) => {` + `
+` + `  (Slots, AppState, Lib, ViewSlots, Tabs) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
-` + `    const TAB_TO_SLOT = {` + `
-` + `      VIEW: "MAIN",` + `
-` + `      POPUP: "POPUP",` + `
-` + `      POPOVER: "POPOVER",` + `
-` + `      NEST1: "NEST",` + `
-` + `      NEST2: "NEST2",` + `
-` + `    };` + `
-` + `` + `
 ` + `    function slotOfTab(tabKey) {` + `
-` + `      return TAB_TO_SLOT[tabKey];` + `
+` + `      const tab = Tabs.get(tabKey);` + `
+` + `      return tab?.aspect === "XML" ? tab.slot : undefined;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function canApply(tabKey) {` + `
@@ -65,21 +59,11 @@ class z2ui5_cl_ui5f_liveedit_js {
 ` + `      );` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function originalXml(tabKey) {` + `
-` + `      const slotKey = slotOfTab(tabKey);` + `
-` + `      if (!slotKey) return "";` + `
-` + `      return (` + `
-` + `        ViewSlots.getView(slotKey)?.mProperties?.viewContent ||` + `
-` + `        ViewSlots.getViewXml(slotKey) ||` + `
-` + `        ""` + `
-` + `      );` + `
-` + `    }` + `
-` + `` + `
 ` + `    function isBusy() {` + `
 ` + `      return Boolean(AppState.state.isBusy);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    return { apply, canApply, slotOfTab, originalXml, isBusy };` + `
+` + `    return { apply, canApply, slotOfTab, isBusy };` + `
 ` + `  },` + `
 ` + `);` + `
 ` + `` + `

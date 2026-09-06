@@ -24,9 +24,12 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      return null;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function stripViewPrefix(fullId, view) {` + `
+` + `    function stripSlotPrefix(fullId, slot) {` + `
+` + `      const view = ViewSlots.getView(slot.key);` + `
 ` + `      if (!view) return fullId;` + `
-` + `      const prefix = \`\${view.getId()}--\`;` + `
+` + `      const prefix = slot.fragmentId` + `
+` + `        ? \`\${slot.fragmentId}--\`` + `
+` + `        : \`\${view.getId()}--\`;` + `
 ` + `      return fullId.startsWith(prefix) ? fullId.slice(prefix.length) : fullId;` + `
 ` + `    }` + `
 ` + `` + `
@@ -48,7 +51,7 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `        const fullId = ui5El.getId();` + `
 ` + `        let id = fullId;` + `
 ` + `        for (const slot of ViewSlots.slots) {` + `
-` + `          const local = stripViewPrefix(fullId, ViewSlots.getView(slot.key));` + `
+` + `          const local = stripSlotPrefix(fullId, slot);` + `
 ` + `          if (local !== fullId) {` + `
 ` + `            id = local;` + `
 ` + `            break;` + `
@@ -113,10 +116,7 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `          continue;` + `
 ` + `        }` + `
 ` + `` + `
-` + `        const id = stripViewPrefix(` + `
-` + `          entry.control.getId(),` + `
-` + `          ViewSlots.getView(slot.key),` + `
-` + `        );` + `
+` + `        const id = stripSlotPrefix(entry.control.getId(), slot);` + `
 ` + `        out[slot.key] = {` + `
 ` + `          ID: id,` + `
 ` + `          X: entry.dom.scrollLeft || 0,` + `

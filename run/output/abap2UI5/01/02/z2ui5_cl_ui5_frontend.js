@@ -217,7 +217,7 @@ class z2ui5_cl_ui5_frontend {
 
   set_opt_int({ json, name, val } = {}) {
     const lv_val = (val).trim();
-    if (!z2ui5_cl_util.abap_is_initial(lv_val) && [...String(lv_val)].every(($c) => String(`0123456789`).includes($c))) {
+    if (!z2ui5_cl_util.abap_is_initial(lv_val) && [...String(lv_val)].every(($c) => String(`0123456789`).includes($c)) && lv_val.length <= 9) {
       json.set_integer({ iv_path: `/${name}`, iv_val: (lv_val) });
     }
   }

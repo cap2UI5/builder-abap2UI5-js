@@ -492,16 +492,17 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      "ACT = system/custom action counts. A '(no render)' row is a" +` + `
 ` + `        " roundtrip that never reached the render phase",` + `
 ` + `    );` + `
+` + `` + `
+` + `    lines.push(` + `
+` + `      "(error response, aborted request, or a parallel request whose" +` + `
+` + `        " result was discarded as stale).",` + `
+` + `    );` + `
 ` + `    if (list.some((record) => record.previousLoad)) {` + `
 ` + `      lines.push(` + `
 ` + `        "A '*' after the number marks a roundtrip of the PREVIOUS page" +` + `
 ` + `          " load, carried across the reload.",` + `
 ` + `      );` + `
 ` + `    }` + `
-` + `    lines.push(` + `
-` + `      "(error response, aborted request, or a parallel request whose" +` + `
-` + `        " result was discarded as stale).",` + `
-` + `    );` + `
 ` + `    return lines.join("\\n");` + `
 ` + `  }` + `
 ` + `` + `
@@ -653,9 +654,9 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `    if (!isRecordingPayloads()) {` + `
 ` + `      return (` + `
 ` + `        "View diff needs payload recording.\\n\\n" +` + `
-` + `        'Switch "Record Payloads" on in the dialog footer, then trigger at' +` + `
-` + `        " least two roundtrips that rebuild the view - the diff compares the\\n" +` + `
-` + `        "view XML of the two most recently recorded rebuilds."` + `
+` + `        'Switch "Record Payloads" on in the Roundtrips action bar, then' +` + `
+` + `        " trigger at least two roundtrips that rebuild the view - the diff\\n" +` + `
+` + `        "compares the view XML of the two most recently recorded rebuilds."` + `
 ` + `      );` + `
 ` + `    }` + `
 ` + `` + `
@@ -713,9 +714,9 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `    if (!isRecordingPayloads()) {` + `
 ` + `      return (` + `
 ` + `        "Model diff needs payload recording.\\n\\n" +` + `
-` + `        'Switch "Record Payloads" on in the dialog footer, then trigger at' +` + `
-` + `        " least two roundtrips - the diff compares the MODEL of the two most\\n" +` + `
-` + `        "recently recorded responses."` + `
+` + `        'Switch "Record Payloads" on in the Roundtrips action bar, then' +` + `
+` + `        " trigger at least two roundtrips - the diff compares the MODEL of\\n" +` + `
+` + `        "the two most recently recorded responses."` + `
 ` + `      );` + `
 ` + `    }` + `
 ` + `    const pair = lastTwoResponses();` + `

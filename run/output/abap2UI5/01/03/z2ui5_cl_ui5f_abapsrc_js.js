@@ -55,7 +55,8 @@ class z2ui5_cl_ui5f_abapsrc_js {
 ` + `      } catch {` + `
 ` + `        source = "";` + `
 ` + `      }` + `
-` + `      cache = { app: name, source };` + `
+` + `` + `
+` + `      if (source) cache = { app: name, source };` + `
 ` + `      return source;` + `
 ` + `    }` + `
 ` + `` + `

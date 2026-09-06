@@ -13,10 +13,7 @@ class z2ui5_cl_ui5f_msgmgr_js {
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const KEY_SEP = String.fromCharCode(1);` + `
-` + `    const keyOf = (o) =>` + `
-` + `      [o.MESSAGE ?? o.message, o.TYPE ?? o.type, o.TARGET ?? o.target].join(` + `
-` + `        KEY_SEP,` + `
-` + `      );` + `
+` + `    const keyOf = (o) => [o.MESSAGE, o.TYPE, o.TARGET].join(KEY_SEP);` + `
 ` + `` + `
 ` + `    return Control.extend("z2ui5.cc.MessageManager", {` + `
 ` + `      metadata: {` + `

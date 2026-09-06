@@ -11,6 +11,8 @@ class z2ui5_cl_ui5f_console_js {
 ` + `` + `
 ` + `  const MAX_DEPTH = 4;` + `
 ` + `` + `
+` + `  const MAX_ITEMS = 20;` + `
+` + `` + `
 ` + `  const RELOAD_KEY = "z2ui5.devtools.console";` + `
 ` + `  const RELOAD_MAX_ENTRIES = 40;` + `
 ` + `` + `
@@ -31,6 +33,8 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  let onErrorEntry = null;` + `
 ` + `` + `
 ` + `  let capturing = false;` + `
+` + `` + `
+` + `  let pendingUi5Echo = null;` + `
 ` + `` + `
 ` + `  function push(level, source, text) {` + `
 ` + `    if (entries.length >= MAX_ENTRIES) {` + `
@@ -138,6 +142,12 @@ class z2ui5_cl_ui5f_console_js {
 ` + `          if (parent >= MAX_DEPTH) return "[...]";` + `
 ` + `          seen.add(val);` + `
 ` + `          nodeDepth.set(val, parent + 1);` + `
+` + `          if (Array.isArray(val) && val.length > MAX_ITEMS) {` + `
+` + `            const head = val.slice(0, MAX_ITEMS);` + `
+` + `            head.push(\`[... \${val.length - MAX_ITEMS} more]\`);` + `
+` + `            nodeDepth.set(head, parent + 1);` + `
+` + `            return head;` + `
+` + `          }` + `
 ` + `        }` + `
 ` + `        if (isErrorLike(val)) return val.stack || String(val);` + `
 ` + `        return val;` + `
@@ -161,7 +171,13 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    if (capturing) return;` + `
 ` + `    capturing = true;` + `
 ` + `    try {` + `
-` + `      push(level, "console", renderArgs(args));` + `
+` + `      const text = renderArgs(args);` + `
+` + `` + `
+` + `      const echo = pendingUi5Echo;` + `
+` + `      pendingUi5Echo = null;` + `
+` + `` + `
+` + `      if (echo && (text === echo || text.startsWith(\`\${echo} \`))) return;` + `
+` + `      push(level, "console", text);` + `
 ` + `    } catch {` + `
 ` + `    } finally {` + `
 ` + `      capturing = false;` + `
@@ -183,6 +199,11 @@ class z2ui5_cl_ui5f_console_js {
 ` + `      const component = logEntry?.component ? \`[\${logEntry.component}] \` : "";` + `
 ` + `      const details = logEntry?.details ? \` - \${logEntry.details}\` : "";` + `
 ` + `      push(level, "ui5", \`\${component}\${logEntry?.message || ""}\${details}\`);` + `
+` + `` + `
+` + `      pendingUi5Echo =` + `
+` + `        \`\${logEntry?.date || ""} \${logEntry?.time || ""} \` +` + `
+` + `        \`\${logEntry?.message || ""} - \${logEntry?.details || ""} \` +` + `
+` + `        \`\${logEntry?.component || ""}\`;` + `
 ` + `    } catch {}` + `
 ` + `  }` + `
 ` + `` + `
@@ -277,6 +298,7 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    onRejection = null;` + `
 ` + `    onPageHide = null;` + `
 ` + `    onErrorEntry = null;` + `
+` + `    pendingUi5Echo = null;` + `
 ` + `    entries = [];` + `
 ` + `    dropped = 0;` + `
 ` + `  }` + `
@@ -298,7 +320,7 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    getEntries,` + `
 ` + `    getDropped,` + `
 ` + `` + `
-` + `    _internals: { renderArg, MAX_ENTRIES, MAX_TEXT_CHARS },` + `
+` + `    _internals: { renderArg, MAX_ENTRIES, MAX_TEXT_CHARS, MAX_ITEMS },` + `
 ` + `  };` + `
 ` + `});` + `
 ` + `` + `

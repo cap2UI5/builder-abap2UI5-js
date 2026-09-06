@@ -67,9 +67,7 @@ class z2ui5_cl_ui5f_dtformat_js {
 ` + `      if (!resultDoc) return sourceXml;` + `
 ` + `      const resultXml = _xmlSerializer.serializeToString(resultDoc);` + `
 ` + `` + `
-` + `      return resultXml.replace(/&gt;|&lt;/g, (match) =>` + `
-` + `        match === "&gt;" ? ">" : "<",` + `
-` + `      );` + `
+` + `      return resultXml.replace(/&gt;/g, ">");` + `
 ` + `    } catch {` + `
 ` + `      return sourceXml;` + `
 ` + `    }` + `

@@ -11,6 +11,8 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `    const RECONNECT_MAX_MS = 30000;` + `
 ` + `    const MAX_CONNECT_ATTEMPTS = 5;` + `
 ` + `` + `
+` + `    const CONNECT_STABLE_MS = 10000;` + `
+` + `` + `
 ` + `    const MAX_QUEUE = 100;` + `
 ` + `` + `
 ` + `    return Control.extend("z2ui5.cc.Websocket", {` + `
@@ -106,15 +108,19 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `        } catch (err) {` + `
 ` + `          const message = "Cannot open " + url + ": " + (err.message || err);` + `
 ` + `          Lib.logError("Websocket: " + message, err);` + `
+` + `` + `
+` + `          this._countFailure(url);` + `
 ` + `          this._report({ kind: "error", code: "CONSTRUCT", message });` + `
 ` + `          return;` + `
 ` + `        }` + `
 ` + `        this._ws = ws;` + `
 ` + `        this._opened = false;` + `
+` + `        this._openedAt = 0;` + `
 ` + `        ws.onopen = () => {` + `
 ` + `          if (this._ws === ws) {` + `
 ` + `            this._opened = true;` + `
-` + `            this._failedAttempts = 0;` + `
+` + `` + `
+` + `            this._openedAt = Date.now();` + `
 ` + `          }` + `
 ` + `        };` + `
 ` + `        ws.onmessage = (event) => {` + `
@@ -123,6 +129,8 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `            Lib.logError("Websocket: ignored a non-text message");` + `
 ` + `            return;` + `
 ` + `          }` + `
+` + `` + `
+` + `          this._failedAttempts = 0;` + `
 ` + `          if (!this.getProperty("checkRepeat")) {` + `
 ` + `            this._doneAfterFirst = true;` + `
 ` + `            this._disconnect();` + `
@@ -142,17 +150,14 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `            : "Connection to " + url + " could not be established";` + `
 ` + `          const message = event.reason ? cause + ": " + event.reason : cause;` + `
 ` + `          Lib.logError("Websocket (" + event.code + "): " + message);` + `
-` + `          if (!this._opened) {` + `
-` + `            this._failedAttempts += 1;` + `
-` + `            if (this._failedAttempts >= MAX_CONNECT_ATTEMPTS) {` + `
-` + `              Lib.logError(` + `
-` + `                "Websocket: " +` + `
-` + `                  MAX_CONNECT_ATTEMPTS +` + `
-` + `                  " failed connection attempts to " +` + `
-` + `                  url +` + `
-` + `                  " - giving up until path or checkActive changes",` + `
-` + `              );` + `
-` + `            }` + `
+` + `` + `
+` + `          if (` + `
+` + `            this._opened &&` + `
+` + `            Date.now() - this._openedAt >= CONNECT_STABLE_MS` + `
+` + `          ) {` + `
+` + `            this._failedAttempts = 0;` + `
+` + `          } else {` + `
+` + `            this._countFailure(url);` + `
 ` + `          }` + `
 ` + `          this._report({` + `
 ` + `            kind: "error",` + `
@@ -161,6 +166,19 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `          });` + `
 ` + `          this._scheduleReconnect();` + `
 ` + `        };` + `
+` + `      },` + `
+` + `` + `
+` + `      _countFailure(url) {` + `
+` + `        this._failedAttempts += 1;` + `
+` + `        if (this._failedAttempts >= MAX_CONNECT_ATTEMPTS) {` + `
+` + `          Lib.logError(` + `
+` + `            "Websocket: " +` + `
+` + `              MAX_CONNECT_ATTEMPTS +` + `
+` + `              " failed connection attempts to " +` + `
+` + `              url +` + `
+` + `              " - giving up until path or checkActive changes",` + `
+` + `          );` + `
+` + `        }` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      _scheduleReconnect() {` + `
