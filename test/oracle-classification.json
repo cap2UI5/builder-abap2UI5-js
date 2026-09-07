@@ -1,11 +1,11 @@
 {
   "_comment": "Written by scripts/oracle-classify.js --json. Each baseline entry is classified against upstream's own JS runtime (@abaplint transpiler + open-abap): BUG = the upstream oracle runs this test GREEN, so it is achievable in JS and is a fixable defect here, not ABAP-kernel semantics. KERNEL = on upstream's documented skip list. NOTRUN = the oracle did not execute it, so nothing is proven either way. Committed rather than printed so a verdict changing week to week is a diff somebody can see. Do not hand-edit.",
-  "oracle_green_methods": 1131,
-  "upstream_skips": 7,
+  "oracle_green_methods": 1260,
+  "upstream_skips": 8,
   "totals": {
-    "BUG": 131,
+    "BUG": 78,
     "KERNEL": 0,
-    "NOTRUN": 0
+    "NOTRUN": 53
   },
   "entries": [
     {
@@ -271,162 +271,162 @@
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_box_actions",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_box_default_type",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_box_explicit_type",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_box_icon_none",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_box_msg_table_empty",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_box_unknown_type",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_main_drops_teardowns",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_main_keeps_displays",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_teardowns_no_main",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_toast_duration_junk",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_toast_opt_out",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_toast_options",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_frontend::ltcl_test_action_front::test_toast_plain",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_app_state_hash",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_auto_update_push",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_auto_update_same",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_auto_update_snapshot",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_delta_drops_client",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_model_client_stored",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_model_client_unchanged",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_nav_mode_resent",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_nested_display_push",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_response_actions_embedded",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_response_no_model",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_snapshot_reuses_client",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_system_destroy_only",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_system_empty",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_system_last_wins",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_system_slot_order",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_view_update_flag",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_view_update_none",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_handler::ltcl_test_handler_post::test_view_update_popup",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_http_handler::ltcl_test_http_handler::test_http_get_status",
@@ -461,42 +461,42 @@
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_bind::test_attri_named_xx",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_bind::test_bind_adopt_json",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_bind::test_bind_keeps_json",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_bind::test_bind_path",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_main_cell::test_cell_foreign_val",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_main_structure::test_bind_lev2",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_main_structure::test_bind_lev3",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_bind::ltcl_test_main_structure::test_bind_lev4_long_name",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_event::ltcl_test::event_backslash_escaped",
@@ -521,62 +521,62 @@
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_app_root4::test_tab_ref_gen",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_delta_apply::test_skip_cell_refused",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_delta_apply::test_skip_one_of_two",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_diss_complex::test_table_in_dref",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_dissolve::test_dref",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_dissolve::test_dref_struc",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_dissolve::test_oref_dref",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_dissolve::test_oref_dref_struc",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_dissolve::test_struc_dref",
       "category": "js-limit",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_json_stringify::test_json_node",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_json_stringify::test_omit_initial",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_srv_model::ltcl_test_json_to_attri::test_skips_json",
       "category": "port-deviation",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cl_ui5_user_exit::ltcl_test_user_exit::test_superseded_intf",
@@ -651,7 +651,7 @@
     {
       "name": "z2ui5_cl_ui5_util_context::ltcl_test::test_app_url_hash_shell",
       "category": "port-gap",
-      "verdict": "BUG"
+      "verdict": "NOTRUN"
     },
     {
       "name": "z2ui5_cx_ui5_util_error::ltcl_unit_test::test_structured_val_no_dump",
