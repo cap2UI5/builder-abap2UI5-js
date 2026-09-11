@@ -468,7 +468,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        fn();` + `
 ` + `      };` + `
 ` + `      if (anchor && typeof anchor.getDomRef === "function") {` + `
-` + `        Lib.whenRendered(anchor, oController, guarded);` + `
+` + `        Lib.whenRendered(anchor, oController, guarded, "open");` + `
 ` + `      } else {` + `
 ` + `        guarded();` + `
 ` + `      }` + `

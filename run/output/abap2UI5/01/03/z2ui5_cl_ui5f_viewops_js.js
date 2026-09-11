@@ -12,8 +12,6 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `  (ODataModel, Lib, ViewSlots, AppState) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
-` + `    const TIMER_BUSY_RETRY_MS = 50;` + `
-` + `` + `
 ` + `    const SMOOTH_SCROLL_MS = 300;` + `
 ` + `` + `
 ` + `    function evSetSizeLimit(oController, args) {` + `
@@ -113,14 +111,17 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      const callbackEvent = args[1];` + `
 ` + `      const delay = Number(args[2]) || 0;` + `
 ` + `      const timers = AppState.state.timers;` + `
-` + `      clearTimeout(timers[timerKey]);` + `
+` + `      Lib.cancelTimer(timers[timerKey]);` + `
 ` + `      const fire = () => {` + `
 ` + `        delete timers[timerKey];` + `
 ` + `` + `
 ` + `        if (!Lib.isControllerAlive(oController)) return;` + `
 ` + `` + `
 ` + `        if (AppState.state.isBusy) {` + `
-` + `          timers[timerKey] = setTimeout(fire, TIMER_BUSY_RETRY_MS);` + `
+` + `          const cancel = Lib.afterRoundtrip(oController, () => {` + `
+` + `            timers[timerKey] = setTimeout(fire, 0);` + `
+` + `          });` + `
+` + `          if (!(timerKey in timers)) timers[timerKey] = cancel;` + `
 ` + `          return;` + `
 ` + `        }` + `
 ` + `` + `
@@ -154,32 +155,37 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `        }` + `
 ` + `      };` + `
 ` + `` + `
-` + `      Lib.whenRendered(oElement, oController, () => {` + `
-` + `        applyFocus();` + `
-` + `        const dom = oElement.getDomRef();` + `
-` + `        if (dom && dom.contains(document.activeElement)) return;` + `
+` + `      Lib.whenRendered(` + `
+` + `        oElement,` + `
+` + `        oController,` + `
+` + `        () => {` + `
+` + `          applyFocus();` + `
+` + `          const dom = oElement.getDomRef();` + `
+` + `          if (dom && dom.contains(document.activeElement)) return;` + `
 ` + `` + `
-` + `        const prevActive = document.activeElement;` + `
+` + `          const prevActive = document.activeElement;` + `
 ` + `` + `
-` + `        const samePlace = (el) =>` + `
-` + `          el == null ||` + `
-` + `          el === document.body ||` + `
-` + `          el === prevActive ||` + `
-` + `          Boolean(el.id && prevActive && el.id === prevActive.id);` + `
-` + `        const delegate = {` + `
-` + `          onAfterRendering: () => {` + `
-` + `            oElement.removeEventDelegate(delegate);` + `
+` + `          const samePlace = (el) =>` + `
+` + `            el == null ||` + `
+` + `            el === document.body ||` + `
+` + `            el === prevActive ||` + `
+` + `            Boolean(el.id && prevActive && el.id === prevActive.id);` + `
 ` + `` + `
-` + `            setTimeout(() => {` + `
-` + `              if (!Lib.isControllerAlive(oController)) return;` + `
+` + `          Lib.onNextRendering(` + `
+` + `            oElement,` + `
+` + `            () => {` + `
+` + `              setTimeout(() => {` + `
+` + `                if (!Lib.isControllerAlive(oController)) return;` + `
 ` + `` + `
-` + `              if (!samePlace(document.activeElement)) return;` + `
-` + `              applyFocus();` + `
-` + `            }, 0);` + `
-` + `          },` + `
-` + `        };` + `
-` + `        oElement.addEventDelegate(delegate);` + `
-` + `      });` + `
+` + `                if (!samePlace(document.activeElement)) return;` + `
+` + `                applyFocus();` + `
+` + `              }, 0);` + `
+` + `            },` + `
+` + `            "focusRetry",` + `
+` + `          );` + `
+` + `        },` + `
+` + `        "focus",` + `
+` + `      );` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function evScrollTo(oController, args) {` + `

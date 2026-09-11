@@ -125,6 +125,11 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      Lib.whenRendered(oControl, oFragment, () => oFragment.openBy(oControl));` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function templatePreprocessors(xml, oTemplateModel) {` + `
+` + `      if (!Lib.usesXmlTemplating(xml)) return undefined;` + `
+` + `      return { xml: { models: { template: oTemplateModel } } };` + `
+` + `    }` + `
+` + `` + `
 ` + `    async function displayNestedView(xml, slotKey, mOptions, seq) {` + `
 ` + `      const oMainView = ViewSlots.getView("MAIN");` + `
 ` + `      const oTemplateModel =` + `
@@ -132,7 +137,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      const oView = await XMLView.create({` + `
 ` + `        definition: xml,` + `
 ` + `        controller: ViewSlots.getController(slotKey),` + `
-` + `        preprocessors: { xml: { models: { template: oTemplateModel } } },` + `
+` + `        preprocessors: templatePreprocessors(xml, oTemplateModel),` + `
 ` + `      });` + `
 ` + `` + `
 ` + `      if (!Lib.isAlive(AppState.state.oApp) || isSuperseded(seq)) {` + `
@@ -200,7 +205,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `        models: oModel,` + `
 ` + `        controller: ViewSlots.getController("MAIN"),` + `
 ` + `        id: "mainView",` + `
-` + `        preprocessors: { xml: { models: { template: oViewModel } } },` + `
+` + `        preprocessors: templatePreprocessors(xml, oViewModel),` + `
 ` + `      });` + `
 ` + `` + `
 ` + `      const discardBuild = () => {` + `

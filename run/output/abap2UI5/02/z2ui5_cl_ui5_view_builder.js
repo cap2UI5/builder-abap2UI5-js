@@ -38,19 +38,29 @@ class z2ui5_cl_ui5_view_builder {
   a({ n, v, b } = {}) {
     let result = null;
     let target;
-    if (!(!z2ui5_cl_util.abap_is_initial(this.name) || !z2ui5_cl_util.abap_is_initial(this.t_child))) throw new Error(`ASSERT failed`);
-    if (!(v !== undefined || b !== undefined)) throw new Error(`ASSERT failed`);
+    if (z2ui5_cl_util.abap_is_initial(this.name) && z2ui5_cl_util.abap_is_initial(this.t_child)) {
+      this.raise({ val: `a( n = '${n}' ) on the empty builder root - open an element with ele( ) first` });
+    }
+    if (v === undefined && b === undefined) {
+      this.raise({ val: `a( n = '${n}' ) without a value - pass v or b` });
+    }
     let val = z2ui5_cl_util.abap_copy(v);
     if (b !== undefined) {
-      if (!(z2ui5_cl_util.abap_is_initial(v))) throw new Error(`ASSERT failed`);
+      if (!z2ui5_cl_util.abap_is_initial(v)) {
+        this.raise({ val: `a( n = '${n}' ) with both v and b - pass one of the two` });
+      }
       val = ((b === true || b === `X`) ? `true` : `false`);
     }
     if (z2ui5_cl_util.abap_is_initial(this.t_child)) {
-      if (!(!this.t_pair.some((row) => row.n === n))) throw new Error(`ASSERT failed`);
+      if (this.t_pair.some((row) => row.n === n)) {
+        this.raise({ val: `duplicate attribute '${n}' on element '${this.name}'` });
+      }
       this.t_pair.push(z2ui5_cl_util.abap_copy({ n: n, v: val }));
     } else {
       target = z2ui5_cl_util.abap_copy(this.t_child[(this.t_child.length) - 1]);
-      if (!(!target.t_pair.some((row) => row.n === n))) throw new Error(`ASSERT failed`);
+      if (target.t_pair.some((row) => row.n === n)) {
+        this.raise({ val: `duplicate attribute '${n}' on element '${target.name}'` });
+      }
       target.t_pair.push(z2ui5_cl_util.abap_copy({ n: n, v: val }));
     }
     result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(this));
@@ -59,9 +69,15 @@ class z2ui5_cl_ui5_view_builder {
 
   end() {
     let result = null;
-    if (!(this.parent != null)) throw new Error(`ASSERT failed`);
+    if (this.parent == null) {
+      this.raise({ val: `end( ) past the root - one end( ) more than there are ele( )` });
+    }
     result = this.parent;
     return result;
+  }
+
+  raise({ val } = {}) {
+    throw new z2ui5_cx_ui5_util_error({ val: `VIEW_BUILDER_ERROR - ${val}` });
   }
 
   render_into(_args = {}) {
@@ -163,6 +179,7 @@ module.exports = z2ui5_cl_ui5_view_builder;
 
 const z2ui5_cl_ui5_util_context = require("abap2UI5/z2ui5_cl_ui5_util_context");
 const z2ui5_cl_util = require("abap2UI5/z2ui5_cl_util");
+const z2ui5_cx_ui5_util_error = require("abap2UI5/z2ui5_cx_ui5_util_error");
 
 // abap PREFERRED PARAMETER call style — see z2ui5_preferred_param.js
 require("abap2UI5/z2ui5_preferred_param")(z2ui5_cl_ui5_view_builder, {
@@ -171,5 +188,6 @@ require("abap2UI5/z2ui5_preferred_param")(z2ui5_cl_ui5_view_builder, {
   a: { preferred: `n`, params: [`n`, `v`, `b`] },
   escape_literal: { preferred: `val`, params: [`val`] },
   xml_escape: { preferred: `val`, params: [`val`] },
+  raise: { preferred: `val`, params: [`val`] },
 });
 

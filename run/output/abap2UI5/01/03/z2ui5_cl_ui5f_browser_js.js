@@ -53,13 +53,12 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `    function evStoreData(oController, args) {` + `
 ` + `      const { TYPE, PREFIX, VALUE, KEY } = args[1] ?? {};` + `
 ` + `      try {` + `
-` + `        const typeKey = String(TYPE || "").toLowerCase();` + `
-` + `        const storageType = Storage.Type[typeKey] || Storage.Type.session;` + `
-` + `        if (TYPE && !Storage.Type[typeKey]) {` + `
-` + `          Lib.logError(` + `
-` + `            \`STORE_DATA: unknown type '\${TYPE}', writing to the session store\`,` + `
-` + `          );` + `
-` + `        }` + `
+` + `        const storageType = Lib.resolveStorageType(` + `
+` + `          Storage,` + `
+` + `          TYPE,` + `
+` + `          "STORE_DATA",` + `
+` + `          "writing to",` + `
+` + `        );` + `
 ` + `        const oStorage = new Storage(storageType, PREFIX);` + `
 ` + `        if (VALUE === "" || VALUE == null) {` + `
 ` + `          oStorage.remove(KEY);` + `
