@@ -125,13 +125,17 @@ sap.ui.define(
     // FLP; otherwise terminate a possible stateful BSP session first and
     // then navigate to the logout URL.
     function evSystemLogout(oController, args) {
-      const logoutUrl = args[1] || "/sap/public/bc/icf/logoff";
+      // one reading of "no URL given" for both branches: an empty second
+      // argument (a legacy eF('SYSTEM_LOGOUT','') snippet) fell back to the
+      // ICF logoff URL here but counted as "URL given" for the launchpad
+      // branch below, which was arity-based
+      const explicitUrl = args[1];
+      const logoutUrl = explicitUrl || "/sap/public/bc/icf/logoff";
       try {
         const container = AppState.state.oLaunchpad?.Container;
-        // No explicit logout URL was passed (args is just the event name):
-        // inside the launchpad, prefer its own logout over the BSP/ICF
-        // redirect below.
-        if (container?.logout && args.length <= 1) {
+        // No explicit logout URL was passed: inside the launchpad, prefer
+        // its own logout over the BSP/ICF redirect below.
+        if (container?.logout && !explicitUrl) {
           container.logout();
           return;
         }
@@ -224,6 +228,17 @@ sap.ui.define(
         Lib.logError("URLHELPER: blocked CR/LF in parameters");
         return;
       }
+      // A plain literal INSIDE this function on purpose, like the three
+      // tables in core/actions/ControlCall.js: the abap2UI5 linter mirrors
+      // this set and finds it by the exact source text `actions = {` within
+      // `function evUrlHelper` in the embedded carrier (its
+      // scripts/check-upstream.mjs, parseUrlHelperActions). Hoisting it to
+      // module level - built once instead of four closures per call - made
+      // that lookup miss, and the mirror check degraded to "SKIPPED, not
+      // verified": a cross-repository check that stops checking without
+      // failing. Same effect, marker intact. Prototype-less, because the
+      // name comes off the wire and a plain object answers for every name
+      // Object.prototype carries.
       const actions = {
         REDIRECT: () => {
           if (!Lib.isSafeRedirectProtocol(params.URL)) {
@@ -247,6 +262,7 @@ sap.ui.define(
           _URLHelper.triggerSms(params.TEL, params.TEXT, params.NEW_WINDOW),
         TRIGGER_TEL: () => _URLHelper.triggerTel(params.TEL),
       };
+      Object.setPrototypeOf(actions, null);
       try {
         const fn = actions[args[1]];
         if (fn) fn();
