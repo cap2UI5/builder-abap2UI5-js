@@ -326,18 +326,17 @@ sap.ui.define(
         return;
       }
 
-      // A newer parallel request (check_allow_multi_req) superseded this one
-      // while XMLView.create was awaiting - discard this rebuild instead of
-      // letting an out-of-order resolve overwrite the newer view. Last-write
-      // wins by request order, not by which create() happened to resolve last.
-      // Only discard when a newer view actually took the slot: if the
-      // superseding response was data-only, dropping this build too would
-      // leave the app permanently blank - a slightly stale view is the
-      // better outcome then.
-      if (isSuperseded(reqSeq) && ViewSlots.getView("MAIN")) {
-        discardBuild();
-        return;
-      }
+      // A MAIN build superseded by a newer parallel request
+      // (check_allow_multi_req) while XMLView.create was awaiting is still
+      // INSTALLED: displayMain destroyed the slot synchronously before this
+      // await and serialises every MAIN build through Server._viewBuild, so
+      // no newer view can have taken the slot in the meantime - the newer
+      // request's own build is chained behind this one and replaces it. A
+      // guard here that discarded the build "when a newer view took the
+      // slot" could therefore never fire, and dropping the build without
+      // that condition would leave the app blank whenever the superseding
+      // response was data-only. The cost is one stale render that the
+      // chained build replaces a moment later.
 
       ViewSlots.setView("MAIN", oView, xml);
       if (switchPath) oView.setModel(oViewModel, "http");
@@ -376,7 +375,18 @@ sap.ui.define(
           // name over. Only clients the framework created are in the
           // inventory; dependent slots are already down at this point.
           ViewSlots.destroy("MAIN");
-          for (const oClient of AppState.state.odataClients) oClient.destroy();
+          // each destroy on its own, as Component.exit does it: a client
+          // whose $metadata request is still pending can throw, and a
+          // throw here rejects the serialised build chain - the fatal
+          // "App Terminated" overlay over a MAIN slot already torn down,
+          // with the remaining clients left alive
+          for (const oClient of AppState.state.odataClients) {
+            try {
+              oClient.destroy();
+            } catch (e) {
+              Lib.logError("displayMain: destroying an OData client failed", e);
+            }
+          }
           AppState.state.odataClients.clear();
           // A new MAIN view means a new screen, so the two STANDALONE slots
           // go with it. They live outside the MAIN control tree and would
@@ -455,8 +465,12 @@ sap.ui.define(
         const pending = tracked._z2ui5ChangedPaths;
         const keep = [];
         if (pending?.size) {
-          for (const path of pending)
-            keep.push([path, tracked.getProperty(path)]);
+          for (const path of pending) {
+            const value = tracked.getProperty(path);
+            // an unreadable path has nothing to re-apply; dropped HERE so
+            // the batch below ends on a write that exists
+            if (value !== undefined) keep.push([path, value]);
+          }
         }
         tracked.setData(
           dataForSlot(slotKey, AppState.state.oResponse?.OVIEWMODEL),
@@ -467,9 +481,7 @@ sap.ui.define(
         // Only the last write triggers the synchronous sweep; the earlier
         // ones publish with it (the flag is on setProperty since 1.71).
         keep.forEach(([path, value], i) => {
-          if (value !== undefined) {
-            tracked.setProperty(path, value, undefined, i < keep.length - 1);
-          }
+          tracked.setProperty(path, value, undefined, i < keep.length - 1);
         });
         return;
       }

@@ -46,7 +46,7 @@ sap.ui.define(
       exit() {
         this._unhook();
         // Resolve any still-pending promises so awaiters don't hang.
-        this._aPendingInnerControlsCreated.forEach((resolve) => resolve(null));
+        for (const resolve of this._aPendingInnerControlsCreated) resolve(null);
         this._aPendingInnerControlsCreated = [];
       },
 
@@ -71,11 +71,28 @@ sap.ui.define(
           oRangeData.tokenLongKey = token?.data("longKey");
           return oRangeData;
         });
-        this.setProperty("rangeData", enrichedRanges);
+        // suppressInvalidate: the control renders nothing (EMPTY_RENDERER),
+        // so a re-render per token update is pure overhead
+        this.setProperty("rangeData", enrichedRanges, true);
         this.fireChange();
       },
-      async setRangeData(aRangeData) {
-        this.setProperty("rangeData", aRangeData);
+      // A UI5 property mutator: synchronous, returns the control - it used to
+      // be `async`, which handed every caller a Promise instead of `this`
+      // (the accessor-side twin of the "lifecycle listeners must not return
+      // a value" rule, AGENTS.md rule 10). The work that has to wait for
+      // the inner controls runs in _applyRangeData; the last such apply is
+      // kept on the instance so a caller that needs to wait for it (the
+      // unit specs) can.
+      setRangeData(aRangeData) {
+        this.setProperty("rangeData", aRangeData, true);
+        // a non-array (null from an initial binding, a scalar bound by
+        // mistake) has nothing to apply - the .map( ) below threw and was
+        // logged as a failure on every roundtrip
+        if (!Array.isArray(aRangeData)) return this;
+        this._rangeDataApply = this._applyRangeData(aRangeData);
+        return this;
+      },
+      async _applyRangeData(aRangeData) {
         try {
           const input = await this.inputInitialized();
           if (Lib.isDestroyed(this) || !input) return;
@@ -142,9 +159,9 @@ sap.ui.define(
       onInnerControlsCreated(oEvent) {
         this._oInput = oEvent.getSource();
         this._bInnerControlsCreated = true;
-        this._aPendingInnerControlsCreated.forEach((resolve) =>
-          resolve(this._oInput),
-        );
+        for (const resolve of this._aPendingInnerControlsCreated) {
+          resolve(this._oInput);
+        }
         this._aPendingInnerControlsCreated = [];
       },
     });

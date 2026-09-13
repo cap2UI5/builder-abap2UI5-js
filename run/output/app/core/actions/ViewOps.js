@@ -8,9 +8,6 @@ sap.ui.define(
   (ODataModel, Lib, ViewSlots, AppState) => {
     "use strict";
 
-    // how long a backend timer tick waits before asking again whether the
-    // roundtrip it collided with has landed (evStartTimer)
-
     // ------------------------------------------------------------------
     // Actions against the running VIEWS and their models: focus, scrolling,
     // element binding, model size limits, the OData model switch, backend
@@ -113,7 +110,7 @@ sap.ui.define(
     // BIND_ELEMENT: element-bind a whole view slot (popup / popover / main) to
     // a row of a registered table, so the fragment's relative bindings ({Name},
     // {ProductPicUrl}, ...) resolve against that row - the abap2UI5 equivalent of
-    // oControl.bindElement(oCtx.getPath()). args = [slot, index, path]; the path
+    // oControl.bindElement(oCtx.getPath()). args = [_, slot, index, path]; the path
     // comes from client->_bind( table ) (braces already stripped server-side and
     // again here defensively), the slot from the follow_up_action view param.
     function evBindElement(oController, args) {

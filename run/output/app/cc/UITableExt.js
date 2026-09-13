@@ -37,7 +37,7 @@ sap.ui.define(
       },
 
       exit() {
-        this._unhooks.forEach((unhook) => unhook());
+        for (const unhook of this._unhooks) unhook();
       },
 
       // The table is resolved ONCE per pass here and handed down: every
@@ -98,8 +98,9 @@ sap.ui.define(
 
       readFilter(oTable) {
         try {
-          const table = oTable ?? this._getTable();
-          const binding = table?.getBinding();
+          // no fallback lookup: readBackend( ) already resolved the table,
+          // and a second walk cannot find what the first did not
+          const binding = oTable?.getBinding();
           // Remember the binding object we read from so the re-apply pass
           // can skip when that same binding is still in place (see
           // _applyFilters).
@@ -133,6 +134,10 @@ sap.ui.define(
         // (a fresh view build produced a new, unfiltered binding).
         if (binding === this._filterBinding) return;
         binding.filter(aFilters);
+        // the NEW binding now carries these filters - remember it, or every
+        // incidental re-render until the next roundtrip (theme, density, a
+        // popup re-rendering the page) re-filtered the whole dataset again
+        this._filterBinding = binding;
         const columns = oTable.getColumns();
 
         for (const oFilter of aFilters) {
@@ -180,8 +185,7 @@ sap.ui.define(
 
       readSort(oTable) {
         try {
-          const table = oTable ?? this._getTable();
-          const binding = table?.getBinding();
+          const binding = oTable?.getBinding();
           // Same binding reference the sort re-apply checks against (see
           // _applySorters).
           this._sortBinding = binding;
@@ -203,6 +207,9 @@ sap.ui.define(
         // an identical result. Re-apply only after a binding rebuild.
         if (binding === this._sortBinding) return;
         binding.sort(aSorters);
+        // same as _applyFilters: the re-applied binding is the one to skip
+        // from now on
+        this._sortBinding = binding;
 
         const columns = oTable.getColumns();
         for (const [index, sorter] of aSorters.entries()) {

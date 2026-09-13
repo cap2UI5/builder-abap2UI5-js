@@ -10,9 +10,17 @@
 // against the public UI5 element API and the view-slot registry, and
 // installs its own document listener only while a pick is running.
 sap.ui.define(
-  ["sap/ui/core/Element", "z2ui5/core/Lib", "z2ui5/core/ViewSlots"],
-  (Element, Lib, ViewSlots) => {
+  [
+    "sap/ui/core/Element",
+    "z2ui5/core/Lib",
+    "z2ui5/core/ViewSlots",
+    "z2ui5/devtools/Format",
+  ],
+  (Element, Lib, ViewSlots, Format) => {
     "use strict";
+
+    // the framework event wire, shared with the inspectors (see Format)
+    const { FRAMEWORK_CALL } = Format;
 
     // Preview length of a bound value in the report.
     const MAX_VALUE_CHARS = 80;
@@ -96,8 +104,7 @@ sap.ui.define(
     }
 
     function removeOverlay() {
-      const el = document.getElementById(OVERLAY_ID);
-      if (el && el.parentElement) el.parentElement.removeChild(el);
+      document.getElementById(OVERLAY_ID)?.remove();
     }
 
     // The binding info UI5 keeps per property/aggregation, flattened to
@@ -107,8 +114,7 @@ sap.ui.define(
     function collectBindings(control) {
       const out = [];
       const infos = control.mBindingInfos || {};
-      for (const name of Object.keys(infos)) {
-        const info = infos[name];
+      for (const [name, info] of Object.entries(infos)) {
         const parts = info.parts || (info.path !== undefined ? [info] : []);
         for (const part of parts) {
           const model = control.getModel(part.model);
@@ -134,18 +140,55 @@ sap.ui.define(
       return out;
     }
 
+    // The XML a view slot was filled with - the two readers Inspect.slotXml
+    // documents, in the same order.
+    function slotXml(slotKey) {
+      if (!slotKey) return "";
+      return (
+        ViewSlots.getView?.(slotKey)?.mProperties?.viewContent ||
+        ViewSlots.getViewXml?.(slotKey) ||
+        ""
+      );
+    }
+
+    // The attributes of the element that declares this control in its
+    // slot's XML, found by the control's LOCAL id (the view prefixes the
+    // XML id with its own: "mainView--btn1"). Empty for a control the XML
+    // gives no id, and for one outside a slot.
+    function xmlAttributesOf(control, slotKey) {
+      const localId = String(control.getId?.() || "")
+        .split("--")
+        .pop();
+      const xml = slotXml(slotKey);
+      if (!localId || !xml) return "";
+      const idAttr = new RegExp(`\\sid\\s*=\\s*(?:"${localId}"|'${localId}')`);
+      const at = xml.search(idAttr);
+      if (at < 0) return "";
+      const open = xml.lastIndexOf("<", at);
+      const close = xml.indexOf(">", at);
+      return open < 0 || close < 0 ? "" : xml.slice(open, close);
+    }
+
     // Event handlers the backend bound on this control. UI5 keeps them in
-    // mEventRegistry; the framework's are always eB / eBP / eF calls, so
-    // the registered handler's source carries the event name.
-    function collectEvents(control) {
+    // mEventRegistry - but for a `.eB(['NAME'])` view attribute the
+    // registered fFunction is EventHandlerResolver's generic wrapper, whose
+    // source never contains the event name (it lives in a closure), so the
+    // handler's source only answers for a handler attached in code. The
+    // name is read where it IS written: off the element's attribute in the
+    // slot XML the view was built from, `press=".eB(['SAVE'])"`.
+    function collectEvents(control, slotKey) {
       const registry = control.mEventRegistry || {};
+      const attributes = xmlAttributesOf(control, slotKey);
       const out = [];
-      for (const name of Object.keys(registry)) {
-        for (const handler of registry[name] || []) {
-          const source = String(handler?.fFunction || "");
-          const match = /\b(eB|eBP|eF)\s*\(\s*\[?\s*['"]([A-Za-z0-9_.-]+)/.exec(
-            source,
-          );
+      for (const [name, handlers] of Object.entries(registry)) {
+        for (const handler of handlers || []) {
+          let match = FRAMEWORK_CALL.exec(String(handler?.fFunction || ""));
+          if (!match && attributes) {
+            const attr = new RegExp(
+              `\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
+            ).exec(attributes);
+            match = attr ? FRAMEWORK_CALL.exec(attr[1] ?? attr[2] ?? "") : null;
+          }
           out.push(match ? `${name} -> ${match[1]}('${match[2]}')` : name);
         }
       }
@@ -187,7 +230,7 @@ sap.ui.define(
         out.push(`      value  ${renderValue(binding.value)}`);
       }
 
-      const events = collectEvents(control);
+      const events = collectEvents(control, slotKey);
       out.push("");
       out.push("Events");
       out.push("------");
