@@ -13,7 +13,7 @@ class z2ui5_cl_smp_app_109 extends z2ui5_if_app {
       .a({ n: `xmlns:core`, v: `sap.ui.core` })
       .a({ n: `xmlns:form`, v: `sap.ui.layout.form` });
     view.ele(`QuickView`)
-      .a({ n: `placement`, v: this.mv_placement })
+      .a({ n: `placement`, t: this.mv_placement })
       .ele(`QuickViewPage`)
       .a({ n: `description`, v: `Enjoy` })
       .a({ n: `header`, v: `Employee Info` })

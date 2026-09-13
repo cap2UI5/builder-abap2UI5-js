@@ -64,7 +64,7 @@ class z2ui5_cl_smp_app_050 extends z2ui5_if_app {
 ` + `.sapMInputBaseInner::placeholder \\{` + `
 ` + `    font-size: 1.4rem !important;` + `
 ` + `\\}` + `
-` + `</style>` }).tag(`Button`).a({ n: `press`, v: client._event(`BUTTON_POST`) }).a({ n: `text`, v: `post` }).a({ n: `class`, v: `mySuperRedButton` }).tag(`Input`).a({ n: `value`, v: client._bind(this.quantity) }).ele({ n: `SimpleForm`, ns: `form` }).a({ n: `title`, v: `Form Title` }).a({ n: `editable`, b: true }).ele({ n: `content`, ns: `form` }).tag(`Title`).a({ n: `text`, v: `Input` }).tag(`Label`).a({ n: `text`, v: `quantity` }).tag(`Input`).a({ n: `value`, v: client._bind(this.quantity) }).tag(`Label`).a({ n: `text`, v: `product` }).tag(`Input`).a({ n: `enabled`, b: false }).a({ n: `value`, v: this.product }).tag(`Button`).a({ n: `press`, v: client._event(`BUTTON_POST`) }).a({ n: `text`, v: `post` });
+` + `</style>` }).tag(`Button`).a({ n: `press`, v: client._event(`BUTTON_POST`) }).a({ n: `text`, v: `post` }).a({ n: `class`, v: `mySuperRedButton` }).tag(`Input`).a({ n: `value`, v: client._bind(this.quantity) }).ele({ n: `SimpleForm`, ns: `form` }).a({ n: `title`, v: `Form Title` }).a({ n: `editable`, b: true }).ele({ n: `content`, ns: `form` }).tag(`Title`).a({ n: `text`, v: `Input` }).tag(`Label`).a({ n: `text`, v: `quantity` }).tag(`Input`).a({ n: `value`, v: client._bind(this.quantity) }).tag(`Label`).a({ n: `text`, v: `product` }).tag(`Input`).a({ n: `enabled`, b: false }).a({ n: `value`, t: this.product }).tag(`Button`).a({ n: `press`, v: client._event(`BUTTON_POST`) }).a({ n: `text`, v: `post` });
     client.view_display(view.stringify());
   }
 }

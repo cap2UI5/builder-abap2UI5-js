@@ -41,15 +41,15 @@ class z2ui5_cl_smp_app_020 extends z2ui5_if_app {
       .a({ n: `class`, v: `sapUiSmallMargin` });
     dialog.ele(`VBox`)
       .tag(`Text`)
-      .a({ n: `text`, v: this.text })
+      .a({ n: `text`, t: this.text })
       .end()
       .ele(`buttons`)
       .tag(`Button`)
       .a({ n: `press`, v: client._event(this.cancel_event) })
-      .a({ n: `text`, v: this.cancel_text })
+      .a({ n: `text`, t: this.cancel_text })
       .tag(`Button`)
       .a({ n: `press`, v: client._event(this.confirm_event) })
-      .a({ n: `text`, v: this.confirm_text })
+      .a({ n: `text`, t: this.confirm_text })
       .a({ n: `type`, v: `Emphasized` });
     client.popup_display(popup.stringify());
   }

@@ -118,13 +118,13 @@ class z2ui5_cl_smp_app_074 extends z2ui5_if_app {
         .a({ n: `class`, v: `sapUiSmallMargin` })
         .ele(`VBox`)
         .a({ n: `class`, v: `sapUiSmallMargin` });
-      box.tag(`ObjectStatus`).a({ n: `title`, v: `File` }).a({ n: `text`, v: this.upload_name });
+      box.tag(`ObjectStatus`).a({ n: `title`, v: `File` }).a({ n: `text`, t: this.upload_name });
       box.tag(`ObjectStatus`)
         .a({ n: `title`, v: `Size` })
-        .a({ n: `text`, v: `${this.upload_size} bytes` })
+        .a({ n: `text`, t: `${this.upload_size} bytes` })
         .a({ n: `state`, v: `Success` });
       box.tag(`TextArea`)
-        .a({ n: `value`, v: this.upload_text })
+        .a({ n: `value`, t: this.upload_text })
         .a({ n: `editable`, b: false })
         .a({ n: `rows`, v: `8` })
         .a({ n: `width`, v: `100%` })

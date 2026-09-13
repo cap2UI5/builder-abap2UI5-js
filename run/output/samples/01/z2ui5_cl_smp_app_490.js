@@ -67,7 +67,7 @@ class z2ui5_cl_smp_app_490 extends z2ui5_if_app {
       .a({ n: `text`, v: `This popover travelled in the SAME response as the view it is ` + `anchored to.` })
       .ele(`ObjectStatus`)
       .a({ n: `state`, v: `Information` })
-      .a({ n: `text`, v: `roundtrips so far: ${this.counter}` });
+      .a({ n: `text`, t: `roundtrips so far: ${this.counter}` });
     this.client.popover_display(popover.stringify(), `btnAnchor`);
   }
 }

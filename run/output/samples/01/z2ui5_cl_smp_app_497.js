@@ -40,12 +40,12 @@ class z2ui5_cl_smp_app_497 extends z2ui5_if_app {
     const comps = ((cl_abap_typedescr.describe_by_data(tab)).get_table_line_type()).get_components();
     const ui_table = parent.ele(`Table`)
       .a({ n: `items`, v: this.client._bind(tab) })
-      .a({ n: `headerText`, v: `${tab.length} rows, ${comps.length} columns` });
+      .a({ n: `headerText`, t: `${tab.length} rows, ${comps.length} columns` });
     const columns = ui_table.ele(`columns`);
     sy_tabix = 0;
     for (const comp of comps) {
       sy_tabix++;
-      columns.ele(`Column`).ele(`header`).tag(`Text`).a({ n: `text`, v: comp.name });
+      columns.ele(`Column`).ele(`header`).tag(`Text`).a({ n: `text`, t: comp.name });
     }
     const cells = ui_table.ele(`items`).ele(`ColumnListItem`).ele(`cells`);
     sy_tabix = 0;

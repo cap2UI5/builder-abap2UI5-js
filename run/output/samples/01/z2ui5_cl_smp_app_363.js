@@ -72,13 +72,13 @@ class z2ui5_cl_smp_app_363 extends z2ui5_if_app {
     form.tag(`Input`).a({ n: `id`, v: `top_input` }).a({ n: `value`, v: this.client._bind(this.field_01) });
     for (let sy_index = 1; sy_index <= 25; sy_index++) {
       form.tag(`Label`).a({ n: `text`, v: `spacer` });
-      form.tag(`Text`).a({ n: `text`, v: ` spacer line ${sy_index}` });
+      form.tag(`Text`).a({ n: `text`, t: ` spacer line ${sy_index}` });
     }
     form.tag(`Label`).a({ n: `text`, v: `Middle field - required (id = middle_input)` });
     form.tag(`Input`).a({ n: `id`, v: `middle_input` }).a({ n: `value`, v: this.client._bind(this.field_02) });
     for (let sy_index = 1; sy_index <= 25; sy_index++) {
       form.tag(`Label`).a({ n: `text`, v: `spacer` });
-      form.tag(`Text`).a({ n: `text`, v: ` spacer line ${sy_index}` });
+      form.tag(`Text`).a({ n: `text`, t: ` spacer line ${sy_index}` });
     }
     form.tag(`Label`).a({ n: `text`, v: `Bottom field (id = bottom_input)` });
     form.tag(`Input`).a({ n: `id`, v: `bottom_input` }).a({ n: `value`, v: this.client._bind(this.field_03) });

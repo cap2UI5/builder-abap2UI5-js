@@ -75,7 +75,7 @@ class z2ui5_cl_smp_app_006 extends z2ui5_if_app {
       .a({ n: `text`, v: `left side button` })
       .a({ n: `icon`, v: `sap-icon://account` })
       .ele(`SegmentedButton`)
-      .a({ n: `selectedKey`, v: this.key })
+      .a({ n: `selectedKey`, t: this.key })
       .ele(`items`)
       .tag(`SegmentedButtonItem`)
       .a({ n: `icon`, v: `sap-icon://accept` })

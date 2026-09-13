@@ -15,7 +15,7 @@ class z2ui5_cl_smp_app_081 extends z2ui5_if_app {
       .a({ n: `xmlns:form`, v: `sap.ui.layout.form` });
     view.ele(`Popover`)
       .a({ n: `title`, v: `Popover Title` })
-      .a({ n: `placement`, v: this.mv_placement })
+      .a({ n: `placement`, t: this.mv_placement })
       .ele(`footer`)
       .ele(`OverflowToolbar`)
       .tag(`ToolbarSpacer`)
@@ -43,7 +43,7 @@ class z2ui5_cl_smp_app_081 extends z2ui5_if_app {
       .a({ n: `xmlns:form`, v: `sap.ui.layout.form` });
     view.ele(`Popover`)
       .a({ n: `title`, v: `Popover Title` })
-      .a({ n: `placement`, v: this.mv_placement })
+      .a({ n: `placement`, t: this.mv_placement })
       .ele(`List`)
       .a({ n: `items`, v: this.client._bind(this.mt_tab) })
       .a({ n: `mode`, v: `SingleSelectMaster` })

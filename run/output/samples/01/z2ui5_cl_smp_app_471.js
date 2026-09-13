@@ -74,7 +74,7 @@ class z2ui5_cl_smp_app_471 extends z2ui5_if_app {
       .a({ n: `class`, v: `sapUiSmallMargin` })
       .tag(`Button`)
       .a({ n: `press`, v: this.client._event(`TOGGLE_REGISTRATION`) })
-      .a({ n: `text`, v: ((this.registered === true || this.registered === `X`) ? `Unregister the shortcuts` : `Register the shortcuts`) })
+      .a({ n: `text`, t: ((this.registered === true || this.registered === `X`) ? `Unregister the shortcuts` : `Register the shortcuts`) })
       .a({ n: `icon`, v: `sap-icon://keyboard-and-mouse` })
       .tag(`Button`)
       .a({ n: `press`, v: this.client._event(`SAVE`) })

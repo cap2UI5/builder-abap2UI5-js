@@ -265,21 +265,21 @@ class z2ui5_cl_smp_app_502 extends z2ui5_if_app {
   render_section({ form, title } = {}) {
     form.ele(`Toolbar`)
       .tag(`Title`)
-      .a({ n: `text`, v: title })
+      .a({ n: `text`, t: title })
       .a({ n: `level`, v: `H3` })
       .a({ n: `class`, v: `sapUiSmallMarginBegin sapUiSmallMarginTop sapUiTinyMarginBottom` })
       .end();
   }
 
   render_demo({ form, label, text, descr, press } = {}) {
-    form.tag(`Label`).a({ n: `text`, v: label });
+    form.tag(`Label`).a({ n: `text`, t: label });
     const row = form.ele(`HBox`).a({ n: `alignItems`, v: `Center` }).a({ n: `wrap`, v: `Wrap` });
     row.tag(`Button`)
-      .a({ n: `text`, v: text })
+      .a({ n: `text`, t: text })
       .a({ n: `press`, v: press })
       .a({ n: `width`, v: `15rem` })
       .tag(`Text`)
-      .a({ n: `text`, v: descr })
+      .a({ n: `text`, t: descr })
       .a({ n: `class`, v: `sapUiSmallMarginBegin` });
   }
 

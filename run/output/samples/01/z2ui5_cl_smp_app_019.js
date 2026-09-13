@@ -46,7 +46,7 @@ class z2ui5_cl_smp_app_019 extends z2ui5_if_app {
     page.ele(`Table`)
       .a({ n: `items`, v: this.client._bind(this.t_tab) })
       .a({ n: `headerText`, v: `Table` })
-      .a({ n: `mode`, v: this.sel_mode })
+      .a({ n: `mode`, t: this.sel_mode })
       .ele(`columns`)
       .ele(`Column`)
       .tag(`Text`)

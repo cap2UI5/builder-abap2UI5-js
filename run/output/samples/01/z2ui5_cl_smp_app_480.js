@@ -60,7 +60,7 @@ class z2ui5_cl_smp_app_480 extends z2ui5_if_app {
     form.tag(`Label`).a({ n: `text`, v: `and raise a counter` });
     form.tag(`Button`)
       .a({ n: `press`, v: this.client._event(`INC`) })
-      .a({ n: `text`, v: `increment (${this.counter})` });
+      .a({ n: `text`, t: `increment (${this.counter})` });
     form.tag(`Label`).a({ n: `text`, v: `2. Navigate forward` });
     form.tag(`Button`)
       .a({ n: `press`, v: this.client._event(`GO_DETAIL`) })

@@ -2,12 +2,6 @@
   "transpiler": "2099f5cac2a2fecb",
   "classes": [
     {
-      "class": "z2ui5_cl_smp_app_004",
-      "path": "01/z2ui5_cl_smp_app_004.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
       "class": "z2ui5_cl_smp_app_006",
       "path": "01/z2ui5_cl_smp_app_006.js",
       "todos": 0,
@@ -100,12 +94,6 @@
     {
       "class": "z2ui5_cl_smp_app_050",
       "path": "01/z2ui5_cl_smp_app_050.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
-      "class": "z2ui5_cl_smp_app_052",
-      "path": "01/z2ui5_cl_smp_app_052.js",
       "todos": 0,
       "todoDetails": []
     },
@@ -233,12 +221,6 @@
     {
       "class": "z2ui5_cl_smp_app_120",
       "path": "01/z2ui5_cl_smp_app_120.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
-      "class": "z2ui5_cl_smp_app_122",
-      "path": "01/z2ui5_cl_smp_app_122.js",
       "todos": 0,
       "todoDetails": []
     },
@@ -407,12 +389,6 @@
       "todoDetails": []
     },
     {
-      "class": "z2ui5_cl_smp_app_381",
-      "path": "01/z2ui5_cl_smp_app_381.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
       "class": "z2ui5_cl_smp_app_382",
       "path": "01/z2ui5_cl_smp_app_382.js",
       "todos": 0,
@@ -543,12 +519,6 @@
       "todoDetails": []
     },
     {
-      "class": "z2ui5_cl_smp_app_468",
-      "path": "01/z2ui5_cl_smp_app_468.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
       "class": "z2ui5_cl_smp_app_469",
       "path": "01/z2ui5_cl_smp_app_469.js",
       "todos": 0,
@@ -651,18 +621,6 @@
       "todoDetails": []
     },
     {
-      "class": "z2ui5_cl_smp_app_498",
-      "path": "01/z2ui5_cl_smp_app_498.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
-      "class": "z2ui5_cl_smp_app_499",
-      "path": "01/z2ui5_cl_smp_app_499.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
       "class": "z2ui5_cl_smp_app_502",
       "path": "01/z2ui5_cl_smp_app_502.js",
       "todos": 0,
@@ -671,6 +629,12 @@
     {
       "class": "z2ui5_cl_smp_app_503",
       "path": "01/z2ui5_cl_smp_app_503.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_511",
+      "path": "01/z2ui5_cl_smp_app_511.js",
       "todos": 0,
       "todoDetails": []
     },

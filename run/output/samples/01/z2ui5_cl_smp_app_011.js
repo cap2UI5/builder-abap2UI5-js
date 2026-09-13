@@ -45,7 +45,7 @@ class z2ui5_cl_smp_app_011 extends z2ui5_if_app {
       .a({ n: `icon`, v: `sap-icon://add` })
       .tag(`Button`)
       .a({ n: `press`, v: this.client._event(`BUTTON_EDIT`) })
-      .a({ n: `text`, v: (this.check_editable_active === true ? `display` : `edit`) })
+      .a({ n: `text`, t: (this.check_editable_active === true ? `display` : `edit`) })
       .a({ n: `icon`, v: `sap-icon://edit` })
       .end()
       .end();
