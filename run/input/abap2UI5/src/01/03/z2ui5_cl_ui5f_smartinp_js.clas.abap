@@ -67,7 +67,7 @@ CLASS z2ui5_cl_ui5f_smartinp_js IMPLEMENTATION.
              `      exit() {` && |\n| &&
              `        this._unhook();` && |\n| &&
              `` && |\n| &&
-             `        this._aPendingInnerControlsCreated.forEach((resolve) => resolve(null));` && |\n| &&
+             `        for (const resolve of this._aPendingInnerControlsCreated) resolve(null);` && |\n| &&
              `        this._aPendingInnerControlsCreated = [];` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
@@ -83,11 +83,19 @@ CLASS z2ui5_cl_ui5f_smartinp_js IMPLEMENTATION.
              `          oRangeData.tokenLongKey = token?.data("longKey");` && |\n| &&
              `          return oRangeData;` && |\n| &&
              `        });` && |\n| &&
-             `        this.setProperty("rangeData", enrichedRanges);` && |\n| &&
+             `` && |\n| &&
+             `        this.setProperty("rangeData", enrichedRanges, true);` && |\n| &&
              `        this.fireChange();` && |\n| &&
              `      },` && |\n| &&
-             `      async setRangeData(aRangeData) {` && |\n| &&
-             `        this.setProperty("rangeData", aRangeData);` && |\n| &&
+             `` && |\n| &&
+             `      setRangeData(aRangeData) {` && |\n| &&
+             `        this.setProperty("rangeData", aRangeData, true);` && |\n| &&
+             `` && |\n| &&
+             `        if (!Array.isArray(aRangeData)) return this;` && |\n| &&
+             `        this._rangeDataApply = this._applyRangeData(aRangeData);` && |\n| &&
+             `        return this;` && |\n| &&
+             `      },` && |\n| &&
+             `      async _applyRangeData(aRangeData) {` && |\n| &&
              `        try {` && |\n| &&
              `          const input = await this.inputInitialized();` && |\n| &&
              `          if (Lib.isDestroyed(this) || !input) return;` && |\n| &&
@@ -146,9 +154,9 @@ CLASS z2ui5_cl_ui5f_smartinp_js IMPLEMENTATION.
              `      onInnerControlsCreated(oEvent) {` && |\n| &&
              `        this._oInput = oEvent.getSource();` && |\n| &&
              `        this._bInnerControlsCreated = true;` && |\n| &&
-             `        this._aPendingInnerControlsCreated.forEach((resolve) =>` && |\n| &&
-             `          resolve(this._oInput),` && |\n| &&
-             `        );` && |\n| &&
+             `        for (const resolve of this._aPendingInnerControlsCreated) {` && |\n| &&
+             `          resolve(this._oInput);` && |\n| &&
+             `        }` && |\n| &&
              `        this._aPendingInnerControlsCreated = [];` && |\n| &&
              `      },` && |\n| &&
              `    });` && |\n| &&

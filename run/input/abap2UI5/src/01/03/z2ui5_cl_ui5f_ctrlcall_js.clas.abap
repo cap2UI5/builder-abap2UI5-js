@@ -81,13 +81,10 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `          oController.eB([sEvent]);` && |\n| &&
              `        };` && |\n| &&
              `      }` && |\n| &&
-             `      const doShow = (MT) => {` && |\n| &&
-             `        if (Object.keys(o).length) MT.show(sText, o);` && |\n| &&
-             `        else MT.show(sText);` && |\n| &&
-             `        if (sClass) applyToastClass(sClass);` && |\n| &&
-             `      };` && |\n| &&
-             `      if (MessageToast) doShow(MessageToast);` && |\n| &&
-             `      else sap.ui.require(["sap/m/MessageToast"], doShow);` && |\n| &&
+             `` && |\n| &&
+             `      if (Object.keys(o).length) MessageToast.show(sText, o);` && |\n| &&
+             `      else MessageToast.show(sText);` && |\n| &&
+             `      if (sClass) applyToastClass(sClass);` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    let iBoxNo = 0;` && |\n| &&
@@ -424,13 +421,15 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    function setsStringProperty(control, method) {` && |\n| &&
-             `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` && |\n|.
-    result = result &&
+             `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` && |\n| &&
              `        return false;` && |\n| &&
              `      const prop = control.getMetadata?.()?.getAllProperties?.()[` && |\n| &&
-             `        method.charAt(3).toLowerCase() + method.slice(4)` && |\n| &&
+             `        method.charAt(3).toLowerCase() + method.slice(4)` && |\n|.
+    result = result &&
              `      ];` && |\n| &&
-             `      return !!prop && prop.type === "string";` && |\n| &&
+             `      if (!prop) return false;` && |\n| &&
+             `      const primitive = prop.getType?.()?.getPrimitiveType?.()?.getName?.();` && |\n| &&
+             `      return primitive ? primitive === "string" : prop.type === "string";` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    const NULLABLE_KINDS = ["controlIdOrNull"];` && |\n| &&
@@ -825,9 +824,9 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    return { handlers };` && |\n| &&
-             `  },` && |\n|.
+             `  },` && |\n| &&
+             `);` && |\n|.
     result = result &&
-             `);` && |\n| &&
              `` && |\n| &&
               ``.
 

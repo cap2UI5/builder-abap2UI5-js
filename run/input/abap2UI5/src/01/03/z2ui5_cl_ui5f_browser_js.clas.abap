@@ -43,12 +43,6 @@ CLASS z2ui5_cl_ui5f_browser_js IMPLEMENTATION.
              `      Lib.copyToClipboard(args[1]);` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function evClipboardAppState() {` && |\n| &&
-             `      const id = AppState.state.oResponse?.ID || "";` && |\n| &&
-             `` && |\n| &&
-             `      Lib.copyToClipboard(Router.hrefFor(``/z2ui5-xapp-state=${id}``));` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
              `    function evDownloadB64File(oController, args) {` && |\n| &&
              `      if (!Lib.isSafeDownloadURL(args[1])) {` && |\n| &&
              `        Lib.logError("DOWNLOAD_B64_FILE: blocked unsafe URL");` && |\n| &&
@@ -111,11 +105,12 @@ CLASS z2ui5_cl_ui5f_browser_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    function evSystemLogout(oController, args) {` && |\n| &&
-             `      const logoutUrl = args[1] || "/sap/public/bc/icf/logoff";` && |\n| &&
+             `      const explicitUrl = args[1];` && |\n| &&
+             `      const logoutUrl = explicitUrl || "/sap/public/bc/icf/logoff";` && |\n| &&
              `      try {` && |\n| &&
              `        const container = AppState.state.oLaunchpad?.Container;` && |\n| &&
              `` && |\n| &&
-             `        if (container?.logout && args.length <= 1) {` && |\n| &&
+             `        if (container?.logout && !explicitUrl) {` && |\n| &&
              `          container.logout();` && |\n| &&
              `          return;` && |\n| &&
              `        }` && |\n| &&
@@ -192,6 +187,7 @@ CLASS z2ui5_cl_ui5f_browser_js IMPLEMENTATION.
              `        Lib.logError("URLHELPER: blocked CR/LF in parameters");` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&
+             `` && |\n| &&
              `      const actions = {` && |\n| &&
              `        REDIRECT: () => {` && |\n| &&
              `          if (!Lib.isSafeRedirectProtocol(params.URL)) {` && |\n| &&
@@ -215,6 +211,7 @@ CLASS z2ui5_cl_ui5f_browser_js IMPLEMENTATION.
              `          _URLHelper.triggerSms(params.TEL, params.TEXT, params.NEW_WINDOW),` && |\n| &&
              `        TRIGGER_TEL: () => _URLHelper.triggerTel(params.TEL),` && |\n| &&
              `      };` && |\n| &&
+             `      Object.setPrototypeOf(actions, null);` && |\n| &&
              `      try {` && |\n| &&
              `        const fn = actions[args[1]];` && |\n| &&
              `        if (fn) fn();` && |\n| &&
@@ -274,7 +271,6 @@ CLASS z2ui5_cl_ui5f_browser_js IMPLEMENTATION.
              `` && |\n| &&
              `    const handlers = {` && |\n| &&
              `      CLIPBOARD_COPY: evClipboardCopy,` && |\n| &&
-             `      CLIPBOARD_APP_STATE: evClipboardAppState,` && |\n| &&
              `      DOWNLOAD_B64_FILE: evDownloadB64File,` && |\n| &&
              `      STORE_DATA: evStoreData,` && |\n| &&
              `      HASH_BACK: evHashBack,` && |\n| &&

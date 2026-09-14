@@ -244,11 +244,6 @@ CLASS z2ui5_cl_ui5f_slots_js IMPLEMENTATION.
              `        return;` && |\n| &&
              `      }` && |\n| &&
              `` && |\n| &&
-             `      if (isSuperseded(reqSeq) && ViewSlots.getView("MAIN")) {` && |\n| &&
-             `        discardBuild();` && |\n| &&
-             `        return;` && |\n| &&
-             `      }` && |\n| &&
-             `` && |\n| &&
              `      ViewSlots.setView("MAIN", oView, xml);` && |\n| &&
              `      if (switchPath) oView.setModel(oViewModel, "http");` && |\n| &&
              `      AppState.state.oApp.removeAllPages();` && |\n| &&
@@ -264,7 +259,14 @@ CLASS z2ui5_cl_ui5f_slots_js IMPLEMENTATION.
              `          }` && |\n| &&
              `` && |\n| &&
              `          ViewSlots.destroy("MAIN");` && |\n| &&
-             `          for (const oClient of AppState.state.odataClients) oClient.destroy();` && |\n| &&
+             `` && |\n| &&
+             `          for (const oClient of AppState.state.odataClients) {` && |\n| &&
+             `            try {` && |\n| &&
+             `              oClient.destroy();` && |\n| &&
+             `            } catch (e) {` && |\n| &&
+             `              Lib.logError("displayMain: destroying an OData client failed", e);` && |\n| &&
+             `            }` && |\n| &&
+             `          }` && |\n| &&
              `          AppState.state.odataClients.clear();` && |\n| &&
              `` && |\n| &&
              `          ViewSlots.destroy("POPUP");` && |\n| &&
@@ -300,17 +302,18 @@ CLASS z2ui5_cl_ui5f_slots_js IMPLEMENTATION.
              `        const pending = tracked._z2ui5ChangedPaths;` && |\n| &&
              `        const keep = [];` && |\n| &&
              `        if (pending?.size) {` && |\n| &&
-             `          for (const path of pending)` && |\n| &&
-             `            keep.push([path, tracked.getProperty(path)]);` && |\n| &&
+             `          for (const path of pending) {` && |\n| &&
+             `            const value = tracked.getProperty(path);` && |\n| &&
+             `` && |\n| &&
+             `            if (value !== undefined) keep.push([path, value]);` && |\n| &&
+             `          }` && |\n| &&
              `        }` && |\n| &&
              `        tracked.setData(` && |\n| &&
              `          dataForSlot(slotKey, AppState.state.oResponse?.OVIEWMODEL),` && |\n| &&
              `        );` && |\n| &&
              `` && |\n| &&
              `        keep.forEach(([path, value], i) => {` && |\n| &&
-             `          if (value !== undefined) {` && |\n| &&
-             `            tracked.setProperty(path, value, undefined, i < keep.length - 1);` && |\n| &&
-             `          }` && |\n| &&
+             `          tracked.setProperty(path, value, undefined, i < keep.length - 1);` && |\n| &&
              `        });` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&

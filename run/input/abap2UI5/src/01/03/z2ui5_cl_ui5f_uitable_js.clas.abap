@@ -55,7 +55,7 @@ CLASS z2ui5_cl_ui5f_uitable_js IMPLEMENTATION.
              `      },` && |\n| &&
              `` && |\n| &&
              `      exit() {` && |\n| &&
-             `        this._unhooks.forEach((unhook) => unhook());` && |\n| &&
+             `        for (const unhook of this._unhooks) unhook();` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
              `      readBackend() {` && |\n| &&
@@ -96,8 +96,7 @@ CLASS z2ui5_cl_ui5f_uitable_js IMPLEMENTATION.
              `` && |\n| &&
              `      readFilter(oTable) {` && |\n| &&
              `        try {` && |\n| &&
-             `          const table = oTable ?? this._getTable();` && |\n| &&
-             `          const binding = table?.getBinding();` && |\n| &&
+             `          const binding = oTable?.getBinding();` && |\n| &&
              `` && |\n| &&
              `          this._filterBinding = binding;` && |\n| &&
              `` && |\n| &&
@@ -116,6 +115,8 @@ CLASS z2ui5_cl_ui5f_uitable_js IMPLEMENTATION.
              `` && |\n| &&
              `        if (binding === this._filterBinding) return;` && |\n| &&
              `        binding.filter(aFilters);` && |\n| &&
+             `` && |\n| &&
+             `        this._filterBinding = binding;` && |\n| &&
              `        const columns = oTable.getColumns();` && |\n| &&
              `` && |\n| &&
              `        for (const oFilter of aFilters) {` && |\n| &&
@@ -159,8 +160,7 @@ CLASS z2ui5_cl_ui5f_uitable_js IMPLEMENTATION.
              `` && |\n| &&
              `      readSort(oTable) {` && |\n| &&
              `        try {` && |\n| &&
-             `          const table = oTable ?? this._getTable();` && |\n| &&
-             `          const binding = table?.getBinding();` && |\n| &&
+             `          const binding = oTable?.getBinding();` && |\n| &&
              `` && |\n| &&
              `          this._sortBinding = binding;` && |\n| &&
              `` && |\n| &&
@@ -177,6 +177,8 @@ CLASS z2ui5_cl_ui5f_uitable_js IMPLEMENTATION.
              `` && |\n| &&
              `        if (binding === this._sortBinding) return;` && |\n| &&
              `        binding.sort(aSorters);` && |\n| &&
+             `` && |\n| &&
+             `        this._sortBinding = binding;` && |\n| &&
              `` && |\n| &&
              `        const columns = oTable.getColumns();` && |\n| &&
              `        for (const [index, sorter] of aSorters.entries()) {` && |\n| &&

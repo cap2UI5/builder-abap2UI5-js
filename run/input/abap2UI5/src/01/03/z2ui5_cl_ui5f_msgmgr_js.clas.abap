@@ -36,7 +36,16 @@ CLASS z2ui5_cl_ui5f_msgmgr_js IMPLEMENTATION.
              `    "use strict";` && |\n| &&
              `` && |\n| &&
              `    const KEY_SEP = String.fromCharCode(1);` && |\n| &&
-             `    const keyOf = (o) => [o.MESSAGE, o.TYPE, o.TARGET].join(KEY_SEP);` && |\n| &&
+             `` && |\n| &&
+             `    const keyOf = (o) =>` && |\n| &&
+             `      [` && |\n| &&
+             `        o.MESSAGE,` && |\n| &&
+             `        o.TYPE,` && |\n| &&
+             `        o.TARGET,` && |\n| &&
+             `        o.DESCRIPTION,` && |\n| &&
+             `        o.ADDITIONALTEXT,` && |\n| &&
+             `        o.CODE,` && |\n| &&
+             `      ].join(KEY_SEP);` && |\n| &&
              `` && |\n| &&
              `    return Control.extend("z2ui5.cc.MessageManager", {` && |\n| &&
              `      metadata: {` && |\n| &&
@@ -65,10 +74,8 @@ CLASS z2ui5_cl_ui5f_msgmgr_js IMPLEMENTATION.
              `      renderer: Lib.EMPTY_RENDERER,` && |\n| &&
              `` && |\n| &&
              `      setup() {` && |\n| &&
-             `        if (this.getProperty("checkInit")) return;` && |\n| &&
-             `        const messaging = Lib.getMessaging?.();` && |\n| &&
-             `        if (!messaging) return;` && |\n| &&
-             `        this.setProperty("checkInit", true, true);` && |\n| &&
+             `        const messaging = Lib.getMessaging();` && |\n| &&
+             `        if (!Lib.claimOnce(this, messaging)) return;` && |\n| &&
              `        this._messaging = messaging;` && |\n| &&
              `        const view = ViewSlots.getView(` && |\n| &&
              `          ViewSlots.containingSlotKey(this) ?? "MAIN",` && |\n| &&
