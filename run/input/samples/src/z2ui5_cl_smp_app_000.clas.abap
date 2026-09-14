@@ -1,5 +1,5 @@
 " @keywords overview launchpad catalogue index all samples search start tiles
-" @summary Every sample in this repository as a searchable list, grouped along the learning path - the app the other 98 are reached from.
+" @summary Every sample in this repository as a searchable list, grouped along the learning path - the app the other 99 are reached from.
 CLASS z2ui5_cl_smp_app_000 DEFINITION PUBLIC.
 
   PUBLIC SECTION.
@@ -751,7 +751,7 @@ CLASS z2ui5_cl_smp_app_000 IMPLEMENTATION.
       ( group = `Show many rows` header = `Table` sub = `Editable Cells, Add and Delete Rows` keywords = `edit input add row delete multiselect toolbar` path = `src/01` app = `z2ui5_cl_smp_app_011` )
       ( group = `Show many rows` header = `Table` sub = `Filter Rows in the Backend` keywords = `filter server side form growing where` path = `src/01` app = `z2ui5_cl_smp_app_045` )
       ( group = `Show many rows` header = `Table` sub = `Large Table with Growing and ScrollContainer` keywords = `growing 10000 rows sticky toolbar sort performance` path = `src/01` app = `z2ui5_cl_smp_app_006` )
-      ( group = `Show many rows` header = `Table` sub = `Live Search with Parallel Requests` keywords = `live search parallel requests busy queue typing` path = `src/01` app = `z2ui5_cl_smp_app_059` )
+      ( group = `Show many rows` header = `Table` sub = `Live Search over a Large Table` keywords = `live search table filter keystroke roundtrip busy check_queue_last typing` path = `src/01` app = `z2ui5_cl_smp_app_059` )
       ( group = `Show many rows` header = `Table` sub = `Search in the Backend (SearchField)` keywords = `search go enter server side where` path = `src/01` app = `z2ui5_cl_smp_app_053` )
       ( group = `Show many rows` header = `Table` sub = `Selection Modes: Single and Multi Select` keywords = `selectionmode none single multi segmentedbutton checkbox` path = `src/01` app = `z2ui5_cl_smp_app_019` )
       ( group = `Show many rows` header = `Tree` sub = `Drag and Drop Nodes (A,C)` keywords = `dnd move node hierarchy binding context` path = `src/01` app = `z2ui5_cl_smp_app_461` )
@@ -772,6 +772,10 @@ CLASS z2ui5_cl_smp_app_000 IMPLEMENTATION.
       ( group = `Talk to the user` header = `Message` sub = `Message Model and MessageManager (C)` keywords = `messagemanager validation target field state central model` path = `src/01` app = `z2ui5_cl_smp_app_467` )
       ( group = `Talk to the user` header = `Message` sub = `MessageBox for Any Data` keywords = `messagebox details table structure tree object reference escape limit action onclose` path = `src/01` app = `z2ui5_cl_smp_app_502` )
       ( group = `Talk to the user` header = `Message` sub = `MessageBox from SY, BAPIRET2 or Exception` keywords = `t100 message class number exception cx_root error abend` path = `src/01` app = `z2ui5_cl_smp_app_008` )
+      ( group = `Talk to the user` header = `Message`
+        sub = `MessageBox via the Global Object`
+        keywords = `messagebox global object control_global follow_up_action options icon contentwidth textdirection closeonnavigation dependenton actions onclose`
+        path = `src/01` app = `z2ui5_cl_smp_app_512` )
       ( group = `Talk to the user` header = `Message` sub = `MessageBox, Types and Custom Actions` keywords = `confirm warning error success information dialog action` path = `src/01` app = `z2ui5_cl_smp_app_382` )
       ( group = `Talk to the user` header = `Message` sub = `MessagePopover URL Policy (A)` keywords = `url policy link security validator relative allow deny` path = `src/01` app = `z2ui5_cl_smp_app_474` )
       ( group = `Talk to the user` header = `Message` sub = `MessageView and MessagePopover (A)` keywords = `messagepopover messageitem dialog grouped message list` path = `src/01` app = `z2ui5_cl_smp_app_452` )
