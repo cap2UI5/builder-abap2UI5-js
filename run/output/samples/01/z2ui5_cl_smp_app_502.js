@@ -146,7 +146,7 @@ class z2ui5_cl_smp_app_502 extends z2ui5_if_app {
         this.client.message_box_display(`This box was opened with type = ${type}`, type);
         break;
       case `BOX_OPTIONS`:
-        this.client.message_box_display({ text: `The delivery date lies in the past.`, type: `warning`, title: `Please check`, icon: `WARNING`, contentwidth: `25rem`, styleclass: `sapUiSizeCompact`, textdirection: `Inherit`, closeonnavigation: false });
+        this.client.message_box_display(`The delivery date lies in the past.`, `warning`, `Please check`, `sapUiSizeCompact`);
         break;
       case `BOX_ACTIONS`:
         this.client.message_box_display(`Delete document 4711?`, `warning`, `Delete`, undefined, `BOX_CLOSED`, [`DELETE`, `Later`, `CANCEL`], `DELETE`, `CANCEL`);
@@ -180,7 +180,7 @@ class z2ui5_cl_smp_app_502 extends z2ui5_if_app {
       .a({ n: `showNavButton`, b: this.client.check_app_prev_stack() })
       .a({ n: `navButtonPress`, v: this.client._event_nav_app_leave() });
     page.tag(`MessageStrip`)
-      .a({ n: `text`, v: `client->message_box_display( ) takes TYPE any: throw in what the app already holds. ` + `Messages are recognized first and bring their own severity and title; everything else - a table, ` + `a structure, a tree, an object, a number, an HTML string - is rendered instead of dropped. ` + `One button per case, and each button is one call: the app pre-formats nothing.` })
+      .a({ n: `text`, v: `client->message_box_display( ) takes TYPE any: throw in what the app already holds. ` + `Messages are recognized first and bring their own severity and title; everything else - a table, ` + `a structure, a tree, an object, a number, an HTML string - is rendered instead of dropped. ` + `One button per case, and each button is one call: the app pre-formats nothing. That is what this ` + `method is for; a pure sap.m.MessageBox option is set on the control instead - ` + `Z2UI5_CL_SMP_APP_512 is the same box, steered through the global object.` })
       .a({ n: `type`, v: `Information` })
       .a({ n: `showIcon`, b: true })
       .a({ n: `class`, v: `sapUiSmallMargin` });
@@ -252,7 +252,7 @@ class z2ui5_cl_smp_app_502 extends z2ui5_if_app {
     row.tag(`Text`)
       .a({ n: `text`, v: `The severity, when the data does not bring one - information is the default` })
       .a({ n: `class`, v: `sapUiSmallMarginBegin` });
-    this.render_demo({ form, label: `Options`, text: `title, icon, width, class`, descr: `Everything the box itself can be given, in one call`, press: this.client._event(`BOX_OPTIONS`) });
+    this.render_demo({ form, label: `Options`, text: `type, title, class`, descr: `What an ABAP app decides - a pure UI5 option is set on the control, see Z2UI5_CL_SMP_APP_512`, press: this.client._event(`BOX_OPTIONS`) });
     this.render_demo({ form, label: `Actions`, text: `Buttons and onclose`, descr: `actions, emphasizedAction, initialFocus - the pressed one comes back through onclose`, press: this.client._event(`BOX_ACTIONS`) });
     form.tag(`Label`)
       .a({ n: `text`, v: `Your answer` })

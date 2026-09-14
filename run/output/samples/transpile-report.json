@@ -639,6 +639,12 @@
       "todoDetails": []
     },
     {
+      "class": "z2ui5_cl_smp_app_512",
+      "path": "01/z2ui5_cl_smp_app_512.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
       "class": "z2ui5_cl_smp_app_000",
       "path": "z2ui5_cl_smp_app_000.js",
       "todos": 2,
@@ -646,6 +652,90 @@
         "unsupported statement: cl_abap_classdescr=>describe_by_name( EXPORTING p_name = name EXCEPTIONS type_not_found = 1 ).",
         "unsupported statement: DELETE words INDEX n."
       ]
+    },
+    {
+      "class": "z2ui5_cl_smp_app_004",
+      "path": "z2ui5_cl_smp_app_004.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_052",
+      "path": "z2ui5_cl_smp_app_052.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_122",
+      "path": "z2ui5_cl_smp_app_122.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_381",
+      "path": "z2ui5_cl_smp_app_381.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_468",
+      "path": "z2ui5_cl_smp_app_468.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_498",
+      "path": "z2ui5_cl_smp_app_498.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_499",
+      "path": "z2ui5_cl_smp_app_499.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_504",
+      "path": "z2ui5_cl_smp_app_504.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_505",
+      "path": "z2ui5_cl_smp_app_505.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_506",
+      "path": "z2ui5_cl_smp_app_506.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_507",
+      "path": "z2ui5_cl_smp_app_507.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_508",
+      "path": "z2ui5_cl_smp_app_508.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_509",
+      "path": "z2ui5_cl_smp_app_509.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_smp_app_510",
+      "path": "z2ui5_cl_smp_app_510.js",
+      "todos": 0,
+      "todoDetails": []
     }
   ]
 }

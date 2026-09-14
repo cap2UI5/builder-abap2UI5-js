@@ -58,32 +58,22 @@ class z2ui5_cl_smp_app_059 extends z2ui5_if_app {
       .a({ n: `xmlns:core`, v: `sap.ui.core` });
     const page1 = view.ele(`Shell`)
       .ele(`Page`)
-      .a({ n: `title`, v: `abap2UI5 - Table - Live Search with Parallel Requests` })
+      .a({ n: `title`, v: `abap2UI5 - Table - Live Search over a Large Table` })
       .a({ n: `showNavButton`, b: this.client.check_app_prev_stack() })
       .a({ n: `navButtonPress`, v: this.client._event_nav_app_leave() })
       .a({ n: `id`, v: `page_main` });
     page1.tag(`MessageStrip`)
-      .a({ n: `text`, v: `By default abap2UI5 handles only one backend request at a time - the app is set busy and further ` + `requests are ignored until the running one is finished. A live search needs the opposite: only the ` + `newest request matters and older ones can be dropped. Set check_allow_multi_req on the event to ` + `allow that - type in both fields and compare.` })
+      .a({ n: `text`, v: `abap2UI5 runs one backend request at a time: while one is in flight the app is busy and a ` + `further event is dropped. A live search fires per keystroke and would lose every one typed during ` + `the flight, the last one included - the table would keep filtering on an earlier prefix until you ` + `paused. The wire below is registered with s_ctrl-check_queue_last, which keeps the last keystroke ` + `of the flight and sends it once the response has landed. Type quickly: the filter lands on what ` + `you typed. Sample 511 shows the same wire with and without the flag side by side.` })
       .a({ n: `type`, v: `Information` })
       .a({ n: `showIcon`, b: true })
       .a({ n: `class`, v: `sapUiSmallMargin` });
-    const lo_box = page1.ele(`HBox`).a({ n: `class`, v: `sapUiSmallMarginBegin` });
-    lo_box.ele(`VBox`)
-      .tag(`Text`)
-      .a({ n: `text`, v: `Search disabled parallel (default)` })
+    page1.ele(`VBox`)
+      .a({ n: `class`, v: `sapUiSmallMarginBegin` })
       .tag(`SearchField`)
       .a({ n: `width`, v: `17.5rem` })
       .a({ n: `value`, v: this.client._bind(this.mv_field) })
       .a({ n: `placeholder`, v: `Search products` })
-      .a({ n: `liveChange`, v: this.client._event(`BUTTON_SEARCH`) });
-    lo_box.ele(`VBox`)
-      .tag(`Text`)
-      .a({ n: `text`, v: `Search parallel` })
-      .tag(`SearchField`)
-      .a({ n: `width`, v: `17.5rem` })
-      .a({ n: `value`, v: this.client._bind(this.mv_field) })
-      .a({ n: `placeholder`, v: `Search products` })
-      .a({ n: `liveChange`, v: this.client._event(`BUTTON_SEARCH`, undefined, { check_allow_multi_req: true }) });
+      .a({ n: `liveChange`, v: this.client._event(`BUTTON_SEARCH`, undefined, { check_queue_last: true }) });
     const tab = page1.ele(`Table`).a({ n: `items`, v: this.client._bind(this.mt_table) });
     const lo_columns = tab.ele(`columns`);
     lo_columns.ele(`Column`).tag(`Text`).a({ n: `text`, v: `Product` });
