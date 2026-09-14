@@ -463,7 +463,7 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `      },` + `
 ` + `` + `
 ` + `      close() {` + `
-` + `        if (!this.oDialog || !this.oDialog.isOpen()) return;` + `
+` + `        if (!this.oDialog?.isOpen()) return;` + `
 ` + `` + `
 ` + `        const reopenError = this.reopenErrorOnClose;` + `
 ` + `        this.reopenErrorOnClose = false;` + `
@@ -484,7 +484,7 @@ class z2ui5_cl_ui5f_dtools_js {
 ` + `      },` + `
 ` + `` + `
 ` + `      toggle() {` + `
-` + `        if (this.oDialog && this.oDialog.isOpen()) {` + `
+` + `        if (this.oDialog?.isOpen()) {` + `
 ` + `          this.close();` + `
 ` + `        } else {` + `
 ` + `          this.show();` + `

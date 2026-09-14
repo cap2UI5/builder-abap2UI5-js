@@ -20,12 +20,6 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `      Lib.copyToClipboard(args[1]);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function evClipboardAppState() {` + `
-` + `      const id = AppState.state.oResponse?.ID || "";` + `
-` + `` + `
-` + `      Lib.copyToClipboard(Router.hrefFor(\`/z2ui5-xapp-state=\${id}\`));` + `
-` + `    }` + `
-` + `` + `
 ` + `    function evDownloadB64File(oController, args) {` + `
 ` + `      if (!Lib.isSafeDownloadURL(args[1])) {` + `
 ` + `        Lib.logError("DOWNLOAD_B64_FILE: blocked unsafe URL");` + `
@@ -88,11 +82,12 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function evSystemLogout(oController, args) {` + `
-` + `      const logoutUrl = args[1] || "/sap/public/bc/icf/logoff";` + `
+` + `      const explicitUrl = args[1];` + `
+` + `      const logoutUrl = explicitUrl || "/sap/public/bc/icf/logoff";` + `
 ` + `      try {` + `
 ` + `        const container = AppState.state.oLaunchpad?.Container;` + `
 ` + `` + `
-` + `        if (container?.logout && args.length <= 1) {` + `
+` + `        if (container?.logout && !explicitUrl) {` + `
 ` + `          container.logout();` + `
 ` + `          return;` + `
 ` + `        }` + `
@@ -169,6 +164,7 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `        Lib.logError("URLHELPER: blocked CR/LF in parameters");` + `
 ` + `        return;` + `
 ` + `      }` + `
+` + `` + `
 ` + `      const actions = {` + `
 ` + `        REDIRECT: () => {` + `
 ` + `          if (!Lib.isSafeRedirectProtocol(params.URL)) {` + `
@@ -192,6 +188,7 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `          _URLHelper.triggerSms(params.TEL, params.TEXT, params.NEW_WINDOW),` + `
 ` + `        TRIGGER_TEL: () => _URLHelper.triggerTel(params.TEL),` + `
 ` + `      };` + `
+` + `      Object.setPrototypeOf(actions, null);` + `
 ` + `      try {` + `
 ` + `        const fn = actions[args[1]];` + `
 ` + `        if (fn) fn();` + `
@@ -251,7 +248,6 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `` + `
 ` + `    const handlers = {` + `
 ` + `      CLIPBOARD_COPY: evClipboardCopy,` + `
-` + `      CLIPBOARD_APP_STATE: evClipboardAppState,` + `
 ` + `      DOWNLOAD_B64_FILE: evDownloadB64File,` + `
 ` + `      STORE_DATA: evStoreData,` + `
 ` + `      HASH_BACK: evHashBack,` + `

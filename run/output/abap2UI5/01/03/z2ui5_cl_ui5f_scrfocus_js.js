@@ -77,6 +77,12 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      slotKey: undefined,` + `
 ` + `    };` + `
 ` + `` + `
+` + `    function clearScrollCache() {` + `
+` + `      _scrollCache.target = undefined;` + `
+` + `      _scrollCache.ui5El = undefined;` + `
+` + `      _scrollCache.slotKey = undefined;` + `
+` + `    }` + `
+` + `` + `
 ` + `    function onScrollCapture(event) {` + `
 ` + `      const target = event.target;` + `
 ` + `      if (!target || target.nodeType !== 1) return;` + `
@@ -100,9 +106,7 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `` + `
 ` + `    function getScrollInfo() {` + `
 ` + `      if (_scrollCache.target && !_scrollCache.target.isConnected) {` + `
-` + `        _scrollCache.target = undefined;` + `
-` + `        _scrollCache.ui5El = undefined;` + `
-` + `        _scrollCache.slotKey = undefined;` + `
+` + `        clearScrollCache();` + `
 ` + `      }` + `
 ` + `` + `
 ` + `      const store = AppState.state.lastScrolled;` + `
@@ -128,9 +132,7 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function reset() {` + `
-` + `      _scrollCache.target = undefined;` + `
-` + `      _scrollCache.ui5El = undefined;` + `
-` + `      _scrollCache.slotKey = undefined;` + `
+` + `      clearScrollCache();` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    return {` + `

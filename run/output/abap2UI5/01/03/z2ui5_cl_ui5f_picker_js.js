@@ -3,9 +3,16 @@ class z2ui5_cl_ui5f_picker_js {
   static get() {
     let result = ``;
     result = `sap.ui.define(` + `
-` + `  ["sap/ui/core/Element", "z2ui5/core/Lib", "z2ui5/core/ViewSlots"],` + `
-` + `  (Element, Lib, ViewSlots) => {` + `
+` + `  [` + `
+` + `    "sap/ui/core/Element",` + `
+` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/core/ViewSlots",` + `
+` + `    "z2ui5/devtools/Format",` + `
+` + `  ],` + `
+` + `  (Element, Lib, ViewSlots, Format) => {` + `
 ` + `    "use strict";` + `
+` + `` + `
+` + `    const { FRAMEWORK_CALL } = Format;` + `
 ` + `` + `
 ` + `    const MAX_VALUE_CHARS = 80;` + `
 ` + `` + `
@@ -81,15 +88,13 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function removeOverlay() {` + `
-` + `      const el = document.getElementById(OVERLAY_ID);` + `
-` + `      if (el && el.parentElement) el.parentElement.removeChild(el);` + `
+` + `      document.getElementById(OVERLAY_ID)?.remove();` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function collectBindings(control) {` + `
 ` + `      const out = [];` + `
 ` + `      const infos = control.mBindingInfos || {};` + `
-` + `      for (const name of Object.keys(infos)) {` + `
-` + `        const info = infos[name];` + `
+` + `      for (const [name, info] of Object.entries(infos)) {` + `
 ` + `        const parts = info.parts || (info.path !== undefined ? [info] : []);` + `
 ` + `        for (const part of parts) {` + `
 ` + `          const model = control.getModel(part.model);` + `
@@ -115,15 +120,42 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `      return out;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function collectEvents(control) {` + `
+` + `    function slotXml(slotKey) {` + `
+` + `      if (!slotKey) return "";` + `
+` + `      return (` + `
+` + `        ViewSlots.getView?.(slotKey)?.mProperties?.viewContent ||` + `
+` + `        ViewSlots.getViewXml?.(slotKey) ||` + `
+` + `        ""` + `
+` + `      );` + `
+` + `    }` + `
+` + `` + `
+` + `    function xmlAttributesOf(control, slotKey) {` + `
+` + `      const localId = String(control.getId?.() || "")` + `
+` + `        .split("--")` + `
+` + `        .pop();` + `
+` + `      const xml = slotXml(slotKey);` + `
+` + `      if (!localId || !xml) return "";` + `
+` + `      const idAttr = new RegExp(\`\\\\sid\\\\s*=\\\\s*(?:"\${localId}"|'\${localId}')\`);` + `
+` + `      const at = xml.search(idAttr);` + `
+` + `      if (at < 0) return "";` + `
+` + `      const open = xml.lastIndexOf("<", at);` + `
+` + `      const close = xml.indexOf(">", at);` + `
+` + `      return open < 0 || close < 0 ? "" : xml.slice(open, close);` + `
+` + `    }` + `
+` + `` + `
+` + `    function collectEvents(control, slotKey) {` + `
 ` + `      const registry = control.mEventRegistry || {};` + `
+` + `      const attributes = xmlAttributesOf(control, slotKey);` + `
 ` + `      const out = [];` + `
-` + `      for (const name of Object.keys(registry)) {` + `
-` + `        for (const handler of registry[name] || []) {` + `
-` + `          const source = String(handler?.fFunction || "");` + `
-` + `          const match = /\\b(eB|eBP|eF)\\s*\\(\\s*\\[?\\s*['"]([A-Za-z0-9_.-]+)/.exec(` + `
-` + `            source,` + `
-` + `          );` + `
+` + `      for (const [name, handlers] of Object.entries(registry)) {` + `
+` + `        for (const handler of handlers || []) {` + `
+` + `          let match = FRAMEWORK_CALL.exec(String(handler?.fFunction || ""));` + `
+` + `          if (!match && attributes) {` + `
+` + `            const attr = new RegExp(` + `
+` + `              \`\\\\s\${name}\\\\s*=\\\\s*(?:"([^"]*)"|'([^']*)')\`,` + `
+` + `            ).exec(attributes);` + `
+` + `            match = attr ? FRAMEWORK_CALL.exec(attr[1] ?? attr[2] ?? "") : null;` + `
+` + `          }` + `
 ` + `          out.push(match ? \`\${name} -> \${match[1]}('\${match[2]}')\` : name);` + `
 ` + `        }` + `
 ` + `      }` + `
@@ -163,7 +195,7 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `        out.push(\`      value  \${renderValue(binding.value)}\`);` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const events = collectEvents(control);` + `
+` + `      const events = collectEvents(control, slotKey);` + `
 ` + `      out.push("");` + `
 ` + `      out.push("Events");` + `
 ` + `      out.push("------");` + `

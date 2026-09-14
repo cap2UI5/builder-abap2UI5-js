@@ -115,7 +115,7 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    return typeof value.stack === "string" && typeof value.message === "string";` + `
 ` + `  }` + `
 ` + `` + `
-` + `  function renderArg(value, depth) {` + `
+` + `  function renderArg(value) {` + `
 ` + `    if (value === undefined) return "undefined";` + `
 ` + `    if (value === null) return "null";` + `
 ` + `    const type = typeof value;` + `
@@ -128,7 +128,6 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    if (isErrorLike(value)) {` + `
 ` + `      return value.stack || \`\${value.name || "Error"}: \${value.message}\`;` + `
 ` + `    }` + `
-` + `    if ((depth || 0) >= MAX_DEPTH) return "[...]";` + `
 ` + `    try {` + `
 ` + `      const seen = new WeakSet();` + `
 ` + `      const nodeDepth = new WeakMap();` + `
@@ -162,9 +161,7 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  }` + `
 ` + `` + `
 ` + `  function renderArgs(args) {` + `
-` + `    const parts = [];` + `
-` + `    for (const arg of args) parts.push(renderArg(arg, 0));` + `
-` + `    return parts.join(" ");` + `
+` + `    return args.map(renderArg).join(" ");` + `
 ` + `  }` + `
 ` + `` + `
 ` + `  function captureConsole(level, args) {` + `
@@ -185,12 +182,12 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  }` + `
 ` + `` + `
 ` + `  const UI5_LEVELS = {` + `
+` + `    0: "error",` + `
 ` + `    1: "error",` + `
-` + `    2: "error",` + `
-` + `    3: "warn",` + `
-` + `    4: "info",` + `
+` + `    2: "warn",` + `
+` + `    3: "info",` + `
+` + `    4: "debug",` + `
 ` + `    5: "debug",` + `
-` + `    6: "debug",` + `
 ` + `  };` + `
 ` + `` + `
 ` + `  function captureUi5(logEntry) {` + `
@@ -224,8 +221,8 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  }` + `
 ` + `` + `
 ` + `  function uninstallConsole() {` + `
-` + `    for (const name of Object.keys(originals)) {` + `
-` + `      window.console[name] = originals[name];` + `
+` + `    for (const [name, original] of Object.entries(originals)) {` + `
+` + `      window.console[name] = original;` + `
 ` + `      delete originals[name];` + `
 ` + `    }` + `
 ` + `  }` + `
@@ -272,7 +269,7 @@ class z2ui5_cl_ui5f_console_js {
 ` + `      push(` + `
 ` + `        "error",` + `
 ` + `        "rejection",` + `
-` + `        reason?.stack || renderArg(reason, 0) || "unhandled rejection",` + `
+` + `        reason?.stack || renderArg(reason) || "unhandled rejection",` + `
 ` + `      );` + `
 ` + `    };` + `
 ` + `    onPageHide = persist;` + `

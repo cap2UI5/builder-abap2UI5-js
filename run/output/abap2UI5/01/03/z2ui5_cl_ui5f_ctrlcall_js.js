@@ -58,13 +58,10 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `          oController.eB([sEvent]);` + `
 ` + `        };` + `
 ` + `      }` + `
-` + `      const doShow = (MT) => {` + `
-` + `        if (Object.keys(o).length) MT.show(sText, o);` + `
-` + `        else MT.show(sText);` + `
-` + `        if (sClass) applyToastClass(sClass);` + `
-` + `      };` + `
-` + `      if (MessageToast) doShow(MessageToast);` + `
-` + `      else sap.ui.require(["sap/m/MessageToast"], doShow);` + `
+` + `` + `
+` + `      if (Object.keys(o).length) MessageToast.show(sText, o);` + `
+` + `      else MessageToast.show(sText);` + `
+` + `      if (sClass) applyToastClass(sClass);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    let iBoxNo = 0;` + `
@@ -402,12 +399,14 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    function setsStringProperty(control, method) {` + `
 ` + `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` + `
-`;
-    result = result + `        return false;` + `
+` + `        return false;` + `
 ` + `      const prop = control.getMetadata?.()?.getAllProperties?.()[` + `
 ` + `        method.charAt(3).toLowerCase() + method.slice(4)` + `
-` + `      ];` + `
-` + `      return !!prop && prop.type === "string";` + `
+`;
+    result = result + `      ];` + `
+` + `      if (!prop) return false;` + `
+` + `      const primitive = prop.getType?.()?.getPrimitiveType?.()?.getName?.();` + `
+` + `      return primitive ? primitive === "string" : prop.type === "string";` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    const NULLABLE_KINDS = ["controlIdOrNull"];` + `
@@ -803,9 +802,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    return { handlers };` + `
 ` + `  },` + `
+` + `);` + `
 `;
-    result = result + `);` + `
-` + `` + `
+    result = result + `` + `
 ` + ``;
     return result;
   }

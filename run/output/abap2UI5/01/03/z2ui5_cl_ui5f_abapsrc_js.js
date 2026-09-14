@@ -52,9 +52,7 @@ class z2ui5_cl_ui5f_abapsrc_js {
 ` + `          credentials: "same-origin",` + `
 ` + `        });` + `
 ` + `        if (response.ok) source = await response.text();` + `
-` + `      } catch {` + `
-` + `        source = "";` + `
-` + `      }` + `
+` + `      } catch {}` + `
 ` + `` + `
 ` + `      if (source) cache = { app: name, source };` + `
 ` + `      return source;` + `

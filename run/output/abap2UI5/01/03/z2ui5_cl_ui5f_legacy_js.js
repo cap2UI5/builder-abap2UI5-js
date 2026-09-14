@@ -63,7 +63,8 @@ class z2ui5_cl_ui5f_legacy_js {
 ` + `        token += ch;` + `
 ` + `      }` + `
 ` + `    }` + `
-` + `    if (token.trim() !== "") args.push(parseEfValue(token.trim()));` + `
+` + `    const last = token.trim();` + `
+` + `    if (last !== "") args.push(parseEfValue(last));` + `
 ` + `    return args;` + `
 ` + `  }` + `
 ` + `` + `

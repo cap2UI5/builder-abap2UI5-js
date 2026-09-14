@@ -47,13 +47,26 @@ class z2ui5_cl_ui5f_dtformat_js {
 ` + `        <xsl:output indent="yes" />` + `
 ` + `      </xsl:stylesheet>\`;` + `
 ` + `` + `
-` + `  const _xmlSerializer = new XMLSerializer();` + `
-` + `  const _domParser = new DOMParser();` + `
+` + `  let _xmlSerializer = null;` + `
+` + `  let _domParser = null;` + `
 ` + `  let _xsltProcessor = null;` + `
+` + `` + `
+` + `  function getDomParser() {` + `
+` + `    if (!_domParser) _domParser = new DOMParser();` + `
+` + `    return _domParser;` + `
+` + `  }` + `
+` + `` + `
+` + `  function getXmlSerializer() {` + `
+` + `    if (!_xmlSerializer) _xmlSerializer = new XMLSerializer();` + `
+` + `    return _xmlSerializer;` + `
+` + `  }` + `
 ` + `` + `
 ` + `  function getXsltProcessor() {` + `
 ` + `    if (_xsltProcessor) return _xsltProcessor;` + `
-` + `    const xsltDoc = _domParser.parseFromString(PRETTIFY_XSL, "application/xml");` + `
+` + `    const xsltDoc = getDomParser().parseFromString(` + `
+` + `      PRETTIFY_XSL,` + `
+` + `      "application/xml",` + `
+` + `    );` + `
 ` + `    _xsltProcessor = new XSLTProcessor();` + `
 ` + `    _xsltProcessor.importStylesheet(xsltDoc);` + `
 ` + `    return _xsltProcessor;` + `
@@ -62,10 +75,13 @@ class z2ui5_cl_ui5f_dtformat_js {
 ` + `  function prettifyXml(sourceXml) {` + `
 ` + `    if (!sourceXml) return "";` + `
 ` + `    try {` + `
-` + `      const xmlDoc = _domParser.parseFromString(sourceXml, "application/xml");` + `
+` + `      const xmlDoc = getDomParser().parseFromString(` + `
+` + `        sourceXml,` + `
+` + `        "application/xml",` + `
+` + `      );` + `
 ` + `      const resultDoc = getXsltProcessor().transformToDocument(xmlDoc);` + `
 ` + `      if (!resultDoc) return sourceXml;` + `
-` + `      const resultXml = _xmlSerializer.serializeToString(resultDoc);` + `
+` + `      const resultXml = getXmlSerializer().serializeToString(resultDoc);` + `
 ` + `` + `
 ` + `      return resultXml.replace(/&gt;/g, ">");` + `
 ` + `    } catch {` + `
@@ -73,7 +89,23 @@ class z2ui5_cl_ui5f_dtformat_js {
 ` + `    }` + `
 ` + `  }` + `
 ` + `` + `
-` + `  return { toJson, prettifyXml };` + `
+` + `  function truncate(text, max) {` + `
+` + `    const str = String(text);` + `
+` + `    if (str.length <= max) return str;` + `
+` + `    return \`\${str.slice(0, max)}... (\${str.length} chars)\`;` + `
+` + `  }` + `
+` + `` + `
+` + `  function formatBytes(bytes) {` + `
+` + `    if (bytes === null || bytes === undefined) return "-";` + `
+` + `    if (bytes < 1024) return \`\${bytes} B\`;` + `
+` + `    if (bytes < 1024 * 1024) return \`\${Math.round(bytes / 1024)} KB\`;` + `
+` + `    return \`\${(bytes / (1024 * 1024)).toFixed(1)} MB\`;` + `
+` + `  }` + `
+` + `` + `
+` + `  const FRAMEWORK_CALL =` + `
+` + `    /\\b(eB|eBP|eF)\\s*\\((?:[^[]*\\[)?\\s*(?:&apos;|&quot;|['"])([A-Za-z0-9_.-]+)/;` + `
+` + `` + `
+` + `  return { toJson, prettifyXml, truncate, formatBytes, FRAMEWORK_CALL };` + `
 ` + `});` + `
 ` + `` + `
 ` + ``;

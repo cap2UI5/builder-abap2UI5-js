@@ -253,23 +253,6 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function evWizardSetNextStep(oController, args) {` + `
-` + `      try {` + `
-` + `        const wiz = ViewSlots.resolveById(args[1]);` + `
-` + `        const step = ViewSlots.resolveById(args[2]);` + `
-` + `        const nextStep = ViewSlots.resolveById(args[3]);` + `
-` + `        if (!wiz || !step) {` + `
-` + `          Lib.logError(` + `
-` + `            \`WIZARD_SET_NEXT_STEP: '\${args[1]}' / '\${args[2]}' not found\`,` + `
-` + `          );` + `
-` + `        }` + `
-` + `        if (wiz && step) wiz.discardProgress(step);` + `
-` + `        if (step && nextStep) step.setNextStep(nextStep);` + `
-` + `      } catch (e) {` + `
-` + `        Lib.logError(\`WIZARD_SET_NEXT_STEP: failed for wizard '\${args[1]}'\`, e);` + `
-` + `      }` + `
-` + `    }` + `
-` + `` + `
 ` + `    const handlers = {` + `
 ` + `      SET_SIZE_LIMIT: evSetSizeLimit,` + `
 ` + `      SET_ODATA_MODEL: evSetODataModel,` + `
@@ -280,7 +263,6 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      SCROLL_TO: evScrollTo,` + `
 ` + `      SCROLL_INTO_VIEW: evScrollIntoView,` + `
 ` + `      Z2UI5: evZ2ui5Custom,` + `
-` + `      WIZARD_SET_NEXT_STEP: evWizardSetNextStep,` + `
 ` + `    };` + `
 ` + `` + `
 ` + `    return { handlers };` + `

@@ -103,15 +103,6 @@ class z2ui5_cl_ui5_util_http {
             lv_message = _dynargs.message;
           }
         }
-        {
-          const _dynr = (lo_client);
-          const _dynm = _dynr ? _dynr[String(`CLOSE`).toLowerCase()] : undefined;
-          sy_subrc = typeof _dynm === "function" ? 0 : 4;
-          if (typeof _dynm === "function") {
-            const _dynargs = {  };
-            const _dynret = _dynm.call(_dynr, _dynargs);
-          }
-        }
         throw new z2ui5_cx_ui5_util_error({ val: `HTTP_COMMUNICATION_ERROR - ${lv_message}` });
       }
       _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(lo_client, `RESPONSE`);
@@ -353,10 +344,9 @@ class z2ui5_cl_ui5_util_http {
 
   set_cdata({ val } = {}) {
     let object;
-    let lv_data;
+    const lv_data = (val);
     if (this.mo_server_onprem != null) {
       object = this.get_response_onprem();
-      lv_data = (val);
       {
         const _dynr = (object);
         const _dynm = _dynr ? _dynr[String(`SET_CDATA`).toLowerCase()] : undefined;
@@ -372,7 +362,7 @@ class z2ui5_cl_ui5_util_http {
         const _dynm = _dynr ? _dynr[String(`IF_WEB_HTTP_RESPONSE~SET_TEXT`).toLowerCase()] : undefined;
         if (typeof _dynm !== "function") throw new Error(`CALL METHOD: ${String(`IF_WEB_HTTP_RESPONSE~SET_TEXT`)} not found`);
         {
-          const _dynargs = { i_text: val };
+          const _dynargs = { i_text: lv_data };
           const _dynret = _dynm.call(_dynr, _dynargs);
         }
       }

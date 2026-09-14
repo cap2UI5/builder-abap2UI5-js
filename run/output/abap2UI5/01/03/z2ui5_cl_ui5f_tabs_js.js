@@ -371,7 +371,9 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function firstTabOf(groupKey) {` + `
-` + `      const [first] = enabledTabs(groupKey);` + `
+` + `      const first = TABS.find(` + `
+` + `        (tab) => tab.group === groupKey && isEnabled(tab),` + `
+` + `      );` + `
 ` + `      return first?.key || "";` + `
 ` + `    }` + `
 ` + `` + `
@@ -400,10 +402,10 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `      const tab = get(tabKey);` + `
 ` + `      if (!tab) return "";` + `
 ` + `      try {` + `
-` + `        return tab.produce() ?? "";` + `
-` + `      } catch (e) {` + `
 `;
-    result = result + `        return \`(\${tab.label} could not be rendered: \${e?.message || e})\`;` + `
+    result = result + `        return tab.produce() ?? "";` + `
+` + `      } catch (e) {` + `
+` + `        return \`(\${tab.label} could not be rendered: \${e?.message || e})\`;` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `

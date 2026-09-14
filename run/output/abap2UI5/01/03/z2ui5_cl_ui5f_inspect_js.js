@@ -11,13 +11,50 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `    "z2ui5/core/ViewSlots",` + `
 ` + `    "z2ui5/devtools/Console",` + `
 ` + `    "z2ui5/devtools/Recorder",` + `
+` + `    "z2ui5/devtools/Format",` + `
 ` + `  ],` + `
-` + `  (Device, AppState, Lib, ScrollFocus, ViewSlots, Console, Recorder) => {` + `
+` + `  (` + `
+` + `    Device,` + `
+` + `    AppState,` + `
+` + `    Lib,` + `
+` + `    ScrollFocus,` + `
+` + `    ViewSlots,` + `
+` + `    Console,` + `
+` + `    Recorder,` + `
+` + `    Format,` + `
+` + `  ) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const MAX_ARG_CHARS = 160;` + `
 ` + `` + `
 ` + `    const MAX_SCRAPED_EVENTS = 200;` + `
+` + `` + `
+` + `    const BOOTSTRAP_ATTRS = [` + `
+` + `      ["Bootstrap theme", "theme"],` + `
+` + `      ["Resource roots", "resourceroots"],` + `
+` + `      ["On init", "oninit"],` + `
+` + `      ["Compat version", "compatversion"],` + `
+` + `      ["Async", "async"],` + `
+` + `      ["Frame options", "frameoptions"],` + `
+` + `      ["Binding syntax", "bindingsyntax"],` + `
+` + `      ["Libs", "libs"],` + `
+` + `    ];` + `
+` + `` + `
+` + `    const CALLBACK_ARRAYS = [` + `
+` + `      "onBeforeRoundtrip",` + `
+` + `      "onAfterRoundtrip",` + `
+` + `      "onAfterRendering",` + `
+` + `      "onBeforeEventFrontend",` + `
+` + `      "onErrorDetails",` + `
+` + `    ];` + `
+` + `` + `
+` + `    const EVENT_CALL = new RegExp(Format.FRAMEWORK_CALL.source, "g");` + `
+` + `` + `
+` + `    const BINDING_PATH =` + `
+` + `      /(?:\\{\\s*|\\$\\{\\s*|path\\s*:\\s*['"]|parts\\s*:\\s*\\[\\s*['"]|,\\s*['"])\\/([A-Za-z_][A-Za-z0-9_]*)/g;` + `
+` + `` + `
+` + `    const WORD_CHAR = /[a-z0-9_]/;` + `
+` + `    const isWordChar = (ch) => ch !== undefined && WORD_CHAR.test(ch);` + `
 ` + `` + `
 ` + `    const LABEL_WIDTH = 24;` + `
 ` + `` + `
@@ -35,11 +72,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return value ? "yes" : "no";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function truncate(text, max) {` + `
-` + `      const str = String(text);` + `
-` + `      if (str.length <= max) return str;` + `
-` + `      return \`\${str.slice(0, max)}... (\${str.length} chars)\`;` + `
-` + `    }` + `
+` + `    const { truncate, formatBytes } = Format;` + `
 ` + `` + `
 ` + `    function bootstrapElement() {` + `
 ` + `      try {` + `
@@ -203,16 +236,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        out.push("  UI5 was started some other way, e.g. by a launchpad)");` + `
 ` + `      } else {` + `
 ` + `        out.push(line("SDK source", el.src || bootstrapAttr(el, "src")));` + `
-` + `        for (const [label, attr] of [` + `
-` + `          ["Bootstrap theme", "theme"],` + `
-` + `          ["Resource roots", "resourceroots"],` + `
-` + `          ["On init", "oninit"],` + `
-` + `          ["Compat version", "compatversion"],` + `
-` + `          ["Async", "async"],` + `
-` + `          ["Frame options", "frameoptions"],` + `
-` + `          ["Binding syntax", "bindingsyntax"],` + `
-` + `          ["Libs", "libs"],` + `
-` + `        ]) {` + `
+` + `        for (const [label, attr] of BOOTSTRAP_ATTRS) {` + `
 ` + `          const value = bootstrapAttr(el, attr);` + `
 ` + `          if (value) out.push(line(label, truncate(value, MAX_ARG_CHARS)));` + `
 ` + `        }` + `
@@ -282,12 +306,9 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      if (!xml) return [];` + `
 ` + `      const found = new Set();` + `
 ` + `` + `
-` + `      const pattern =` + `
-` + `        /\\b(eB|eBP|eF)\\s*\\(\\s*\\[?\\s*(?:&apos;|&quot;|['"])([A-Za-z0-9_.-]+)/g;` + `
-` + `      let match = pattern.exec(xml);` + `
-` + `      while (match !== null && found.size < MAX_SCRAPED_EVENTS) {` + `
+` + `      for (const match of xml.matchAll(EVENT_CALL)) {` + `
+` + `        if (found.size >= MAX_SCRAPED_EVENTS) break;` + `
 ` + `        found.add(\`\${match[1]}  \${match[2]}\`);` + `
-` + `        match = pattern.exec(xml);` + `
 ` + `      }` + `
 ` + `      return Array.from(found).sort();` + `
 ` + `    }` + `
@@ -322,22 +343,15 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(timers.length ? \`  \${timers.join(", ")}\` : "  (none pending)");` + `
 ` + `` + `
 ` + `      out.push(section("Framework callbacks registered"));` + `
-` + `` + `
-` + `      for (const name of [` + `
-` + `        "onBeforeRoundtrip",` + `
-` + `        "onAfterRoundtrip",` + `
-` + `        "onAfterRendering",` + `
-` + `        "onBeforeEventFrontend",` + `
-` + `        "onErrorDetails",` + `
-` + `      ]) {` + `
-` + `        out.push(line(name, String((state[name] || []).length)));` + `
+` + `      for (const name of CALLBACK_ARRAYS) {` + `
+` + `        out.push(line(name, (state[name] || []).length));` + `
 ` + `      }` + `
 ` + `` + `
 ` + `      out.push(section("Model size limits"));` + `
 ` + `      const limits = state.viewSizeLimits || {};` + `
 ` + `      const limitKeys = Object.keys(limits);` + `
 ` + `      if (!limitKeys.length) out.push("  (UI5 default everywhere)");` + `
-` + `      for (const key of limitKeys) out.push(line(key, String(limits[key])));` + `
+` + `      for (const key of limitKeys) out.push(line(key, limits[key]));` + `
 ` + `` + `
 ` + `      out.push(section("Backend events bound in the current views"));` + `
 ` + `      let any = false;` + `
@@ -388,7 +402,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      });` + `
 ` + `      return out;` + `
 ` + `    }` + `
-` + `` + `
+`;
+    result = result + `` + `
 ` + `    function formatActions() {` + `
 ` + `      const sAction = AppState.state.responseData?.S_FRONT?.S_ACTION;` + `
 ` + `      const out = ["abap2UI5 Developer Tools - Actions of the last response"];` + `
@@ -402,8 +417,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      );` + `
 ` + `      out.push(...renderActionList(sAction?.T_CUSTOM, "T_CUSTOM (app)"));` + `
 ` + `      return out.join("\\n");` + `
-`;
-    result = result + `    }` + `
+` + `    }` + `
 ` + `` + `
 ` + `    const LEVEL_LABEL = {` + `
 ` + `      error: "ERROR",` + `
@@ -569,8 +583,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      if (!data) return [];` + `
 ` + `      const out = [section(\`Slot \${slotKey}\`)];` + `
 ` + `` + `
-` + `      const changed = model._z2ui5ChangedPaths;` + `
-` + `      const dirty = changed ? new Set(changed) : new Set();` + `
+` + `      const dirty = model._z2ui5ChangedPaths || new Set();` + `
 ` + `` + `
 ` + `      const dirtyAttrs = new Set(` + `
 ` + `        Array.from(dirty, (p) => p.split("/")[1]).filter(Boolean),` + `
@@ -599,12 +612,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      if (!xml) return [];` + `
 ` + `      const found = new Set();` + `
 ` + `` + `
-` + `      const pattern = /[{$'",:[\\s]\\/([A-Za-z_][A-Za-z0-9_]*)/g;` + `
-` + `      let match = pattern.exec(xml);` + `
-` + `      while (match !== null) {` + `
-` + `        found.add(match[1]);` + `
-` + `        match = pattern.exec(xml);` + `
-` + `      }` + `
+` + `      for (const match of xml.matchAll(BINDING_PATH)) found.add(match[1]);` + `
 ` + `      return Array.from(found).sort();` + `
 ` + `    }` + `
 ` + `` + `
@@ -623,7 +631,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        );` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const unused = Object.keys(data).filter((name) => !bound.includes(name));` + `
+` + `      const boundSet = new Set(bound);` + `
+` + `      const unused = Object.keys(data).filter((name) => !boundSet.has(name));` + `
 ` + `      if (unused.length) {` + `
 ` + `        out.push("");` + `
 ` + `        out.push(` + `
@@ -642,12 +651,6 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      } catch {` + `
 ` + `        return 0;` + `
 ` + `      }` + `
-` + `    }` + `
-` + `` + `
-` + `    function formatBytes(bytes) {` + `
-` + `      if (bytes < 1024) return \`\${bytes} B\`;` + `
-` + `      if (bytes < 1024 * 1024) return \`\${Math.round(bytes / 1024)} KB\`;` + `
-` + `      return \`\${(bytes / (1024 * 1024)).toFixed(1)} MB\`;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function formatSizeRanking(data) {` + `
@@ -722,7 +725,6 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        while (from !== -1) {` + `
 ` + `          const before = haystack[from - 1];` + `
 ` + `          const after = haystack[from + needle.length];` + `
-` + `          const isWordChar = (ch) => ch !== undefined && /[a-z0-9_]/.test(ch);` + `
 ` + `          if (!isWordChar(before) && !isWordChar(after)) return i + 1;` + `
 ` + `          from = haystack.indexOf(needle, from + 1);` + `
 ` + `        }` + `
@@ -801,10 +803,10 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        ),` + `
 ` + `      );` + `
 ` + `      out.push(line("Theme", Lib.getTheme()));` + `
-` + `` + `
-` + `      out.push(section("View slots"));` + `
 `;
-    result = result + `      out.push(...formatSlots());` + `
+    result = result + `` + `
+` + `      out.push(section("View slots"));` + `
+` + `      out.push(...formatSlots());` + `
 ` + `` + `
 ` + `      out.push(section("Getting around"));` + `
 ` + `      out.push("  Ctrl+F12          open / close these tools");` + `

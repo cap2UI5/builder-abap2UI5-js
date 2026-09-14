@@ -40,12 +40,11 @@
     {
       "class": "z2ui5_cl_ui5_util_context",
       "path": "00/03/z2ui5_cl_ui5_util_context.js",
-      "todos": 44,
+      "todos": 40,
       "todoDetails": [
         "unsupported statement: ROLLBACK WORK.",
         "unsupported statement: DELETE tab INDEX lv_tabix.",
         "unsupported statement: cl_abap_classdescr=>describe_by_name( EXPORTING p_name = val EXCEPTIONS type_not_found = 1 ).",
-        "unsupported statement: cl_abap_typedescr=>describe_by_name( EXPORTING p_name = type->absolute_name RECEIVING p_descr_ref = DATA(type_desc) EXCE",
         "unsupported statement: GET TIME STAMP FIELD result.",
         "unsupported statement: CALL TRANSFORMATION id SOURCE XML xml RESULT data = any.",
         "unsupported statement: CALL METHOD (lv_classname)=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = result.",
@@ -54,9 +53,6 @@
         "unsupported statement: CALL TRANSFORMATION id SOURCE XML iv_type RESULT srtti = srtti.",
         "CREATE DATA: CREATE DATA result TYPE HANDLE lo_datadescr.",
         "unsupported statement: CALL TRANSFORMATION id SOURCE XML iv_data RESULT dobj = <variable>.",
-        "unsupported statement: CALL TRANSFORMATION id SOURCE XML rtti_data RESULT srtti = srtti.",
-        "CREATE DATA: CREATE DATA result TYPE HANDLE lo_datadescr.",
-        "unsupported statement: CALL TRANSFORMATION id SOURCE XML rtti_data RESULT dobj = <variable>.",
         "unsupported statement: CALL METHOD (lv_classname)=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = srtti.",
         "unsupported statement: CALL TRANSFORMATION id SOURCE srtti = srtti dobj = data RESULT XML result.",
         "unsupported statement: CALL METHOD z2ui5_cl_srt_typedescr=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = srtti.",

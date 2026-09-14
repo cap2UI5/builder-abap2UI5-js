@@ -35,34 +35,20 @@ class z2ui5_cl_ui5_view_builder {
     return result;
   }
 
-  a({ n, v, b } = {}) {
+  a({ n, v, b, t } = {}) {
     let result = null;
-    let target;
     if (z2ui5_cl_util.abap_is_initial(this.name) && z2ui5_cl_util.abap_is_initial(this.t_child)) {
       this.raise({ val: `a( n = '${n}' ) on the empty builder root - open an element with ele( ) first` });
     }
-    if (v === undefined && b === undefined) {
-      this.raise({ val: `a( n = '${n}' ) without a value - pass v or b` });
+    const val = this.attr_value({ n, v, b, t, check_v: (v !== undefined), check_b: (b !== undefined), check_t: (t !== undefined) });
+    let target = z2ui5_cl_util.abap_copy(this);
+    if (!z2ui5_cl_util.abap_is_initial(this.t_child)) {
+      target = z2ui5_cl_util.abap_tab_assign(target, z2ui5_cl_util.abap_copy(this.t_child[(this.t_child.length) - 1]));
     }
-    let val = z2ui5_cl_util.abap_copy(v);
-    if (b !== undefined) {
-      if (!z2ui5_cl_util.abap_is_initial(v)) {
-        this.raise({ val: `a( n = '${n}' ) with both v and b - pass one of the two` });
-      }
-      val = ((b === true || b === `X`) ? `true` : `false`);
+    if (target.t_pair.some((row) => row.n === n)) {
+      this.raise({ val: `duplicate attribute '${n}' on element '${target.name}'` });
     }
-    if (z2ui5_cl_util.abap_is_initial(this.t_child)) {
-      if (this.t_pair.some((row) => row.n === n)) {
-        this.raise({ val: `duplicate attribute '${n}' on element '${this.name}'` });
-      }
-      this.t_pair.push(z2ui5_cl_util.abap_copy({ n: n, v: val }));
-    } else {
-      target = z2ui5_cl_util.abap_copy(this.t_child[(this.t_child.length) - 1]);
-      if (target.t_pair.some((row) => row.n === n)) {
-        this.raise({ val: `duplicate attribute '${n}' on element '${target.name}'` });
-      }
-      target.t_pair.push(z2ui5_cl_util.abap_copy({ n: n, v: val }));
-    }
+    target.t_pair.push(z2ui5_cl_util.abap_copy({ n: n, v: val }));
     result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(this));
     return result;
   }
@@ -129,11 +115,10 @@ class z2ui5_cl_ui5_view_builder {
       z2ui5_cl_ui5_view_builder.gv_escape_specials = `&<>"` + z2ui5_cl_ui5_util_context.cv_char_util_newline + String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf)
         .substr(0, 1) + z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab + z2ui5_cl_ui5_view_builder.gv_escape_controls;
     }
-    if (![...String(val)].some(($c) => String(z2ui5_cl_ui5_view_builder.gv_escape_specials).includes($c))) {
-      result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
+    result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
+    if (![...String(result)].some(($c) => String(z2ui5_cl_ui5_view_builder.gv_escape_specials).includes($c))) {
       return result;
     }
-    result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(val));
     result = result.replaceAll(`&`, `&amp;`);
     result = result.replaceAll(`<`, `&lt;`);
     result = result.replaceAll(`>`, `&gt;`);
@@ -148,6 +133,34 @@ class z2ui5_cl_ui5_view_builder {
         result = result.replaceAll(String(z2ui5_cl_ui5_view_builder.gv_escape_controls).substr(lv_off, 1), ``);
         lv_off = lv_off + 1;
       }
+    }
+    return result;
+  }
+
+  attr_value({ n, v, b, t, check_v, check_b, check_t } = {}) {
+    let result = ``;
+    if (!(check_v === true || check_v === `X`) && !(check_b === true || check_b === `X`) && !(check_t === true || check_t === `X`)) {
+      this.raise({ val: `a( n = '${n}' ) without a value - pass v, b or t` });
+    }
+    let lv_supplied = 0;
+    if ((check_v === true || check_v === `X`) && !z2ui5_cl_util.abap_is_initial(v)) {
+      lv_supplied = lv_supplied + 1;
+    }
+    if ((check_b === true || check_b === `X`)) {
+      lv_supplied = lv_supplied + 1;
+    }
+    if ((check_t === true || check_t === `X`)) {
+      lv_supplied = lv_supplied + 1;
+    }
+    if (lv_supplied > 1) {
+      this.raise({ val: `a( n = '${n}' ) with more than one of v, b and t - pass exactly one` });
+    }
+    if ((check_b === true || check_b === `X`)) {
+      result = ((b === true || b === `X`) ? `true` : `false`);
+    } else if ((check_t === true || check_t === `X`)) {
+      result = z2ui5_cl_ui5_view_builder.escape_literal({ val: t });
+    } else {
+      result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(v));
     }
     return result;
   }
@@ -185,9 +198,10 @@ const z2ui5_cx_ui5_util_error = require("abap2UI5/z2ui5_cx_ui5_util_error");
 require("abap2UI5/z2ui5_preferred_param")(z2ui5_cl_ui5_view_builder, {
   ele: { preferred: `n`, params: [`n`, `ns`] },
   tag: { preferred: `n`, params: [`n`, `ns`] },
-  a: { preferred: `n`, params: [`n`, `v`, `b`] },
+  a: { preferred: `n`, params: [`n`, `v`, `b`, `t`] },
   escape_literal: { preferred: `val`, params: [`val`] },
   xml_escape: { preferred: `val`, params: [`val`] },
   raise: { preferred: `val`, params: [`val`] },
+  attr_value: { preferred: `n`, params: [`n`, `v`, `b`, `t`, `check_v`, `check_b`, `check_t`] },
 });
 

@@ -15,7 +15,7 @@ class z2ui5_cl_ui5_frontend {
     let sy_tabix = 0;
     let lx_json;
     try {
-      result = (z2ui5_cl_ajson.create_empty());
+      result = z2ui5_cl_ajson.create_empty();
       result.touch_array(`/`);
       sy_tabix = 0;
       for (const lr_arg of t_arg) {
@@ -74,8 +74,7 @@ class z2ui5_cl_ui5_frontend {
   slots_serialize() {
     let sy_tabix = 0;
     let lt_arg;
-    const lv_main_displayed = (this.mo_action.ms_next.t_action_front.some((row) => row.slot === z2ui5_if_client.cs_view.main && row.method === z2ui5_if_ui5_types.cs_slot_action.display));
-    if ((lv_main_displayed === true || lv_main_displayed === `X`)) {
+    if (this.mo_action.ms_next.t_action_front.some((row) => row.slot === z2ui5_if_client.cs_view.main && row.method === z2ui5_if_ui5_types.cs_slot_action.display)) {
       for (let _i = this.mo_action.ms_next.t_action_front.length - 1; _i >= 0; _i--) { const row = this.mo_action.ms_next.t_action_front[_i]; if (row.method === z2ui5_if_ui5_types.cs_slot_action.destroy && (row.slot === z2ui5_if_client.cs_view.popup || row.slot === z2ui5_if_client.cs_view.popover)) this.mo_action.ms_next.t_action_front.splice(_i, 1); }
     }
     sy_tabix = 0;
@@ -115,16 +114,13 @@ class z2ui5_cl_ui5_frontend {
     }
   }
 
-  msg_toast({ text, duration = ``, width = ``, my = ``, at = ``, offset = ``, collision = ``, onclose = ``, autoclose = true, animationtimingfunction = ``, animationduration = ``, closeonbrowsernavigation = true, class: class_ = `` } = {}) {
+  msg_toast({ text, duration = ``, onclose = `` } = {}) {
     let li_opt;
     let lx_json;
     try {
       li_opt = (z2ui5_cl_ajson.create_empty());
       this.set_opt_int({ json: li_opt, name: `duration`, val: duration });
-      this.set_opt_int({ json: li_opt, name: `animationDuration`, val: animationduration });
-      this.set_opt_strings({ json: li_opt, opt: [{ name: `width`, val: width }, { name: `my`, val: my }, { name: `at`, val: at }, { name: `of`, val: of }, { name: `offset`, val: offset }, { name: `collision`, val: collision }, { name: `onClose`, val: onclose }, { name: `animationTimingFunction`, val: animationtimingfunction }, { name: `class`, val: class_ }] });
-      this.set_opt_bool({ json: li_opt, name: `autoClose`, val: autoclose, default_val: true });
-      this.set_opt_bool({ json: li_opt, name: `closeOnBrowserNavigation`, val: closeonbrowsernavigation, default_val: true });
+      this.set_opt_string({ json: li_opt, name: `onClose`, val: onclose });
       this.queue_app({ t_arg: [z2ui5_if_ui5_types.cs_global_target.message_toast, `show`, (text)], opt: li_opt });
     } catch (_caught1) {
       lx_json = _caught1;
@@ -132,8 +128,7 @@ class z2ui5_cl_ui5_frontend {
     }
   }
 
-  msg_box({ text, any = `information`, title = ``, styleclass = ``, onclose = ``, actions = [], emphasizedaction = ``, initialfocus = ``, textdirection = ``, icon = ``, details = ``, closeonnavigation = true, dependenton = ``, contentwidth = `` } = {}) {
-    let sy_tabix = 0;
+  msg_box({ text, any = `information`, title = ``, styleclass = ``, onclose = ``, actions = [], emphasizedaction = ``, initialfocus = ``, details = `` } = {}) {
     let li_opt;
     let lx_json;
     const ls_msg = this.box_resolve({ text, type, title, details });
@@ -142,19 +137,10 @@ class z2ui5_cl_ui5_frontend {
     }
     try {
       li_opt = (z2ui5_cl_ajson.create_empty());
-      this.set_opt_strings({ json: li_opt, opt: [{ name: `title`, val: ls_msg.title }, { name: `styleClass`, val: styleclass }, { name: `onClose`, val: onclose }, { name: `emphasizedAction`, val: emphasizedaction }, { name: `initialFocus`, val: initialfocus }, { name: `textDirection`, val: textdirection }, { name: `details`, val: ls_msg.details }, { name: `dependentOn`, val: dependenton }, { name: `contentWidth`, val: contentwidth }] });
-      if (icon !== `NONE`) {
-        this.set_opt_string({ json: li_opt, name: `icon`, val: icon });
-      }
+      this.set_opt_strings({ json: li_opt, opt: [{ name: `title`, val: ls_msg.title }, { name: `styleClass`, val: styleclass }, { name: `onClose`, val: onclose }, { name: `emphasizedAction`, val: emphasizedaction }, { name: `initialFocus`, val: initialfocus }, { name: `details`, val: ls_msg.details }] });
       if (!z2ui5_cl_util.abap_is_initial(actions)) {
-        li_opt.touch_array(`/actions`);
-        sy_tabix = 0;
-        for (const lv_action of actions) {
-          sy_tabix++;
-          li_opt.push({ iv_path: `/actions`, iv_val: lv_action });
-        }
+        li_opt.set({ iv_path: `/actions`, iv_val: actions });
       }
-      this.set_opt_bool({ json: li_opt, name: `closeOnNavigation`, val: closeonnavigation, default_val: true });
       this.queue_app({ t_arg: [z2ui5_if_ui5_types.cs_global_target.message_box, ls_msg.type, ls_msg.text], opt: li_opt });
     } catch (_caught1) {
       lx_json = _caught1;
@@ -193,7 +179,6 @@ class z2ui5_cl_ui5_frontend {
     if (z2ui5_cl_util.abap_is_initial(result.details)) {
       result.details = z2ui5_cl_util.abap_tab_assign(result.details, z2ui5_cl_util.abap_copy(details));
     }
-    result.type = result.type.toLowerCase();
     if (!z2ui5_cl_ui5_frontend.ct_box_type.some((row) => row.table_line === result.type)) {
       result.type = `show`;
     }
@@ -216,14 +201,14 @@ class z2ui5_cl_ui5_frontend {
   }
 
   set_opt_int({ json, name, val } = {}) {
-    const lv_val = (val).trim();
+    const lv_val = val.trim();
     if (!z2ui5_cl_util.abap_is_initial(lv_val) && [...String(lv_val)].every(($c) => String(`0123456789`).includes($c)) && lv_val.length <= 9) {
       json.set_integer({ iv_path: `/${name}`, iv_val: (lv_val) });
     }
   }
 
-  set_opt_bool({ json, name, val, default_val = false } = {}) {
-    if (val !== default_val) {
+  set_opt_bool({ json, name, val } = {}) {
+    if ((val === true || val === `X`)) {
       json.set_boolean({ iv_path: `/${name}`, iv_val: val });
     }
   }

@@ -112,9 +112,8 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `      }` + `
 ` + `` + `
 ` + `      const raw = String(args[3] ?? "");` + `
-` + `      const scope = SHORTCUT_SLOTS.includes(raw.toUpperCase())` + `
-` + `        ? raw.toUpperCase()` + `
-` + `        : raw;` + `
+` + `      const upper = raw.toUpperCase();` + `
+` + `      const scope = SHORTCUT_SLOTS.includes(upper) ? upper : raw;` + `
 ` + `      const shortcuts = AppState.state.shortcuts;` + `
 ` + `` + `
 ` + `      if (combo in Object.prototype) {` + `

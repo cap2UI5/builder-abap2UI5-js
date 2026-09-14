@@ -13,7 +13,16 @@ class z2ui5_cl_ui5f_msgmgr_js {
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const KEY_SEP = String.fromCharCode(1);` + `
-` + `    const keyOf = (o) => [o.MESSAGE, o.TYPE, o.TARGET].join(KEY_SEP);` + `
+` + `` + `
+` + `    const keyOf = (o) =>` + `
+` + `      [` + `
+` + `        o.MESSAGE,` + `
+` + `        o.TYPE,` + `
+` + `        o.TARGET,` + `
+` + `        o.DESCRIPTION,` + `
+` + `        o.ADDITIONALTEXT,` + `
+` + `        o.CODE,` + `
+` + `      ].join(KEY_SEP);` + `
 ` + `` + `
 ` + `    return Control.extend("z2ui5.cc.MessageManager", {` + `
 ` + `      metadata: {` + `
@@ -42,10 +51,8 @@ class z2ui5_cl_ui5f_msgmgr_js {
 ` + `      renderer: Lib.EMPTY_RENDERER,` + `
 ` + `` + `
 ` + `      setup() {` + `
-` + `        if (this.getProperty("checkInit")) return;` + `
-` + `        const messaging = Lib.getMessaging?.();` + `
-` + `        if (!messaging) return;` + `
-` + `        this.setProperty("checkInit", true, true);` + `
+` + `        const messaging = Lib.getMessaging();` + `
+` + `        if (!Lib.claimOnce(this, messaging)) return;` + `
 ` + `        this._messaging = messaging;` + `
 ` + `        const view = ViewSlots.getView(` + `
 ` + `          ViewSlots.containingSlotKey(this) ?? "MAIN",` + `

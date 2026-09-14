@@ -221,11 +221,6 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `        return;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      if (isSuperseded(reqSeq) && ViewSlots.getView("MAIN")) {` + `
-` + `        discardBuild();` + `
-` + `        return;` + `
-` + `      }` + `
-` + `` + `
 ` + `      ViewSlots.setView("MAIN", oView, xml);` + `
 ` + `      if (switchPath) oView.setModel(oViewModel, "http");` + `
 ` + `      AppState.state.oApp.removeAllPages();` + `
@@ -241,7 +236,14 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `          }` + `
 ` + `` + `
 ` + `          ViewSlots.destroy("MAIN");` + `
-` + `          for (const oClient of AppState.state.odataClients) oClient.destroy();` + `
+` + `` + `
+` + `          for (const oClient of AppState.state.odataClients) {` + `
+` + `            try {` + `
+` + `              oClient.destroy();` + `
+` + `            } catch (e) {` + `
+` + `              Lib.logError("displayMain: destroying an OData client failed", e);` + `
+` + `            }` + `
+` + `          }` + `
 ` + `          AppState.state.odataClients.clear();` + `
 ` + `` + `
 ` + `          ViewSlots.destroy("POPUP");` + `
@@ -277,17 +279,18 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `        const pending = tracked._z2ui5ChangedPaths;` + `
 ` + `        const keep = [];` + `
 ` + `        if (pending?.size) {` + `
-` + `          for (const path of pending)` + `
-` + `            keep.push([path, tracked.getProperty(path)]);` + `
+` + `          for (const path of pending) {` + `
+` + `            const value = tracked.getProperty(path);` + `
+` + `` + `
+` + `            if (value !== undefined) keep.push([path, value]);` + `
+` + `          }` + `
 ` + `        }` + `
 ` + `        tracked.setData(` + `
 ` + `          dataForSlot(slotKey, AppState.state.oResponse?.OVIEWMODEL),` + `
 ` + `        );` + `
 ` + `` + `
 ` + `        keep.forEach(([path, value], i) => {` + `
-` + `          if (value !== undefined) {` + `
-` + `            tracked.setProperty(path, value, undefined, i < keep.length - 1);` + `
-` + `          }` + `
+` + `          tracked.setProperty(path, value, undefined, i < keep.length - 1);` + `
 ` + `        });` + `
 ` + `        return;` + `
 ` + `      }` + `
