@@ -129,22 +129,25 @@ class z2ui5_cl_ui5f_console_js {
 ` + `      return value.stack || \`\${value.name || "Error"}: \${value.message}\`;` + `
 ` + `    }` + `
 ` + `    try {` + `
-` + `      const seen = new WeakSet();` + `
-` + `      const nodeDepth = new WeakMap();` + `
+` + `      const ancestors = [];` + `
+` + `      const walked = new WeakMap();` + `
 ` + `      return JSON.stringify(value, function replace(key, val) {` + `
 ` + `        if (typeof val === "object" && val !== null) {` + `
-` + `          if (seen.has(val)) return "[Circular]";` + `
-` + `          const parent =` + `
-` + `            typeof this === "object" && this !== null` + `
-` + `              ? nodeDepth.get(this) || 0` + `
-` + `              : 0;` + `
-` + `          if (parent >= MAX_DEPTH) return "[...]";` + `
-` + `          seen.add(val);` + `
-` + `          nodeDepth.set(val, parent + 1);` + `
+` + `          const holder = walked.get(this) || this;` + `
+` + `          while (` + `
+` + `            ancestors.length > 0 &&` + `
+` + `            ancestors[ancestors.length - 1] !== holder` + `
+` + `          ) {` + `
+` + `            ancestors.pop();` + `
+` + `          }` + `
+` + `          if (ancestors.includes(val)) return "[Circular]";` + `
+` + `` + `
+` + `          if (ancestors.length >= MAX_DEPTH) return "[...]";` + `
+` + `          ancestors.push(val);` + `
 ` + `          if (Array.isArray(val) && val.length > MAX_ITEMS) {` + `
 ` + `            const head = val.slice(0, MAX_ITEMS);` + `
 ` + `            head.push(\`[... \${val.length - MAX_ITEMS} more]\`);` + `
-` + `            nodeDepth.set(head, parent + 1);` + `
+` + `            walked.set(head, val);` + `
 ` + `            return head;` + `
 ` + `          }` + `
 ` + `        }` + `

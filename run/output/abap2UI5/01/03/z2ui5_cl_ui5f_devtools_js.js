@@ -116,8 +116,6 @@ class z2ui5_cl_ui5f_devtools_js {
 ` + `      show,` + `
 ` + `      isAutoOpenRequested,` + `
 ` + `      autoOpenTab,` + `
-` + `` + `
-` + `      _peek: () => instance,` + `
 ` + `    };` + `
 ` + `  },` + `
 ` + `);` + `

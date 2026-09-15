@@ -15,7 +15,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    function getModelJson(view) {` + `
-` + `      const model = view?.getModel?.();` + `
+` + `      const model = ViewSlots.trackedModel(view) ?? view?.getModel?.();` + `
 ` + `      return model?.getData?.();` + `
 ` + `    }` + `
 ` + `` + `

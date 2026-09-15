@@ -9,9 +9,10 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `    "sap/ui/util/Storage",` + `
 ` + `    "z2ui5/core/Router",` + `
 ` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/core/ViewSlots",` + `
 ` + `    "z2ui5/core/AppState",` + `
 ` + `  ],` + `
-` + `  (MessageBox, mobileLibrary, Storage, Router, Lib, AppState) => {` + `
+` + `  (MessageBox, mobileLibrary, Storage, Router, Lib, ViewSlots, AppState) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const _URLHelper = mobileLibrary.URLHelper;` + `
@@ -44,8 +45,31 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `      document.body.removeChild(a);` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function storagePayload(oController, raw) {` + `
+` + `      if (raw == null || typeof raw !== "string") return raw;` + `
+` + `` + `
+` + `      const path = raw.trim().replace(/^\\$?\\{(.*)\\}$/, "$1");` + `
+` + `      if (!path.startsWith("/")) {` + `
+` + `        Lib.logError(` + `
+` + `          \`STORE_DATA: '\${raw}' is neither a payload nor a model path\`,` + `
+` + `        );` + `
+` + `        return undefined;` + `
+` + `      }` + `
+` + `      const oView = oController?.getView?.();` + `
+` + `` + `
+` + `      const oModel = oView` + `
+` + `        ? (ViewSlots.trackedModel(oView) ?? oView.getModel())` + `
+` + `        : undefined;` + `
+` + `      const value = oModel?.getProperty(path);` + `
+` + `      if (value == null) {` + `
+` + `        Lib.logError(\`STORE_DATA: nothing bound at the model path '\${path}'\`);` + `
+` + `      }` + `
+` + `      return value;` + `
+` + `    }` + `
+` + `` + `
 ` + `    function evStoreData(oController, args) {` + `
-` + `      const { TYPE, PREFIX, VALUE, KEY } = args[1] ?? {};` + `
+` + `      const { TYPE, PREFIX, VALUE, KEY } =` + `
+` + `        storagePayload(oController, args[1]) ?? {};` + `
 ` + `      try {` + `
 ` + `        const storageType = Lib.resolveStorageType(` + `
 ` + `          Storage,` + `

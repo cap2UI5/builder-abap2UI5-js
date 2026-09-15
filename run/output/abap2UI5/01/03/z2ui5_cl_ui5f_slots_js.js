@@ -180,7 +180,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      ViewSlots.setView(slotKey, oView, xml);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    async function displayView(xml, viewModel, reqSeq, mOptions = {}) {` + `
+` + `    async function displayView(xml, viewModel, mOptions = {}) {` + `
 ` + `      const oViewModel = createViewModel("MAIN", viewModel);` + `
 ` + `` + `
 ` + `      const switchPath = mOptions.switchDefaultModelPath;` + `
@@ -251,7 +251,6 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `          return displayView(` + `
 ` + `            xml,` + `
 ` + `            AppState.state.oResponse?.OVIEWMODEL,` + `
-` + `            seq,` + `
 ` + `            mOptions,` + `
 ` + `          );` + `
 ` + `        });` + `
