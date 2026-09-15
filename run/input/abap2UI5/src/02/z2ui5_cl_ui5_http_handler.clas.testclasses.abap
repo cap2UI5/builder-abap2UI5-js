@@ -546,6 +546,7 @@ CLASS ltcl_test_http_response DEFINITION FINAL
     METHODS test_get_304_skips_build     FOR TESTING RAISING cx_static_check.
     METHODS test_get_stale_tag_builds    FOR TESTING RAISING cx_static_check.
     METHODS test_get_304_end_to_end      FOR TESTING RAISING cx_static_check.
+    METHODS test_etag_after_304_of_other FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 
@@ -568,6 +569,7 @@ CLASS ltcl_test_http_response IMPLEMENTATION.
     CLEAR z2ui5_cl_ui5_http_handler=>sv_get_cache_key.
     CLEAR z2ui5_cl_ui5_http_handler=>sv_get_cache_body.
     CLEAR z2ui5_cl_ui5_http_handler=>sv_get_etag.
+    CLEAR z2ui5_cl_ui5_http_handler=>sv_get_etag_key.
     CLEAR z2ui5_cl_ui5_http_handler=>sv_if_none_match.
   ENDMETHOD.
 
@@ -968,6 +970,53 @@ CLASS ltcl_test_http_response IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD test_etag_after_304_of_other.
+
+    " A 304 RETURNS before the body cache is written, so it leaves
+    " sv_get_cache_key naming the config of the last BUILT page while
+    " sv_get_etag names the config that was just revalidated. Reusing the
+    " tag off the BODY key therefore shipped the wrong validator with the
+    " right page - and a browser that stores a page under another page's
+    " tag is 304'd into keeping it once that other config is current, which
+    " is the stale shell the tag exists to prevent.
+    DATA(ls_config_a) = VALUE z2ui5_if_ui5_exit=>ty_s_http_config(
+        theme = `sap_horizon`
+        src   = `https://sdk.example/sap-ui-core.js` ).
+    DATA(ls_config_b) = ls_config_a.
+    ls_config_b-theme = `sap_fiori_3`.
+
+    shell_for_config( ls_config_a ).
+    DATA(lv_tag_a) = z2ui5_cl_ui5_http_handler=>sv_get_etag.
+    DATA(lv_body_b) = shell_for_config( ls_config_b ).
+    DATA(lv_tag_b) = z2ui5_cl_ui5_http_handler=>sv_get_etag.
+    cl_abap_unit_assert=>assert_differs( exp = lv_tag_a
+                                         act = lv_tag_b ).
+
+    " a conditional GET of config A that matches - answered 304, and the
+    " body cache still holds B
+    z2ui5_cl_ui5_http_handler=>sv_if_none_match       = lv_tag_a.
+    z2ui5_cl_ui5_http_handler=>ss_config_http_get     = ls_config_a.
+    z2ui5_cl_ui5_http_handler=>sv_config_http_get_set = abap_true.
+    DATA(ls_res_304) = z2ui5_cl_ui5_http_handler=>_http_get( ).
+    cl_abap_unit_assert=>assert_equals( exp = 304
+                                        act = ls_res_304-status_code ).
+
+    " ...and now config B again, unconditional: the cached body comes back
+    " and it has to carry B's tag, not the one the 304 left behind
+    DATA(ls_res_b) = VALUE z2ui5_cl_ui5_http_handler=>ty_s_http_res( ).
+    z2ui5_cl_ui5_http_handler=>ss_config_http_get     = ls_config_b.
+    z2ui5_cl_ui5_http_handler=>sv_config_http_get_set = abap_true.
+    ls_res_b = z2ui5_cl_ui5_http_handler=>_http_get( ).
+
+    cl_abap_unit_assert=>assert_equals( exp = 200
+                                        act = ls_res_b-status_code ).
+    cl_abap_unit_assert=>assert_equals( exp = lv_body_b
+                                        act = ls_res_b-body ).
+    cl_abap_unit_assert=>assert_equals( exp = lv_tag_b
+                                        act = z2ui5_cl_ui5_http_handler=>sv_get_etag ).
+
+  ENDMETHOD.
+
   METHOD test_get_304_skips_build.
 
     " the browser still holds the current shell: _http_get answers the
@@ -1085,6 +1134,41 @@ CLASS ltcl_test_http_response IMPLEMENTATION.
     cl_abap_unit_assert=>assert_not_initial( mo_mock->mv_cdata ).
     cl_abap_unit_assert=>assert_equals( exp = `text/plain; charset=UTF-8`
                                         act = header_value( `content-type` ) ).
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+
+" This class pins z2ui5_t_02 rather than this class pool. A TABL cannot carry
+" a test include of its own, so - like the z2ui5_cl_ui5f_preload tests above -
+" the pin lives with the nearest released object. It sat in
+" z2ui5_cl_ui5_json's pool until that class was removed before it had ever
+" shipped; the structure outlived it. The structure is the released DDIC
+" anchor for dynamic types (CREATE DATA ... TYPE STANDARD TABLE OF
+" ('Z2UI5_T_02')), so its two fields ARE the contract: a rename compiles
+" nothing here and breaks every app that spelled them dynamically.
+CLASS ltcl_test_released_ddic DEFINITION FINAL
+  FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
+
+  PRIVATE SECTION.
+    METHODS test_structure_shape FOR TESTING RAISING cx_static_check.
+ENDCLASS.
+
+
+CLASS ltcl_test_released_ddic IMPLEMENTATION.
+
+  METHOD test_structure_shape.
+
+    DATA ls_pair TYPE z2ui5_t_02.
+
+    ls_pair-name  = `KEY`.
+    ls_pair-value = `42`.
+
+    cl_abap_unit_assert=>assert_equals( exp = `KEY`
+                                        act = ls_pair-name ).
+    cl_abap_unit_assert=>assert_equals( exp = `42`
+                                        act = ls_pair-value ).
 
   ENDMETHOD.
 
