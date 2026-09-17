@@ -1817,6 +1817,8 @@ CLASS ltcl_04_model_in DEFINITION INHERITING FROM ltcl_00_base FINAL
     " in the middle: every good cell lands, the refused ones keep their
     " values and are traced, nothing else is touched
     METHODS delta_mass_edit          FOR TESTING RAISING cx_static_check.
+    " a __delta node that is not the shape the client is supposed to send
+    METHODS delta_malformed_survives FOR TESTING RAISING cx_static_check.
 
     METHODS typed_app
       RETURNING
@@ -2137,6 +2139,90 @@ CLASS ltcl_04_model_in IMPLEMENTATION.
                                         act = lines( mo_app->mt_std ) ).
     cl_abap_unit_assert=>assert_equals( exp = `X`
                                         act = mo_app->mt_std[ 1 ]-col1 ).
+
+  ENDMETHOD.
+
+  METHOD delta_malformed_survives.
+
+    " The request body is whatever reached the handler. A __delta that is
+    " not an object of row-index -> cell-object is not something the
+    " framework's own client writes, but it is still a request that has to
+    " be ANSWERED: the single top-level catch in
+    " z2ui5_cl_ui5_http_handler=>_main turns an exception into an error
+    " page, while a RUNTIME ERROR ends the roundtrip with no body, no
+    " status code and no security headers. So every shape below has to come
+    " back with the bound table untouched.
+    "
+    " The empty-keyed member `{"":{...}}` was left out of the list while
+    " open-abap's cl_sxml_string_reader could not tell it from an element
+    " of an array: it emitted no `name` attribute, and the JSON parser's
+    " own ASSERT fired before the model ever saw the body. That is fixed
+    " upstream (open-abap/open-abap-core#1248) and the pin carries it, so
+    " the shape is in the list below like any other.
+    bind( REF #( mo_app->mt_std ) ).
+
+    DATA(lt_hostile) = VALUE string_table(
+      " __delta itself is not an object
+      ( `{"MT_STD":{"__delta":"boom"}}` )
+      ( `{"MT_STD":{"__delta":42}}` )
+      ( `{"MT_STD":{"__delta":null}}` )
+      ( `{"MT_STD":{"__delta":["a","b"]}}` )
+      " a ROW that is not a cell object
+      ( `{"MT_STD":{"__delta":{"0":"boom"}}}` )
+      ( `{"MT_STD":{"__delta":{"0":[1,2]}}}` )
+      ( `{"MT_STD":{"__delta":{"0":null}}}` )
+      " an index no row has, and two no ABAP index conversion takes
+      ( `{"MT_STD":{"__delta":{"999999999999":{"COL1":"Z"}}}}` )
+      ( `{"MT_STD":{"__delta":{"1e3":{"COL1":"Z"}}}}` )
+      " an object member with an EMPTY key, at the three depths it can sit
+      ( `{"MT_STD":{"":"boom"}}` )
+      ( `{"MT_STD":{"__delta":{"":{"COL1":"Z"}}}}` )
+      ( `{"MT_STD":{"__delta":{"0":{"":"Z"}}}}` )
+      " a cell the row does not have, including the marker's own name
+      ( `{"MT_STD":{"__delta":{"0":{"NOPE":"Z"}}}}` )
+      ( `{"MT_STD":{"__delta":{"0":{"__DELTA":"Z"}}}}` )
+      " a nested __delta under a cell that is no table - a string and a
+      " number, the two column kinds that take no rows
+      ( `{"MT_STD":{"__delta":{"0":{"COL1":{"__delta":{"0":{"X":1}}}}}}}` )
+      ( `{"MT_STD":{"__delta":{"0":{"COL2":{"__delta":{"0":{"X":1}}}}}}}` )
+      " a scalar where the model expects a table (the ARRAY form is the
+      " legitimate whole-value write - see whole_table_round_trips)
+      ( `{"MT_STD":"boom"}` )
+      ( `{"MT_STD":42}` ) ).
+
+    LOOP AT lt_hostile INTO DATA(lv_json).
+      TRY.
+          mo_model->main_json_to_attri( delta( lv_json ) ).
+        CATCH z2ui5_cx_ui5_util_error ##NO_HANDLER.
+          " an exception IS a legitimate answer - the handler renders it
+        CATCH z2ui5_cx_ajson_error ##NO_HANDLER.
+          " so is the parser's own: an empty-keyed member never reaches the
+          " model, and the single top-level CATCH cx_root renders this one
+          " the same way. What must NOT happen is a runtime error, and that
+          " is what the assertions below hold
+      ENDTRY.
+      cl_abap_unit_assert=>assert_equals( exp = 2
+                                          act = lines( mo_app->mt_std )
+                                          msg = |rows changed by { lv_json }| ).
+      cl_abap_unit_assert=>assert_equals( exp = `a`
+                                          act = mo_app->mt_std[ 1 ]-col1
+                                          msg = |row 1 changed by { lv_json }| ).
+      cl_abap_unit_assert=>assert_equals( exp = `b`
+                                          act = mo_app->mt_std[ 2 ]-col1
+                                          msg = |row 2 changed by { lv_json }| ).
+    ENDLOOP.
+
+    " A PADDED index is not one of those: `" 1 "` converts like any other
+    " ABAP numeric text and addresses the row it names. Stated because it
+    " looks like the shapes above and is not one - it stays inside the
+    " table, which is all this test is about
+    mo_model->main_json_to_attri( delta( `{"MT_STD":{"__delta":{" 1 ":{"COL1":"Z"}}}}` ) ).
+    cl_abap_unit_assert=>assert_equals( exp = 2
+                                        act = lines( mo_app->mt_std ) ).
+    cl_abap_unit_assert=>assert_equals( exp = `a`
+                                        act = mo_app->mt_std[ 1 ]-col1 ).
+    cl_abap_unit_assert=>assert_equals( exp = `Z`
+                                        act = mo_app->mt_std[ 2 ]-col1 ).
 
   ENDMETHOD.
 
