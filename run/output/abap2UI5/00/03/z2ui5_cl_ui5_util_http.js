@@ -47,10 +47,14 @@ class z2ui5_cl_ui5_util_http {
     let lv_message = ``;
     const lo_client = z2ui5_cl_ui5_util_http.client_create({ destination, url });
     try {
+      fs_any = null;
+      _fs$fs_any = null;
       _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(lo_client, `REQUEST`);
       fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
       sy_subrc = _fs$fs_any ? 0 : 4;
-      if (!(sy_subrc === 0)) throw new Error(`ASSERT failed`);
+      if (fs_any == null) {
+        throw new z2ui5_cx_ui5_util_error({ val: `HTTP_CLIENT_REQUEST_NOT_FOUND - the http client has no REQUEST attribute` });
+      }
       lo_request = fs_any;
       lv_method = (method);
       {
@@ -105,10 +109,14 @@ class z2ui5_cl_ui5_util_http {
         }
         throw new z2ui5_cx_ui5_util_error({ val: `HTTP_COMMUNICATION_ERROR - ${lv_message}` });
       }
+      fs_any = null;
+      _fs$fs_any = null;
       _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(lo_client, `RESPONSE`);
       fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
       sy_subrc = _fs$fs_any ? 0 : 4;
-      if (!(sy_subrc === 0)) throw new Error(`ASSERT failed`);
+      if (fs_any == null) {
+        throw new z2ui5_cx_ui5_util_error({ val: `HTTP_CLIENT_RESPONSE_NOT_FOUND - the http client has no RESPONSE attribute` });
+      }
       lo_response = fs_any;
       {
         const _dynr = (lo_response);
@@ -419,7 +427,9 @@ class z2ui5_cl_ui5_util_http {
       _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(this.mo_server_onprem, `REQUEST`);
       fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
       sy_subrc = _fs$fs_any ? 0 : 4;
-      if (!(sy_subrc === 0)) throw new Error(`ASSERT failed`);
+      if (fs_any == null) {
+        throw new z2ui5_cx_ui5_util_error({ val: `HTTP_SERVER_REQUEST_NOT_FOUND - the server object has no REQUEST attribute` });
+      }
       this.mo_request_onprem = fs_any;
     }
     result = this.mo_request_onprem;
@@ -435,7 +445,9 @@ class z2ui5_cl_ui5_util_http {
       _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(this.mo_server_onprem, `RESPONSE`);
       fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
       sy_subrc = _fs$fs_any ? 0 : 4;
-      if (!(sy_subrc === 0)) throw new Error(`ASSERT failed`);
+      if (fs_any == null) {
+        throw new z2ui5_cx_ui5_util_error({ val: `HTTP_SERVER_RESPONSE_NOT_FOUND - the server object has no RESPONSE attribute` });
+      }
       this.mo_response_onprem = fs_any;
     }
     result = this.mo_response_onprem;

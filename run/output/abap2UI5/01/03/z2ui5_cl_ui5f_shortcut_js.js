@@ -102,6 +102,12 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `      document.addEventListener("keydown", shortcutListener);` + `
 ` + `    }` + `
 ` + `` + `
+` + `    function reset() {` + `
+` + `      if (!shortcutListener || typeof document === "undefined") return;` + `
+` + `      document.removeEventListener("keydown", shortcutListener);` + `
+` + `      shortcutListener = null;` + `
+` + `    }` + `
+` + `` + `
 ` + `    function evKeyboardShortcut(oController, args) {` + `
 ` + `      const combo = normalizeShortcut(args[1]);` + `
 ` + `      if (!combo) {` + `
@@ -161,7 +167,7 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `      KEYBOARD_SET_MODE: evKeyboardSetMode,` + `
 ` + `    };` + `
 ` + `` + `
-` + `    return { handlers };` + `
+` + `    return { handlers, reset };` + `
 ` + `  },` + `
 ` + `);` + `
 ` + `` + `

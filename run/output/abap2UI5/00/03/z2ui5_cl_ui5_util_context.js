@@ -770,10 +770,12 @@ class z2ui5_cl_ui5_util_context {
           break;
       }
       lv_name = z2ui5_cl_util.abap_tab_assign(lv_name, z2ui5_cl_util.abap_copy(lr_attri.name));
+      fs_comp = null;
+      _fs$fs_comp = null;
       _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(val, lv_name);
       fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
       sy_subrc = _fs$fs_comp ? 0 : 4;
-      if (sy_subrc !== 0) {
+      if (fs_comp == null) {
         continue;
       }
       if (!(z2ui5_cl_ui5_util_context.rtti_check_printable({ val: fs_comp }) === true || z2ui5_cl_ui5_util_context.rtti_check_printable({ val: fs_comp }) === `X`) || z2ui5_cl_util.abap_is_initial(fs_comp)) {
@@ -1062,10 +1064,12 @@ class z2ui5_cl_ui5_util_context {
       sy_tabix++;
       if (!(lr_attri.visibility === z2ui5_cl_ui5_util_context.cv_objectdescr_public && !(lr_attri.is_constant === true || lr_attri.is_constant === `X`) && !(lr_attri.is_class === true || lr_attri.is_class === `X`))) continue;
       lv_name = z2ui5_cl_util.abap_tab_assign(lv_name, z2ui5_cl_util.abap_copy(lr_attri.name));
+      fs_comp = null;
+      _fs$fs_comp = null;
       _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(lo_obj, lv_name);
       fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
       sy_subrc = _fs$fs_comp ? 0 : 4;
-      if (sy_subrc !== 0) {
+      if (fs_comp == null) {
         continue;
       }
       lt_item.push(z2ui5_cl_util.abap_copy(z2ui5_cl_ui5_util_context.data_render_item({ name: lv_name, val: fs_comp, depth })));
@@ -1117,6 +1121,9 @@ class z2ui5_cl_ui5_util_context {
         fs_tab = val;
         _fs$fs_tab = null;
         sy_subrc = 0;
+        if (fs_tab == null) {
+          return result;
+        }
         lv_lines = z2ui5_cl_util.abap_copy(fs_tab.length);
         if (lv_lines === 1) {
           result = `Table with 1 entry`;
@@ -1374,17 +1381,21 @@ class z2ui5_cl_ui5_util_context {
     ls_clskey.clsname = z2ui5_cl_util.abap_tab_assign(ls_clskey.clsname, z2ui5_cl_util.abap_copy(val));
     xco_cp_abap = `XCO_CP_ABAP`;
     // TODO(abap2js): CALL METHOD (xco_cp_abap)=>interface EXPORTING iv_name = ls_clskey-clsname RECEIVING ro_interface = obj.
+    fs_any = null;
+    _fs$fs_any = null;
     _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(obj, `IF_XCO_AO_INTERFACE~IMPLEMENTATIONS`);
     fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
     sy_subrc = _fs$fs_any ? 0 : 4;
-    if (sy_subrc !== 0) {
+    if (fs_any == null) {
       return result;
     }
     obj = fs_any;
+    fs_any = null;
+    _fs$fs_any = null;
     _fs$fs_any = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(obj, `IF_XCO_INTF_IMPLEMENTATIONS_FC~ALL`);
     fs_any = _fs$fs_any ? _fs$fs_any.o[_fs$fs_any.k] : null;
     sy_subrc = _fs$fs_any ? 0 : 4;
-    if (sy_subrc !== 0) {
+    if (fs_any == null) {
       return result;
     }
     obj = fs_any;
@@ -1458,8 +1469,9 @@ class z2ui5_cl_ui5_util_context {
           _fs$fs_description = ((_o, _c) => { if (_o == null) return null; const _k = typeof _c === "number" ? Object.keys(_o)[_c - 1] : String(_c).toLowerCase(); return _k != null && _k in _o ? { o: _o, k: _k } : null; })(fs_class, `DESCRIPT`);
           fs_description = _fs$fs_description ? _fs$fs_description.o[_fs$fs_description.k] : null;
           sy_subrc = _fs$fs_description ? 0 : 4;
-          if (!(sy_subrc === 0)) throw new Error(`ASSERT failed`);
-          ls_class.description = z2ui5_cl_util.abap_tab_assign(ls_class.description, z2ui5_cl_util.abap_copy(fs_description));
+          if (sy_subrc === 0) {
+            ls_class.description = z2ui5_cl_util.abap_tab_assign(ls_class.description, z2ui5_cl_util.abap_copy(fs_description));
+          }
         }
       }
       result.push(z2ui5_cl_util.abap_copy(ls_class));
@@ -1509,7 +1521,10 @@ class z2ui5_cl_ui5_util_context {
     fs_ddic = ddic_ref;
     _fs$fs_ddic = null;
     sy_subrc = 0;
-    if (!(sy_subrc === 0)) throw new Error(`ASSERT failed`);
+    if (fs_ddic == null) {
+      Object.assign(_args, { texts, do_fallback });
+      return;
+    }
     // TODO(abap2js): cl_abap_elemdescr=>describe_by_name( EXPORTING p_name = name RECEIVING p_descr_ref = lo_typedescr EXCEPTIONS OTHERS = 1 ).
     if (sy_subrc !== 0) {
       Object.assign(_args, { texts, do_fallback });
@@ -1692,6 +1707,9 @@ class z2ui5_cl_ui5_util_context {
         fs_tab = val;
         _fs$fs_tab = null;
         sy_subrc = 0;
+        if (fs_tab == null) {
+          return result;
+        }
         result = z2ui5_cl_ui5_util_context.msg_get_internal_tab({ it_tab: fs_tab });
         break;
       case cl_abap_datadescr.typekind_struct1:
@@ -1834,10 +1852,12 @@ class z2ui5_cl_ui5_util_context {
     for (const ls_attri_o of lt_attri_o) {
       sy_tabix++;
       if (!(ls_attri_o.visibility === z2ui5_cl_ui5_util_context.cv_objectdescr_public)) continue;
+      fs_comp = null;
+      _fs$fs_comp = null;
       _fs$fs_comp = ((_o, _n) => { if (_o == null) return null; const _k = String(_n).toLowerCase(); return _k in _o ? { o: _o, k: _k } : null; })(io_obj, ls_attri_o.name);
       fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
       sy_subrc = _fs$fs_comp ? 0 : 4;
-      if (sy_subrc !== 0) {
+      if (fs_comp == null) {
         continue;
       }
       result = z2ui5_cl_ui5_util_context.msg_map({ name: ls_attri_o.name, val: fs_comp, msg: result });
@@ -1848,6 +1868,9 @@ class z2ui5_cl_ui5_util_context {
   static msg_map({ name, val, msg } = {}) {
     let result = {};
     result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(msg));
+    if (!(z2ui5_cl_ui5_util_context.rtti_check_printable({ val: val }) === true || z2ui5_cl_ui5_util_context.rtti_check_printable({ val: val }) === `X`)) {
+      return result;
+    }
     switch (name) {
       case `ID`:
       case `MSGID`:
@@ -1888,7 +1911,10 @@ class z2ui5_cl_ui5_util_context {
         result.v4 = z2ui5_cl_util.abap_tab_assign(result.v4, z2ui5_cl_util.abap_copy(val));
         break;
       case `TIME_STMP`:
-        result.timestampl = z2ui5_cl_util.abap_tab_assign(result.timestampl, z2ui5_cl_util.abap_copy(val));
+        try {
+          result.timestampl = z2ui5_cl_util.abap_tab_assign(result.timestampl, z2ui5_cl_util.abap_copy(val));
+        } catch (error) {
+        }
         break;
     }
     return result;
@@ -1964,9 +1990,12 @@ class z2ui5_cl_ui5_util_context {
       sy_subrc = _fs$fs_tab ? 0 : 4;
       if (!(sy_subrc === 0)) continue;
       if (!(z2ui5_cl_ui5_util_context.rtti_get_type_kind({ val: fs_tab }) === cl_abap_datadescr.typekind_table)) continue;
+      fs_ftab = null;
+      _fs$fs_ftab = null;
       fs_ftab = fs_tab;
       _fs$fs_ftab = null;
       sy_subrc = 0;
+      if (!(fs_ftab != null)) continue;
       lo_line = (ls_attri.type).get_table_line_type();
       const _sy_tabix_2 = sy_tabix;
       sy_tabix = 0;
@@ -2063,7 +2092,7 @@ class z2ui5_cl_ui5_util_context {
     _fs$fs_comp = ((_o, _c) => { if (_o == null) return null; const _k = typeof _c === "number" ? Object.keys(_o)[_c - 1] : String(_c).toLowerCase(); return _k != null && _k in _o ? { o: _o, k: _k } : null; })(val, comp);
     fs_comp = _fs$fs_comp ? _fs$fs_comp.o[_fs$fs_comp.k] : null;
     sy_subrc = _fs$fs_comp ? 0 : 4;
-    if (sy_subrc === 0) {
+    if (sy_subrc === 0 && (z2ui5_cl_ui5_util_context.rtti_check_printable({ val: fs_comp }) === true || z2ui5_cl_ui5_util_context.rtti_check_printable({ val: fs_comp }) === `X`)) {
       result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(fs_comp));
     }
     return result;
@@ -2159,7 +2188,7 @@ class z2ui5_cl_ui5_util_context {
         if (!z2ui5_cl_util.abap_is_initial(lv_sub)) {
           lt_part.push(z2ui5_cl_util.abap_copy(lv_sub));
         }
-      } else if (!z2ui5_cl_util.abap_is_initial(fs_comp)) {
+      } else if (!z2ui5_cl_util.abap_is_initial(fs_comp) && (z2ui5_cl_ui5_util_context.rtti_check_printable({ val: fs_comp }) === true || z2ui5_cl_ui5_util_context.rtti_check_printable({ val: fs_comp }) === `X`)) {
         try {
           let lv_str = ``;
           lv_str = z2ui5_cl_util.abap_tab_assign(lv_str, z2ui5_cl_util.abap_copy(fs_comp));
