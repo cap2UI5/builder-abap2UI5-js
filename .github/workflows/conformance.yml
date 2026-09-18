@@ -1,0 +1,96 @@
+# Wire conformance — this port's roundtrip answers vs real abap2UI5.
+#
+# Builds upstream's own node/ runtime (official @abaplint transpiler over
+# open-abap-core), starts it, and diffs the responses. See
+# docs/adr-006-conformance.md.
+#
+# Its own workflow rather than a step in `test`: the reference takes ~3 minutes
+# to build and needs a scratch checkout of upstream, which is too much to put in
+# front of every PR. The PR gate sets Z2UI5_CONFORMANCE_OPTIONAL=1 to say so
+# explicitly, so "no reference" never silently passes anywhere else.
+name: conformance
+
+on:
+  schedule:
+    # After the nightly core rebuilds (03:00-06:00), so it grades what they
+    # produced rather than the previous day's package.
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+  pull_request:
+    # Only when something that can change the wire actually changed — the
+    # engine, the hand-ports, the transpiler, or the gate itself.
+    paths:
+      - "src/**"
+      - "core/**"
+      - "scripts/abap2js.js"
+      - "scripts/conformance.js"
+      - "test/conformance.*"
+      - ".github/workflows/conformance.yml"
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # ---- the subject -----------------------------------------------------
+      - run: npm ci
+      - run: npm ci
+        working-directory: adapters/cap
+
+      # ---- the reference ---------------------------------------------------
+      # A SEPARATE checkout: `npm run auto_downport` rewrites src/ in place, so
+      # this must never share a tree with anything else in the job.
+      - uses: actions/checkout@v4
+        with:
+          repository: abap2UI5/abap2UI5
+          path: .reference
+          # Pinned to nothing on purpose: the point is to grade against what
+          # upstream ships TODAY. A conformance break caused by an upstream
+          # change is exactly the signal this workflow exists to raise, and a
+          # pin would delay it until somebody bumped it.
+          ref: main
+
+      - name: build the open-abap reference
+        working-directory: .reference
+        run: |
+          npm ci
+          npm run deps
+          npm run auto_downport
+          npm run auto_transpile
+
+      - name: start the reference
+        working-directory: .reference
+        run: |
+          PORT=3111 HOST=127.0.0.1 node node/srv/express.mjs > /tmp/ref.log 2>&1 &
+          for i in $(seq 1 40); do
+            # The ICF shim answers on any path; a 2xx/4xx/5xx all prove it is up,
+            # only "connection refused" means it is not.
+            if curl -s -o /dev/null -m 2 http://127.0.0.1:3111/ping; then
+              echo "reference up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "reference did not start:"; cat /tmp/ref.log; exit 1
+
+      # ---- the gate --------------------------------------------------------
+      - name: conformance
+        env:
+          CI: "true"
+          Z2UI5_CONFORMANCE_REF: http://127.0.0.1:3111
+        run: npx jest test/conformance.test.js --verbose
+
+      - name: report
+        if: always()
+        env:
+          Z2UI5_CONFORMANCE_REF: http://127.0.0.1:3111
+        run: |
+          node scripts/conformance.js --ref http://127.0.0.1:3111 >> "$GITHUB_STEP_SUMMARY" || true
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "reference log:" >> "$GITHUB_STEP_SUMMARY"
+          tail -20 /tmp/ref.log >> "$GITHUB_STEP_SUMMARY" || true

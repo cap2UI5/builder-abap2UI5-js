@@ -93,6 +93,29 @@ const METRICS = {
 
   /** Subpaths in the package's exports map. */
   exports: () => Object.keys(readJson("src/package.json").exports).length,
+
+  // The oracle totals. These were the one set of numbers in AGENTS.md that
+  // prose alone got wrong in the most misleading direction available: it
+  // described the classification file as "a SEED (all NOTRUN): the oracle has
+  // not run yet" long after the weekly job had run and committed BUG verdicts.
+  // A reader looking for "how much of the baseline is actually work?" was told
+  // "nothing is proven" while the tracked file said 74 entries are provably
+  // fixable. Measured from the committed file, so the claim and the evidence
+  // cannot part company again.
+  /** Baseline entries the upstream oracle runs GREEN — fixable here. */
+  "oracle-bug": () => readJson("test/oracle-classification.json").totals.BUG,
+
+  /** Baseline entries on upstream's documented kernel skip list. */
+  "oracle-kernel": () => readJson("test/oracle-classification.json").totals.KERNEL,
+
+  /** Baseline entries the oracle did not execute — nothing proven either way. */
+  "oracle-notrun": () => readJson("test/oracle-classification.json").totals.NOTRUN,
+
+  /** Hand-ports whose upstream ABAP changed and has not been reconciled. */
+  "drift-pending": () => {
+    const p = "test/port-drift.pending.json";
+    return fs.existsSync(path.join(ROOT, p)) ? readJson(p).drifted.length : 0;
+  },
 };
 
 // ---------------------------------------------------------------------------

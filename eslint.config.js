@@ -45,6 +45,13 @@ module.exports = [
         URL: "readonly",
         TextEncoder: "readonly",
         TextDecoder: "readonly",
+        // Node >=18 web globals. scripts/conformance.js needs fetch and the
+        // abort pair: the reference server is an external process, so the gate
+        // has to be able to time a request out rather than hang on a server
+        // that stopped answering.
+        fetch: "readonly",
+        AbortController: "readonly",
+        AbortSignal: "readonly",
       },
     },
     rules: {

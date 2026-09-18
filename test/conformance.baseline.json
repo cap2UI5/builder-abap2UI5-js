@@ -1,0 +1,150 @@
+{
+  "_comment": [
+    "Known wire differences between this port and upstream abap2UI5 running on",
+    "open-abap (scripts/conformance.js). A NEW key is a regression; a key that no",
+    "longer reproduces must be delisted. Regenerate the KEY SET with --update, then",
+    "write the reasons by hand — an unexplained entry is a bug with a green build in",
+    "front of it.",
+    "",
+    "Every entry carries a `status`:",
+    "  break    — the port is WRONG and the shipped package is affected. Requires",
+    "             `tracked`, naming where the fix is planned. These are not accepted;",
+    "             they are enumerated so the gate can stay green while they are",
+    "             worked off, exactly as the units ratchet does.",
+    "  accepted — a difference somebody chose, with the reason why.",
+    "",
+    "THE FIRST RUN OF THIS GATE (2026-09-18) FOUND A SHIPPED PROTOCOL BREAK.",
+    "All 21 entries below reduce to FOUR causes, and two of them mean the",
+    "published cap2UI5 app cannot render at all: the mirrored webapp reads",
+    "S_FRONT.S_ACTION and the engine writes S_FRONT.PARAMS. See",
+    "docs/adr-006-conformance.md §'What the first run found'."
+  ],
+  "entries": {
+    "hi_world::init::.MODEL.NAME": {
+      "status": "break",
+      "cause": "model-shape",
+      "why": "The upstream side of the same flattening — MODEL.NAME exists there and is absent here. Listed separately from MODEL.XX so that a fix which flattens the model but forgets to drop the XX wrapper (or vice versa) still shows one open entry.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+    },
+    "hi_world::init::.MODEL.XX": {
+      "status": "break",
+      "cause": "model-shape",
+      "why": "The port nests two-way bindings under MODEL.XX and binds them as {/XX/NAME}. Upstream flattened this: the binding is {/NAME} and the value sits at MODEL.NAME. Because the view XML carries the binding path, a frontend built for flat paths cannot resolve a model the backend nested — the field silently stays empty rather than erroring.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+    },
+    "hi_world::init::.S_FRONT.APP": {
+      "status": "break",
+      "cause": "app-name-case",
+      "why": "Upstream echoes the app class name upper-cased (Z2UI5_CL_UI5_APP_HI_WORLD) because ABAP class names are upper case; the port echoes the lower-case JS module name. The webapp's hash router writes this value into the URL route '#/app/<CLASS>' and compares it on the way back, so a case difference is a route that never matches — not a display nicety. Cheapest of the three causes to fix and the one with no design question attached.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 3 (app name casing)"
+    },
+    "hi_world::init::.S_FRONT.PARAMS": {
+      "status": "break",
+      "cause": "response-envelope",
+      "why": "The other half of the S_ACTION migration: the port emits PARAMS.S_VIEW.XML where upstream emits an action row ['VIEW_SLOTS','display','MAIN', xml]. Same single root cause as the S_ACTION entry; listed separately because the diff is per field and delisting must be per field.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 1 (response envelope)"
+    },
+    "hi_world::init::.S_FRONT.S_ACTION": {
+      "status": "break",
+      "cause": "response-envelope",
+      "why": "Upstream delivers every frontend instruction through S_FRONT.S_ACTION as an ordered action table (T_SYSTEM for framework actions, T_CUSTOM for app-issued ones). The port still emits the superseded S_FRONT.PARAMS record. The shipped webapp is mirrored 1:1 from upstream and reads S_ACTION — `grep -c PARAMS core/app/z2ui5/webapp/core/Server.js` is 0 — so this is not a cosmetic envelope difference, it is the frontend and the backend of the SAME published package speaking different protocols.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 1 (response envelope)"
+    },
+    "hi_world::init::view:MAIN": {
+      "status": "break",
+      "cause": "view-content",
+      "why": "The rendered view differs from upstream's at character 108: upstream's <mvc:View> carries displayBlock=\"true\" height=\"100%\" and this port's did not, so the Shell renders in a collapsed box instead of filling the window. FIXED in src/ (2026-09-18) but still listed, because core/ is frozen at the last green build and cannot be rebuilt until ADR-006 worklist item 4 is closed — delist it once a rebuilt core ships the fix. The port also differs on _bind_edit vs upstream's _bind, which is deliberately NOT fixed here: it is coupled to the model-shape migration (worklist item 2).",
+      "tracked": "docs/adr-006-conformance.md — worklist item 4 (rebuild), fix already in src/"
+    },
+    "hi_world::post-event::.MODEL": {
+      "status": "break",
+      "cause": "model-shape",
+      "why": "Upstream sends NO MODEL key at all when the model did not change on this roundtrip — Server.js reads that absence as MODELPRESENT=false and skips the model push. The port sends the full model every time. Beyond the shape mismatch this is a wire-size and a correctness difference: an unconditional push overwrites frontend-side edits the user made after the request left.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+    },
+    "hi_world::post-event::.S_FRONT.APP": {
+      "status": "break",
+      "cause": "app-name-case",
+      "why": "Same casing difference on the event path. Separate entry because the value is composed in a different branch; a fix applied only to the init path would leave this one open, which is the point of listing per field.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 3 (app name casing)"
+    },
+    "hi_world::post-event::.S_FRONT.PARAMS": {
+      "status": "break",
+      "cause": "response-envelope",
+      "why": "The port's PARAMS.S_MSG_BOX record for the same message box. Note the payload differs beyond the envelope: the port carries CLOSEONNAVIGATION and TYPE='information', upstream carries a {title:'Information'} options object — so the migration is a re-shaping of each action's arguments, not a rename of the wrapper.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 1 (response envelope)"
+    },
+    "hi_world::post-event::.S_FRONT.S_ACTION": {
+      "status": "break",
+      "cause": "response-envelope",
+      "why": "Same migration on the event path: upstream answers a message box as T_CUSTOM [['MESSAGE_BOX','show', text, {title}]]. Kept as its own entry because the event path builds its actions in a different branch of the handler than the init path, so it can be fixed — or broken — independently.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 1 (response envelope)"
+    },
+    "start_page::init::.MODEL.CLIENT": {
+      "status": "break",
+      "cause": "model-shape",
+      "why": "Upstream's start page publishes its whole client/app object graph under MODEL.CLIENT; the port publishes a flat MS_HOME record. This is the deepest of the model differences and the one least likely to be a mechanical fix — the two apps have genuinely diverged in what they expose, so reconciling it means deciding whether the port's start page follows upstream's or stays its own app.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+    },
+    "start_page::init::.MODEL.MS_HOME": {
+      "status": "break",
+      "cause": "model-shape",
+      "why": "The port's flat start-page record, absent upstream. Paired with MODEL.CLIENT above — same decision, opposite side of the diff.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+    },
+    "start_page::init::.MODEL.XX": {
+      "status": "break",
+      "cause": "model-shape",
+      "why": "The start page's two-way bindings under the XX wrapper, same root cause as hi_world::init::.MODEL.XX. Kept separate because the start page is a framework-owned app whose hand-port may be fixed independently of the engine's generic model builder.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+    },
+    "start_page::init::.S_FRONT.APP": {
+      "status": "break",
+      "cause": "app-name-case",
+      "why": "Same casing difference for the start page. Third occurrence, confirming it is systematic in the handler rather than a per-app accident.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 3 (app name casing)"
+    },
+    "start_page::init::.S_FRONT.PARAMS": {
+      "status": "break",
+      "cause": "response-envelope",
+      "why": "The port's PARAMS record for the start page view. Its XML also differs from upstream's beyond the envelope (attribute order and the displayBlock/height pair), which is tracked separately under the view-builder worklist item rather than here.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 1 (response envelope)"
+    },
+    "start_page::init::.S_FRONT.S_ACTION": {
+      "status": "break",
+      "cause": "response-envelope",
+      "why": "The start page additionally issues a SET_FOCUS action in T_CUSTOM alongside the view in T_SYSTEM, which is the clearest evidence that the new envelope is ORDERED and multi-action: the port's PARAMS record has no way to express 'render this view, then focus that control' as a sequence.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 1 (response envelope)"
+    },
+    "start_page::init::view:MAIN": {
+      "status": "break",
+      "cause": "view-content",
+      "why": "The start page views diverge from character 15 — different namespace order, a z2ui5.cc namespace only this port declares, and a different page title (\"Developing UI5 Apps Pur...\" vs upstream's \"Build UI...\"). Unlike hi_world this is not a missing attribute but two apps that have genuinely grown apart, so reconciling it needs the same decision as MODEL.CLIENT: does the port's start page follow upstream's, or is it openly its own app? Do not fix piecemeal before that is decided.",
+      "tracked": "docs/adr-006-conformance.md — worklist item 2 (start page ownership decision)"
+    },
+    "unknown_app::init::.MODEL": {
+      "status": "accepted",
+      "cause": "error-path",
+      "why": "Same cause — the port's fallback start page ships its model, upstream's 500 ships nothing. Third field of one accepted behavioural difference.",
+      "tracked": "n/a — intended difference"
+    },
+    "unknown_app::init::.S_FRONT": {
+      "status": "accepted",
+      "cause": "error-path",
+      "why": "The consequence of the accepted fallback above: the port returns a whole S_FRONT (the start page) where upstream returns a non-JSON error body with no S_FRONT at all. Cannot be reconciled field by field while the fallback behaviour itself is intended.",
+      "tracked": "n/a — intended difference"
+    },
+    "unknown_app::init::.__error": {
+      "status": "accepted",
+      "cause": "error-path",
+      "why": "Upstream answers an unresolvable app_start with HTTP 500 and an unhandled-exception page ('Request failed, no event (initial render)'); the port falls back to the start page. The port's behaviour is the better one for a web deployment — a mistyped URL should not 500 — and it is a deliberate platform adaptation, not a porting miss. Recorded as accepted so the difference is visible rather than invisible; revisit if upstream ever makes its own fallback graceful, because then the two should agree.",
+      "tracked": "n/a — intended difference"
+    },
+    "unknown_app::init::view:MAIN": {
+      "status": "accepted",
+      "cause": "error-path",
+      "why": "The port renders its start page as the fallback for an unresolvable app_start; upstream 500s and renders no view at all, so there is nothing to compare against. Same accepted behavioural difference as the three unknown_app entries above — recorded per-slot because the view extraction reports slots independently of the envelope.",
+      "tracked": "n/a — intended difference"
+    }
+  }
+}
