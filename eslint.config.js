@@ -15,6 +15,9 @@ module.exports = [
       "core/**",
       "run/**",
       "node_modules/**",
+      // the prototype's runtime content is upstream's transpiled output
+      "docs/prototypes/**/node_modules/**",
+      "docs/prototypes/open-abap-cap/runtime/**",
       "adapters/**/node_modules/**",
       "adapters/web/dist/**",
       "adapters/web/register-all.generated.js",

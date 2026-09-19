@@ -1,5 +1,6 @@
 // defineApp — write a cap2UI5 app as ordinary, SYNCHRONOUS JavaScript.
 //
+//   const { defineApp } = require("cap2ui5");
 //   defineApp("ZCL_HELLO", class {
 //     name = "";
 //     main(c) {                                   // no async, no await
@@ -56,7 +57,7 @@
 // becomes I, a fractional number F, and a decimal amount has to say so with
 // t.packed(). Guessing silently produces views with the wrong number of
 // decimals and nothing to point at.
-export const t = {
+const t = {
   string: () => new abap.types.String({ qualifiedName: "STRING" }),
   int: () => new abap.types.Integer({ qualifiedName: "I" }),
   float: () => new abap.types.Float({ qualifiedName: "F" }),
@@ -85,7 +86,7 @@ const abapName = (f) => f.toUpperCase().replace(/\$/g, "~");
 const isFrameworkField = (f) => f.includes("$");
 
 // --------------------------------------------------------------------- the wrap
-export function defineApp(name, cls, opts = {}) {
+function defineApp(name, cls, opts = {}) {
   const INTERNAL = String(name).toUpperCase();
   const userMain = cls.prototype.main ?? cls.prototype.z2ui5_if_app$main;
   if (typeof userMain !== "function") {
@@ -208,3 +209,5 @@ export function defineApp(name, cls, opts = {}) {
   abap.Classes[INTERNAL] = App;
   return App;
 }
+
+module.exports = { defineApp, t, boxFor };

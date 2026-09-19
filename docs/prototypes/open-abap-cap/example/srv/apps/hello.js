@@ -1,5 +1,6 @@
 // A cap2UI5 app. Plain JavaScript: plain values, no async, no await, no ABAP.
-import { defineApp } from "./define-app.mjs";
+// Files in srv/apps/ are loaded by the plugin once the runtime is up.
+const { defineApp } = require("cap2ui5");
 
 defineApp("ZCL_JS_HELLO", class {
   name = "";
@@ -17,4 +18,3 @@ defineApp("ZCL_JS_HELLO", class {
     }
   }
 });
-console.log("[jsapp] ZCL_JS_HELLO registered");

@@ -8,7 +8,11 @@ run/output/reports/
 run/output/coverage/
 adapters/web/dist/
 adapters/web/register-all.generated.js
-docs/prototypes/open-abap-cap/abap/
-docs/prototypes/open-abap-cap/webapp/
-docs/prototypes/open-abap-cap/db.sqlite*
+# the prototype is an npm workspace; the runtime content is 20 MB of upstream
+# output that scripts/assemble-runtime.sh rebuilds (see runtime/README.md)
 docs/prototypes/open-abap-cap/node_modules/
+docs/prototypes/open-abap-cap/package-lock.json
+docs/prototypes/open-abap-cap/runtime/output/
+docs/prototypes/open-abap-cap/runtime/setup/
+docs/prototypes/open-abap-cap/runtime/webapp/
+docs/prototypes/open-abap-cap/example/db.sqlite*

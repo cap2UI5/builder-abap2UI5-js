@@ -233,10 +233,13 @@ re-run is an anecdote. Its README has the reproduction steps; the 19 MB of
 transpiled output it needs is gitignored, because any checkout can rebuild it.
 
 What it established, each with a transpiled ABAP app as the control on every run:
-the CAP wrapper is **48 lines**, the drafts can be an ordinary CDS entity sharing
-the project's database and authorization, a JavaScript class can be an app with
-**no `async`, no `await` and no ABAP in it**, and the state survives a SIGKILL
-and a fresh process.
+cap2UI5 can be a **cds-plugin** (`npm i cap2ui5` contributes the route, the UI5
+shell and the Drafts entity; the project's own `server.js` is untouched), the
+drafts can be an ordinary CDS entity sharing the project's database and
+authorization, a JavaScript class can be an app with **no `async`, no `await`
+and no ABAP in it**, and the state survives a SIGKILL and a fresh process. The
+directory is an npm workspace of the three packages as they would ship:
+`runtime/` (a stand-in for what upstream would publish), `plugin/`, `example/`.
 
 It is linted like everything else — `no-undef` stays an error there, because
 prototype code is the least exercised in the tree and needs that check most; see
