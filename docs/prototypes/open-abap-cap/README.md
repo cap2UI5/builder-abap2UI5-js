@@ -20,8 +20,11 @@ Measured, with a transpiled ABAP app running as the control on every single run:
 | cap2UI5 is a **cds-plugin** | `npm i cap2ui5` is the installation: route, UI5 shell and the Drafts entity arrive through `cds-plugin.js`; the project's own `server.js` is untouched |
 | Drafts in a CDS entity | `plugin/index.cds` + `plugin/lib/draft-store.js`, installed with one `set_instance( )` |
 | A JavaScript app class | `example/srv/apps/hello.js` — plain fields, plain values, **no `async`, no `await`, no ABAP** |
+| Tables and CDS queries | `example/srv/apps/books.js` — `t.table( )` state filled from `SELECT.from(Books)`, uppercase in the model, persisted in the draft |
 | Survives a process restart | `example/cold-test.mjs`: process A writes, is SIGKILLed, a fresh process B answers correctly |
 | Drafts belong to the CAP user | `example/test/auth.test.mjs`: alice's draft answers to alice and to nobody else; no login, no roundtrip |
+| Users interleaved in one process | `example/test/concurrency.test.mjs`: three users, roundtrips in parallel, every answer to its owner |
+| **14 ms per roundtrip** | `example/bench.mjs`: 200 sequential roundtrips over HTTP on SQLite; the runtime's own SQLite sees no SQL, only transaction ends |
 
 The reason the plugin can be that short is that upstream's own
 `cl_express_icf_shim` reads nothing but plain express fields (`req.method`,
@@ -58,8 +61,16 @@ example/   (a CAP project)     consumes cap2ui5 like any dependency; srv/apps/ h
   because two of the three were arrived at by getting them wrong first.
 - **`plugin/lib/runtime.js`** — resolves `@abap2ui5/runtime` from the project,
   boots it, installs the store, loads `srv/apps/`.
-- **`example/srv/apps/hello.js`** — what an app then looks like.
+- **`example/srv/apps/hello.js`** — what an app then looks like;
+  **`books.js`** — one with a table, reading the project's own entity.
 - **`example/cold-test.mjs`** — the restart proof. Always run with its control.
+- **`example/bench.mjs`** — `npm run --workspace example bench -- 100`.
+
+The app API, all of it: `c.isInitial`, `c.eventName`, `c.bind(field)`,
+`c.event(name)`, `c.view(xml)`, `c.modelUpdate()`, `c.messageBox(text)`,
+`c.messageToast(text)`, `c.raw` (the transpiled client, async). State: strings,
+numbers, booleans, `t.packed(l, d)`, `t.char(n)`, a plain object (a structure),
+`t.table({ …one row… })`. Component names appear UPPERCASE in the model.
 
 Configuration a project can override in its `package.json#cds.cap2ui5`:
 `apps` (default `srv/apps`), `routes`, `webapp` (the mount path of the shell),
@@ -77,6 +88,9 @@ alice's draft answered to bob. The auth test is the proof it stays fixed.
 npm test                                  # cds-deploy, then test/*.test.mjs
 ```
 
+`.github/workflows/prototype.yml` runs all of it from a scratch build of
+upstream's runtime, nightly and on every change under this directory.
+
 - **`example/test/abi-gate.test.mjs`** — the plugin's coupling surface to the
   transpiler, named touchpoint by touchpoint and checked against a class the
   transpiler itself emitted. cap2ui5 couples to what `@abaplint/transpiler`
@@ -85,6 +99,10 @@ npm test                                  # cds-deploy, then test/*.test.mjs
   bump that changes it must fail here, not as a `BINDING_ERROR` on the wire.
 - **`example/test/auth.test.mjs`** — the owner binding end to end, against a
   running server with CAP's mocked users.
+- **`example/test/books.test.mjs`** — table state: from `cds.ql` into the
+  model and through the draft.
+- **`example/test/concurrency.test.mjs`** — the transpiled framework keeps
+  CLASS-DATA in process-global statics; three users at once must not mix.
 - **`example/test/server.mjs`** — boots the example project in a process group
   of its own and speaks the wire; shared with the cold test.
 
@@ -122,11 +140,11 @@ has no interface to implement.
   this was built in cannot reach the UI5 CDN, and serving UI5 locally means the
   611 MB `openui5-dist`. Frontend and backend come from the same upstream, so
   the protocol match is structural — but unproven.
-- **Objects and arrays as app state** are not supported by `defineApp`: a
-  structure or table type cannot be derived from `{}` or `[]`. Scalars only.
-- **The facade is a stub** — `isInitial`, `bind`, `event`, `view`, `messageBox`,
-  `messageToast`, plus `raw` as the escape hatch. No popups, navigation or
-  tables.
+- **Nested structures and tables of tables** are not supported by `defineApp`:
+  a structure's components must be scalars. An empty `[]` has no row type —
+  declare it with `t.table( )`.
+- **The facade covers views, model updates and messages.** No popups, no
+  navigation, no nested views; `c.raw` is the escape hatch.
 - **`@abap2ui5/runtime` does not exist.** `runtime/` is what it would contain;
   publishing it is a job in upstream's `release.yaml` that has not been asked
   for yet.

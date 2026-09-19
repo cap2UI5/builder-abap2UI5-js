@@ -24,5 +24,11 @@ of the upstream tag, like the `X.Y.Z-702` tag `release.yaml` already cuts.
 `z2ui5_if_ui5_types=>c_protocol` come from one commit.
 
 `setup.mjs` wires `@abaplint/database-sqlite` as the runtime's `DEFAULT`
-connection. With the plugin's CDS draft store installed no draft goes there any
-more; whether anything else still does is an open measurement (review item 5).
+connection. Measured (`example/bench.mjs`): with the plugin's CDS draft store
+installed, 200 roundtrips send it **no SQL at all** — only `rollback` and
+`endTransaction`, two per roundtrip. It stays because an ABAP app's own Open
+SQL would go there; a CAP-backed `DatabaseClient` for those is a later step.
+
+On the `claude/happy-turing-qt6ljo` branch of upstream, `release.yaml` has the
+`runtime` job that packs exactly this from `node/package.json` — dry run:
+1,307 files, 1.5 MB packed, 16.4 MB unpacked.

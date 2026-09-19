@@ -26,7 +26,9 @@ const CLIENT_METHODS = {          // z2ui5_if_client, used by define-app
   _BIND: ["VAL", "RESULT"],
   _EVENT: ["VAL", "RESULT"],
   CHECK_ON_NAVIGATED: ["RESULT"],
+  GET: ["RESULT"],
   VIEW_DISPLAY: ["VAL"],
+  VIEW_MODEL_UPDATE: [],
   MESSAGE_BOX_DISPLAY: ["TEXT"],
   MESSAGE_TOAST_DISPLAY: ["TEXT"],
 };
@@ -53,7 +55,10 @@ const RUNTIME_GLOBALS = {
   "abap.types.Packed": "function",
   "abap.types.ABAPObject": "function",
   "abap.types.Structure": "function",
+  "abap.types.TableFactory.construct": "function",
 };
+// components of z2ui5_if_client=>get( ) that define-app reads
+const GET_FIELDS = ["event"];
 const EMITTED_STATICS = ["INTERNAL_TYPE", "INTERNAL_NAME", "IMPLEMENTED_INTERFACES", "ATTRIBUTES", "METHODS"];
 const FRAMEWORK_FIELDS = ["Z2UI5_IF_APP~ID_DRAFT", "Z2UI5_IF_APP~ID_APP"];
 
@@ -66,6 +71,8 @@ before(async () => {
   Ref = abap.Classes["Z2UI5_CL_UI5_APP_HI_WORLD"];       // the transpiler's own emission
   App = defineApp("ZCL_ABI_PROBE", class {               // ours
     name = ""; count = 1; ratio = 1.5; flag = true; amount = t.packed(10, 2);
+    address = { street: "", zip: 0 };
+    rows = t.table({ ID: 0, title: "", done: false });
     main() {}
   });
 });
@@ -100,10 +107,24 @@ test("an ATTRIBUTES entry has the transpiler's shape, and its type() boxes like 
     assert.ok(App.ATTRIBUTES[f], `defineApp lacks ${f}`);
   }
   // every field we box has an entry, and each entry boxes to a get/set value
-  for (const f of ["NAME", "COUNT", "RATIO", "FLAG", "AMOUNT"]) {
+  for (const f of ["NAME", "COUNT", "RATIO", "FLAG", "AMOUNT", "ADDRESS", "ROWS"]) {
     const box = App.ATTRIBUTES[f]?.type();
     assert.ok(box && typeof box.get === "function" && typeof box.set === "function", f);
   }
+});
+
+test("a table attribute is emitted the way the transpiler emits one", () => {
+  // the reference: a table-typed attribute of a transpiled framework class
+  const ref = abap.Classes["Z2UI5_CL_UI5_APP_CONT"].ATTRIBUTES.MT_BUFFER?.type();
+  assert.ok(ref, "z2ui5_cl_ui5_app_cont lost MT_BUFFER - pick another table-typed reference");
+  const ours = App.ATTRIBUTES.ROWS.type();
+  assert.equal(ours.constructor.name, ref.constructor.name.replace("HashedTable", "Table"), "table class");
+  assert.equal(ours.getRowType().constructor.name, ref.getRowType().constructor.name, "row class");
+  assert.deepEqual(Object.keys(ours.getOptions()).sort(), Object.keys(ref.getOptions()).sort(), "table options");
+  for (const m of ["array", "clear", "append", "getRowType"]) assert.equal(typeof ours[m], "function", m);
+  // component names lowercase, as the transpiler stores them
+  assert.deepEqual(Object.keys(ours.getRowType().get()), ["id", "title", "done"]);
+  assert.deepEqual(Object.keys(App.ATTRIBUTES.ADDRESS.type().get()), ["street", "zip"]);
 });
 
 test("instance conventions: constructor_ and the ~ -> $ method naming", () => {
@@ -129,6 +150,8 @@ test("the interface methods and parameters the plugin uses exist, by name", () =
   };
   check("Z2UI5_IF_CLIENT", CLIENT_METHODS);
   check("Z2UI5_IF_UI5_DRAFT_STORE", STORE_METHODS);
+  const get = abap.Classes["Z2UI5_IF_CLIENT"].METHODS.GET.parameters.RESULT.type().get();
+  for (const f of GET_FIELDS) assert.ok(f in get, `z2ui5_if_client=>get( )-${f}`);
 });
 
 test("the draft structures have the components draft-store reads and writes", () => {
