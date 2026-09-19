@@ -6,6 +6,14 @@
 > It exists because the measurements it produced decide a strategic question,
 > and a measurement nobody can re-run is an anecdote.
 
+> [!NOTE]
+> **This directory has a successor.** The same workspace, as the product, is
+> on the `claude/happy-turing-qt6ljo` branch of
+> [`cap2UI5/cap2UI5`](https://github.com/cap2UI5/cap2UI5) (`plugin/`,
+> `examples/bookshop/`, `runtime/`, `.github/workflows/ci.yml`) — ADR-008
+> cutover step 3, ready to merge. What is here stays as the record of how the
+> measurements were made; changes go there.
+
 ## What it demonstrates
 
 That cap2UI5 could stop being a hand-written JavaScript port of abap2UI5 and
