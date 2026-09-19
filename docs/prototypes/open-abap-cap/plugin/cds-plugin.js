@@ -25,13 +25,33 @@ cds.on("bootstrap", (app) => {
   // commit as the backend, which is what removes frontend/backend drift.
   app.use(conf.webapp, express.static(rt.webapp, { maxAge: "1h" }));
 
+  // Who may call. Whatever cds.requires.auth is configured to (mocked in
+  // development, xsuaa/ias in production) has already run by the time this
+  // executes - see the middleware chain below - so the check is one line, and
+  // a project that wants anonymous access sets cds.cap2ui5.requires to null.
+  const guard = (req, res, next) => {
+    if (!conf.requires || cds.context?.user?.is(conf.requires)) return next();
+    if (typeof req._login === "function") return req._login();   // basic auth: challenge
+    return res.sendStatus(401);
+  };
+
   // The roundtrip endpoint. cl_express_icf_shim is upstream's own adapter and
   // reads plain express fields (req.method, req.body, headers, url) - so CAP,
   // whose handlers expose the raw express request, can hand it the same objects
   // an express app would. That is the whole reason this plugin is short.
+  //
+  // cds.middlewares.before is NOT optional. cds.context - and with it
+  // cds.context.user - exists only where CAP's own middlewares ran, and CAP
+  // mounts them per service path, never globally. A route mounted straight on
+  // express does not get them: the draft store then sees every caller as
+  // "anonymous", a draft created by alice answers to bob, and the owner
+  // binding z2ui5_if_ui5_draft_store promises is void. Measured before this
+  // line existed: two authenticated roundtrips, both stored as "anonymous".
   app.all(
     conf.routes,
+    ...cds.middlewares.before.filter(Boolean),
     express.raw({ type: "*/*", limit: "10mb" }),
+    guard,
     async (req, res) => {
       try {
         const { cl_express_icf_shim } = await ready;

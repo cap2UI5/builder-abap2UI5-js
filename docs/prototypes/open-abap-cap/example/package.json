@@ -19,6 +19,7 @@
   },
   "scripts": {
     "start": "cds-serve",
+    "test": "cds-deploy && node --test test/*.test.mjs",
     "cold-test": "node cold-test.mjs"
   }
 }

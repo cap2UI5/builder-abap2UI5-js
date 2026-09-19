@@ -21,6 +21,7 @@ Measured, with a transpiled ABAP app running as the control on every single run:
 | Drafts in a CDS entity | `plugin/index.cds` + `plugin/lib/draft-store.js`, installed with one `set_instance( )` |
 | A JavaScript app class | `example/srv/apps/hello.js` — plain fields, plain values, **no `async`, no `await`, no ABAP** |
 | Survives a process restart | `example/cold-test.mjs`: process A writes, is SIGKILLed, a fresh process B answers correctly |
+| Drafts belong to the CAP user | `example/test/auth.test.mjs`: alice's draft answers to alice and to nobody else; no login, no roundtrip |
 
 The reason the plugin can be that short is that upstream's own
 `cl_express_icf_shim` reads nothing but plain express fields (`req.method`,
@@ -61,7 +62,25 @@ example/   (a CAP project)     consumes cap2ui5 like any dependency; srv/apps/ h
 - **`example/cold-test.mjs`** — the restart proof. Always run with its control.
 
 Configuration a project can override in its `package.json#cds.cap2ui5`:
-`apps` (default `srv/apps`), `routes`, `webapp` (the mount path of the shell).
+`apps` (default `srv/apps`), `routes`, `webapp` (the mount path of the shell),
+`requires` (default `authenticated-user`; `null` allows anonymous callers).
+
+The route runs behind `cds.middlewares.before` — the same chain as every CAP
+service. That line is not optional: CAP creates `cds.context` only there, and a
+route mounted straight on express never sees a user. The first version of the
+plugin got exactly that wrong, and every draft was stored as `anonymous` —
+alice's draft answered to bob. The auth test is the proof it stays fixed.
+
+## Tests
+
+```bash
+npm test                                  # cds-deploy, then test/*.test.mjs
+```
+
+- **`example/test/auth.test.mjs`** — the owner binding end to end, against a
+  running server with CAP's mocked users.
+- **`example/test/server.mjs`** — boots the example project in a process group
+  of its own and speaks the wire; shared with the cold test.
 
 ## Reproducing it
 

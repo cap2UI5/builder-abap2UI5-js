@@ -7,66 +7,33 @@
 //
 // This is what the earlier spikes could not show: the JS-serializer probe kept
 // the live object in a Map, and the JS-app probe shared one runtime.
-import { spawn } from "node:child_process";
 import { setTimeout as sleep } from "node:timers/promises";
+import { action, boot, post } from "./test/server.mjs";
 
-let PORT = 5000 + Math.floor(Math.random() * 2000);                 // fresh port per boot: npx spawns a child, so
-const url = () => `http://127.0.0.1:${PORT}/rest/root/z2ui5`;  // killing the wrapper
-// leaves the real server listening. The DB FILE bridges the processes, not the port.
-
-async function boot(label) {
-  PORT += 1;
-  const p = spawn("npx", ["cds-serve"], {
-    env: { ...process.env, PORT: String(PORT) },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  let out = "";
-  p.stdout.on("data", (d) => (out += d));
-  p.stderr.on("data", (d) => (out += d));
-  for (let i = 0; i < 60; i++) {
-    await sleep(1000);
-    if (out.includes("server listening")) {
-      console.log(`  [${label}] up after ${i + 1}s`);
-      return { p, out: () => out };
-    }
-    if (p.exitCode !== null) throw new Error(`${label} died:\n${out.slice(-1500)}`);
-  }
-  throw new Error(`${label} never started:\n${out.slice(-1500)}`);
-}
-
-const post = async (appName, id, event, model) => {
-  const body = { value: { S_FRONT: {
-    ID: id || "", APP: appName, EVENT: event || "", T_EVENT_ARG: [],
-    ORIGIN: "http://127.0.0.1", PATHNAME: "/rest/root/z2ui5",
-    SEARCH: id ? "" : `?app_start=${appName}`, HASH: "", CONFIG: {} },
-    XX: {}, MODEL: model || {} } };
-  const r = await fetch(url(), { method: "POST",
-    headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const t = await r.text();
-  try { return JSON.parse(t); } catch { return { __raw: t.slice(0, 400) }; }
-};
-
-const act = (r) => JSON.stringify(r?.S_FRONT?.S_ACTION?.T_SYSTEM?.[0]
-  ?? r?.S_FRONT?.S_ACTION?.T_CUSTOM?.[0] ?? r?.__raw ?? null)?.slice(0, 130);
+const USER = "alice";                              // the route requires a login
+const show = (r) => JSON.stringify(action(r) ?? r?.text?.slice(0, 400) ?? null)?.slice(0, 130);
 
 const run = async (app, expect) => {
   console.log(`\n=== ${app} ===`);
   let s = await boot("process A");
-  const r1 = await post(app);
-  const id = r1?.S_FRONT?.ID;
-  console.log(`  A roundtrip 1  MODEL=${JSON.stringify(r1?.MODEL)}  id=${id}`);
-  console.log(`                 ${act(r1)}`);
+  console.log(`  [process A] up after ${s.seconds}s`);
+  const r1 = await post(s.url, { app, user: USER });
+  const id = r1.json?.S_FRONT?.ID;
+  console.log(`  A roundtrip 1  MODEL=${JSON.stringify(r1.json?.MODEL)}  id=${id}`);
+  console.log(`                 ${show(r1)}`);
   if (s.out().includes("[cap2ui5] drafts")) console.log("  store installed: yes");
-  s.p.kill("SIGKILL");
+  s.kill("SIGKILL");
   await sleep(2500);
   console.log("  --- process A killed, nothing left in memory ---");
 
   s = await boot("process B");
-  const r2 = await post(app, id, app.startsWith("ZCL_JS") ? "GO" : "BUTTON_POST", { NAME: "Ada" });
-  console.log(`  B roundtrip 2  ${act(r2)}`);
-  s.p.kill("SIGKILL");
+  console.log(`  [process B] up after ${s.seconds}s`);
+  const r2 = await post(s.url, { app, id, event: app.startsWith("ZCL_JS") ? "GO" : "BUTTON_POST",
+    model: { NAME: "Ada" }, user: USER });
+  console.log(`  B roundtrip 2  ${show(r2)}`);
+  s.kill("SIGKILL");
   await sleep(1500);
-  const ok = JSON.stringify(r2).includes(expect);
+  const ok = r2.text.includes(expect);
   console.log(`  RESULT: ${ok ? "state SURVIVED the restart" : "state LOST"}`);
   return ok;
 };
