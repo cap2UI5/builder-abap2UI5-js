@@ -244,7 +244,11 @@ Its `npm test` carries the two gates that matter for that shape: the owner
 binding end to end (`auth.test.mjs`) and the ABI gate (`abi-gate.test.mjs`),
 which names every touchpoint of the plugin into the transpiler's emission
 format and checks it against a transpiled class — that coupling is the one
-thing in the design that can break without a compile error.
+thing in the design that can break without a compile error. `.github/workflows/
+prototype.yml` rebuilds and runs all of it from a scratch build of upstream,
+nightly and on every change under the directory. The decision the prototype
+supports — host, not port, and what becomes of the six repositories — is
+[`docs/adr-008-host-not-port.md`](docs/adr-008-host-not-port.md).
 
 It is linted like everything else — `no-undef` stays an error there, because
 prototype code is the least exercised in the tree and needs that check most; see

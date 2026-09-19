@@ -1,6 +1,9 @@
 # ADR-007 — Consolidating six repositories into two
 
-**Status:** proposed — needs an org owner. Nothing here has been executed, and
+**Status:** superseded by [ADR-008](adr-008-host-not-port.md) — the two-repository
+target stands, but the consolidated repo is the CAP plugin, not the port, so
+the cutover below (which merges the builders into the port) is not executed.
+Originally: proposed — needs an org owner. Nothing here has been executed, and
 nothing here *can* be executed from a pull request: it requires GitHub
 organisation rights (archiving repositories, moving Pages, rotating deploy
 keys).
