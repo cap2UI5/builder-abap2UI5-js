@@ -80,17 +80,17 @@
       "why": "Same migration on the event path: upstream answers a message box as T_CUSTOM [['MESSAGE_BOX','show', text, {title}]]. Kept as its own entry because the event path builds its actions in a different branch of the handler than the init path, so it can be fixed — or broken — independently.",
       "tracked": "docs/adr-006-conformance.md — worklist item 1 (response envelope)"
     },
-    "start_page::init::.MODEL.CLIENT": {
+    "start_page::init::.MODEL.MS_HOME.BTN_EVENT_ID": {
       "status": "break",
       "cause": "model-shape",
-      "why": "Upstream's start page publishes its whole client/app object graph under MODEL.CLIENT; the port publishes a flat MS_HOME record. This is the deepest of the model differences and the one least likely to be a mechanical fix — the two apps have genuinely diverged in what they expose, so reconciling it means deciding whether the port's start page follows upstream's or stays its own app.",
-      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+      "why": "The port publishes an attribute it never bound. Upstream's MS_HOME carries exactly the eight fields the app binds (btn_icon, btn_text, class_editable, class_value_state, class_value_state_text, classname, link_enabled, url); btn_event_id is passed to _event( ) and to nothing else, so it is not in upstream's model. The port's model carries it anyway, which says the port publishes the whole structure rather than what was bound - the same mechanism, unproven but strongly suggested, behind the rest of the model-shape differences. It also binds two fields fewer than upstream (classname, link_enabled), so the two sides disagree in both directions. Fix the publishing rule, not this field.",
+      "tracked": "docs/adr-006-conformance.md - worklist item 2 (model shape)"
     },
-    "start_page::init::.MODEL.MS_HOME": {
+    "start_page::init::.MODEL.MS_HOME.CLASSNAME": {
       "status": "break",
-      "cause": "model-shape",
-      "why": "The port's flat start-page record, absent upstream. Paired with MODEL.CLIENT above — same decision, opposite side of the diff.",
-      "tracked": "docs/adr-006-conformance.md — worklist item 2 (model shape)"
+      "cause": "app-name-case",
+      "why": "Upstream answers Z2UI5_CL_UI5_APP_HI_WORLD, the port z2ui5_cl_ui5_app_hi_world - the same casing difference as S_FRONT.APP, one level down, and it is user-visible: the start page shows this string in its input field. Upstream normalises with c_trim_upper( ) where it accepts a class name and rtti_get_classname_by_ref( ) answers upper case; the port carries whatever spelling it was handed. Fixing S_FRONT.APP without fixing this would leave the page showing one spelling and the wire carrying another.",
+      "tracked": "docs/adr-006-conformance.md - worklist item 3 (app name casing)"
     },
     "start_page::init::.MODEL.XX": {
       "status": "break",
@@ -119,7 +119,7 @@
     "start_page::init::view:MAIN": {
       "status": "break",
       "cause": "view-content",
-      "why": "The start page views diverge from character 15 — different namespace order, a z2ui5.cc namespace only this port declares, and a different page title (\"Developing UI5 Apps Pur...\" vs upstream's \"Build UI...\"). Unlike hi_world this is not a missing attribute but two apps that have genuinely grown apart, so reconciling it needs the same decision as MODEL.CLIENT: does the port's start page follow upstream's, or is it openly its own app? Do not fix piecemeal before that is decided.",
+      "why": "The start page views diverge from character 15 - different namespace order, a z2ui5.cc namespace only this port declares, and a different page title (\"Developing UI5 Apps Pur...\" vs upstream's \"Build UI...\"). Unlike hi_world this is not a missing attribute but two apps that have genuinely grown apart, so reconciling it needs a decision rather than a patch: does the port's start page follow upstream's, or is it openly its own app? Do not fix piecemeal before that is decided. (Until abap2UI5#2771 this question also covered the model, where upstream published its whole client graph under MODEL.CLIENT and the port a flat MS_HOME. Upstream stopped walking the client, the two models now agree in shape, and what is left of that difference is the two MS_HOME fields above - so the model half of this decision is smaller than it looked.)",
       "tracked": "docs/adr-006-conformance.md — worklist item 2 (start page ownership decision)"
     },
     "unknown_app::init::.MODEL": {
