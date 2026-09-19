@@ -240,6 +240,11 @@ authorization, a JavaScript class can be an app with **no `async`, no `await`
 and no ABAP in it**, and the state survives a SIGKILL and a fresh process. The
 directory is an npm workspace of the three packages as they would ship:
 `runtime/` (a stand-in for what upstream would publish), `plugin/`, `example/`.
+Its `npm test` carries the two gates that matter for that shape: the owner
+binding end to end (`auth.test.mjs`) and the ABI gate (`abi-gate.test.mjs`),
+which names every touchpoint of the plugin into the transpiler's emission
+format and checks it against a transpiled class — that coupling is the one
+thing in the design that can break without a compile error.
 
 It is linted like everything else — `no-undef` stays an error there, because
 prototype code is the least exercised in the tree and needs that check most; see

@@ -77,6 +77,12 @@ alice's draft answered to bob. The auth test is the proof it stays fixed.
 npm test                                  # cds-deploy, then test/*.test.mjs
 ```
 
+- **`example/test/abi-gate.test.mjs`** — the plugin's coupling surface to the
+  transpiler, named touchpoint by touchpoint and checked against a class the
+  transpiler itself emitted. cap2ui5 couples to what `@abaplint/transpiler`
+  *emits* (`ATTRIBUTES`/`METHODS` maps, `constructor_`, `~`→`$` naming,
+  `abap.types.*`), not to a published contract — so a transpiler or upstream
+  bump that changes it must fail here, not as a `BINDING_ERROR` on the wire.
 - **`example/test/auth.test.mjs`** — the owner binding end to end, against a
   running server with CAP's mocked users.
 - **`example/test/server.mjs`** — boots the example project in a process group
