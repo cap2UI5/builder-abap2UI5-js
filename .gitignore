@@ -8,3 +8,7 @@ run/output/reports/
 run/output/coverage/
 adapters/web/dist/
 adapters/web/register-all.generated.js
+docs/prototypes/open-abap-cap/abap/
+docs/prototypes/open-abap-cap/webapp/
+docs/prototypes/open-abap-cap/db.sqlite*
+docs/prototypes/open-abap-cap/node_modules/

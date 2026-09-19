@@ -175,4 +175,33 @@ module.exports = [
       },
     },
   },
+  {
+    // docs/prototypes/** is not built, tested or shipped by this repository -
+    // it is recorded evidence (see its README). It is still LINTED rather than
+    // excluded: no-undef is an error here precisely because an undefined
+    // identifier is a runtime bug, and prototype code is the least exercised
+    // code in the tree, so it needs that check most. What it needs is the
+    // globals of ITS host, which is a CAP server plus the transpiled ABAP
+    // runtime - `abap` is the global that runtime installs.
+    files: ["docs/prototypes/**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: {
+        abap: "readonly",
+        require: "readonly",
+        module: "writable",
+        process: "readonly",
+        console: "readonly",
+        Buffer: "readonly",
+        __dirname: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+        Proxy: "readonly",
+        Reflect: "readonly",
+      },
+    },
+    rules: {
+      // a prototype narrates what it measured; that is the point of it
+      "no-console": "off",
+    },
+  },
 ];

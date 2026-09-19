@@ -218,6 +218,34 @@ including the load-bearing ones (`z2ui5_cl_ui5_handler`, `z2ui5_cl_ui5_client`,
 introduced `S_ACTION` into the webapp, so the drift, the protocol break and the
 stalled pipeline are **one event**, not three.
 
+## docs/prototypes/ — recorded evidence, not code this repo ships
+
+`docs/prototypes/open-abap-cap/` holds a working prototype of a different shape
+for cap2UI5: instead of a hand-written JavaScript port, a **host** for upstream's
+own runtime (the real ABAP, downported and transpiled by the official
+`@abaplint/transpiler` over open-abap — which upstream already serves itself via
+`node/srv/express.mjs`).
+
+Nothing in this repository builds, tests or depends on it, and it must stay that
+way: `core/`, the pipeline and every gate are unaffected. It is committed because
+what it measured decides a strategic question, and a measurement nobody can
+re-run is an anecdote. Its README has the reproduction steps; the 19 MB of
+transpiled output it needs is gitignored, because any checkout can rebuild it.
+
+What it established, each with a transpiled ABAP app as the control on every run:
+the CAP wrapper is **48 lines**, the drafts can be an ordinary CDS entity sharing
+the project's database and authorization, a JavaScript class can be an app with
+**no `async`, no `await` and no ABAP in it**, and the state survives a SIGKILL
+and a fresh process.
+
+It is linted like everything else — `no-undef` stays an error there, because
+prototype code is the least exercised in the tree and needs that check most; see
+the `docs/prototypes/**` block in eslint.config.js for its host globals.
+
+**It depends on the four seams on the `claude/happy-turing-qt6ljo` branch of
+abap2UI5/abap2UI5, which are not merged upstream.** If those are declined, the
+prototype is a record of what was tried, not a plan.
+
 ## The CAP entry points
 
 Since 2026-08 the package wires itself into a CAP project. `cds-plugin.js` is
