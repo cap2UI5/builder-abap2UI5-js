@@ -1,0 +1,78 @@
+# The open-abap/CAP prototype, re-run from scratch: build upstream's runtime,
+# assemble it, install the workspace, run its tests, the cold test and the
+# bench. See docs/prototypes/open-abap-cap/README.md and docs/adr-008.
+#
+# Its own workflow, like conformance.yml and for the same reason: the runtime
+# takes minutes to build from a scratch checkout of upstream. Nothing else in
+# this repository depends on the prototype, so nothing else waits for it.
+name: prototype
+
+on:
+  schedule:
+    - cron: "30 7 * * *"
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: "abap2UI5/abap2UI5 ref to build the runtime from"
+        default: "claude/happy-turing-qt6ljo"
+  pull_request:
+    paths:
+      - "docs/prototypes/open-abap-cap/**"
+      - ".github/workflows/prototype.yml"
+
+jobs:
+  prototype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: docs/prototypes/open-abap-cap
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # ---- upstream's runtime ---------------------------------------------
+      # A SEPARATE checkout: `npm run auto_downport` rewrites src/ in place.
+      #
+      # The ref is the branch carrying the four seams (z2ui5_if_ui5_draft_store
+      # above all - the CDS store has no interface to implement without it)
+      # UNTIL THEY ARE MERGED; then this becomes `main`, unpinned, like the
+      # conformance workflow. A personal branch in CI is a debt, and this
+      # comment is its ticket.
+      - uses: actions/checkout@v4
+        with:
+          repository: abap2UI5/abap2UI5
+          path: docs/prototypes/open-abap-cap/.upstream
+          ref: ${{ inputs.upstream_ref || 'claude/happy-turing-qt6ljo' }}
+
+      - name: build the runtime
+        working-directory: docs/prototypes/open-abap-cap/.upstream
+        run: |
+          npm ci
+          npm run deps
+          npm run auto_downport
+          npm run auto_transpile
+
+      - run: scripts/assemble-runtime.sh .upstream
+      - run: npm install --no-audit --no-fund
+
+      # ---- the gates -------------------------------------------------------
+      - run: npm test                                    # ABI gate, auth, books, concurrency
+      - run: npm run --workspace example cold-test
+      - run: npm run --workspace example bench -- 50
+
+      # ---- the browser -----------------------------------------------------
+      # UI5 from the CDN the page names (sdk.openui5.org); the runner can
+      # reach it, the sandbox this was written in could not.
+      - run: npx playwright install --with-deps chromium
+        working-directory: docs/prototypes/open-abap-cap/example
+      - run: npm run --workspace example test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: docs/prototypes/open-abap-cap/example/screenshots
+          if-no-files-found: ignore

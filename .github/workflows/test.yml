@@ -46,7 +46,13 @@ jobs:
         working-directory: adapters/express
       - run: npm ci
         working-directory: adapters/web
+      # The conformance gate FAILS in CI when no reference server is set, so a
+      # dropped build step can never pass as a green run. This job deliberately
+      # does not build one (it costs ~3 minutes) — the conformance workflow does.
+      # Saying so explicitly is the opt-out; silence is not.
       - run: npm test
+        env:
+          Z2UI5_CONFORMANCE_OPTIONAL: "1"
       # A PR that touches a hand-port should say so against the upstream
       # revision it was reconciled with — --strict makes unreconciled drift
       # block here, where a human is already looking, while the nightly only

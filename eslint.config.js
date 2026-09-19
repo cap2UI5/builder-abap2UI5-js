@@ -15,6 +15,9 @@ module.exports = [
       "core/**",
       "run/**",
       "node_modules/**",
+      // the prototype's runtime content is upstream's transpiled output
+      "docs/prototypes/**/node_modules/**",
+      "docs/prototypes/open-abap-cap/runtime/**",
       "adapters/**/node_modules/**",
       "adapters/web/dist/**",
       "adapters/web/register-all.generated.js",
@@ -45,6 +48,13 @@ module.exports = [
         URL: "readonly",
         TextEncoder: "readonly",
         TextDecoder: "readonly",
+        // Node >=18 web globals. scripts/conformance.js needs fetch and the
+        // abort pair: the reference server is an external process, so the gate
+        // has to be able to time a request out rather than hang on a server
+        // that stopped answering.
+        fetch: "readonly",
+        AbortController: "readonly",
+        AbortSignal: "readonly",
       },
     },
     rules: {
@@ -166,6 +176,35 @@ module.exports = [
         // the adapter smoke tests drive a real server over HTTP
         fetch: "readonly",
       },
+    },
+  },
+  {
+    // docs/prototypes/** is not built, tested or shipped by this repository -
+    // it is recorded evidence (see its README). It is still LINTED rather than
+    // excluded: no-undef is an error here precisely because an undefined
+    // identifier is a runtime bug, and prototype code is the least exercised
+    // code in the tree, so it needs that check most. What it needs is the
+    // globals of ITS host, which is a CAP server plus the transpiled ABAP
+    // runtime - `abap` is the global that runtime installs.
+    files: ["docs/prototypes/**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: {
+        abap: "readonly",
+        require: "readonly",
+        module: "writable",
+        process: "readonly",
+        console: "readonly",
+        Buffer: "readonly",
+        __dirname: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+        Proxy: "readonly",
+        Reflect: "readonly",
+      },
+    },
+    rules: {
+      // a prototype narrates what it measured; that is the point of it
+      "no-console": "off",
     },
   },
 ];

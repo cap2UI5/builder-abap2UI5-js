@@ -31,7 +31,12 @@ module.exports = {
   coverageReporters: ["text-summary", "json-summary", "lcov"],
   coverageDirectory: "run/output/coverage",
 
-  testPathIgnorePatterns: ["/node_modules/", "/core/app/", "<rootDir>/src/", "<rootDir>/run/output/", "/adapters/"],
+  // docs/prototypes/ is recorded evidence, not code this repository builds: its
+  // tests are a CAP project's, they need @sap/cds and a transpiled abap2UI5
+  // runtime, and they are run by .github/workflows/prototype.yml with those in
+  // place. Jest found them here because they end in .test.mjs and failed every
+  // one of them to load.
+  testPathIgnorePatterns: ["/node_modules/", "/core/app/", "<rootDir>/src/", "<rootDir>/run/output/", "/adapters/", "<rootDir>/docs/prototypes/"],
   // src/ is the hand-maintained SOURCE of the core package and
   // run/output/core is the assembled copy — keep both out of module
   // resolution so their package.json / sources never shadow the real

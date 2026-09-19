@@ -1,0 +1,14 @@
+{
+  "name": "cap2ui5-prototype",
+  "private": true,
+  "description": "abap2UI5 on open-abap, hosted by CAP - three packages as they would ship: the runtime upstream publishes, the cap2ui5 plugin, and a CAP project that consumes it",
+  "workspaces": [
+    "runtime",
+    "plugin",
+    "example"
+  ],
+  "scripts": {
+    "start": "npm --workspace example start",
+    "test": "npm --workspace example test"
+  }
+}
