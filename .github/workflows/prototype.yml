@@ -63,3 +63,16 @@ jobs:
       - run: npm test                                    # ABI gate, auth, books, concurrency
       - run: npm run --workspace example cold-test
       - run: npm run --workspace example bench -- 50
+
+      # ---- the browser -----------------------------------------------------
+      # UI5 from the CDN the page names (sdk.openui5.org); the runner can
+      # reach it, the sandbox this was written in could not.
+      - run: npx playwright install --with-deps chromium
+        working-directory: docs/prototypes/open-abap-cap/example
+      - run: npm run --workspace example test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: docs/prototypes/open-abap-cap/example/screenshots
+          if-no-files-found: ignore

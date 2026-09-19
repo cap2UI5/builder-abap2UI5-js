@@ -35,6 +35,9 @@ Three packages, with the boundaries the product has:
 - State survives SIGKILL and a fresh process (`cold-test.mjs`).
 - Three users interleaved in one process each get their own answer
   (`concurrency.test.mjs`).
+- **It renders**: real Chromium, the framework's own GET page, UI5 booted, the
+  hello app's MessageBox and the Books app's table on screen
+  (`browser.e2e.mjs`).
 - **14 ms per roundtrip** sequential over HTTP on SQLite (`bench.mjs`, 200
   roundtrips); the runtime's private SQLite sees **no SQL** once the store is
   installed, only transaction ends.
@@ -47,8 +50,9 @@ Three packages, with the boundaries the product has:
   principle, diverge from open-abap. The host cannot, and the ABI gate exists
   because that coupling is undocumented. This is the design's one hazard.
 - **Runtime size.** 16 MB unpacked, 1,300 files, in `node_modules`.
-- **The browser has still not rendered it.** Same upstream on both ends, so
-  the match is structural; unproven remains unproven.
+- Nothing else: it renders (`browser.e2e.mjs`, real Chromium, the page the
+  framework serves on GET), so the last "unproven" of the earlier rounds is
+  gone.
 
 ## Repositories
 

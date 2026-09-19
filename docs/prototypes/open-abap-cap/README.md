@@ -25,6 +25,7 @@ Measured, with a transpiled ABAP app running as the control on every single run:
 | Drafts belong to the CAP user | `example/test/auth.test.mjs`: alice's draft answers to alice and to nobody else; no login, no roundtrip |
 | Users interleaved in one process | `example/test/concurrency.test.mjs`: three users, roundtrips in parallel, every answer to its owner |
 | **14 ms per roundtrip** | `example/bench.mjs`: 200 sequential roundtrips over HTTP on SQLite; the runtime's own SQLite sees no SQL, only transaction ends |
+| **It renders.** | `example/test/browser.e2e.mjs`: real Chromium opens the page the framework serves on GET, UI5 boots, the hello app answers a MessageBox, the Books app shows its table |
 
 The reason the plugin can be that short is that upstream's own
 `cl_express_icf_shim` reads nothing but plain express fields (`req.method`,
@@ -103,6 +104,11 @@ upstream's runtime, nightly and on every change under this directory.
   model and through the draft.
 - **`example/test/concurrency.test.mjs`** — the transpiled framework keeps
   CLASS-DATA in process-global statics; three users at once must not mix.
+- **`example/test/browser.e2e.mjs`** — `npm run test:browser`, kept out of
+  `npm test` because it needs a browser. UI5 comes from the CDN the page names;
+  without one, `UI5_DIST=<openui5-dist>/dist/resources` answers those requests
+  from disk (the page is not touched), and `PW_CHROMIUM=<binary>` uses a
+  Chromium that is already there. Screenshots land in `example/screenshots/`.
 - **`example/test/server.mjs`** — boots the example project in a process group
   of its own and speaks the wire; shared with the cold test.
 
@@ -136,10 +142,9 @@ has no interface to implement.
 
 ## What it does NOT show
 
-- **The UI has never rendered in a browser.** All of it is the wire. The sandbox
-  this was built in cannot reach the UI5 CDN, and serving UI5 locally means the
-  611 MB `openui5-dist`. Frontend and backend come from the same upstream, so
-  the protocol match is structural — but unproven.
+- **Rendered with OpenUI5 1.108 only** — the newest `openui5-dist` on npm, the
+  only way to get UI5 into the sandbox. The CDN default is the current release;
+  the workflow runs against that.
 - **Nested structures and tables of tables** are not supported by `defineApp`:
   a structure's components must be scalars. An empty `[]` has no row type —
   declare it with `t.table( )`.
