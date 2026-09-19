@@ -2,6 +2,7 @@
 // abap2UI5 in CAP at all. main( ) is async because the APP does I/O; the
 // framework calls need no await either way.
 const cds = require("@sap/cds");
+const { SELECT } = cds.ql;                 // CAP also installs it as a global; the import is the honest form
 const { defineApp, t } = require("cap2ui5");
 
 defineApp("ZCL_JS_BOOKS", class {
