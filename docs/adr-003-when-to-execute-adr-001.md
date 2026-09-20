@@ -1,7 +1,9 @@
 # ADR-003 — When to execute ADR-001 (the npm publish)
 
-**Status:** proposed — maintainer decision needed.
-**Date:** 2026-08-30
+**Status:** **decided** (2026-09-18) — option 3 accepted, trigger list below is
+binding. The one open item is registry credentials, which no contributor
+without them can close.
+**Date:** 2026-08-30, decided 2026-09-18
 
 ## The problem
 
@@ -67,7 +69,31 @@ is the rehearsal, and ADR-001's "What is left" remains the checklist.
 
 1. A maintainer creates the npm `cap2ui5` scope and publishes the two
    placeholder stubs (needs registry credentials — same blocker ADR-001
-   records).
-2. The trigger list above is accepted or amended; status flips to decided.
+   records). **Still open**, and the only time-critical item here: the names
+   are free until they are not, and losing `abap2ui5` costs the upstream
+   project as well as this one.
+2. ~~The trigger list above is accepted or amended; status flips to decided.~~
+   **Done, 2026-09-18.** The four triggers in option 3 are accepted as written.
 3. Nothing else. Specifically: no rename, no release job, no doc churn
    until a trigger fires.
+
+## Why the rename was not executed on 2026-09-18
+
+It was considered and declined, so the reasoning is recorded rather than
+re-derived next time:
+
+- The migration script is reversible and reports 87 files on `--dry-run`, so
+  the *mechanical* cost is genuinely low — that is not the objection.
+- The objection is that a rename without a publish is pure cost. It breaks
+  every example, every pin and every doc reference in exchange for a benefit
+  (`npm install @cap2ui5/core`) that does not exist until somebody with
+  registry credentials runs `npm publish`. Nobody in this repository has them.
+- None of the four triggers has fired. External demand is still measurably
+  zero, and the shared-copy count has not reached three.
+- Meanwhile the package has a defect that matters more than its name: the
+  shipped frontend and backend speak different wire protocols
+  (see [ADR-006](adr-006-conformance.md)). Renaming a package nobody can
+  install, while the thing it would install is broken, is the wrong order.
+
+Re-read this when a trigger fires. Until then the decision stands and needs no
+further review.

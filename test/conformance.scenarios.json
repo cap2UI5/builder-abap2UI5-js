@@ -1,0 +1,60 @@
+{
+  "_comment": [
+    "Roundtrip sequences driven against BOTH real abap2UI5 (upstream's node/ runtime:",
+    "official @abaplint transpiler over open-abap-core) and this port's engine, by",
+    "scripts/conformance.js. Each step is one POST; the draft id of a response is",
+    "threaded into the next step, so a scenario exercises the same state chain a",
+    "browser would produce.",
+    "",
+    "An app can only appear here if BOTH sides have it. That is why the list is",
+    "short: upstream's node/ build transpiles src/ only, so the shared surface is",
+    "the framework's own apps. The zcl_tst_* apps under upstream node/srv/ are the",
+    "obvious extension — they are purpose-built framework exercises (nav, popups,",
+    "sub-apps, binding) and they are app-layer ABAP, which is exactly what abap2js",
+    "transpiles well. See docs/adr-006-conformance.md, 'Growing the corpus'.",
+    "",
+    "Keep steps minimal and deterministic. Anything that reads the clock, the",
+    "browser or a random source belongs in a scenario only if the normaliser in",
+    "conformance.js can already neutralise it — otherwise it produces a diff that",
+    "means nothing and trains people to ignore the gate."
+  ],
+  "scenarios": [
+    {
+      "name": "hi_world",
+      "app": "z2ui5_cl_ui5_app_hi_world",
+      "steps": [
+        {
+          "name": "init",
+          "comment": "First roundtrip: no event, no draft. Exercises view building end to end — the builder chain, _bind (two-way) and _event wiring — and is the single densest comparison in the suite, because the whole view XML is one string that must match character for character."
+        },
+        {
+          "name": "post-event",
+          "event": "BUTTON_POST",
+          "xx": { "name": "Ada" },
+          "comment": "Applies a two-way delta and fires the event. Exercises main_json_to_attri (does the port write the edited value onto the deserialized app?) and message_box_display. The message text embeds the value, so a binding that silently did not arrive shows up as text, not as an absent field."
+        }
+      ]
+    },
+    {
+      "name": "start_page",
+      "app": "z2ui5_cl_ui5_app_start",
+      "steps": [
+        {
+          "name": "init",
+          "comment": "The start page is what a user without ?app_start sees. It reads the draft table for its counters, so this step also compares what the two persistence layers report through the same view."
+        }
+      ]
+    },
+    {
+      "name": "unknown_app",
+      "app": "z2ui5_cl_does_not_exist",
+      "search": "?app_start=z2ui5_cl_does_not_exist",
+      "steps": [
+        {
+          "name": "init",
+          "comment": "Error path. A name that resolves nowhere must fail the SAME way on both sides — the framework's error view, not a stack trace and not a 500. Included because error behaviour is where a reimplementation drifts first and where nothing else in this repo compares the two."
+        }
+      ]
+    }
+  ]
+}

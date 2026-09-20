@@ -51,7 +51,7 @@ SSH deploy key; workflows skip gracefully when the secret is unset):
 npm install                      # dev deps: @abaplint/core, jest
 (cd adapters/cap && npm install) # backs the assemble load-gate (@sap/cds)
 npm run build_core               # assemble_core + publish_core → core/
-npm test                         # 32 suites <!-- count:suites --> (3 skipped)
+npm test                         # 34 suites <!-- count:suites --> (3 skipped)
 ```
 
 The `(cd adapters/cap && npm install)` line is a hard precondition, not a
@@ -120,21 +120,143 @@ stamp the container's lifecycle latch) and is fixed. There are now **zero**
 its entries turned out to describe *correct* behaviour (`expected: true`) —
 components and sub-apps that cannot be started standalone — not outstanding bugs.
 `scripts/oracle-classify.js` classifies the baseline against the upstream
-`node/` runtime (official @abaplint transpiler + open-abap): entries green
-there are provable-in-JS; the remaining ones here need ABAP type/reference
-semantics our idiomatic port deliberately avoids (scalar/dref identity,
-RTTI-typed conversions, sync-over-async) — reasons live in the baseline.
-Its verdicts are **committed** to `test/oracle-classification.json` by the
-weekly `oracle` workflow. They used to go only to the job summary, which
-expires with the Actions log — so the one tool that can answer "how much of
-the baseline is actually work?" gave an answer nobody could read a week later,
-let alone diff against the previous week. As a tracked file, an entry moving
-from NOTRUN to BUG is a lead somebody can pick up. The file is deterministic
-(sorted, no timestamps) so an unchanged verdict produces no commit, and
+`node/` runtime (official @abaplint transpiler + open-abap). Its verdicts are
+**committed** to `test/oracle-classification.json` by the weekly `oracle`
+workflow. They used to go only to the job summary, which expires with the
+Actions log — so the one tool that can answer "how much of the baseline is
+actually work?" gave an answer nobody could read a week later, let alone diff
+against the previous week. As a tracked file, an entry moving from NOTRUN to
+BUG is a lead somebody can pick up. The file is deterministic (sorted, no
+timestamps) so an unchanged verdict produces no commit, and
 `test/oracle-classification.test.js` holds that property plus the requirement
-that it stay in step with the baseline it classifies. The file in the repo now
-is a SEED (all NOTRUN): the oracle has not run yet, and NOTRUN means "nothing
-proven", never "not fixable".
+that it stay in step with the baseline it classifies.
+
+**Read the current verdicts before trusting any baseline `why`:**
+
+| verdict | count | means |
+|---|---|---|
+| BUG | 74 <!-- count:oracle-bug --> | upstream's JS runtime passes this exact test — **fixable here** |
+| KERNEL | 0 <!-- count:oracle-kernel --> | on upstream's documented kernel skip list |
+| NOTRUN | 57 <!-- count:oracle-notrun --> | the oracle did not execute it — nothing proven either way |
+
+Two things that says, both uncomfortable and both load-bearing:
+
+- **No entry is an ABAP-kernel limit.** KERNEL is zero. The old framing here —
+  "the remaining ones need ABAP type/reference semantics our idiomatic port
+  deliberately avoids" — was a hypothesis, and the oracle did not confirm it
+  for a single entry.
+- **12 entries categorised `js-limit` are classified BUG.** Their `why` fields
+  claim a JavaScript limitation ("a null JS field carries no type/ref
+  identity", "no DATS/TIMS precision") for behaviour upstream produces in
+  JavaScript. A `why` is a hypothesis until the oracle rules on it; where the
+  two disagree, the oracle wins and the `why` needs rewriting.
+
+NOTRUN means "nothing proven", never "not fixable". This section used to say
+the file was "a SEED (all NOTRUN): the oracle has not run yet" — it had, and
+the prose kept the opposite claim alive long enough to be quoted. The counts
+above are now measured from the file by `check-doc-numbers.js`, so that
+particular failure cannot repeat.
+
+## Wire conformance — the gate that grades the ANSWER
+
+Every other gate here measures this port against the ABAP *source*. None of
+them answers the question a user has: **does a roundtrip come back the same?**
+`scripts/conformance.js` does, by driving identical roundtrip sequences against
+upstream's own `node/` runtime (official @abaplint transpiler over open-abap,
+`node/srv/express.mjs`) and against `engine.roundtrip()` in process, then
+diffing the responses. Decision, findings and worklist:
+[`docs/adr-006-conformance.md`](docs/adr-006-conformance.md).
+
+Open-abap is the *measuring instrument* here, not an execution model — the
+roadmap's argument against the abaplint runtime is about the shipped API
+surface, and boxing is invisible when only the JSON on the wire is compared.
+
+```bash
+# the reference — a SCRATCH COPY; auto_downport rewrites src/ in place
+cd /tmp/ref && npm ci && npm run deps && npm run auto_downport && npm run auto_transpile
+PORT=3111 node node/srv/express.mjs &
+node scripts/conformance.js --ref http://127.0.0.1:3111
+```
+
+Differences live in `test/conformance.baseline.json` with a `status` and a
+reason: `accepted` for a chosen difference, `break` for "the port is wrong and
+the shipped package is affected", which additionally requires a `tracked` field
+naming where the fix is planned. That rule is the same one the `port-bug`
+issue-URL rule encodes next door — without it, "known and scheduled" and "known
+and forgotten" look identical.
+
+**The first run (2026-09-18) found two P0s.** Read the ADR before trusting the
+package:
+
+- **The published frontend and backend speak different protocols.** Upstream
+  delivers instructions as `S_FRONT.S_ACTION` action rows; this port still emits
+  the superseded `S_FRONT.PARAMS` record. The webapp is mirrored 1:1 and reads
+  `S_ACTION` — `grep -c PARAMS core/app/z2ui5/webapp/core/Server.js` is **0**.
+  Neither `apps-smoke` (backend only) nor the app's `starter.test.js` (the
+  hand-written minimal page, not the mirrored webapp) can see it.
+- **`build_core` no longer produces a runnable package.** On a clean checkout
+  with no source change, the rebuilt core's first roundtrip never returns: the
+  freshly transpiled view builder reaches a dynamic `CALL METHOD (`CONVERT`)`,
+  `stringify()` throws, and the handler's retry is synchronous. "Only commit
+  `core/` on green" then froze `core/` at the last good build — correct
+  behaviour, and the reason nothing looked red: the published package kept
+  working while the repository lost the ability to rebuild it.
+  `test/core-runnable.test.js` now fails on this in ~20 s with a named
+  diagnosis instead of burning the CI timeout.
+
+## Hand-port drift is tracked, and is currently unreconciled
+
+`scripts/check-port-drift.js` hashes the upstream ABAP each hand-port shadows.
+`--strict` runs in the PR gate, so unreconciled drift **blocks pull requests**;
+the nightly only records it (`--record` → `test/port-drift.pending.json`) so an
+upstream sync is never blocked by it.
+
+Right now **17** <!-- count:drift-pending --> hand-ports are unreconciled,
+including the load-bearing ones (`z2ui5_cl_ui5_handler`, `z2ui5_cl_ui5_client`,
+`z2ui5_cl_ui5_srv_model`, `z2ui5_cl_ui5_http_handler`, `z2ui5_if_client`) —
+3,271 changed upstream lines. They arrived with the same mirror commit that
+introduced `S_ACTION` into the webapp, so the drift, the protocol break and the
+stalled pipeline are **one event**, not three.
+
+## docs/prototypes/ — recorded evidence, not code this repo ships
+
+`docs/prototypes/open-abap-cap/` holds a working prototype of a different shape
+for cap2UI5: instead of a hand-written JavaScript port, a **host** for upstream's
+own runtime (the real ABAP, downported and transpiled by the official
+`@abaplint/transpiler` over open-abap — which upstream already serves itself via
+`node/srv/express.mjs`).
+
+Nothing in this repository builds, tests or depends on it, and it must stay that
+way: `core/`, the pipeline and every gate are unaffected. It is committed because
+what it measured decides a strategic question, and a measurement nobody can
+re-run is an anecdote. Its README has the reproduction steps; the 19 MB of
+transpiled output it needs is gitignored, because any checkout can rebuild it.
+
+What it established, each with a transpiled ABAP app as the control on every run:
+cap2UI5 can be a **cds-plugin** (`npm i cap2ui5` contributes the route, the UI5
+shell and the Drafts entity; the project's own `server.js` is untouched), the
+drafts can be an ordinary CDS entity sharing the project's database and
+authorization, a JavaScript class can be an app with **no `async`, no `await`
+and no ABAP in it**, and the state survives a SIGKILL and a fresh process. The
+directory is an npm workspace of the three packages as they would ship:
+`runtime/` (a stand-in for what upstream would publish), `plugin/`, `example/`.
+Its `npm test` carries the two gates that matter for that shape: the owner
+binding end to end (`auth.test.mjs`) and the ABI gate (`abi-gate.test.mjs`),
+which names every touchpoint of the plugin into the transpiler's emission
+format and checks it against a transpiled class — that coupling is the one
+thing in the design that can break without a compile error. `.github/workflows/
+prototype.yml` rebuilds and runs all of it from a scratch build of upstream,
+nightly and on every change under the directory. The decision the prototype
+supports — host, not port, and what becomes of the six repositories — is
+[`docs/adr-008-host-not-port.md`](docs/adr-008-host-not-port.md).
+
+It is linted like everything else — `no-undef` stays an error there, because
+prototype code is the least exercised in the tree and needs that check most; see
+the `docs/prototypes/**` block in eslint.config.js for its host globals.
+
+**It depends on the four seams on the `claude/happy-turing-qt6ljo` branch of
+abap2UI5/abap2UI5, which are not merged upstream.** If those are declined, the
+prototype is a record of what was tried, not a plan.
 
 ## The CAP entry points
 
