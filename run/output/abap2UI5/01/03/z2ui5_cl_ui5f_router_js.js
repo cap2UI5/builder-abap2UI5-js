@@ -44,17 +44,6 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      return app && !app.startsWith("/") ? \`/\${app}\` : app;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function hrefFor(sAppHash) {` + `
-` + `      const base = window.location.href.split("#")[0];` + `
-` + `      const raw = getRawHash();` + `
-` + `      let shell = splitHash(raw).shell;` + `
-` + `` + `
-` + `      if (!shell && raw && !raw.startsWith("/")) shell = raw;` + `
-` + `      if (!shell) return \`\${base}#\${sAppHash}\`;` + `
-` + `` + `
-` + `      return \`\${base}#\${shell}\${SHELL_SEPARATOR}\${String(sAppHash).replace(/^\\/+/, "")}\`;` + `
-` + `    }` + `
-` + `` + `
 ` + `    function getRawHash() {` + `
 ` + `      return String(window.location.hash || "").replace(/^#/, "");` + `
 ` + `    }` + `
@@ -283,7 +272,6 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      init,` + `
 ` + `      exit,` + `
 ` + `      splitHash,` + `
-` + `      hrefFor,` + `
 ` + `      patternFor,` + `
 ` + `      parse,` + `
 ` + `      navTo,` + `

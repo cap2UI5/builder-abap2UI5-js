@@ -13,6 +13,8 @@ class z2ui5_cl_ui5f_console_js {
 ` + `` + `
 ` + `  const MAX_ITEMS = 20;` + `
 ` + `` + `
+` + `  const MAX_NODES = 1000;` + `
+` + `` + `
 ` + `  const RELOAD_KEY = "z2ui5.devtools.console";` + `
 ` + `  const RELOAD_MAX_ENTRIES = 40;` + `
 ` + `` + `
@@ -131,8 +133,10 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    try {` + `
 ` + `      const ancestors = [];` + `
 ` + `      const walked = new WeakMap();` + `
+` + `      let nodes = 0;` + `
 ` + `      return JSON.stringify(value, function replace(key, val) {` + `
 ` + `        if (typeof val === "object" && val !== null) {` + `
+` + `          if (++nodes > MAX_NODES) return "[...]";` + `
 ` + `          const holder = walked.get(this) || this;` + `
 ` + `          while (` + `
 ` + `            ancestors.length > 0 &&` + `
@@ -320,7 +324,13 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    getEntries,` + `
 ` + `    getDropped,` + `
 ` + `` + `
-` + `    _internals: { renderArg, MAX_ENTRIES, MAX_TEXT_CHARS, MAX_ITEMS },` + `
+` + `    _internals: {` + `
+` + `      renderArg,` + `
+` + `      MAX_ENTRIES,` + `
+` + `      MAX_TEXT_CHARS,` + `
+` + `      MAX_ITEMS,` + `
+` + `      MAX_NODES,` + `
+` + `    },` + `
 ` + `  };` + `
 ` + `});` + `
 ` + `` + `

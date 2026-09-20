@@ -129,13 +129,17 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `      );` + `
 ` + `    }` + `
 ` + `` + `
+` + `    const regExpEscape = (s) => s.replace(/[.*+?^\${}()|[\\]\\\\]/g, "\\\\$&");` + `
+` + `` + `
 ` + `    function xmlAttributesOf(control, slotKey) {` + `
 ` + `      const localId = String(control.getId?.() || "")` + `
 ` + `        .split("--")` + `
 ` + `        .pop();` + `
 ` + `      const xml = slotXml(slotKey);` + `
 ` + `      if (!localId || !xml) return "";` + `
-` + `      const idAttr = new RegExp(\`\\\\sid\\\\s*=\\\\s*(?:"\${localId}"|'\${localId}')\`);` + `
+` + `` + `
+` + `      const id = regExpEscape(localId);` + `
+` + `      const idAttr = new RegExp(\`\\\\sid\\\\s*=\\\\s*(?:"\${id}"|'\${id}')\`);` + `
 ` + `      const at = xml.search(idAttr);` + `
 ` + `      if (at < 0) return "";` + `
 ` + `      const open = xml.lastIndexOf("<", at);` + `
@@ -152,7 +156,7 @@ class z2ui5_cl_ui5f_picker_js {
 ` + `          let match = FRAMEWORK_CALL.exec(String(handler?.fFunction || ""));` + `
 ` + `          if (!match && attributes) {` + `
 ` + `            const attr = new RegExp(` + `
-` + `              \`\\\\s\${name}\\\\s*=\\\\s*(?:"([^"]*)"|'([^']*)')\`,` + `
+` + `              \`\\\\s\${regExpEscape(name)}\\\\s*=\\\\s*(?:"([^"]*)"|'([^']*)')\`,` + `
 ` + `            ).exec(attributes);` + `
 ` + `            match = attr ? FRAMEWORK_CALL.exec(attr[1] ?? attr[2] ?? "") : null;` + `
 ` + `          }` + `

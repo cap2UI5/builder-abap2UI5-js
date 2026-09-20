@@ -3,13 +3,8 @@ class z2ui5_cl_ui5f_viewops_js {
   static get() {
     let result = ``;
     result = `sap.ui.define(` + `
-` + `  [` + `
-` + `    "sap/ui/model/odata/v2/ODataModel",` + `
-` + `    "z2ui5/core/Lib",` + `
-` + `    "z2ui5/core/ViewSlots",` + `
-` + `    "z2ui5/core/AppState",` + `
-` + `  ],` + `
-` + `  (ODataModel, Lib, ViewSlots, AppState) => {` + `
+` + `  ["z2ui5/core/Lib", "z2ui5/core/ViewSlots", "z2ui5/core/AppState"],` + `
+` + `  (Lib, ViewSlots, AppState) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const SMOOTH_SCROLL_MS = 300;` + `
@@ -46,9 +41,10 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function evSetODataModel(oController, args) {` + `
+` + `    async function evSetODataModel(oController, args) {` + `
 ` + `      let oModel;` + `
 ` + `      try {` + `
+` + `        const ODataModel = await Lib.requireODataModel();` + `
 ` + `        oModel = new ODataModel({` + `
 ` + `          serviceUrl: args[1],` + `
 ` + `          annotationURI: args[3] || "",` + `

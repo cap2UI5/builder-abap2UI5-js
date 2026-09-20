@@ -68,8 +68,17 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function evStoreData(oController, args) {` + `
-` + `      const { TYPE, PREFIX, VALUE, KEY } =` + `
-` + `        storagePayload(oController, args[1]) ?? {};` + `
+` + `      const payload = storagePayload(oController, args[1]);` + `
+` + `` + `
+` + `      if (payload == null) {` + `
+` + `        if (args[1] == null) {` + `
+` + `          Lib.logError(` + `
+` + `            "STORE_DATA: no payload - pass the storage structure or its model path",` + `
+` + `          );` + `
+` + `        }` + `
+` + `        return;` + `
+` + `      }` + `
+` + `      const { TYPE, PREFIX, VALUE, KEY } = payload;` + `
 ` + `      try {` + `
 ` + `        const storageType = Lib.resolveStorageType(` + `
 ` + `          Storage,` + `
