@@ -111,7 +111,11 @@ class z2ui5_cl_ui5_view_builder {
     let lv_off;
     let lv_len;
     if (z2ui5_cl_util.abap_is_initial(z2ui5_cl_ui5_view_builder.gv_escape_specials)) {
-      z2ui5_cl_ui5_view_builder.gv_escape_controls = z2ui5_cl_ui5_util_context.conv_get_string_by_xstring({ val: (`0102030405060708` + `0B0C` + `0E0F101112131415161718191A1B1C1D1E1F`) });
+      try {
+        z2ui5_cl_ui5_view_builder.gv_escape_controls = z2ui5_cl_ui5_util_context.conv_get_string_by_xstring({ val: (`0102030405060708` + `0B0C` + `0E0F101112131415161718191A1B1C1D1E1F`) });
+      } catch (error) {
+        z2ui5_cl_ui5_view_builder.gv_escape_controls = ``;
+      }
       z2ui5_cl_ui5_view_builder.gv_escape_specials = `&<>"` + z2ui5_cl_ui5_util_context.cv_char_util_newline + String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf)
         .substr(0, 1) + z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab + z2ui5_cl_ui5_view_builder.gv_escape_controls;
     }

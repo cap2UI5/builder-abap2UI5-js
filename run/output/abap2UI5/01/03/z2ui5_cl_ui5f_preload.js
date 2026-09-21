@@ -1,6 +1,6 @@
 
 class z2ui5_cl_ui5f_preload {
-  static build_hash = `76f7e7616826ba4a`;
+  static build_hash = `c4910c3888ecc0d9`;
 
   static get({ styles_css, custom_js } = {}) {
     let result = ``;

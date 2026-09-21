@@ -1291,6 +1291,7 @@ class z2ui5_cl_ui5_util_context {
     let conv = null;
     let conv_codepage = ``;
     let conv_in_class = ``;
+    let lx_first = null;
     try {
       conv_codepage = `CL_ABAP_CONV_CODEPAGE`;
       // TODO(abap2js): CALL METHOD (conv_codepage)=>create_in RECEIVING instance = conv.
@@ -1304,7 +1305,11 @@ class z2ui5_cl_ui5_util_context {
           result = _dynret !== undefined ? _dynret : _dynargs.result;
         }
       }
-    } catch (error) {
+      return result;
+    } catch (_caught1) {
+      lx_first = _caught1;
+    }
+    try {
       conv_in_class = `CL_ABAP_CONV_IN_CE`;
       // TODO(abap2js): CALL METHOD (conv_in_class)=>create EXPORTING encoding = `UTF-8` RECEIVING conv = conv.
       {
@@ -1317,6 +1322,8 @@ class z2ui5_cl_ui5_util_context {
           result = _dynargs.data;
         }
       }
+    } catch (error) {
+      throw new z2ui5_cx_ui5_util_error({ val: `UNSUPPORTED_CODEPAGE_API - neither CL_ABAP_CONV_CODEPAGE ` + `nor CL_ABAP_CONV_IN_CE could convert here`, previous: lx_first });
     }
     return result;
   }
@@ -1326,6 +1333,7 @@ class z2ui5_cl_ui5_util_context {
     let conv = null;
     let conv_codepage = ``;
     let conv_out_class = ``;
+    let lx_first = null;
     try {
       conv_codepage = `CL_ABAP_CONV_CODEPAGE`;
       // TODO(abap2js): CALL METHOD (conv_codepage)=>create_out RECEIVING instance = conv.
@@ -1339,7 +1347,11 @@ class z2ui5_cl_ui5_util_context {
           result = _dynret !== undefined ? _dynret : _dynargs.result;
         }
       }
-    } catch (error) {
+      return result;
+    } catch (_caught1) {
+      lx_first = _caught1;
+    }
+    try {
       conv_out_class = `CL_ABAP_CONV_OUT_CE`;
       // TODO(abap2js): CALL METHOD (conv_out_class)=>create EXPORTING encoding = `UTF-8` RECEIVING conv = conv.
       {
@@ -1352,6 +1364,8 @@ class z2ui5_cl_ui5_util_context {
           result = _dynargs.buffer;
         }
       }
+    } catch (error) {
+      throw new z2ui5_cx_ui5_util_error({ val: `UNSUPPORTED_CODEPAGE_API - neither CL_ABAP_CONV_CODEPAGE ` + `nor CL_ABAP_CONV_OUT_CE could convert here`, previous: lx_first });
     }
     return result;
   }
