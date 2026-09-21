@@ -1,7 +1,7 @@
 {
   "_comment": "Written by scripts/oracle-classify.js --json. Each baseline entry is classified against upstream's own JS runtime (@abaplint transpiler + open-abap): BUG = the upstream oracle runs this test GREEN, so it is achievable in JS and is a fixable defect here, not ABAP-kernel semantics. KERNEL = on upstream's documented skip list. NOTRUN = the oracle did not execute it, so nothing is proven either way. Committed rather than printed so a verdict changing week to week is a diff somebody can see. Do not hand-edit.",
-  "oracle_green_methods": 1272,
-  "upstream_skips": 8,
+  "oracle_green_methods": 1285,
+  "upstream_skips": 7,
   "totals": {
     "BUG": 74,
     "KERNEL": 0,
