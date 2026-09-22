@@ -154,6 +154,15 @@ class z2ui5_cl_ui5f_console_js {
 ` + `            walked.set(head, val);` + `
 ` + `            return head;` + `
 ` + `          }` + `
+` + `` + `
+` + `          const keys = Object.keys(val);` + `
+` + `          if (keys.length > MAX_ITEMS) {` + `
+` + `            const head = {};` + `
+` + `            for (const k of keys.slice(0, MAX_ITEMS)) head[k] = val[k];` + `
+` + `            head[\`... \${keys.length - MAX_ITEMS} more\`] = "[...]";` + `
+` + `            walked.set(head, val);` + `
+` + `            return head;` + `
+` + `          }` + `
 ` + `        }` + `
 ` + `        if (isErrorLike(val)) return val.stack || String(val);` + `
 ` + `        return val;` + `

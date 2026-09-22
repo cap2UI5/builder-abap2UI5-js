@@ -131,6 +131,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      setExpanded: ["bool"],` + `
 ` + `      discardProgress: ["controlId"],` + `
 ` + `      setNextStep: ["controlId"],` + `
+` + `      setCurrentStep: ["controlId"],` + `
 ` + `      goToStep: ["controlId", "bool"],` + `
 ` + `      openBy: ["anchor"],` + `
 ` + `      toggleBy: ["anchor"],` + `
@@ -401,9 +402,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` + `
 ` + `        return false;` + `
 ` + `      const prop = control.getMetadata?.()?.getAllProperties?.()[` + `
-` + `        method.charAt(3).toLowerCase() + method.slice(4)` + `
 `;
-    result = result + `      ];` + `
+    result = result + `        method.charAt(3).toLowerCase() + method.slice(4)` + `
+` + `      ];` + `
 ` + `      if (!prop) return false;` + `
 ` + `      const primitive = prop.getType?.()?.getPrimitiveType?.()?.getName?.();` + `
 ` + `      return primitive ? primitive === "string" : prop.type === "string";` + `
@@ -802,9 +803,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    return { handlers };` + `
 ` + `  },` + `
-` + `);` + `
 `;
-    result = result + `` + `
+    result = result + `);` + `
+` + `` + `
 ` + ``;
     return result;
   }
