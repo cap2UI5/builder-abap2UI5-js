@@ -140,31 +140,8 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `      installShortcutListener();` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function evKeyboardSetMode(oController, args) {` + `
-` + `      try {` + `
-` + `        const oElement = ViewSlots.resolveById(args[1]);` + `
-` + `        if (!oElement) {` + `
-` + `          Lib.logError(\`KEYBOARD_SET_MODE: '\${args[1]}' not found\`);` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        const dom = oElement.getDomRef();` + `
-` + `        if (!dom) return;` + `
-` + `        const input = dom.matches("input, textarea")` + `
-` + `          ? dom` + `
-` + `          : dom.querySelector("input, textarea");` + `
-` + `        if (!input) return;` + `
-` + `        input.setAttribute("inputmode", args[2] || "text");` + `
-` + `      } catch (e) {` + `
-` + `        Lib.logError(` + `
-` + `          \`KEYBOARD_SET_MODE: setAttribute failed for '\${args[1]}'\`,` + `
-` + `          e,` + `
-` + `        );` + `
-` + `      }` + `
-` + `    }` + `
-` + `` + `
 ` + `    const handlers = {` + `
 ` + `      KEYBOARD_SHORTCUT: evKeyboardShortcut,` + `
-` + `      KEYBOARD_SET_MODE: evKeyboardSetMode,` + `
 ` + `    };` + `
 ` + `` + `
 ` + `    return { handlers, reset };` + `

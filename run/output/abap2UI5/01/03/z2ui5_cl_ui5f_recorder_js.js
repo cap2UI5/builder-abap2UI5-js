@@ -42,7 +42,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `    let onPageHide = null;` + `
 ` + `` + `
 ` + `    function backendUrl() {` + `
-` + `      const url = AppState.getGlobal("url");` + `
+` + `      const url = AppState.state.url;` + `
 ` + `      if (!url) return "";` + `
 ` + `      try {` + `
 ` + `        return new URL(url, window.location.href).href;` + `

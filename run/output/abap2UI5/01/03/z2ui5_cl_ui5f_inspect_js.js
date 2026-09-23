@@ -143,7 +143,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `` + `
 ` + `    function formatEnvironment() {` + `
 ` + `      const state = AppState.state;` + `
-` + `      const oConfig = AppState.getGlobal("oConfig") || {};` + `
+` + `      const oConfig = state.oConfig;` + `
 ` + `      const sUi5 = oConfig.S_UI5;` + `
 ` + `      const responseFront = state.responseData?.S_FRONT;` + `
 ` + `      const out = ["abap2UI5 Developer Tools - Environment"];` + `
@@ -158,10 +158,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `` + `
 ` + `      out.push(section("Session"));` + `
 ` + `      out.push(line("sap-contextid", state.contextId));` + `
-` + `      out.push(line("Backend endpoint", AppState.getGlobal("url")));` + `
-` + `      out.push(` + `
-` + `        line("Served by backend", yesNo(AppState.getGlobal("checkLocal"))),` + `
-` + `      );` + `
+` + `      out.push(line("Backend endpoint", state.url));` + `
+` + `      out.push(line("Served by backend", yesNo(state.checkLocal)));` + `
 ` + `      out.push(line("Launchpad", yesNo(state.oLaunchpad)));` + `
 ` + `      out.push(line("Origin", window.location.origin));` + `
 ` + `      out.push(line("Pathname", window.location.pathname));` + `
@@ -247,8 +245,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(line("Resource base", resourceUrl("")));` + `
 ` + `      out.push(line("z2ui5 root", resourceUrl("z2ui5")));` + `
 ` + `` + `
-` + `      const cci = AppState.getGlobal("ccResourceRoot");` + `
-` + `      const ccc = AppState.getGlobal("cccResourceRoot");` + `
+` + `      const cci = AppState.state.ccResourceRoot;` + `
+` + `      const ccc = AppState.state.cccResourceRoot;` + `
 ` + `      if (cci) out.push(line("z2ui5_cci root", cci));` + `
 ` + `      if (ccc) out.push(line("z2ui5_ccc root", ccc));` + `
 ` + `      return out;` + `
@@ -402,10 +400,10 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      });` + `
 ` + `      return out;` + `
 ` + `    }` + `
-`;
-    result = result + `` + `
+` + `` + `
 ` + `    function formatActions() {` + `
-` + `      const sAction = AppState.state.responseData?.S_FRONT?.S_ACTION;` + `
+`;
+    result = result + `      const sAction = AppState.state.responseData?.S_FRONT?.S_ACTION;` + `
 ` + `      const out = ["abap2UI5 Developer Tools - Actions of the last response"];` + `
 ` + `      out.push("");` + `
 ` + `      out.push(` + `
@@ -797,19 +795,16 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(line("Version", sap.ui.version));` + `
 ` + `` + `
 ` + `      out.push(` + `
-` + `        line(` + `
-` + `          "Distribution",` + `
-` + `          getDistribution((AppState.getGlobal("oConfig") || {}).S_UI5),` + `
-` + `        ),` + `
+` + `        line("Distribution", getDistribution(AppState.state.oConfig.S_UI5)),` + `
 ` + `      );` + `
 ` + `      out.push(line("Theme", Lib.getTheme()));` + `
-`;
-    result = result + `` + `
+` + `` + `
 ` + `      out.push(section("View slots"));` + `
 ` + `      out.push(...formatSlots());` + `
 ` + `` + `
 ` + `      out.push(section("Getting around"));` + `
-` + `      out.push("  Ctrl+F12          open / close these tools");` + `
+`;
+    result = result + `      out.push("  Ctrl+F12          open / close these tools");` + `
 ` + `      out.push("  Search field      one term across every tab at once");` + `
 ` + `      out.push("  (i) in the footer what every tab answers");` + `
 ` + `      out.push(` + `

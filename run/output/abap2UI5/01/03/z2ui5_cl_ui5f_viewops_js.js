@@ -90,18 +90,6 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      view.bindElement(\`\${path}/\${args[2]}\`);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function evImageEditorPopupClose(oController) {` + `
-` + `      let image;` + `
-` + `      try {` + `
-` + `        const editor = ViewSlots.byId("POPUP", "imageEditor");` + `
-` + `        if (editor) image = editor.getImagePngDataURL();` + `
-` + `      } catch (e) {` + `
-` + `        Lib.logError("IMAGE_EDITOR_POPUP_CLOSE: getImagePngDataURL failed", e);` + `
-` + `      }` + `
-` + `      ViewSlots.destroy("POPUP");` + `
-` + `      oController.eB(["SAVE"], image);` + `
-` + `    }` + `
-` + `` + `
 ` + `    function evStartTimer(oController, args) {` + `
 ` + `      const timerKey = args[0];` + `
 ` + `      const callbackEvent = args[1];` + `
@@ -236,29 +224,14 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function evZ2ui5Custom(oController, args) {` + `
-` + `      try {` + `
-` + `        const fn = AppState.getGlobal(args[1]);` + `
-` + `        if (typeof fn === "function") {` + `
-` + `          fn(args.slice(2));` + `
-` + `        } else {` + `
-` + `          Lib.logError(\`Z2UI5: 'z2ui5.\${args[1]}' is not a function\`);` + `
-` + `        }` + `
-` + `      } catch (e) {` + `
-` + `        Lib.logError(\`Z2UI5: '\${args[1]}' failed\`, e);` + `
-` + `      }` + `
-` + `    }` + `
-` + `` + `
 ` + `    const handlers = {` + `
 ` + `      SET_SIZE_LIMIT: evSetSizeLimit,` + `
 ` + `      SET_ODATA_MODEL: evSetODataModel,` + `
 ` + `      BIND_ELEMENT: evBindElement,` + `
-` + `      IMAGE_EDITOR_POPUP_CLOSE: evImageEditorPopupClose,` + `
 ` + `      START_TIMER: evStartTimer,` + `
 ` + `      SET_FOCUS: evSetFocus,` + `
 ` + `      SCROLL_TO: evScrollTo,` + `
 ` + `      SCROLL_INTO_VIEW: evScrollIntoView,` + `
-` + `      Z2UI5: evZ2ui5Custom,` + `
 ` + `    };` + `
 ` + `` + `
 ` + `    return { handlers };` + `

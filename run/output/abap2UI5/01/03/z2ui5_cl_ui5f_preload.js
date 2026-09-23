@@ -1,11 +1,10 @@
 
 class z2ui5_cl_ui5f_preload {
-  static build_hash = `a91bb39f9a461295`;
+  static build_hash = `e9f479d24839087a`;
 
   static get({ styles_css, custom_js } = {}) {
     let result = ``;
     result = `      "z2ui5/Component.js": function(){${z2ui5_cl_ui5f_comp_js.get()}${custom_js}},` + `
-` + `      "z2ui5/Util.js": function(){${z2ui5_cl_ui5f_util_js.get()}},` + `
 ` + `      "z2ui5/cc/CameraPicture.js": function(){${z2ui5_cl_ui5f_campic_js.get()}},` + `
 ` + `      "z2ui5/cc/CameraSelector.js": function(){${z2ui5_cl_ui5f_camsel_js.get()}},` + `
 ` + `      "z2ui5/cc/Dirty.js": function(){${z2ui5_cl_ui5f_dirty_js.get()}},` + `
@@ -134,7 +133,6 @@ const z2ui5_cl_ui5f_tree_js = require("abap2UI5/z2ui5_cl_ui5f_tree_js");
 const z2ui5_cl_ui5f_uitable_js = require("abap2UI5/z2ui5_cl_ui5f_uitable_js");
 const z2ui5_cl_ui5f_upldset_js = require("abap2UI5/z2ui5_cl_ui5f_upldset_js");
 const z2ui5_cl_ui5f_uploader_js = require("abap2UI5/z2ui5_cl_ui5f_uploader_js");
-const z2ui5_cl_ui5f_util_js = require("abap2UI5/z2ui5_cl_ui5f_util_js");
 const z2ui5_cl_ui5f_variants_js = require("abap2UI5/z2ui5_cl_ui5f_variants_js");
 const z2ui5_cl_ui5f_view1_js = require("abap2UI5/z2ui5_cl_ui5f_view1_js");
 const z2ui5_cl_ui5f_viewops_js = require("abap2UI5/z2ui5_cl_ui5f_viewops_js");

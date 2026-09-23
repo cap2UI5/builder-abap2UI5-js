@@ -78,14 +78,14 @@ class z2ui5_cl_ui5f_session_js {
 ` + `` + `
 ` + `  let locationSent = false;` + `
 ` + `` + `
-` + `  function location(draftId, search) {` + `
+` + `  function location(draftId) {` + `
 ` + `    if (draftId && locationSent) return null;` + `
 ` + `` + `
 ` + `    pending = { ...pending, location: true };` + `
 ` + `    return {` + `
 ` + `      ORIGIN: window.location.origin,` + `
 ` + `      PATHNAME: window.location.pathname,` + `
-` + `      SEARCH: search || window.location.search,` + `
+` + `      SEARCH: window.location.search,` + `
 ` + `    };` + `
 ` + `  }` + `
 ` + `` + `
