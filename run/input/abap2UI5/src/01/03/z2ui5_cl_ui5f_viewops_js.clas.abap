@@ -113,18 +113,6 @@ CLASS z2ui5_cl_ui5f_viewops_js IMPLEMENTATION.
              `      view.bindElement(``${path}/${args[2]}``);` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function evImageEditorPopupClose(oController) {` && |\n| &&
-             `      let image;` && |\n| &&
-             `      try {` && |\n| &&
-             `        const editor = ViewSlots.byId("POPUP", "imageEditor");` && |\n| &&
-             `        if (editor) image = editor.getImagePngDataURL();` && |\n| &&
-             `      } catch (e) {` && |\n| &&
-             `        Lib.logError("IMAGE_EDITOR_POPUP_CLOSE: getImagePngDataURL failed", e);` && |\n| &&
-             `      }` && |\n| &&
-             `      ViewSlots.destroy("POPUP");` && |\n| &&
-             `      oController.eB(["SAVE"], image);` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
              `    function evStartTimer(oController, args) {` && |\n| &&
              `      const timerKey = args[0];` && |\n| &&
              `      const callbackEvent = args[1];` && |\n| &&
@@ -259,29 +247,14 @@ CLASS z2ui5_cl_ui5f_viewops_js IMPLEMENTATION.
              `      }` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function evZ2ui5Custom(oController, args) {` && |\n| &&
-             `      try {` && |\n| &&
-             `        const fn = AppState.getGlobal(args[1]);` && |\n| &&
-             `        if (typeof fn === "function") {` && |\n| &&
-             `          fn(args.slice(2));` && |\n| &&
-             `        } else {` && |\n| &&
-             `          Lib.logError(``Z2UI5: 'z2ui5.${args[1]}' is not a function``);` && |\n| &&
-             `        }` && |\n| &&
-             `      } catch (e) {` && |\n| &&
-             `        Lib.logError(``Z2UI5: '${args[1]}' failed``, e);` && |\n| &&
-             `      }` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
              `    const handlers = {` && |\n| &&
              `      SET_SIZE_LIMIT: evSetSizeLimit,` && |\n| &&
              `      SET_ODATA_MODEL: evSetODataModel,` && |\n| &&
              `      BIND_ELEMENT: evBindElement,` && |\n| &&
-             `      IMAGE_EDITOR_POPUP_CLOSE: evImageEditorPopupClose,` && |\n| &&
              `      START_TIMER: evStartTimer,` && |\n| &&
              `      SET_FOCUS: evSetFocus,` && |\n| &&
              `      SCROLL_TO: evScrollTo,` && |\n| &&
              `      SCROLL_INTO_VIEW: evScrollIntoView,` && |\n| &&
-             `      Z2UI5: evZ2ui5Custom,` && |\n| &&
              `    };` && |\n| &&
              `` && |\n| &&
              `    return { handlers };` && |\n| &&
