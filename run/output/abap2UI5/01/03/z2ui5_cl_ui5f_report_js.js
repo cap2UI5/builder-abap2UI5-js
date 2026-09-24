@@ -12,7 +12,7 @@ class z2ui5_cl_ui5f_report_js {
 ` + `    const ABAP_SOURCE_ORDER = 55;` + `
 ` + `    const ABAP_SOURCE_TITLE = "ABAP SOURCE";` + `
 ` + `` + `
-` + `    function buildExport(abapSource) {` + `
+` + `    function buildExport(ctx, abapSource) {` + `
 ` + `      const sections = [];` + `
 ` + `      const push = (title, content) => {` + `
 ` + `        if (!content) return;` + `
@@ -26,11 +26,11 @@ class z2ui5_cl_ui5f_report_js {
 ` + `        sections.push(\`===== \${title} =====\\n\${body}\`);` + `
 ` + `      };` + `
 ` + `` + `
-` + `      const entries = Tabs.exportTabs().map((tab) => ({` + `
+` + `      const entries = Tabs.exportTabs(ctx).map((tab) => ({` + `
 ` + `        order: tab.exportOrder,` + `
 ` + `        title: Tabs.exportTitle(tab),` + `
 ` + `` + `
-` + `        body: Tabs.render(tab.key),` + `
+` + `        body: Tabs.render(ctx, tab.key),` + `
 ` + `      }));` + `
 ` + `      if (abapSource) {` + `
 ` + `        entries.push({` + `
@@ -45,7 +45,11 @@ class z2ui5_cl_ui5f_report_js {
 ` + `      return sections.join("\\n\\n") || "(nothing to export)";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function buildMarkdown(abapSource, plain = buildExport(abapSource)) {` + `
+` + `    function buildMarkdown(` + `
+` + `      ctx,` + `
+` + `      abapSource,` + `
+` + `      plain = buildExport(ctx, abapSource),` + `
+` + `    ) {` + `
 ` + `      const blocks = plain.split(/^===== (.+) =====$/m);` + `
 ` + `` + `
 ` + `      const out = ["## abap2UI5 - Developer Tools export", ""];` + `
@@ -101,8 +105,8 @@ class z2ui5_cl_ui5f_report_js {
 ` + `      }, 1500);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function openDialog(appName, abapSource) {` + `
-` + `      const text = buildExport(abapSource);` + `
+` + `    function openDialog(ctx, appName, abapSource) {` + `
+` + `      const text = buildExport(ctx, abapSource);` + `
 ` + `      sap.ui.require(` + `
 ` + `        ["sap/m/Dialog", "sap/m/TextArea", "sap/m/Button"],` + `
 ` + `        (Dialog, TextArea, Button) => {` + `
@@ -125,7 +129,7 @@ class z2ui5_cl_ui5f_report_js {
 ` + `                type: "Emphasized",` + `
 ` + `` + `
 ` + `                press: (oEvent) => {` + `
-` + `                  copyMarkdown(abapSource, text);` + `
+` + `                  copyMarkdown(ctx, abapSource, text);` + `
 ` + `                  confirmOnButton(oEvent.getSource());` + `
 ` + `                },` + `
 ` + `              }),` + `
@@ -146,7 +150,7 @@ class z2ui5_cl_ui5f_report_js {
 ` + `                press: () =>` + `
 ` + `                  downloadText(` + `
 ` + `                    exportFileName(appName, "json"),` + `
-` + `                    Recorder.exportJson(),` + `
+` + `                    Recorder.exportJson(ctx),` + `
 ` + `                    "application/json",` + `
 ` + `                  ),` + `
 ` + `              }),` + `
@@ -162,9 +166,9 @@ class z2ui5_cl_ui5f_report_js {
 ` + `      );` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function copyMarkdown(abapSource, plain) {` + `
+` + `    function copyMarkdown(ctx, abapSource, plain) {` + `
 ` + `      try {` + `
-` + `        Lib.copyToClipboard(buildMarkdown(abapSource, plain));` + `
+` + `        Lib.copyToClipboard(buildMarkdown(ctx, abapSource, plain));` + `
 ` + `        return "Bug report copied as Markdown - paste it into a GitHub issue.";` + `
 ` + `      } catch (e) {` + `
 ` + `        Lib.logError("DevTools Report: markdown export failed", e);` + `

@@ -6,10 +6,10 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `  [` + `
 ` + `    "sap/ui/core/Element",` + `
 ` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/core/Env",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
-` + `    "z2ui5/core/AppState",` + `
 ` + `  ],` + `
-` + `  (Element, Lib, ViewSlots, AppState) => {` + `
+` + `  (Element, Lib, Env, ViewSlots) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    function closestUi5Element(dom) {` + `
@@ -17,18 +17,18 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      let el = dom;` + `
 ` + `      while (el && el.getAttribute) {` + `
 ` + `        if (el.hasAttribute("data-sap-ui")) {` + `
-` + `          return Lib.getElementById(el.id);` + `
+` + `          return Env.getElementById(el.id);` + `
 ` + `        }` + `
 ` + `        el = el.parentElement;` + `
 ` + `      }` + `
 ` + `      return null;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function stripSlotPrefix(fullId, slot) {` + `
-` + `      const view = ViewSlots.getView(slot.key);` + `
+` + `    function stripSlotPrefix(ctx, fullId, slot) {` + `
+` + `      const view = ViewSlots.getView(ctx, slot.key);` + `
 ` + `      if (!view) return fullId;` + `
 ` + `      const prefix = slot.fragmentId` + `
-` + `        ? \`\${slot.fragmentId}--\`` + `
+` + `        ? \`\${ViewSlots.fragmentIdOf(ctx, slot)}--\`` + `
 ` + `        : \`\${view.getId()}--\`;` + `
 ` + `      return fullId.startsWith(prefix) ? fullId.slice(prefix.length) : fullId;` + `
 ` + `    }` + `
@@ -42,7 +42,7 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      return Lib.isTextInput(inner) ? inner : null;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function getFocusInfo() {` + `
+` + `    function getFocusInfo(ctx) {` + `
 ` + `      try {` + `
 ` + `        const active = document.activeElement;` + `
 ` + `        if (!active) return undefined;` + `
@@ -51,7 +51,7 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `        const fullId = ui5El.getId();` + `
 ` + `        let id = fullId;` + `
 ` + `        for (const slot of ViewSlots.slots) {` + `
-` + `          const local = stripSlotPrefix(fullId, slot);` + `
+` + `          const local = stripSlotPrefix(ctx, fullId, slot);` + `
 ` + `          if (local !== fullId) {` + `
 ` + `            id = local;` + `
 ` + `            break;` + `
@@ -71,45 +71,42 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    const _scrollCache = {` + `
-` + `      target: undefined,` + `
-` + `      ui5El: undefined,` + `
-` + `      slotKey: undefined,` + `
-` + `    };` + `
-` + `` + `
-` + `    function clearScrollCache() {` + `
-` + `      _scrollCache.target = undefined;` + `
-` + `      _scrollCache.ui5El = undefined;` + `
-` + `      _scrollCache.slotKey = undefined;` + `
+` + `    function clearScrollCache(ctx) {` + `
+` + `      const cache = ctx.scroll;` + `
+` + `      cache.target = undefined;` + `
+` + `      cache.ui5El = undefined;` + `
+` + `      cache.slotKey = undefined;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function onScrollCapture(event) {` + `
+` + `    function onScrollCapture(ctx, event) {` + `
 ` + `      const target = event.target;` + `
 ` + `      if (!target || target.nodeType !== 1) return;` + `
+` + `      const _scrollCache = ctx.scroll;` + `
 ` + `` + `
 ` + `      if (target !== _scrollCache.target) {` + `
 ` + `        const ui5El = closestUi5Element(target);` + `
 ` + `        _scrollCache.target = target;` + `
 ` + `        _scrollCache.ui5El = ui5El;` + `
 ` + `        _scrollCache.slotKey = ui5El` + `
-` + `          ? ViewSlots.containingSlotKey(ui5El)` + `
+` + `          ? ViewSlots.containingSlotKey(ctx, ui5El)` + `
 ` + `          : undefined;` + `
 ` + `      }` + `
 ` + `` + `
 ` + `      if (_scrollCache.slotKey) {` + `
-` + `        AppState.state.lastScrolled[_scrollCache.slotKey] = {` + `
+` + `        ctx.state.lastScrolled[_scrollCache.slotKey] = {` + `
 ` + `          control: _scrollCache.ui5El,` + `
 ` + `          dom: target,` + `
 ` + `        };` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function getScrollInfo() {` + `
+` + `    function getScrollInfo(ctx) {` + `
+` + `      const _scrollCache = ctx.scroll;` + `
 ` + `      if (_scrollCache.target && !_scrollCache.target.isConnected) {` + `
-` + `        clearScrollCache();` + `
+` + `        clearScrollCache(ctx);` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const store = AppState.state.lastScrolled;` + `
+` + `      const store = ctx.state.lastScrolled;` + `
 ` + `      const out = {};` + `
 ` + `      for (const slot of ViewSlots.slots) {` + `
 ` + `        const entry = store[slot.key];` + `
@@ -120,7 +117,7 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `          continue;` + `
 ` + `        }` + `
 ` + `` + `
-` + `        const id = stripSlotPrefix(entry.control.getId(), slot);` + `
+` + `        const id = stripSlotPrefix(ctx, entry.control.getId(), slot);` + `
 ` + `        out[slot.key] = {` + `
 ` + `          ID: id,` + `
 ` + `          X: entry.dom.scrollLeft || 0,` + `
@@ -131,8 +128,8 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      return Object.keys(out).length ? out : undefined;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function reset() {` + `
-` + `      clearScrollCache();` + `
+` + `    function reset(ctx) {` + `
+` + `      clearScrollCache(ctx);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    return {` + `
@@ -142,7 +139,6 @@ class z2ui5_cl_ui5f_scrfocus_js {
 ` + `      closestUi5Element,` + `
 ` + `      focusTextInput,` + `
 ` + `      reset,` + `
-` + `      _scrollCache,` + `
 ` + `    };` + `
 ` + `  },` + `
 ` + `);` + `

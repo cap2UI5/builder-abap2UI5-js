@@ -49,8 +49,10 @@ class z2ui5_cl_ui5f_variants_js {
 ` + `        finish();` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      const oSVM = ViewSlots.resolveById(svmId);` + `
-` + `      const control = controlId ? ViewSlots.resolveById(controlId) : null;` + `
+` + `      const oSVM = ViewSlots.resolveById(oController?.ctx, svmId);` + `
+` + `      const control = controlId` + `
+` + `        ? ViewSlots.resolveById(oController?.ctx, controlId)` + `
+` + `        : null;` + `
 ` + `      if (!oSVM || (controlId && !control)) {` + `
 ` + `        if (tries++ < SMART_VARIANT_INIT_TRIES) {` + `
 ` + `          setTimeout(run, SMART_VARIANT_INIT_DELAY);` + `
@@ -85,7 +87,10 @@ class z2ui5_cl_ui5f_variants_js {
 ` + `          finish();` + `
 ` + `          return;` + `
 ` + `        }` + `
-` + `        target = ViewSlots.resolveById(registered[0].getControl());` + `
+` + `        target = ViewSlots.resolveById(` + `
+` + `          oController?.ctx,` + `
+` + `          registered[0].getControl(),` + `
+` + `        );` + `
 ` + `        if (!target) {` + `
 ` + `          finish();` + `
 ` + `          return;` + `
@@ -193,8 +198,8 @@ class z2ui5_cl_ui5f_variants_js {
 ` + `        finish();` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      const oSVM = ViewSlots.resolveById(svmId);` + `
-` + `      const oFilterBar = ViewSlots.resolveById(filterBarId);` + `
+` + `      const oSVM = ViewSlots.resolveById(oController?.ctx, svmId);` + `
+` + `      const oFilterBar = ViewSlots.resolveById(oController?.ctx, filterBarId);` + `
 ` + `      if (!oSVM || !oFilterBar) {` + `
 ` + `        if (tries++ < SMART_VARIANT_INIT_TRIES) {` + `
 ` + `          setTimeout(run, SMART_VARIANT_INIT_DELAY);` + `

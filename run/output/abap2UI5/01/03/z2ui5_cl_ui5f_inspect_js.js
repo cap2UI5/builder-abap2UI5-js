@@ -5,23 +5,29 @@ class z2ui5_cl_ui5f_inspect_js {
     result = `sap.ui.define(` + `
 ` + `  [` + `
 ` + `    "sap/ui/Device",` + `
-` + `    "z2ui5/core/AppState",` + `
 ` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/core/Env",` + `
 ` + `    "z2ui5/core/ScrollFocus",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
-` + `    "z2ui5/devtools/Console",` + `
 ` + `    "z2ui5/devtools/Recorder",` + `
 ` + `    "z2ui5/devtools/Format",` + `
+` + `    "z2ui5/devtools/SlotXml",` + `
+` + `    "z2ui5/devtools/Log",` + `
+` + `    "z2ui5/devtools/Bindings",` + `
+` + `    "z2ui5/devtools/Help",` + `
 ` + `  ],` + `
 ` + `  (` + `
 ` + `    Device,` + `
-` + `    AppState,` + `
 ` + `    Lib,` + `
+` + `    Env,` + `
 ` + `    ScrollFocus,` + `
 ` + `    ViewSlots,` + `
-` + `    Console,` + `
 ` + `    Recorder,` + `
 ` + `    Format,` + `
+` + `    SlotXml,` + `
+` + `    Log,` + `
+` + `    Bindings,` + `
+` + `    Help,` + `
 ` + `  ) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
@@ -50,9 +56,6 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `` + `
 ` + `    const EVENT_CALL = new RegExp(Format.FRAMEWORK_CALL.source, "g");` + `
 ` + `` + `
-` + `    const BINDING_PATH =` + `
-` + `      /(?:\\{\\s*|\\$\\{\\s*|path\\s*:\\s*['"]|parts\\s*:\\s*\\[\\s*['"]|,\\s*['"])\\/([A-Za-z_][A-Za-z0-9_]*)/g;` + `
-` + `` + `
 ` + `    const WORD_CHAR = /[a-z0-9_]/;` + `
 ` + `    const isWordChar = (ch) => ch !== undefined && WORD_CHAR.test(ch);` + `
 ` + `` + `
@@ -64,15 +67,11 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return \`  \${label.padEnd(LABEL_WIDTH)}\${text}\`;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function section(title) {` + `
-` + `      return \`\\n\${title}\\n\${"-".repeat(title.length)}\`;` + `
-` + `    }` + `
-` + `` + `
 ` + `    function yesNo(value) {` + `
 ` + `      return value ? "yes" : "no";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    const { truncate, formatBytes } = Format;` + `
+` + `    const { truncate, section, renderValue } = Format;` + `
 ` + `` + `
 ` + `    function bootstrapElement() {` + `
 ` + `      try {` + `
@@ -111,19 +110,19 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return gav.includes("com.sap.ui5") ? "SAPUI5" : "OpenUI5";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function modelAttributeCount(slotKey) {` + `
+` + `    function modelAttributeCount(ctx, slotKey) {` + `
 ` + `      const data = ViewSlots.trackedModel(` + `
-` + `        ViewSlots.getView(slotKey),` + `
+` + `        ViewSlots.getView(ctx, slotKey),` + `
 ` + `      )?.getData?.();` + `
 ` + `      if (!data) return 0;` + `
 ` + `      return Object.keys(data).length;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatSlots() {` + `
+` + `    function formatSlots(ctx) {` + `
 ` + `      const lines = [];` + `
 ` + `      for (const slot of ViewSlots.slots) {` + `
-` + `        const view = ViewSlots.getView(slot.key);` + `
-` + `        const xml = ViewSlots.getViewXml(slot.key);` + `
+` + `        const view = ViewSlots.getView(ctx, slot.key);` + `
+` + `        const xml = ViewSlots.getViewXml(ctx, slot.key);` + `
 ` + `        if (!view && !xml) {` + `
 ` + `          lines.push(line(slot.key, "empty"));` + `
 ` + `          continue;` + `
@@ -132,7 +131,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        parts.push(view ? "filled" : "xml only");` + `
 ` + `        if (xml) parts.push(\`\${xml.length} chars XML\`);` + `
 ` + `        if (slot.ownsModel) {` + `
-` + `          parts.push(\`\${modelAttributeCount(slot.key)} model attributes\`);` + `
+` + `          parts.push(\`\${modelAttributeCount(ctx, slot.key)} model attributes\`);` + `
 ` + `        } else {` + `
 ` + `          parts.push("inherits MAIN model");` + `
 ` + `        }` + `
@@ -141,8 +140,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return lines;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatEnvironment() {` + `
-` + `      const state = AppState.state;` + `
+` + `    function formatEnvironment(ctx) {` + `
+` + `      const state = ctx.state;` + `
 ` + `      const oConfig = state.oConfig;` + `
 ` + `      const sUi5 = oConfig.S_UI5;` + `
 ` + `      const responseFront = state.responseData?.S_FRONT;` + `
@@ -179,13 +178,13 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(line("Distribution", getDistribution(sUi5)));` + `
 ` + `      out.push(line("Build timestamp", sUi5?.BUILDTIMESTAMP));` + `
 ` + `` + `
-` + `      out.push(line("Theme", Lib.getTheme()));` + `
-` + `      const locale = Lib.getLocale();` + `
+` + `      out.push(line("Theme", Env.getTheme()));` + `
+` + `      const locale = Env.getLocale();` + `
 ` + `      out.push(line("Language", locale.language));` + `
 ` + `      out.push(line("Text direction", locale.rtl ? "RTL" : "LTR"));` + `
 ` + `      out.push(line("Content density", getContentDensity()));` + `
 ` + `` + `
-` + `      out.push(...formatBootstrap());` + `
+` + `      out.push(...formatBootstrap(ctx));` + `
 ` + `` + `
 ` + `      out.push(section("Device"));` + `
 ` + `      out.push(line("System", Lib.deriveSystemType(Device.system)));` + `
@@ -218,15 +217,15 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(line("Pointer", yesNo(Device.support.pointer)));` + `
 ` + `      out.push(line("Retina", yesNo(Device.support.retina)));` + `
 ` + `` + `
-` + `      out.push(...formatFrontendInfo());` + `
+` + `      out.push(...formatFrontendInfo(ctx));` + `
 ` + `` + `
 ` + `      out.push(section("View slots"));` + `
-` + `      out.push(...formatSlots());` + `
+` + `      out.push(...formatSlots(ctx));` + `
 ` + `` + `
 ` + `      return out.join("\\n");` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatBootstrap() {` + `
+` + `    function formatBootstrap(ctx) {` + `
 ` + `      const out = [section("UI5 bootstrap")];` + `
 ` + `      const el = bootstrapElement();` + `
 ` + `      if (!el) {` + `
@@ -245,14 +244,14 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(line("Resource base", resourceUrl("")));` + `
 ` + `      out.push(line("z2ui5 root", resourceUrl("z2ui5")));` + `
 ` + `` + `
-` + `      const cci = AppState.state.ccResourceRoot;` + `
-` + `      const ccc = AppState.state.cccResourceRoot;` + `
+` + `      const cci = ctx.state.ccResourceRoot;` + `
+` + `      const ccc = ctx.state.cccResourceRoot;` + `
 ` + `      if (cci) out.push(line("z2ui5_cci root", cci));` + `
 ` + `      if (ccc) out.push(line("z2ui5_ccc root", ccc));` + `
 ` + `      return out;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatFrontendInfo() {` + `
+` + `    function formatFrontendInfo(ctx) {` + `
 ` + `      const out = [section("Frontend info sent to the backend")];` + `
 ` + `      out.push("  (client->get( )-s_focus / -s_scroll, live for the next");` + `
 ` + `      out.push("  roundtrip - see -s_ui5 / -s_device above)");` + `
@@ -261,8 +260,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      let focus;` + `
 ` + `      let scroll;` + `
 ` + `      try {` + `
-` + `        focus = ScrollFocus.getFocusInfo();` + `
-` + `        scroll = ScrollFocus.getScrollInfo();` + `
+` + `        focus = ScrollFocus.getFocusInfo(ctx);` + `
+` + `        scroll = ScrollFocus.getScrollInfo(ctx);` + `
 ` + `      } catch (e) {` + `
 ` + `        Lib.logError("DevTools Inspect: reading focus/scroll failed", e);` + `
 ` + `        out.push("  (focus / scroll info unavailable)");` + `
@@ -292,14 +291,6 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return out;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function slotXml(slotKey) {` + `
-` + `      return (` + `
-` + `        ViewSlots.getView(slotKey)?.mProperties?.viewContent ||` + `
-` + `        ViewSlots.getViewXml(slotKey) ||` + `
-` + `        ""` + `
-` + `      );` + `
-` + `    }` + `
-` + `` + `
 ` + `    function scrapeEvents(xml) {` + `
 ` + `      if (!xml) return [];` + `
 ` + `      const found = new Set();` + `
@@ -311,8 +302,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return Array.from(found).sort();` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatShortcuts() {` + `
-` + `      const shortcuts = AppState.state.shortcuts || {};` + `
+` + `    function formatShortcuts(ctx) {` + `
+` + `      const shortcuts = ctx.state.shortcuts || {};` + `
 ` + `      const combos = Object.keys(shortcuts).sort();` + `
 ` + `      if (!combos.length) return ["  (none registered)"];` + `
 ` + `      const out = [];` + `
@@ -329,12 +320,12 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return out;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatRegistry() {` + `
-` + `      const state = AppState.state;` + `
+` + `    function formatRegistry(ctx) {` + `
+` + `      const state = ctx.state;` + `
 ` + `      const out = ["abap2UI5 Developer Tools - Registry"];` + `
 ` + `` + `
 ` + `      out.push(section("Keyboard shortcuts (combo / scope / backend event)"));` + `
-` + `      out.push(...formatShortcuts());` + `
+` + `      out.push(...formatShortcuts(ctx));` + `
 ` + `` + `
 ` + `      out.push(section("Pending backend timers"));` + `
 ` + `      const timers = Object.keys(state.timers || {});` + `
@@ -354,7 +345,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      out.push(section("Backend events bound in the current views"));` + `
 ` + `      let any = false;` + `
 ` + `      for (const slot of ViewSlots.slots) {` + `
-` + `        const events = scrapeEvents(slotXml(slot.key));` + `
+` + `        const events = scrapeEvents(SlotXml.slotXml(ctx, slot.key));` + `
 ` + `        if (!events.length) continue;` + `
 ` + `        any = true;` + `
 ` + `        out.push(\`  [\${slot.key}]\`);` + `
@@ -371,15 +362,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function renderArg(arg) {` + `
-` + `      if (arg === null) return "null";` + `
-` + `      if (typeof arg === "object") {` + `
-` + `        try {` + `
-` + `          return truncate(JSON.stringify(arg), MAX_ARG_CHARS);` + `
-` + `        } catch {` + `
-` + `          return "[object]";` + `
-` + `        }` + `
-` + `      }` + `
-` + `      return truncate(arg, MAX_ARG_CHARS);` + `
+` + `      return renderValue(arg, MAX_ARG_CHARS);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function renderActionList(list, title) {` + `
@@ -391,7 +374,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      list.forEach((item, index) => {` + `
 ` + `        const number = String(index + 1).padStart(3);` + `
 ` + `        if (!Array.isArray(item)) {` + `
-` + `          out.push(\`\${number}  [legacy JS] \${truncate(item, MAX_ARG_CHARS)}\`);` + `
+` + `          out.push(\`\${number}  [not run] \${truncate(item, MAX_ARG_CHARS)}\`);` + `
 ` + `          return;` + `
 ` + `        }` + `
 ` + `        const [name, ...args] = item;` + `
@@ -401,9 +384,8 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return out;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatActions() {` + `
-`;
-    result = result + `      const sAction = AppState.state.responseData?.S_FRONT?.S_ACTION;` + `
+` + `    function formatActions(ctx) {` + `
+` + `      const sAction = ctx.state.responseData?.S_FRONT?.S_ACTION;` + `
 ` + `      const out = ["abap2UI5 Developer Tools - Actions of the last response"];` + `
 ` + `      out.push("");` + `
 ` + `      out.push(` + `
@@ -417,306 +399,11 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return out.join("\\n");` + `
 ` + `    }` + `
 ` + `` + `
-` + `    const LEVEL_LABEL = {` + `
-` + `      error: "ERROR",` + `
-` + `      warn: "WARN ",` + `
-` + `      info: "INFO ",` + `
-` + `      log: "LOG  ",` + `
-` + `      debug: "DEBUG",` + `
-` + `    };` + `
-` + `` + `
-` + `    const SOURCE_WIDTH = 10;` + `
-` + `` + `
-` + `    const CONTINUATION_INDENT = " ".repeat(23 + SOURCE_WIDTH);` + `
-` + `` + `
-` + `    function frameworkEntryText(entry) {` + `
-` + `      if (entry.error === undefined) return entry.message;` + `
-` + `      let detail;` + `
-` + `      if (entry.error && typeof entry.error === "object") {` + `
-` + `        detail = entry.error.stack || entry.error.message;` + `
-` + `      }` + `
-` + `      if (!detail) {` + `
-` + `        try {` + `
-` + `          detail = String(entry.error);` + `
-` + `        } catch {` + `
-` + `          detail = "(error could not be rendered)";` + `
-` + `        }` + `
-` + `      }` + `
-` + `      return \`\${entry.message}\\n\${detail}\`;` + `
-` + `    }` + `
-` + `` + `
-` + `    function messageLevel(message) {` + `
-` + `      const method = String(message.method || "").toLowerCase();` + `
-` + `      if (method === "error" || method === "alert") return "error";` + `
-` + `      if (method === "warning") return "warn";` + `
-` + `      return "info";` + `
-` + `    }` + `
-` + `` + `
-` + `    function messageSource(message) {` + `
-` + `      return message.target === "MESSAGE_BOX"` + `
-` + `        ? \`box.\${message.method || "show"}\`` + `
-` + `        : "toast";` + `
-` + `    }` + `
-` + `` + `
-` + `    function collectLog() {` + `
-` + `      const out = [];` + `
-` + `      for (const entry of AppState.state.errors || []) {` + `
-` + `        out.push({` + `
-` + `          ts: entry.ts,` + `
-` + `          level: "error",` + `
-` + `          source: "framework",` + `
-` + `          text: frameworkEntryText(entry),` + `
-` + `        });` + `
-` + `      }` + `
-` + `      for (const entry of Console.getEntries()) {` + `
-` + `        out.push({` + `
-` + `          ts: entry.ts,` + `
-` + `          level: entry.level,` + `
-` + `          source: entry.source,` + `
-` + `          text: entry.text,` + `
-` + `          previousLoad: entry.previousLoad,` + `
-` + `        });` + `
-` + `      }` + `
-` + `      for (const record of Recorder.getRecords()) {` + `
-` + `        for (const message of record.messages || []) {` + `
-` + `          out.push({` + `
-` + `            ts: record.ts,` + `
-` + `            level: messageLevel(message),` + `
-` + `            source: messageSource(message),` + `
-` + `            text: message.text,` + `
-` + `            previousLoad: record.previousLoad,` + `
-` + `          });` + `
-` + `        }` + `
-` + `      }` + `
-` + `      out.sort((a, b) => {` + `
-` + `        if (a.ts === b.ts) return 0;` + `
-` + `        return a.ts < b.ts ? -1 : 1;` + `
-` + `      });` + `
-` + `      return out;` + `
-` + `    }` + `
-` + `` + `
-` + `    function countLevels(entries) {` + `
-` + `      const out = { error: 0, warn: 0, info: 0, log: 0, debug: 0 };` + `
-` + `      for (const entry of entries) {` + `
-` + `        if (out[entry.level] !== undefined) out[entry.level] += 1;` + `
-` + `      }` + `
-` + `      return out;` + `
-` + `    }` + `
-` + `` + `
-` + `    function formatLog() {` + `
-` + `      const entries = collectLog();` + `
-` + `      const lines = ["abap2UI5 Developer Tools - Log"];` + `
-` + `      lines.push("");` + `
-` + `      lines.push(` + `
-` + `        "  One timeline of everything the app logged, so the browser's own",` + `
-` + `      );` + `
-` + `      lines.push(` + `
-` + `        "  devtools do not have to be open. The origin is in the third",` + `
-` + `      );` + `
-` + `      lines.push("  column:");` + `
-` + `      lines.push("");` + `
-` + `      lines.push(` + `
-` + `        "    framework   the framework's own error log (Lib.logError)",` + `
-` + `      );` + `
-` + `      lines.push("    ui5         UI5's log - binding and control problems");` + `
-` + `      lines.push("    console     a console.* call from the app or a library");` + `
-` + `      lines.push("    uncaught    an uncaught error");` + `
-` + `      lines.push("    rejection   an unhandled promise rejection");` + `
-` + `      lines.push("    toast/box   a backend message the user was shown");` + `
-` + `      lines.push("");` + `
-` + `      const counts = countLevels(entries);` + `
-` + `      const dropped = Console.getDropped();` + `
-` + `      lines.push(` + `
-` + `        \`  \${entries.length} entr(ies) - \${counts.error} error,\` +` + `
-` + `          \` \${counts.warn} warn, \${counts.info} info, \${counts.log} log,\` +` + `
-` + `          \` \${counts.debug} debug\` +` + `
-` + `          (dropped ? \` (\${dropped} older console entries dropped)\` : ""),` + `
-` + `      );` + `
-` + `      lines.push("");` + `
-` + `      if (!entries.length) {` + `
-` + `        lines.push("  (nothing logged yet)");` + `
-` + `        return lines.join("\\n");` + `
-` + `      }` + `
-` + `      for (const entry of entries) {` + `
-` + `        const label = LEVEL_LABEL[entry.level] || entry.level.toUpperCase();` + `
-` + `        const head =` + `
-` + `          \`  \${entry.ts.slice(11, 23)}\${entry.previousLoad ? "*" : " "} \` +` + `
-` + `          \`\${label}  \${entry.source.padEnd(SOURCE_WIDTH)}\`;` + `
-` + `        const [first, ...rest] = String(entry.text).split("\\n");` + `
-` + `        lines.push(\`\${head}\${first}\`);` + `
-` + `` + `
-` + `        for (const line of rest) {` + `
-` + `          lines.push(\`\${CONTINUATION_INDENT}\${line.trim()}\`);` + `
-` + `        }` + `
-` + `      }` + `
-` + `      if (entries.some((entry) => entry.previousLoad)) {` + `
-` + `        lines.push("");` + `
-` + `        lines.push(` + `
-` + `          "  A '*' after the time marks an entry of the PREVIOUS page load," +` + `
-` + `            " carried across the reload.",` + `
-` + `        );` + `
-` + `      }` + `
-` + `      return lines.join("\\n");` + `
-` + `    }` + `
-` + `` + `
-` + `    function describeValue(value) {` + `
-` + `      if (value === null) return "null";` + `
-` + `      if (value === undefined) return "(absent)";` + `
-` + `      if (Array.isArray(value)) {` + `
-` + `        return \`table, \${value.length} row(s)\`;` + `
-` + `      }` + `
-` + `      if (typeof value === "object") {` + `
-` + `        return \`structure, \${Object.keys(value).length} field(s)\`;` + `
-` + `      }` + `
-` + `      if (value === "") return \`\${typeof value} (empty)\`;` + `
-` + `      return \`\${typeof value}  \${truncate(value, 60)}\`;` + `
-` + `    }` + `
-` + `` + `
-` + `    function formatSlotBindings(slotKey) {` + `
-` + `      const view = ViewSlots.getView(slotKey);` + `
-` + `      if (!view) return [];` + `
-` + `` + `
-` + `      const model = ViewSlots.trackedModel(view);` + `
-` + `      const data = model?.getData?.();` + `
-` + `      if (!data) return [];` + `
-` + `      const out = [section(\`Slot \${slotKey}\`)];` + `
-` + `` + `
-` + `      const dirty = model._z2ui5ChangedPaths || new Set();` + `
-` + `` + `
-` + `      const dirtyAttrs = new Set(` + `
-` + `        Array.from(dirty, (p) => p.split("/")[1]).filter(Boolean),` + `
-` + `      );` + `
-` + `      const keys = Object.keys(data).sort();` + `
-` + `      if (!keys.length) out.push("  (model is empty)");` + `
-` + `      for (const key of keys) {` + `
-` + `        const path = \`/\${key}\`;` + `
-` + `        const isDirty = dirtyAttrs.has(key);` + `
-` + `        out.push(` + `
-` + `          \`  \${isDirty ? "*" : " "} \${path.padEnd(30)}\${describeValue(data[key])}\`,` + `
-` + `        );` + `
-` + `      }` + `
-` + `      if (dirty.size) {` + `
-` + `        out.push("");` + `
-` + `        out.push("  Edited paths queued for the next roundtrip:");` + `
-` + `        for (const path of Array.from(dirty).sort()) out.push(\`    \${path}\`);` + `
-` + `      }` + `
-` + `      out.push(...formatPendingDelta(dirty, data));` + `
-` + `      out.push(...formatBindingCheck(slotKey, data));` + `
-` + `      out.push(...formatSizeRanking(data));` + `
-` + `      return out;` + `
-` + `    }` + `
-` + `` + `
-` + `    function scrapeBindingAttributes(xml) {` + `
-` + `      if (!xml) return [];` + `
-` + `      const found = new Set();` + `
-` + `` + `
-` + `      for (const match of xml.matchAll(BINDING_PATH)) found.add(match[1]);` + `
-` + `      return Array.from(found).sort();` + `
-` + `    }` + `
-` + `` + `
-` + `    function formatBindingCheck(slotKey, data) {` + `
-` + `      const bound = scrapeBindingAttributes(slotXml(slotKey));` + `
-` + `      if (!bound.length) return [];` + `
-` + `      const missing = bound.filter((name) => !(name in data));` + `
-` + `      const out = [];` + `
-` + `      if (missing.length) {` + `
-` + `        out.push("");` + `
-` + `        out.push("  BOUND IN THE VIEW BUT NOT IN THE MODEL:");` + `
-` + `        for (const name of missing) out.push(\`    /\${name}\`);` + `
-` + `        out.push(` + `
-` + `          "    -> a typo, a renamed ABAP attribute, or a missing" +` + `
-` + `            " client->_bind( ).",` + `
-` + `        );` + `
-` + `      }` + `
-` + `` + `
-` + `      const boundSet = new Set(bound);` + `
-` + `      const unused = Object.keys(data).filter((name) => !boundSet.has(name));` + `
-` + `      if (unused.length) {` + `
-` + `        out.push("");` + `
-` + `        out.push(` + `
-` + `          \`  \${unused.length} model attribute(s) not bound in this view:\` +` + `
-` + `            \` \${unused.slice(0, 12).join(", ")}\` +` + `
-` + `            \`\${unused.length > 12 ? ", ..." : ""}\`,` + `
-` + `        );` + `
-` + `      }` + `
-` + `      return out;` + `
-` + `    }` + `
-` + `` + `
-` + `    function attributeSize(value) {` + `
-` + `      try {` + `
-` + `        const json = JSON.stringify(value);` + `
-` + `        return json === undefined ? 0 : json.length;` + `
-` + `      } catch {` + `
-` + `        return 0;` + `
-` + `      }` + `
-` + `    }` + `
-` + `` + `
-` + `    function formatSizeRanking(data) {` + `
-` + `      const sizes = Object.keys(data)` + `
-` + `        .map((name) => ({ name, size: attributeSize(data[name]) }))` + `
-` + `        .sort((a, b) => b.size - a.size);` + `
-` + `      const total = sizes.reduce((sum, entry) => sum + entry.size, 0);` + `
-` + `      if (!total) return [];` + `
-` + `      const out = ["", \`  Model size: \${formatBytes(total)} serialized\`];` + `
-` + `` + `
-` + `      for (const entry of sizes.slice(0, 8)) {` + `
-` + `        if (!entry.size) continue;` + `
-` + `        const share = Math.round((entry.size * 100) / total);` + `
-` + `        const rows = Array.isArray(data[entry.name])` + `
-` + `          ? \`, \${data[entry.name].length} row(s)\`` + `
-` + `          : "";` + `
-` + `        out.push(` + `
-` + `          \`    \${\`/\${entry.name}\`.padEnd(30)}\${formatBytes(entry.size).padStart(8)}\` +` + `
-` + `            \`  \${String(share).padStart(3)}%\${rows}\`,` + `
-` + `        );` + `
-` + `      }` + `
-` + `      return out;` + `
-` + `    }` + `
-` + `` + `
-` + `    function formatPendingDelta(dirty, data) {` + `
-` + `      if (!dirty.size) return [];` + `
-` + `      const out = ["", "  Delta the next roundtrip will send:"];` + `
-` + `      try {` + `
-` + `        const delta = Lib.buildDeltaFromPaths(dirty, data);` + `
-` + `        const json = JSON.stringify(delta, null, 2);` + `
-` + `        for (const line of truncate(json, 1200).split("\\n")) {` + `
-` + `          out.push(\`    \${line}\`);` + `
-` + `        }` + `
-` + `      } catch (e) {` + `
-` + `        Lib.logError("DevTools Inspect: building the delta preview failed", e);` + `
-` + `        out.push("    (could not be built)");` + `
-` + `      }` + `
-` + `      return out;` + `
-` + `    }` + `
-` + `` + `
-` + `    function formatBindings(slotKey) {` + `
-` + `      const out = ["abap2UI5 Developer Tools - Model bindings"];` + `
-` + `      out.push("");` + `
-` + `      out.push(` + `
-` + `        "  A '*' marks an attribute the user edited: those paths travel as" +` + `
-` + `          " the delta of the next roundtrip.",` + `
-` + `      );` + `
-` + `      out.push(` + `
-` + `        "  MAIN, NEST and NEST2 share one model by UI5 propagation, so they" +` + `
-` + `          " are listed once, under MAIN.",` + `
-` + `      );` + `
-` + `      let any = false;` + `
-` + `      for (const slot of ViewSlots.slots) {` + `
-` + `        if (!slot.ownsModel) continue;` + `
-` + `        if (slotKey && slot.key !== slotKey) continue;` + `
-` + `        const lines = formatSlotBindings(slot.key);` + `
-` + `        if (!lines.length) continue;` + `
-` + `        any = true;` + `
-` + `        out.push(...lines);` + `
-` + `      }` + `
-` + `      if (!any) out.push("\\n  (no slot carries a model yet)");` + `
-` + `      return out.join("\\n");` + `
-` + `    }` + `
-` + `` + `
 ` + `    function findEventLine(source, eventName) {` + `
 ` + `      if (!source || !eventName) return 0;` + `
 ` + `      const lines = source.split("\\n");` + `
-` + `      const needle = eventName.toLowerCase();` + `
+`;
+    result = result + `      const needle = eventName.toLowerCase();` + `
 ` + `      for (let i = 0; i < lines.length; i++) {` + `
 ` + `        const haystack = lines[i].toLowerCase();` + `
 ` + `        let from = haystack.indexOf(needle);` + `
@@ -730,14 +417,14 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return 0;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatError() {` + `
-` + `      const err = AppState.state.lastError;` + `
+` + `    function formatError(ctx) {` + `
+` + `      const err = ctx.state.lastError;` + `
 ` + `      if (!err) return "(no fatal error captured this session)";` + `
 ` + `      return err.title ? \`\${err.title}\\n\\n\${err.text}\` : err.text;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatOverview() {` + `
-` + `      const state = AppState.state;` + `
+` + `    function formatOverview(ctx) {` + `
+` + `      const state = ctx.state;` + `
 ` + `      const responseFront = state.responseData?.S_FRONT;` + `
 ` + `      const out = ["abap2UI5 Developer Tools"];` + `
 ` + `` + `
@@ -760,7 +447,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        ),` + `
 ` + `      );` + `
 ` + `` + `
-` + `      const counts = countLevels(collectLog());` + `
+` + `      const counts = Log.countLevels(Log.collectLog(ctx));` + `
 ` + `      const loud = counts.error + counts.warn;` + `
 ` + `      out.push(` + `
 ` + `        line(` + `
@@ -770,7 +457,7 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `        ),` + `
 ` + `      );` + `
 ` + `` + `
-` + `      const records = Recorder.getRecords();` + `
+` + `      const records = Recorder.getRecords(ctx);` + `
 ` + `      const last = records[records.length - 1];` + `
 ` + `      out.push(` + `
 ` + `        line(` + `
@@ -794,17 +481,14 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `` + `
 ` + `      out.push(line("Version", sap.ui.version));` + `
 ` + `` + `
-` + `      out.push(` + `
-` + `        line("Distribution", getDistribution(AppState.state.oConfig.S_UI5)),` + `
-` + `      );` + `
-` + `      out.push(line("Theme", Lib.getTheme()));` + `
+` + `      out.push(line("Distribution", getDistribution(ctx.state.oConfig.S_UI5)));` + `
+` + `      out.push(line("Theme", Env.getTheme()));` + `
 ` + `` + `
 ` + `      out.push(section("View slots"));` + `
-` + `      out.push(...formatSlots());` + `
+` + `      out.push(...formatSlots(ctx));` + `
 ` + `` + `
 ` + `      out.push(section("Getting around"));` + `
-`;
-    result = result + `      out.push("  Ctrl+F12          open / close these tools");` + `
+` + `      out.push("  Ctrl+F12          open / close these tools");` + `
 ` + `      out.push("  Search field      one term across every tab at once");` + `
 ` + `      out.push("  (i) in the footer what every tab answers");` + `
 ` + `      out.push(` + `
@@ -826,129 +510,19 @@ class z2ui5_cl_ui5f_inspect_js {
 ` + `      return \`"\${record.event || "(start)"}"\${timing}\`;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    const HELP = [` + `
-` + `      "abap2UI5 Developer Tools",` + `
-` + `      "",` + `
-` + `      "Opening",` + `
-` + `      "-------",` + `
-` + `      "  Ctrl+F12                    open / close these tools",` + `
-` + `      "  ?z2ui5-devtools=1           open them on page load (for problems",` + `
-` + `      "                              that happen during startup)",` + `
-` + `      "  ?z2ui5-devtools=HISTORY     open them directly on a view, by its key",` + `
-` + `      "",` + `
-` + `      "  Without one named, they reopen where you left off.",` + `
-` + `      "",` + `
-` + `      "The six tabs, and what each is for",` + `
-` + `      "----------------------------------",` + `
-` + `      "  Overview      which app, which roundtrip, is anything broken - and",` + `
-` + `      "                where to go next. The landing tab",` + `
-` + `      "  Problems      what went wrong",` + `
-` + `      "  Roundtrips    what went over the wire",` + `
-` + `      "  View & Data   what the screen is made of, and what fills it",` + `
-` + `      "  System        what the app is running on, and its ABAP class",` + `
-` + `      "  Search        one term across EVERY other tab at once - answers",` + `
-` + `      "                'where does /CUSTOMER appear?' without opening each",` + `
-` + `      "",` + `
-` + `      "Problems",` + `
-` + `      "--------",` + `
-` + `      "  Error         the last fatal error, with Retry / Restart / Logout",` + `
-` + `      "  Log           ONE timeline of everything logged: the framework's",` + `
-` + `      "                own error log (with stack traces), UI5's log (binding",` + `
-` + `      "                and control problems), uncaught errors, unhandled",` + `
-` + `      "                rejections, every console.* call, and the backend",` + `
-` + `      "                messages the user was shown - so the browser's own",` + `
-` + `      "                devtools do not have to be open",` + `
-` + `      "",` + `
-` + `      "Roundtrips",` + `
-` + `      "----------",` + `
-` + `      "  History       every roundtrip: backend vs. render time, payload",` + `
-` + `      "                sizes, draft ids - and the ones that never rendered",` + `
-` + `      "  Request /     the raw JSON on the wire",` + `
-` + `      "  Response",` + `
-` + `      "  Actions       the response's T_SYSTEM / T_CUSTOM lists, readable",` + `
-` + `      "  Model Diff    what the backend changed between two responses",` + `
-` + `      "  View Diff     what changed in the view XML between two rebuilds",` + `
-` + `      "",` + `
-` + `      "  'Record Payloads' keeps the request/response bodies, which is what",` + `
-` + `      "  the two diffs need. OFF by default: it is the only part of the",` + `
-` + `      "  history that costs real memory (2 MB budget, oldest dropped first).",` + `
-` + `      "",` + `
-` + `      "View & Data",` + `
-` + `      "-----------",` + `
-` + `      "  Pick the SLOT on the left (only the filled ones are offered), then",` + `
-` + `      "  the aspect:",` + `
-` + `      "",` + `
-` + `      "  XML           the view XML the slot holds",` + `
-` + `      "  Model         the JSON model behind it",` + `
-` + `      "  Bindings      the model attributes, '*' on the paths that will",` + `
-` + `      "                travel as the next delta, the delta itself, the paths",` + `
-` + `      "                bound in the view that the model does NOT have (the",` + `
-` + `      "                usual cause of an empty field), and the attributes",` + `
-` + `      "                ranked by size (the usual cause of a huge response)",` + `
-` + `      "  Picked        'Pick Control' closes these tools, lets you click any",` + `
-` + `      "  Control       control in the app, and reports which ABAP attribute",` + `
-` + `      "                feeds it with its current value. Escape cancels",` + `
-` + `      "",` + `
-` + `      "  On an XML view: 'Apply to App' renders the edited XML into the",` + `
-` + `      "  running app with NO roundtrip and no activation - a local preview",` + `
-` + `      "  the next response replaces again. 'Reset' puts the original back.",` + `
-` + `      "",` + `
-` + `      "System",` + `
-` + `      "------",` + `
-` + `      "  Environment   versions, SAPUI5 vs OpenUI5, the SDK url the page",` + `
-` + `      "                bootstrapped from and its resource roots, theme,",` + `
-` + `      "                language, content density, session, device, the",` + `
-` + `      "                focus/scroll block sent on every roundtrip, slots",` + `
-` + `      "  Registry      shortcuts, timers, callbacks, bound backend events",` + `
-` + `      "  ABAP Source   the running app's class. 'Open in ADT' opens it in a",` + `
-` + `      "                new tab, at the line of the last event",` + `
-` + `      "",` + `
-` + `      "Always available",` + `
-` + `      "----------------",` + `
-` + `      "  Copy             put the current view's content on the clipboard",` + `
-` + `      "  Report a Bug     see below",` + `
-` + `      "  (i)              this help",` + `
-` + `      "",` + `
-` + `      "  'Open on Error' (on Overview) pops these tools open on the Log as",` + `
-` + `      "  soon as anything logs at error level. Off by default.",` + `
-` + `      "",` + `
-` + `      "Reporting a bug",` + `
-` + `      "---------------",` + `
-` + `      "  'Report a Bug' puts the whole session state on the clipboard as a",` + `
-` + `      "  GitHub-ready issue body: environment, the error, the log, the",` + `
-` + `      "  roundtrip history and the running app's ABAP class, each in a",` + `
-` + `      "  collapsed section. Paste it into an issue as it is.",` + `
-` + `      "",` + `
-` + `      "  'Export' opens the same content for reading, with downloads. With",` + `
-` + `      "  Record Payloads on, Download History (JSON) additionally carries",` + `
-` + `      "  the actual request/response bodies.",` + `
-` + `      "",` + `
-` + `      "  The console errors and the roundtrip history survive a page reload",` + `
-` + `      "  (sessionStorage), so an app that died and was reloaded keeps its",` + `
-` + `      "  evidence - those rows are marked with a '*'.",` + `
-` + `    ].join("\\n");` + `
-` + `` + `
-` + `    function formatHelp() {` + `
-` + `      return HELP;` + `
-` + `    }` + `
-` + `` + `
 ` + `    return {` + `
 ` + `      formatEnvironment,` + `
 ` + `      formatError,` + `
-` + `      formatHelp,` + `
 ` + `      formatOverview,` + `
 ` + `      formatRegistry,` + `
 ` + `      formatActions,` + `
-` + `      formatLog,` + `
-` + `      formatBindings,` + `
 ` + `      findEventLine,` + `
 ` + `` + `
-` + `      _internals: {` + `
-` + `        scrapeEvents,` + `
-` + `        scrapeBindingAttributes,` + `
-` + `        describeValue,` + `
-` + `        getDistribution,` + `
-` + `      },` + `
+` + `      formatLog: Log.formatLog,` + `
+` + `      formatBindings: Bindings.formatBindings,` + `
+` + `      formatHelp: Help.formatHelp,` + `
+` + `` + `
+` + `      _internals: { scrapeEvents, getDistribution },` + `
 ` + `    };` + `
 ` + `  },` + `
 ` + `);` + `

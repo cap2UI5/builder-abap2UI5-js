@@ -7,9 +7,11 @@ class z2ui5_cl_ui5f_msgmgr_js {
 ` + `    "sap/ui/core/Control",` + `
 ` + `    "sap/ui/core/message/Message",` + `
 ` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/core/Env",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
+` + `    "z2ui5/core/Context",` + `
 ` + `  ],` + `
-` + `  (Control, Message, Lib, ViewSlots) => {` + `
+` + `  (Control, Message, Lib, Env, ViewSlots, Context) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const KEY_SEP = String.fromCharCode(1);` + `
@@ -51,12 +53,22 @@ class z2ui5_cl_ui5f_msgmgr_js {
 ` + `      renderer: Lib.EMPTY_RENDERER,` + `
 ` + `` + `
 ` + `      setup() {` + `
-` + `        const messaging = Lib.getMessaging();` + `
+` + `        const messaging = Env.getMessaging();` + `
 ` + `        if (!Lib.claimOnce(this, messaging)) return;` + `
 ` + `        this._messaging = messaging;` + `
-` + `        const view = ViewSlots.getView(` + `
-` + `          ViewSlots.containingSlotKey(this) ?? "MAIN",` + `
-` + `        );` + `
+` + `` + `
+` + `        const ctx = Context.of(this);` + `
+` + `        if (!ctx) {` + `
+` + `          Lib.logError(` + `
+` + `            "MessageManager.setup: no component context, messages carry no processor",` + `
+` + `          );` + `
+` + `        }` + `
+` + `        const view = ctx` + `
+` + `          ? ViewSlots.getView(` + `
+` + `              ctx,` + `
+` + `              ViewSlots.containingSlotKey(ctx, this) ?? "MAIN",` + `
+` + `            )` + `
+` + `          : undefined;` + `
 ` + `        this._processor = view?.getModel?.() ?? null;` + `
 ` + `        this._ready = true;` + `
 ` + `` + `

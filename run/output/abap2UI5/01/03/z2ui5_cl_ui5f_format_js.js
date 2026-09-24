@@ -34,13 +34,14 @@ class z2ui5_cl_ui5f_format_js {
 ` + `      return new Date(...parseYmd(d));` + `
 ` + `    },` + `
 ` + `` + `
-` + `    DateAbapDateTimeToDateObject(d, t = "000000") {` + `
+` + `    DateAbapDateTimeToDateObject(d, t) {` + `
 ` + `      if (isNoAbapDate(d)) return null;` + `
+` + `      const time = t ? String(t) : "000000";` + `
 ` + `      return new Date(` + `
 ` + `        ...parseYmd(d),` + `
-` + `        Number(t.slice(0, 2)),` + `
-` + `        Number(t.slice(2, 4)),` + `
-` + `        Number(t.slice(4, 6)),` + `
+` + `        Number(time.slice(0, 2)),` + `
+` + `        Number(time.slice(2, 4)),` + `
+` + `        Number(time.slice(4, 6)),` + `
 ` + `      );` + `
 ` + `    },` + `
 ` + `` + `

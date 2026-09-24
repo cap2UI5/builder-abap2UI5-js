@@ -165,7 +165,11 @@ class z2ui5_cl_ui5_util_context {
     let result = null;
     let lv_metadata = ``;
     let lv_base64 = ``;
-    [lv_metadata, lv_base64] = val.split(`,`);
+    if (String(val).toLowerCase().includes(String(`,`).toLowerCase())) {
+      [lv_metadata, lv_base64] = val.split(`,`);
+    } else {
+      lv_base64 = z2ui5_cl_util.abap_tab_assign(lv_base64, z2ui5_cl_util.abap_copy(val));
+    }
     result = z2ui5_cl_ui5_util_context.conv_decode_x_base64({ val: lv_base64 });
     return result;
   }
@@ -207,7 +211,6 @@ class z2ui5_cl_ui5_util_context {
   static filter_get_token_t_by_range_t({ val } = {}) {
     let result = [];
     let sy_tabix = 0;
-    let lv_value;
     const lt_mapping = z2ui5_cl_ui5_util_context.filter_get_token_range_mapping();
     let lt_tab = [];
     const _out0 = { val, tab: lt_tab };
@@ -216,7 +219,13 @@ class z2ui5_cl_ui5_util_context {
     sy_tabix = 0;
     for (const lr_row of lt_tab) {
       sy_tabix++;
-      lv_value = lt_mapping.find((row) => row.n === lr_row.option).v;
+      let lv_option = ``;
+      let lv_value = ``;
+      lv_option = lr_row.option.toUpperCase();
+      lv_value = (() => { try { return lt_mapping.find((row) => row.n === lv_option).v ?? null; } catch { return null; } })();
+      if (z2ui5_cl_util.abap_is_initial(lv_value)) {
+        lv_value = lt_mapping.find((row) => row.n === `EQ`).v;
+      }
       lv_value = String(lv_value).replace(`{LOW}`, lr_row.low ?? ``);
       lv_value = String(lv_value).replace(`{HIGH}`, lr_row.high ?? ``);
       if (lr_row.sign === `E`) {
@@ -237,7 +246,6 @@ class z2ui5_cl_ui5_util_context {
     let lv_check_found;
     let lv_index;
     let lv_name;
-    let lv_value;
     const lv_search = ((ignore_case === true || ignore_case === `X`) ? val.toUpperCase() : val);
     const lv_field_count = z2ui5_cl_util.abap_copy(fields.length);
     sy_tabix = 0;
@@ -273,14 +281,7 @@ class z2ui5_cl_ui5_util_context {
             continue;
           }
         }
-        lv_value = `${fs_field}`;
-        if ((ignore_case === true || ignore_case === `X`)) {
-          lv_value = lv_value.toUpperCase();
-          if (String(lv_value).toLowerCase().includes(String(lv_search).toLowerCase())) {
-            lv_check_found = true;
-            break;
-          }
-        } else if (this.find({ val: lv_value, sub: lv_search }) >= 0) {
+        if ((z2ui5_cl_ui5_util_context.itab_filter_check_field({ field: fs_field, search: lv_search, ignore_case }) === true || z2ui5_cl_ui5_util_context.itab_filter_check_field({ field: fs_field, search: lv_search, ignore_case }) === `X`)) {
           lv_check_found = true;
           break;
         }
@@ -317,6 +318,28 @@ class z2ui5_cl_ui5_util_context {
     } catch (error) {
     }
     z2ui5_cl_ui5_util_context.gt_class_exists.push(z2ui5_cl_util.abap_copy({ name: lv_name, exists: result }));
+    return result;
+  }
+
+  static rtti_check_class_impl_intf({ class: class_, intf } = {}) {
+    let result = false;
+    let sy_subrc = 0;
+    let lo_typedescr = null;
+    let lo_classdescr = null;
+    let lv_intf = ``;
+    if (!(z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: class_ }) === true || z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: class_ }) === `X`)) {
+      return result;
+    }
+    lv_intf = intf.toUpperCase();
+    try {
+      // TODO(abap2js): cl_abap_classdescr=>describe_by_name( EXPORTING p_name = class RECEIVING p_descr_ref = lo_typedescr EXCEPTIONS type_not_found = 1 ).
+      if (sy_subrc !== 0) {
+        return result;
+      }
+      lo_classdescr = z2ui5_cl_util.abap_cast(lo_typedescr);
+      result = (lo_classdescr.interfaces.some((row) => row.name === lv_intf));
+    } catch (error) {
+    }
     return result;
   }
 
@@ -497,6 +520,7 @@ class z2ui5_cl_ui5_util_context {
   static url_param_get_tab({ val } = {}) {
     let result = [];
     let sy_tabix = 0;
+    let lv_before;
     let lv_search = ``;
     lv_search = z2ui5_cl_util.abap_tab_assign(lv_search, z2ui5_cl_util.abap_copy(val));
     if (String(lv_search).toLowerCase().includes(String(`?`).toLowerCase())) {
@@ -504,6 +528,7 @@ class z2ui5_cl_ui5_util_context {
     }
     const lv_startup = (($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? `` : $v.slice($i + $s.length); })(`&${lv_search}`, `&sap-startup-params=`);
     if (!z2ui5_cl_util.abap_is_initial(lv_startup)) {
+      lv_before = (($v, $s) => { const $i = $v.indexOf($s); return $i < 0 ? `` : $v.slice(0, $i); })(`&${lv_search}`, `&sap-startup-params=`);
       let [lv_packed, lv_rest] = lv_startup.split(`&`);
       lv_packed = lv_packed.replaceAll(`%3D`, `=`);
       lv_packed = lv_packed.replaceAll(`%3d`, `=`);
@@ -511,6 +536,9 @@ class z2ui5_cl_ui5_util_context {
       lv_search = z2ui5_cl_util.abap_tab_assign(lv_search, z2ui5_cl_util.abap_copy(lv_packed));
       if (!z2ui5_cl_util.abap_is_initial(lv_rest)) {
         lv_search = `${lv_packed}&${lv_rest}`;
+      }
+      if (!z2ui5_cl_util.abap_is_initial(lv_before)) {
+        lv_search = `${lv_before}&${lv_search}`;
       }
     }
     let lt_param = lv_search.split(`&`);
@@ -687,6 +715,23 @@ class z2ui5_cl_ui5_util_context {
     return result;
   }
 
+  static itab_filter_check_field({ field, search, ignore_case } = {}) {
+    let result = false;
+    if (!(z2ui5_cl_ui5_util_context.rtti_check_printable({ val: field }) === true || z2ui5_cl_ui5_util_context.rtti_check_printable({ val: field }) === `X`)) {
+      return result;
+    }
+    let lv_value = `${field}`;
+    if ((ignore_case === true || ignore_case === `X`)) {
+      lv_value = lv_value.toUpperCase();
+      if (String(lv_value).toLowerCase().includes(String(search).toLowerCase())) {
+        result = true;
+      }
+    } else if (this.find({ val: lv_value, sub: search }) >= 0) {
+      result = true;
+    }
+    return result;
+  }
+
   static rtti_check_printable({ val } = {}) {
     let result = false;
     if ((z2ui5_cl_ui5_util_context.rtti_check_clike({ val: val }) === true || z2ui5_cl_ui5_util_context.rtti_check_clike({ val: val }) === `X`)) {
@@ -848,21 +893,38 @@ class z2ui5_cl_ui5_util_context {
     let sy_subrc = 0;
     let fs_tab = null;
     let _fs$fs_tab = null;
+    let lx_cast;
     let lo_struct;
     let lo_elem;
     let lo_type_bool;
     let lt_comp = [];
+    if (ir_tab == null) {
+      throw new z2ui5_cx_ui5_util_error({ val: `RTTI_CREATE_SEL_TAB_TYPE: no table reference supplied` });
+    }
     fs_tab = ir_tab;
     _fs$fs_tab = null;
     sy_subrc = 0;
-    const lo_table = (cl_abap_typedescr.describe_by_data(fs_tab));
+    let lo_table = null;
     try {
-      lo_struct = (lo_table.get_table_line_type());
-      lt_comp = lo_struct.get_components();
-    } catch (error) {
-      result.check_table_line = true;
-      lo_elem = (lo_table.get_table_line_type());
-      lt_comp.push(z2ui5_cl_util.abap_copy({ name: `TAB_LINE`, type: lo_elem }));
+      lo_table = (cl_abap_typedescr.describe_by_data(fs_tab));
+    } catch (_caught1) {
+      lx_cast = _caught1;
+      throw new z2ui5_cx_ui5_util_error({ val: lx_cast });
+    }
+    const lo_line = lo_table.get_table_line_type();
+    switch (lo_line.kind) {
+      case z2ui5_cl_ui5_util_context.cv_typedescr_kind_struct:
+        lo_struct = (lo_line);
+        lt_comp = lo_struct.get_components();
+        break;
+      case z2ui5_cl_ui5_util_context.cv_typedescr_kind_elem:
+        result.check_table_line = true;
+        lo_elem = (lo_line);
+        lt_comp.push(z2ui5_cl_util.abap_copy({ name: `TAB_LINE`, type: lo_elem }));
+        break;
+      default:
+        throw new z2ui5_cx_ui5_util_error({ val: `RTTI_CREATE_SEL_TAB_TYPE: a table of tables or references has no selectable line` });
+        break;
     }
     if ((add_sel_field === true || add_sel_field === `X`) && !lt_comp.some((row) => row.name === sel_field_name)) {
       lo_type_bool = cl_abap_typedescr.describe_by_name(`ABAP_BOOL`);

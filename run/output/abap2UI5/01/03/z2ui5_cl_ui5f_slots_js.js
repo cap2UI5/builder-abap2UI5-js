@@ -7,21 +7,18 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `    "sap/ui/core/mvc/XMLView",` + `
 ` + `    "sap/ui/core/Fragment",` + `
 ` + `    "sap/ui/model/json/JSONModel",` + `
-` + `    "z2ui5/core/Server",` + `
 ` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/core/Env",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
-` + `    "z2ui5/core/AppState",` + `
+` + `    "z2ui5/core/Context",` + `
 ` + `  ],` + `
-` + `  (XMLView, Fragment, JSONModel, Server, Lib, ViewSlots, AppState) => {` + `
+` + `  (XMLView, Fragment, JSONModel, Lib, Env, ViewSlots, Context) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
-` + `    function applyStoredSizeLimit(viewKey, oModel) {` + `
+` + `    function applyStoredSizeLimit(ctx, viewKey, oModel) {` + `
 ` + `      if (!oModel) return;` + `
 ` + `` + `
-` + `      const limit = Lib.effectiveSizeLimit(` + `
-` + `        AppState.state.viewSizeLimits,` + `
-` + `        viewKey,` + `
-` + `      );` + `
+` + `      const limit = Lib.effectiveSizeLimit(ctx.state.viewSizeLimits, viewKey);` + `
 ` + `      if (limit !== undefined) oModel.setSizeLimit(limit);` + `
 ` + `    }` + `
 ` + `` + `
@@ -55,30 +52,36 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function createViewModel(` + `
+` + `      ctx,` + `
 ` + `      slotKey = "MAIN",` + `
-` + `      data = AppState.state.oResponse?.OVIEWMODEL,` + `
+` + `      data = ctx.state.oResponse?.OVIEWMODEL,` + `
 ` + `    ) {` + `
 ` + `      const oModel = trackChanges(new JSONModel(dataForSlot(slotKey, data)));` + `
 ` + `` + `
-` + `      if (data && data === AppState.state.oResponse?.OVIEWMODEL) {` + `
-` + `        oModel._z2ui5BuiltFrom = AppState.state.oResponse;` + `
+` + `      if (data && data === ctx.state.oResponse?.OVIEWMODEL) {` + `
+` + `        oModel._z2ui5BuiltFrom = ctx.state.oResponse;` + `
 ` + `      }` + `
 ` + `      return oModel;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function isSuperseded(seq) {` + `
-` + `      return seq !== undefined && seq !== Server._requestSeq;` + `
+` + `    function isSuperseded(ctx, seq) {` + `
+` + `      return seq !== undefined && seq !== ctx.server.requestSeq;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    async function loadSlotFragment(slotKey, fragmentId, xml, seq) {` + `
-` + `      const oModel = createViewModel(slotKey);` + `
-` + `      applyStoredSizeLimit(slotKey, oModel);` + `
-` + `      const oFragment = await Fragment.load({` + `
-` + `        definition: xml,` + `
-` + `        controller: ViewSlots.getController(slotKey),` + `
-` + `        id: fragmentId,` + `
-` + `      });` + `
-` + `      if (!Lib.isAlive(AppState.state.oApp) || isSuperseded(seq)) {` + `
+` + `    async function loadSlotFragment(ctx, slotKey, fragmentId, xml, seq) {` + `
+` + `      const oModel = createViewModel(ctx, slotKey);` + `
+` + `      applyStoredSizeLimit(ctx, slotKey, oModel);` + `
+` + `` + `
+` + `      await Env.preloadFragmentModules(xml);` + `
+` + `` + `
+` + `      const oFragment = await Context.runAsOwner(ctx, () =>` + `
+` + `        Fragment.load({` + `
+` + `          definition: xml,` + `
+` + `          controller: ViewSlots.getController(ctx, slotKey),` + `
+` + `          id: ViewSlots.ownId(ctx, fragmentId),` + `
+` + `        }),` + `
+` + `      );` + `
+` + `      if (!Lib.isAlive(ctx.state.oApp) || isSuperseded(ctx, seq)) {` + `
 ` + `        oFragment.destroy();` + `
 ` + `        return null;` + `
 ` + `      }` + `
@@ -86,16 +89,23 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      return oFragment;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    async function displayFragment(xml, seq) {` + `
-` + `      const oFragment = await loadSlotFragment("POPUP", "popupId", xml, seq);` + `
+` + `    async function displayFragment(ctx, xml, seq) {` + `
+` + `      const oFragment = await loadSlotFragment(` + `
+` + `        ctx,` + `
+` + `        "POPUP",` + `
+` + `        "popupId",` + `
+` + `        xml,` + `
+` + `        seq,` + `
+` + `      );` + `
 ` + `      if (!oFragment) return;` + `
 ` + `` + `
-` + `      ViewSlots.setView("POPUP", oFragment, xml);` + `
+` + `      ViewSlots.setView(ctx, "POPUP", oFragment, xml);` + `
 ` + `      oFragment.open();` + `
 ` + `    }` + `
 ` + `` + `
-` + `    async function displayPopover(xml, openById, seq) {` + `
+` + `    async function displayPopover(ctx, xml, openById, seq) {` + `
 ` + `      const oFragment = await loadSlotFragment(` + `
+` + `        ctx,` + `
 ` + `        "POPOVER",` + `
 ` + `        "popoverId",` + `
 ` + `        xml,` + `
@@ -103,14 +113,14 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      );` + `
 ` + `      if (!oFragment) return;` + `
 ` + `` + `
-` + `      const oControl = ViewSlots.resolveById(openById);` + `
+` + `      const oControl = ViewSlots.resolveById(ctx, openById);` + `
 ` + `` + `
 ` + `      if (!oControl) {` + `
 ` + `        Lib.logError(\`displayPopover: openBy control '\${openById}' not found\`);` + `
 ` + `        oFragment.destroy();` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      ViewSlots.setView("POPOVER", oFragment, xml);` + `
+` + `      ViewSlots.setView(ctx, "POPOVER", oFragment, xml);` + `
 ` + `` + `
 ` + `      Lib.whenRendered(oControl, oFragment, () => oFragment.openBy(oControl));` + `
 ` + `    }` + `
@@ -120,17 +130,19 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      return { xml: { models: { template: oTemplateModel } } };` + `
 ` + `    }` + `
 ` + `` + `
-` + `    async function displayNestedView(xml, slotKey, mOptions, seq) {` + `
-` + `      const oMainView = ViewSlots.getView("MAIN");` + `
+` + `    async function displayNestedView(ctx, xml, slotKey, mOptions, seq) {` + `
+` + `      const oMainView = ViewSlots.getView(ctx, "MAIN");` + `
 ` + `      const oTemplateModel =` + `
 ` + `        oMainView?.getModel("http") ?? oMainView?.getModel();` + `
-` + `      const oView = await XMLView.create({` + `
-` + `        definition: xml,` + `
-` + `        controller: ViewSlots.getController(slotKey),` + `
-` + `        preprocessors: templatePreprocessors(xml, oTemplateModel),` + `
-` + `      });` + `
+` + `      const oView = await Context.runAsOwner(ctx, () =>` + `
+` + `        XMLView.create({` + `
+` + `          definition: xml,` + `
+` + `          controller: ViewSlots.getController(ctx, slotKey),` + `
+` + `          preprocessors: templatePreprocessors(xml, oTemplateModel),` + `
+` + `        }),` + `
+` + `      );` + `
 ` + `` + `
-` + `      if (!Lib.isAlive(AppState.state.oApp) || isSuperseded(seq)) {` + `
+` + `      if (!Lib.isAlive(ctx.state.oApp) || isSuperseded(ctx, seq)) {` + `
 ` + `        oView.destroy();` + `
 ` + `        return;` + `
 ` + `      }` + `
@@ -141,7 +153,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `        methodInsert: METHOD_INSERT,` + `
 ` + `      } = mOptions;` + `
 ` + `` + `
-` + `      const oParent = ViewSlots.byId("MAIN", ID);` + `
+` + `      const oParent = ViewSlots.byId(ctx, "MAIN", ID);` + `
 ` + `      if (!oParent) {` + `
 ` + `        Lib.logError(` + `
 ` + `          \`displayNestedView: parent control '\${ID}' not found, nested view discarded\`,` + `
@@ -167,11 +179,11 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `        oView.destroy();` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      ViewSlots.setView(slotKey, oView, xml);` + `
+` + `      ViewSlots.setView(ctx, slotKey, oView, xml);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    async function displayView(xml, viewModel, mOptions = {}) {` + `
-` + `      const oViewModel = createViewModel("MAIN", viewModel);` + `
+` + `    async function displayView(ctx, xml, viewModel, mOptions = {}) {` + `
+` + `      const oViewModel = createViewModel(ctx, "MAIN", viewModel);` + `
 ` + `` + `
 ` + `      const switchPath = mOptions.switchDefaultModelPath;` + `
 ` + `` + `
@@ -183,88 +195,92 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `          annotationURI: mOptions.switchDefaultModelAnnoUri || "",` + `
 ` + `        });` + `
 ` + `` + `
-` + `        AppState.state.odataClients.add(oModel);` + `
+` + `        ctx.state.odataClients.add(oModel);` + `
 ` + `      } else {` + `
 ` + `        oModel = oViewModel;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      applyStoredSizeLimit("MAIN", oViewModel);` + `
-` + `      if (switchPath) applyStoredSizeLimit("MAIN", oModel);` + `
+` + `      applyStoredSizeLimit(ctx, "MAIN", oViewModel);` + `
+` + `      if (switchPath) applyStoredSizeLimit(ctx, "MAIN", oModel);` + `
 ` + `` + `
-` + `      const oView = await XMLView.create({` + `
-` + `        definition: xml,` + `
-` + `        models: oModel,` + `
-` + `        controller: ViewSlots.getController("MAIN"),` + `
-` + `        id: "mainView",` + `
-` + `        preprocessors: templatePreprocessors(xml, oViewModel),` + `
-` + `      });` + `
+` + `      const oView = await Context.runAsOwner(ctx, () =>` + `
+` + `        XMLView.create({` + `
+` + `          definition: xml,` + `
+` + `          models: oModel,` + `
+` + `          controller: ViewSlots.getController(ctx, "MAIN"),` + `
+` + `` + `
+` + `          id: ViewSlots.ownId(ctx, "mainView"),` + `
+` + `          preprocessors: templatePreprocessors(xml, oViewModel),` + `
+` + `        }),` + `
+` + `      );` + `
 ` + `` + `
 ` + `      const discardBuild = () => {` + `
 ` + `        oView.destroy();` + `
 ` + `` + `
-` + `        AppState.state.odataClients.delete(oModel);` + `
+` + `        ctx.state.odataClients.delete(oModel);` + `
 ` + `        oModel.destroy();` + `
 ` + `        if (switchPath) oViewModel.destroy();` + `
 ` + `      };` + `
 ` + `` + `
-` + `      if (!Lib.isAlive(AppState.state.oApp)) {` + `
+` + `      if (!Lib.isAlive(ctx.state.oApp)) {` + `
 ` + `        discardBuild();` + `
 ` + `        return;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      ViewSlots.setView("MAIN", oView, xml);` + `
+` + `      ViewSlots.setView(ctx, "MAIN", oView, xml);` + `
 ` + `      if (switchPath) oView.setModel(oViewModel, "http");` + `
-` + `      AppState.state.oApp.removeAllPages();` + `
-` + `      AppState.state.oApp.insertPage(oView);` + `
+` + `      ctx.state.oApp.removeAllPages();` + `
+` + `      ctx.state.oApp.insertPage(oView);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function displayMain(xml, mOptions, seq) {` + `
-` + `      Server._viewBuild = Promise.resolve(Server._viewBuild)` + `
+` + `    function displayMain(ctx, xml, mOptions, seq) {` + `
+` + `      ctx.server.viewBuild = Promise.resolve(ctx.server.viewBuild)` + `
 ` + `        .catch(() => {})` + `
 ` + `        .then(() => {` + `
-` + `          if (isSuperseded(seq)) {` + `
+` + `          if (isSuperseded(ctx, seq)) {` + `
 ` + `            return undefined;` + `
 ` + `          }` + `
 ` + `` + `
-` + `          ViewSlots.destroy("MAIN");` + `
+` + `          ViewSlots.destroy(ctx, "MAIN");` + `
 ` + `` + `
-` + `          for (const oClient of AppState.state.odataClients) {` + `
+` + `          for (const oClient of ctx.state.odataClients) {` + `
 ` + `            try {` + `
 ` + `              oClient.destroy();` + `
 ` + `            } catch (e) {` + `
 ` + `              Lib.logError("displayMain: destroying an OData client failed", e);` + `
 ` + `            }` + `
 ` + `          }` + `
-` + `          AppState.state.odataClients.clear();` + `
+` + `          ctx.state.odataClients.clear();` + `
 ` + `` + `
-` + `          ViewSlots.destroy("POPUP");` + `
-` + `          ViewSlots.destroy("POPOVER");` + `
+` + `          ViewSlots.destroy(ctx, "POPUP");` + `
+` + `          ViewSlots.destroy(ctx, "POPOVER");` + `
 ` + `          return displayView(` + `
+` + `            ctx,` + `
 ` + `            xml,` + `
-` + `            AppState.state.oResponse?.OVIEWMODEL,` + `
+` + `            ctx.state.oResponse?.OVIEWMODEL,` + `
 ` + `            mOptions,` + `
 ` + `          );` + `
 ` + `        });` + `
-` + `      return Server._viewBuild;` + `
+` + `      return ctx.server.viewBuild;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function updateModelIfRequired(slotKey) {` + `
-` + `      const oView = ViewSlots.getView(slotKey);` + `
+` + `    function updateModelIfRequired(ctx, slotKey) {` + `
+` + `      const oView = ViewSlots.getView(ctx, slotKey);` + `
 ` + `      if (!oView) return;` + `
 ` + `` + `
-` + `      const sSlotApp = ViewSlots.getViewApp(slotKey);` + `
-` + `      const sResponseApp = AppState.state.oResponse?.APP;` + `
+` + `      const sSlotApp = ViewSlots.getViewApp(ctx, slotKey);` + `
+` + `      const sResponseApp = ctx.state.oResponse?.APP;` + `
 ` + `      if (sSlotApp && sResponseApp && sSlotApp !== sResponseApp) return;` + `
 ` + `` + `
 ` + `      const tracked = resolveTrackedModel(oView);` + `
 ` + `      if (tracked) {` + `
 ` + `        if (` + `
 ` + `          tracked._z2ui5BuiltFrom &&` + `
-` + `          tracked._z2ui5BuiltFrom === AppState.state.oResponse` + `
+` + `          tracked._z2ui5BuiltFrom === ctx.state.oResponse` + `
 ` + `        ) {` + `
 ` + `          return;` + `
 ` + `        }` + `
-` + `        applyStoredSizeLimit(slotKey, tracked);` + `
+` + `        applyStoredSizeLimit(ctx, slotKey, tracked);` + `
 ` + `` + `
 ` + `        const pending = tracked._z2ui5ChangedPaths;` + `
 ` + `        const keep = [];` + `
@@ -275,9 +291,7 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `            if (value !== undefined) keep.push([path, value]);` + `
 ` + `          }` + `
 ` + `        }` + `
-` + `        tracked.setData(` + `
-` + `          dataForSlot(slotKey, AppState.state.oResponse?.OVIEWMODEL),` + `
-` + `        );` + `
+` + `        tracked.setData(dataForSlot(slotKey, ctx.state.oResponse?.OVIEWMODEL));` + `
 ` + `` + `
 ` + `        keep.forEach(([path, value], i) => {` + `
 ` + `          tracked.setProperty(path, value, undefined, i < keep.length - 1);` + `
@@ -285,36 +299,36 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `        return;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const oModel = createViewModel(slotKey);` + `
-` + `      applyStoredSizeLimit(slotKey, oModel);` + `
+` + `      const oModel = createViewModel(ctx, slotKey);` + `
+` + `      applyStoredSizeLimit(ctx, slotKey, oModel);` + `
 ` + `      oView.setModel(oModel);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function action(method, slotKey, xml, mOptions, seq) {` + `
+` + `    function action(ctx, method, slotKey, xml, mOptions, seq) {` + `
 ` + `      const options = mOptions || {};` + `
 ` + `      if (method === "destroy") {` + `
-` + `        ViewSlots.destroy(slotKey);` + `
+` + `        ViewSlots.destroy(ctx, slotKey);` + `
 ` + `        return undefined;` + `
 ` + `      }` + `
 ` + `      if (method === "updateModel") {` + `
 ` + `        for (const slot of ViewSlots.slots) {` + `
-` + `          if (slot.ownsModel) updateModelIfRequired(slot.key);` + `
+` + `          if (slot.ownsModel) updateModelIfRequired(ctx, slot.key);` + `
 ` + `        }` + `
 ` + `        return undefined;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      if (isSuperseded(seq)) return undefined;` + `
+` + `      if (isSuperseded(ctx, seq)) return undefined;` + `
 ` + `` + `
 ` + `      if (slotKey === "MAIN") {` + `
-` + `        AppState.state.lastMainDisplayOptions = options;` + `
-` + `        return displayMain(xml, options, seq);` + `
+` + `        ctx.state.lastMainDisplayOptions = options;` + `
+` + `        return displayMain(ctx, xml, options, seq);` + `
 ` + `      }` + `
-` + `      ViewSlots.destroy(slotKey);` + `
-` + `      if (slotKey === "POPUP") return displayFragment(xml, seq);` + `
+` + `      ViewSlots.destroy(ctx, slotKey);` + `
+` + `      if (slotKey === "POPUP") return displayFragment(ctx, xml, seq);` + `
 ` + `      if (slotKey === "POPOVER") {` + `
-` + `        return displayPopover(xml, options.openById, seq);` + `
+` + `        return displayPopover(ctx, xml, options.openById, seq);` + `
 ` + `      }` + `
-` + `      return displayNestedView(xml, slotKey, options, seq);` + `
+` + `      return displayNestedView(ctx, xml, slotKey, options, seq);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    return {` + `

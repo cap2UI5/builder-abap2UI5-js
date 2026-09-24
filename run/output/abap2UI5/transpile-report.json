@@ -40,11 +40,12 @@
     {
       "class": "z2ui5_cl_ui5_util_context",
       "path": "00/03/z2ui5_cl_ui5_util_context.js",
-      "todos": 40,
+      "todos": 41,
       "todoDetails": [
         "unsupported statement: ROLLBACK WORK.",
         "unsupported statement: DELETE tab INDEX lv_tabix.",
         "unsupported statement: cl_abap_classdescr=>describe_by_name( EXPORTING p_name = val EXCEPTIONS type_not_found = 1 ).",
+        "unsupported statement: cl_abap_classdescr=>describe_by_name( EXPORTING p_name = class RECEIVING p_descr_ref = lo_typedescr EXCEPTIONS type_not_",
         "unsupported statement: GET TIME STAMP FIELD result.",
         "unsupported statement: CALL TRANSFORMATION id SOURCE XML xml RESULT data = any.",
         "unsupported statement: CALL METHOD (lv_classname)=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = result.",
@@ -136,6 +137,18 @@
       "todoDetails": []
     },
     {
+      "class": "z2ui5_cl_ui5f_bindcall_js",
+      "path": "01/03/z2ui5_cl_ui5f_bindcall_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_ui5f_bindings_js",
+      "path": "01/03/z2ui5_cl_ui5f_bindings_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
       "class": "z2ui5_cl_ui5f_browser_js",
       "path": "01/03/z2ui5_cl_ui5f_browser_js.js",
       "todos": 0,
@@ -148,6 +161,12 @@
       "todoDetails": []
     },
     {
+      "class": "z2ui5_cl_ui5f_context_js",
+      "path": "01/03/z2ui5_cl_ui5f_context_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
       "class": "z2ui5_cl_ui5f_ctrlcall_js",
       "path": "01/03/z2ui5_cl_ui5f_ctrlcall_js.js",
       "todos": 0,
@@ -156,6 +175,12 @@
     {
       "class": "z2ui5_cl_ui5f_devtools_js",
       "path": "01/03/z2ui5_cl_ui5f_devtools_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_ui5f_diff_js",
+      "path": "01/03/z2ui5_cl_ui5f_diff_js.js",
       "todos": 0,
       "todoDetails": []
     },
@@ -178,8 +203,20 @@
       "todoDetails": []
     },
     {
+      "class": "z2ui5_cl_ui5f_env_js",
+      "path": "01/03/z2ui5_cl_ui5f_env_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
       "class": "z2ui5_cl_ui5f_format_js",
       "path": "01/03/z2ui5_cl_ui5f_format_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_ui5f_help_js",
+      "path": "01/03/z2ui5_cl_ui5f_help_js.js",
       "todos": 0,
       "todoDetails": []
     },
@@ -202,20 +239,26 @@
       "todoDetails": []
     },
     {
-      "class": "z2ui5_cl_ui5f_legacy_js",
-      "path": "01/03/z2ui5_cl_ui5f_legacy_js.js",
-      "todos": 0,
-      "todoDetails": []
-    },
-    {
       "class": "z2ui5_cl_ui5f_liveedit_js",
       "path": "01/03/z2ui5_cl_ui5f_liveedit_js.js",
       "todos": 0,
       "todoDetails": []
     },
     {
+      "class": "z2ui5_cl_ui5f_log_js",
+      "path": "01/03/z2ui5_cl_ui5f_log_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
       "class": "z2ui5_cl_ui5f_msgmgr_js",
       "path": "01/03/z2ui5_cl_ui5f_msgmgr_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_ui5f_persist_js",
+      "path": "01/03/z2ui5_cl_ui5f_persist_js.js",
       "todos": 0,
       "todoDetails": []
     },
@@ -270,6 +313,12 @@
     {
       "class": "z2ui5_cl_ui5f_slots_js",
       "path": "01/03/z2ui5_cl_ui5f_slots_js.js",
+      "todos": 0,
+      "todoDetails": []
+    },
+    {
+      "class": "z2ui5_cl_ui5f_slotxml_js",
+      "path": "01/03/z2ui5_cl_ui5f_slotxml_js.js",
       "todos": 0,
       "todoDetails": []
     },

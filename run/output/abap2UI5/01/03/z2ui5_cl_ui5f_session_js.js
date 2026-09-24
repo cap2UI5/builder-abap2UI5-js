@@ -38,24 +38,19 @@ class z2ui5_cl_ui5f_session_js {
 ` + `    };` + `
 ` + `  }` + `
 ` + `` + `
-` + `  let sessionConfigSent = false;` + `
-` + `` + `
-` + `  let liveSent = "";` + `
-` + `` + `
-` + `  let pending = null;` + `
-` + `` + `
-` + `  function config(oConfig, draftId) {` + `
+` + `  function config(ctx, oConfig, draftId) {` + `
+` + `    const latches = ctx.session;` + `
 ` + `    const live = getDeviceLive();` + `
 ` + `    const liveKey = JSON.stringify(live);` + `
-` + `    if (sessionConfigSent && draftId) {` + `
-` + `      if (liveKey === liveSent) {` + `
-` + `        pending = null;` + `
+` + `    if (latches.configSent && draftId) {` + `
+` + `      if (liveKey === latches.liveSent) {` + `
+` + `        latches.pending = null;` + `
 ` + `        return {};` + `
 ` + `      }` + `
-` + `      pending = { live: liveKey };` + `
+` + `      latches.pending = { live: liveKey };` + `
 ` + `      return { S_DEVICE: live };` + `
 ` + `    }` + `
-` + `    pending = { config: Boolean(oConfig?.S_UI5), live: liveKey };` + `
+` + `    latches.pending = { config: Boolean(oConfig?.S_UI5), live: liveKey };` + `
 ` + `    return {` + `
 ` + `      S_UI5: oConfig?.S_UI5,` + `
 ` + `      ComponentData: oConfig?.ComponentData,` + `
@@ -63,25 +58,25 @@ class z2ui5_cl_ui5f_session_js {
 ` + `    };` + `
 ` + `  }` + `
 ` + `` + `
-` + `  function takePending() {` + `
-` + `    const p = pending;` + `
-` + `    pending = null;` + `
+` + `  function takePending(ctx) {` + `
+` + `    const p = ctx.session.pending;` + `
+` + `    ctx.session.pending = null;` + `
 ` + `    return p;` + `
 ` + `  }` + `
 ` + `` + `
-` + `  function confirmSent(p) {` + `
+` + `  function confirmSent(ctx, p) {` + `
 ` + `    if (!p) return;` + `
-` + `    if (p.config) sessionConfigSent = true;` + `
-` + `    if (p.live !== undefined) liveSent = p.live;` + `
-` + `    if (p.location) locationSent = true;` + `
+` + `    const latches = ctx.session;` + `
+` + `    if (p.config) latches.configSent = true;` + `
+` + `    if (p.live !== undefined) latches.liveSent = p.live;` + `
+` + `    if (p.location) latches.locationSent = true;` + `
 ` + `  }` + `
 ` + `` + `
-` + `  let locationSent = false;` + `
+` + `  function location(ctx, draftId) {` + `
+` + `    const latches = ctx.session;` + `
+` + `    if (draftId && latches.locationSent) return null;` + `
 ` + `` + `
-` + `  function location(draftId) {` + `
-` + `    if (draftId && locationSent) return null;` + `
-` + `` + `
-` + `    pending = { ...pending, location: true };` + `
+` + `    latches.pending = { ...latches.pending, location: true };` + `
 ` + `    return {` + `
 ` + `      ORIGIN: window.location.origin,` + `
 ` + `      PATHNAME: window.location.pathname,` + `
@@ -89,7 +84,15 @@ class z2ui5_cl_ui5f_session_js {
 ` + `    };` + `
 ` + `  }` + `
 ` + `` + `
-` + `  return { config, takePending, confirmSent, location };` + `
+` + `  function reset(ctx) {` + `
+` + `    const latches = ctx.session;` + `
+` + `    latches.configSent = false;` + `
+` + `    latches.liveSent = "";` + `
+` + `    latches.pending = null;` + `
+` + `    latches.locationSent = false;` + `
+` + `  }` + `
+` + `` + `
+` + `  return { config, takePending, confirmSent, location, reset };` + `
 ` + `});` + `
 ` + `` + `
 ` + ``;

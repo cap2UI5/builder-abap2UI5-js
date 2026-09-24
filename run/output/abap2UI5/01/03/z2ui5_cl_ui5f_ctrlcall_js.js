@@ -7,11 +7,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `    "sap/m/MessageBox",` + `
 ` + `    "sap/ui/core/BusyIndicator",` + `
 ` + `    "sap/ui/core/Popup",` + `
-` + `    "sap/ui/model/Filter",` + `
-` + `    "sap/ui/model/FilterOperator",` + `
-` + `    "sap/ui/model/Sorter",` + `
 ` + `    "z2ui5/core/Router",` + `
 ` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/core/Env",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
 ` + `    "z2ui5/core/actions/Slots",` + `
 ` + `  ],` + `
@@ -19,11 +17,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `    MessageBox,` + `
 ` + `    BusyIndicator,` + `
 ` + `    CorePopup,` + `
-` + `    Filter,` + `
-` + `    FilterOperator,` + `
-` + `    Sorter,` + `
 ` + `    Router,` + `
 ` + `    Lib,` + `
+` + `    Env,` + `
 ` + `    ViewSlots,` + `
 ` + `    Slots,` + `
 ` + `  ) => {` + `
@@ -67,7 +63,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `    let iBoxNo = 0;` + `
 ` + `` + `
 ` + `    function expandBoxDetails(sDialogId) {` + `
-` + `      const oDialog = Lib.getElementById(sDialogId);` + `
+` + `      const oDialog = Env.getElementById(sDialogId);` + `
 ` + `      const oLayout = oDialog?.getContent?.()[0];` + `
 ` + `      if (!oLayout?.getItems) return;` + `
 ` + `      for (const oItem of oLayout.getItems()) {` + `
@@ -93,7 +89,10 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        if (!o.id) o.id = \`z2ui5MessageBox\${++iBoxNo}\`;` + `
 ` + `      }` + `
 ` + `      if (o.dependentOn) {` + `
-` + `        const oDependentOn = ViewSlots.resolveById(o.dependentOn);` + `
+` + `        const oDependentOn = ViewSlots.resolveById(` + `
+` + `          oController?.ctx,` + `
+` + `          o.dependentOn,` + `
+` + `        );` + `
 ` + `        if (oDependentOn) o.dependentOn = oDependentOn;` + `
 ` + `        else delete o.dependentOn;` + `
 ` + `      }` + `
@@ -266,7 +265,14 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `          updateModel: [],` + `
 ` + `        },` + `
 ` + `        display: (oController, method, aArgs, mOptions, ctx) =>` + `
-` + `          Slots.action(method, aArgs[0], aArgs[1], mOptions, ctx?.seq),` + `
+` + `          Slots.action(` + `
+` + `            oController?.ctx,` + `
+` + `            method,` + `
+` + `            aArgs[0],` + `
+` + `            aArgs[1],` + `
+` + `            mOptions,` + `
+` + `            ctx?.seq,` + `
+` + `          ),` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      ROUTER: {` + `
@@ -274,7 +280,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        methods: { sync: [] },` + `
 ` + `        display: (oController, method, aArgs, mOptions, ctx) => {` + `
 ` + `          if (ctx?.response) ctx.response._routerOptions = mOptions;` + `
-` + `          else Router.sync(mOptions);` + `
+` + `          else Router.sync(oController?.ctx, mOptions);` + `
 ` + `        },` + `
 ` + `      },` + `
 ` + `      BUSY_INDICATOR: {` + `
@@ -291,7 +297,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      },` + `
 ` + `` + `
 ` + `      THEMING: {` + `
-` + `        get: () => Lib.getThemingModule(),` + `
+` + `        get: () => Env.getThemingModule(),` + `
 ` + `        methods: { setTheme: ["string"] },` + `
 ` + `      },` + `
 ` + `` + `
@@ -321,10 +327,10 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    const AGG_ITEM = /^([^/]+)\\/([A-Za-z_][\\w]*)\\/(\\d+)$/;` + `
 ` + `` + `
-` + `    function resolveControl(raw, view) {` + `
+` + `    function resolveControl(raw, view, ctx) {` + `
 ` + `      const byId = (id) =>` + `
-` + `        (view && ViewSlots.byId(view.toUpperCase(), id)) ||` + `
-` + `        ViewSlots.resolveById(id);` + `
+` + `        (view && ViewSlots.byId(ctx, view.toUpperCase(), id)) ||` + `
+` + `        ViewSlots.resolveById(ctx, id);` + `
 ` + `` + `
 ` + `      const m = AGG_ITEM.exec(String(raw ?? ""));` + `
 ` + `      if (!m) return byId(raw);` + `
@@ -351,21 +357,21 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      return item;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function resolveControlOrNull(raw, view) {` + `
+` + `    function resolveControlOrNull(raw, view, ctx) {` + `
 ` + `      if (raw === "" || raw === undefined || raw === null) return null;` + `
-` + `      return resolveControl(raw, view) || null;` + `
+` + `      return resolveControl(raw, view, ctx) || null;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function castArg(kind, raw, view) {` + `
+` + `    function castArg(kind, raw, view, ctx) {` + `
 ` + `      switch (kind) {` + `
 ` + `        case "int":` + `
 ` + `          return Number(raw);` + `
 ` + `        case "bool":` + `
 ` + `          return raw === "true" || raw === "X" || raw === true;` + `
 ` + `        case "controlId":` + `
-` + `          return resolveControl(raw, view);` + `
+` + `          return resolveControl(raw, view, ctx);` + `
 ` + `        case "pageId": {` + `
-` + `          const page = resolveControl(raw, view);` + `
+` + `          const page = resolveControl(raw, view, ctx);` + `
 ` + `          if (page && typeof page.getId === "function") return page.getId();` + `
 ` + `` + `
 ` + `          Lib.logError(` + `
@@ -374,11 +380,11 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `          return raw;` + `
 ` + `        }` + `
 ` + `        case "controlIdOrNull":` + `
-` + `          return resolveControlOrNull(raw, view);` + `
+` + `          return resolveControlOrNull(raw, view, ctx);` + `
 ` + `        case "anchor":` + `
-` + `          return resolveControl(raw, view);` + `
+` + `          return resolveControl(raw, view, ctx);` + `
 ` + `        case "within":` + `
-` + `          return resolveControlOrNull(raw, view);` + `
+` + `          return resolveControlOrNull(raw, view, ctx);` + `
 ` + `        case "object":` + `
 ` + `          if (raw && typeof raw === "object") return raw;` + `
 ` + `          try {` + `
@@ -396,14 +402,14 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      if (raw === "X" || raw === "true") return true;` + `
 ` + `      if (raw === "" || raw === " " || raw === "false") return false;` + `
 ` + `      return raw;` + `
-` + `    }` + `
+`;
+    result = result + `    }` + `
 ` + `` + `
 ` + `    function setsStringProperty(control, method) {` + `
 ` + `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` + `
 ` + `        return false;` + `
 ` + `      const prop = control.getMetadata?.()?.getAllProperties?.()[` + `
-`;
-    result = result + `        method.charAt(3).toLowerCase() + method.slice(4)` + `
+` + `        method.charAt(3).toLowerCase() + method.slice(4)` + `
 ` + `      ];` + `
 ` + `      if (!prop) return false;` + `
 ` + `      const primitive = prop.getType?.()?.getPrimitiveType?.()?.getName?.();` + `
@@ -412,7 +418,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `` + `
 ` + `    const NULLABLE_KINDS = ["controlIdOrNull"];` + `
 ` + `` + `
-` + `    function castArgs(kinds, rawArgs, view, target) {` + `
+` + `    function castArgs(kinds, rawArgs, view, target, ctx) {` + `
 ` + `      if (kinds === null) {` + `
 ` + `        const keepString = setsStringProperty(target?.control, target?.method);` + `
 ` + `        return rawArgs.map((raw, i) =>` + `
@@ -425,7 +431,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        count++;` + `
 ` + `      return kinds` + `
 ` + `        .slice(0, count)` + `
-` + `        .map((kind, i) => castArg(kind, rawArgs[i], view));` + `
+` + `        .map((kind, i) => castArg(kind, rawArgs[i], view, ctx));` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    const registeredIconFonts = new Set();` + `
@@ -481,7 +487,13 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        );` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      const anchor = castArgs(kinds, args.slice(4), view)[0];` + `
+` + `      const anchor = castArgs(` + `
+` + `        kinds,` + `
+` + `        args.slice(4),` + `
+` + `        view,` + `
+` + `        undefined,` + `
+` + `        oController?.ctx,` + `
+` + `      )[0];` + `
 ` + `` + `
 ` + `      whenAnchorRendered(anchor, oController, () => {` + `
 ` + `        if (control.isOpen?.()) control.close();` + `
@@ -498,7 +510,13 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        Lib.logError(\`CONTROL_BY_ID: 'openBy' not callable on control '\${id}'\`);` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      const anchor = castArgs(kinds, args.slice(4), view)[0];` + `
+` + `      const anchor = castArgs(` + `
+` + `        kinds,` + `
+` + `        args.slice(4),` + `
+` + `        view,` + `
+` + `        undefined,` + `
+` + `        oController?.ctx,` + `
+` + `      )[0];` + `
 ` + `` + `
 ` + `      whenAnchorRendered(anchor, oController, () => {` + `
 ` + `        if (typeof control.openBy === "function") control.openBy(anchor);` + `
@@ -596,7 +614,8 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        kinds = null;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const control = resolveControl(id, view);` + `
+` + `      const ctx = oController?.ctx;` + `
+` + `      const control = resolveControl(id, view, ctx);` + `
 ` + `      const pseudo = PSEUDO_METHODS[method];` + `
 ` + `      if (pseudo) {` + `
 ` + `        pseudo({ control, id, view, method, kinds, args, oController });` + `
@@ -612,7 +631,7 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        return;` + `
 ` + `      }` + `
 ` + `      control[method](` + `
-` + `        ...castArgs(kinds, args.slice(4), view, { control, method }),` + `
+` + `        ...castArgs(kinds, args.slice(4), view, { control, method }, ctx),` + `
 ` + `      );` + `
 ` + `    }` + `
 ` + `` + `
@@ -662,7 +681,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        Lib.logError(\`CONTROL_GLOBAL: '\${name}.\${method}' not available\`);` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      obj[method](...castArgs(kinds, raw));` + `
+` + `      obj[method](` + `
+` + `        ...castArgs(kinds, raw, undefined, undefined, oController?.ctx),` + `
+` + `      );` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function formatTemplate(tpl, values) {` + `
@@ -679,121 +700,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `      );` + `
 ` + `    }` + `
 ` + `` + `
-` + `    const FILTER_OPERATORS = new Set([` + `
-` + `      "BT",` + `
-` + `      "Contains",` + `
-` + `      "EndsWith",` + `
-` + `      "EQ",` + `
-` + `      "GE",` + `
-` + `      "GT",` + `
-` + `      "LE",` + `
-` + `      "LT",` + `
-` + `      "NB",` + `
-` + `      "NE",` + `
-` + `      "NotContains",` + `
-` + `      "NotEndsWith",` + `
-` + `      "NotStartsWith",` + `
-` + `      "StartsWith",` + `
-` + `    ]);` + `
-` + `` + `
-` + `    const isEmpty = (v) => v == null || v === "";` + `
-` + `` + `
-` + `    function buildFilterGroups(binding, json) {` + `
-` + `      let groups = json;` + `
-` + `      if (typeof json === "string") {` + `
-` + `        try {` + `
-` + `          groups = JSON.parse(json);` + `
-` + `        } catch {` + `
-` + `          Lib.logError("BINDING_CALL: malformed filter groups JSON");` + `
-` + `          return;` + `
-` + `        }` + `
-` + `      }` + `
-` + `      if (!Array.isArray(groups)) {` + `
-` + `        Lib.logError("BINDING_CALL: filter groups must be an array");` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      groups = groups.filter((g) => Array.isArray(g) && g.length);` + `
-` + `      if (!groups.length) {` + `
-` + `        binding.filter([]);` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      const outer = [];` + `
-` + `      for (const group of groups) {` + `
-` + `        const inner = [];` + `
-` + `        for (const row of group) {` + `
-` + `          const [path, operator, value1, value2] = Array.isArray(row)` + `
-` + `            ? row` + `
-` + `            : [];` + `
-` + `          if (typeof path !== "string" || !FILTER_OPERATORS.has(operator)) {` + `
-` + `            Lib.logError(` + `
-` + `              \`BINDING_CALL: bad filter row (path '\${path}' / operator '\${operator}')\`,` + `
-` + `            );` + `
-` + `            return;` + `
-` + `          }` + `
-` + `          inner.push(` + `
-` + `            new Filter(path, FilterOperator[operator], value1, value2),` + `
-` + `          );` + `
-` + `        }` + `
-` + `        outer.push(new Filter(inner, false));` + `
-` + `      }` + `
-` + `      binding.filter([new Filter(outer, true)]);` + `
-` + `    }` + `
-` + `` + `
-` + `    const BINDING_METHODS = {` + `
-` + `      filter(binding, params) {` + `
-` + `        const [path, operator, value1, value2] = params;` + `
-` + `` + `
-` + `        if (` + `
-` + `          params.length === 1 &&` + `
-` + `          (Array.isArray(path) ||` + `
-` + `            (typeof path === "string" && path.trimStart().startsWith("[")))` + `
-` + `        ) {` + `
-` + `          buildFilterGroups(binding, path);` + `
-` + `          return;` + `
-` + `        }` + `
-` + `` + `
-` + `        if (isEmpty(value1) && isEmpty(value2)) {` + `
-` + `          binding.filter([]);` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        if (!FILTER_OPERATORS.has(operator)) {` + `
-` + `          Lib.logError(\`BINDING_CALL: operator '\${operator}' not allowed\`);` + `
-` + `          return;` + `
-` + `        }` + `
-` + `        binding.filter([` + `
-` + `          new Filter(path, FilterOperator[operator], value1, value2),` + `
-` + `        ]);` + `
-` + `      },` + `
-` + `      sort(binding, [path, descending, group]) {` + `
-` + `        binding.sort([` + `
-` + `          new Sorter(path, castArg("bool", descending), castArg("bool", group)),` + `
-` + `        ]);` + `
-` + `      },` + `
-` + `    };` + `
-` + `` + `
-` + `    Object.setPrototypeOf(BINDING_METHODS, null);` + `
-` + `` + `
-` + `    function evBindingCall(oController, args) {` + `
-` + `      const [, id, aggregation, method] = args;` + `
-` + `      const build = BINDING_METHODS[method];` + `
-` + `      if (!build) {` + `
-` + `        Lib.logError(\`BINDING_CALL: method '\${method}' not allowed\`);` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      const binding = ViewSlots.resolveById(id)?.getBinding?.(aggregation);` + `
-` + `      if (!binding || typeof binding[method] !== "function") {` + `
-` + `        Lib.logError(` + `
-` + `          \`BINDING_CALL: no '\${aggregation}' binding with '\${method}' on control '\${id}'\`,` + `
-` + `        );` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      build(binding, args.slice(4));` + `
-` + `    }` + `
-` + `` + `
 ` + `    const handlers = {` + `
 ` + `      CONTROL_BY_ID: evControlCallById,` + `
 ` + `      CONTROL_GLOBAL: evControlCall,` + `
-` + `      BINDING_CALL: evBindingCall,` + `
 ` + `    };` + `
 ` + `` + `
 ` + `    for (const name of Object.keys(GLOBAL_TARGETS)) {` + `
@@ -801,10 +710,9 @@ class z2ui5_cl_ui5f_ctrlcall_js {
 ` + `        evControlCall(oController, ["CONTROL_GLOBAL", ...args], ctx);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    return { handlers };` + `
+` + `    return { handlers, castArg };` + `
 ` + `  },` + `
-`;
-    result = result + `);` + `
+` + `);` + `
 ` + `` + `
 ` + ``;
     return result;

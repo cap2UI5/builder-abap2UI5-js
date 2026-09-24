@@ -102,10 +102,54 @@ class z2ui5_cl_ui5f_dtformat_js {
 ` + `    return \`\${(bytes / (1024 * 1024)).toFixed(1)} MB\`;` + `
 ` + `  }` + `
 ` + `` + `
+` + `  function section(title) {` + `
+` + `    return \`\\n\${title}\\n\${"-".repeat(title.length)}\`;` + `
+` + `  }` + `
+` + `` + `
+` + `  function renderValue(value, max) {` + `
+` + `    if (value === undefined) return "(absent)";` + `
+` + `    if (value === null) return "null";` + `
+` + `    let text;` + `
+` + `    if (typeof value === "object") {` + `
+` + `      try {` + `
+` + `        text = JSON.stringify(value);` + `
+` + `      } catch {` + `
+` + `        text = String(value);` + `
+` + `      }` + `
+` + `    } else {` + `
+` + `      text = String(value);` + `
+` + `    }` + `
+` + `    return truncate(text, max);` + `
+` + `  }` + `
+` + `` + `
+` + `  function describeValue(` + `
+` + `    value,` + `
+` + `    { max = 60, typed = false, absent = "(absent)", empty = "(empty)" } = {},` + `
+` + `  ) {` + `
+` + `    if (value === null) return "null";` + `
+` + `    if (value === undefined) return absent;` + `
+` + `    if (Array.isArray(value)) return \`table, \${value.length} row(s)\`;` + `
+` + `    if (typeof value === "object") {` + `
+` + `      return \`structure, \${Object.keys(value).length} field(s)\`;` + `
+` + `    }` + `
+` + `    if (value === "") return typed ? \`\${typeof value} \${empty}\` : empty;` + `
+` + `    const preview = truncate(value, max);` + `
+` + `    return typed ? \`\${typeof value}  \${preview}\` : preview;` + `
+` + `  }` + `
+` + `` + `
 ` + `  const FRAMEWORK_CALL =` + `
 ` + `    /\\b(eB|eBP|eF)\\s*\\((?:[^[]*\\[)?\\s*(?:&apos;|&quot;|['"])([A-Za-z0-9_.-]+)/;` + `
 ` + `` + `
-` + `  return { toJson, prettifyXml, truncate, formatBytes, FRAMEWORK_CALL };` + `
+` + `  return {` + `
+` + `    toJson,` + `
+` + `    prettifyXml,` + `
+` + `    truncate,` + `
+` + `    formatBytes,` + `
+` + `    section,` + `
+` + `    renderValue,` + `
+` + `    describeValue,` + `
+` + `    FRAMEWORK_CALL,` + `
+` + `  };` + `
 ` + `});` + `
 ` + `` + `
 ` + ``;

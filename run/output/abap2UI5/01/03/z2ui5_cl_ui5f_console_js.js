@@ -2,7 +2,7 @@
 class z2ui5_cl_ui5f_console_js {
   static get() {
     let result = ``;
-    result = `sap.ui.define([], () => {` + `
+    result = `sap.ui.define(["z2ui5/devtools/Persist"], (Persist) => {` + `
 ` + `  "use strict";` + `
 ` + `` + `
 ` + `  const MAX_ENTRIES = 300;` + `
@@ -26,13 +26,14 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  let dropped = 0;` + `
 ` + `` + `
 ` + `  const originals = {};` + `
-` + `  let installed = false;` + `
+` + `` + `
+` + `  let users = 0;` + `
 ` + `  let ui5Listener = null;` + `
 ` + `  let onWindowError = null;` + `
 ` + `  let onRejection = null;` + `
 ` + `  let onPageHide = null;` + `
 ` + `` + `
-` + `  let onErrorEntry = null;` + `
+` + `  const onErrorEntry = new Set();` + `
 ` + `` + `
 ` + `  let capturing = false;` + `
 ` + `` + `
@@ -54,61 +55,42 @@ class z2ui5_cl_ui5f_console_js {
 ` + `      text: body,` + `
 ` + `    };` + `
 ` + `    entries.push(entry);` + `
-` + `    if (level === "error" && onErrorEntry && isAlertOnError()) {` + `
-` + `      try {` + `
-` + `        onErrorEntry(entry);` + `
-` + `      } catch {}` + `
+` + `    if (level === "error" && onErrorEntry.size && isAlertOnError()) {` + `
+` + `      for (const fn of onErrorEntry) {` + `
+` + `        try {` + `
+` + `          fn(entry);` + `
+` + `        } catch {}` + `
+` + `      }` + `
 ` + `    }` + `
 ` + `  }` + `
 ` + `` + `
-` + `  function setOnError(fn) {` + `
-` + `    onErrorEntry = fn;` + `
+` + `  function addOnError(fn) {` + `
+` + `    if (typeof fn === "function") onErrorEntry.add(fn);` + `
+` + `  }` + `
+` + `` + `
+` + `  function removeOnError(fn) {` + `
+` + `    onErrorEntry.delete(fn);` + `
 ` + `  }` + `
 ` + `` + `
 ` + `  function isAlertOnError() {` + `
-` + `    try {` + `
-` + `      return window.sessionStorage?.getItem(ALERT_KEY) === "X";` + `
-` + `    } catch {` + `
-` + `      return false;` + `
-` + `    }` + `
+` + `    return Persist.readFlag(ALERT_KEY);` + `
 ` + `  }` + `
 ` + `` + `
 ` + `  function setAlertOnError(enabled) {` + `
-` + `    try {` + `
-` + `      if (enabled) {` + `
-` + `        window.sessionStorage?.setItem(ALERT_KEY, "X");` + `
-` + `      } else {` + `
-` + `        window.sessionStorage?.removeItem(ALERT_KEY);` + `
-` + `      }` + `
-` + `    } catch {}` + `
+` + `    Persist.writeFlag(ALERT_KEY, enabled);` + `
 ` + `  }` + `
 ` + `` + `
 ` + `  function persist() {` + `
-` + `    try {` + `
-` + `      const errors = entries` + `
-` + `        .filter((entry) => entry.level === "error")` + `
-` + `        .slice(-RELOAD_MAX_ENTRIES)` + `
-` + `        .map((entry) => ({ ...entry, previousLoad: true }));` + `
-` + `      if (!errors.length) return;` + `
-` + `      window.sessionStorage?.setItem(RELOAD_KEY, JSON.stringify(errors));` + `
-` + `    } catch {}` + `
+` + `    const errors = entries` + `
+` + `      .filter((entry) => entry.level === "error")` + `
+` + `      .slice(-RELOAD_MAX_ENTRIES)` + `
+` + `      .map((entry) => ({ ...entry, previousLoad: true }));` + `
+` + `    Persist.saveList(RELOAD_KEY, errors);` + `
 ` + `  }` + `
 ` + `` + `
 ` + `  function restore() {` + `
-` + `    let stored;` + `
-` + `    try {` + `
-` + `      stored = window.sessionStorage?.getItem(RELOAD_KEY);` + `
-` + `      window.sessionStorage?.removeItem(RELOAD_KEY);` + `
-` + `    } catch {` + `
-` + `      return;` + `
-` + `    }` + `
-` + `    if (!stored) return;` + `
-` + `    try {` + `
-` + `      const parsed = JSON.parse(stored);` + `
-` + `      if (Array.isArray(parsed)) entries = parsed.slice(-RELOAD_MAX_ENTRIES);` + `
-` + `    } catch {` + `
-` + `      entries = [];` + `
-` + `    }` + `
+` + `    const stored = Persist.takeList(RELOAD_KEY);` + `
+` + `    if (stored.length) entries = stored.slice(-RELOAD_MAX_ENTRIES);` + `
 ` + `  }` + `
 ` + `` + `
 ` + `  function isErrorLike(value) {` + `
@@ -264,8 +246,8 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  }` + `
 ` + `` + `
 ` + `  function install() {` + `
-` + `    if (installed) return;` + `
-` + `    installed = true;` + `
+` + `    users += 1;` + `
+` + `    if (users > 1) return;` + `
 ` + `    restore();` + `
 ` + `` + `
 ` + `    onWindowError = (event) => {` + `
@@ -298,8 +280,9 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  }` + `
 ` + `` + `
 ` + `  function uninstall() {` + `
-` + `    if (!installed) return;` + `
-` + `    installed = false;` + `
+` + `    if (!users) return;` + `
+` + `    users -= 1;` + `
+` + `    if (users) return;` + `
 ` + `    uninstallConsole();` + `
 ` + `    uninstallUi5Log();` + `
 ` + `    if (onWindowError) window.removeEventListener("error", onWindowError);` + `
@@ -310,7 +293,7 @@ class z2ui5_cl_ui5f_console_js {
 ` + `    onWindowError = null;` + `
 ` + `    onRejection = null;` + `
 ` + `    onPageHide = null;` + `
-` + `    onErrorEntry = null;` + `
+` + `    onErrorEntry.clear();` + `
 ` + `    pendingUi5Echo = null;` + `
 ` + `    entries = [];` + `
 ` + `    dropped = 0;` + `
@@ -327,7 +310,8 @@ class z2ui5_cl_ui5f_console_js {
 ` + `  return {` + `
 ` + `    install,` + `
 ` + `    uninstall,` + `
-` + `    setOnError,` + `
+` + `    addOnError,` + `
+` + `    removeOnError,` + `
 ` + `    isAlertOnError,` + `
 ` + `    setAlertOnError,` + `
 ` + `    getEntries,` + `

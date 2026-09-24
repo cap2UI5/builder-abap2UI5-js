@@ -44,10 +44,6 @@ class z2ui5_cl_ui5_frontend {
     this.mo_action.ms_next.s_action.t_custom.push(z2ui5_cl_util.abap_copy({ o_json: this.mo_srv_event.get_event_client_ajson({ val, view, t_arg }) }));
   }
 
-  queue_app_js({ val } = {}) {
-    this.mo_action.ms_next.s_action.t_custom.push(z2ui5_cl_util.abap_copy({ js: val }));
-  }
-
   slot_destroy({ slot } = {}) {
     this.slot_reset({ slot: slot });
     this.mo_action.ms_next.t_action_front.push(z2ui5_cl_util.abap_copy({ slot: slot, method: z2ui5_if_ui5_types.cs_slot_action.destroy }));

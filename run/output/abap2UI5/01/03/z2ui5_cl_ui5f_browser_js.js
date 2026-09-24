@@ -10,9 +10,8 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `    "z2ui5/core/Router",` + `
 ` + `    "z2ui5/core/Lib",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
-` + `    "z2ui5/core/AppState",` + `
 ` + `  ],` + `
-` + `  (MessageBox, mobileLibrary, Storage, Router, Lib, ViewSlots, AppState) => {` + `
+` + `  (MessageBox, mobileLibrary, Storage, Router, Lib, ViewSlots) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const _URLHelper = mobileLibrary.URLHelper;` + `
@@ -101,7 +100,7 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `    }` + `
 ` + `` + `
 ` + `    function evHashBack(oController, args) {` + `
-` + `      Router.navBack(args ? args[1] : undefined);` + `
+` + `      Router.navBack(oController?.ctx, args ? args[1] : undefined);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function evLocationReload(oController, args) {` + `
@@ -118,7 +117,7 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `      const explicitUrl = args[1];` + `
 ` + `      const logoutUrl = explicitUrl || "/sap/public/bc/icf/logoff";` + `
 ` + `      try {` + `
-` + `        const container = AppState.state.oLaunchpad?.Container;` + `
+` + `        const container = oController?.ctx?.state.oLaunchpad?.Container;` + `
 ` + `` + `
 ` + `        if (container?.logout && !explicitUrl) {` + `
 ` + `          container.logout();` + `
@@ -184,9 +183,8 @@ class z2ui5_cl_ui5f_browser_js {
 ` + `        );` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      const newWindow = window.open(args[1], "_blank");` + `
 ` + `` + `
-` + `      if (newWindow) newWindow.opener = null;` + `
+` + `      window.open(args[1], "_blank", "noopener,noreferrer");` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function evUrlHelper(oController, args) {` + `

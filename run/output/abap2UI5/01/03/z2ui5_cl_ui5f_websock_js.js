@@ -3,8 +3,8 @@ class z2ui5_cl_ui5f_websock_js {
   static get() {
     let result = ``;
     result = `sap.ui.define(` + `
-` + `  ["sap/ui/core/Control", "z2ui5/core/Lib", "z2ui5/core/AppState"],` + `
-` + `  (Control, Lib, AppState) => {` + `
+` + `  ["sap/ui/core/Control", "z2ui5/core/Lib", "z2ui5/core/Context"],` + `
+` + `  (Control, Lib, Context) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const RECONNECT_BASE_MS = 500;` + `
@@ -230,7 +230,7 @@ class z2ui5_cl_ui5f_websock_js {
 ` + `` + `
 ` + `      _drain() {` + `
 ` + `        if (!this._queue.length) return;` + `
-` + `        if (AppState.state.isBusy) {` + `
+` + `        if (Context.of(this)?.state.isBusy) {` + `
 ` + `          this._scheduleDrain();` + `
 ` + `          return;` + `
 ` + `        }` + `

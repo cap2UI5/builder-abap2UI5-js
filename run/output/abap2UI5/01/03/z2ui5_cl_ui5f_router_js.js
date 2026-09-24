@@ -3,16 +3,13 @@ class z2ui5_cl_ui5f_router_js {
   static get() {
     let result = ``;
     result = `sap.ui.define(` + `
-` + `  ["sap/ui/core/routing/HashChanger", "z2ui5/core/AppState", "z2ui5/core/Lib"],` + `
-` + `  (HashChanger, AppState, Lib) => {` + `
+` + `  ["sap/ui/core/routing/HashChanger", "z2ui5/core/Lib"],` + `
+` + `  (HashChanger, Lib) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    const APP_ROUTE_PREFIX = "/app/";` + `
 ` + `` + `
 ` + `    const SHELL_SEPARATOR = "&/";` + `
-` + `` + `
-` + `    let _fnNavigate = null;` + `
-` + `    let _boundHashChanged = null;` + `
 ` + `` + `
 ` + `    function hashChanger() {` + `
 ` + `      return HashChanger.getInstance();` + `
@@ -63,7 +60,16 @@ class z2ui5_cl_ui5f_router_js {
 ` + `` + `
 ` + `    function parse(sHash) {` + `
 ` + `      const parts = segmentsOf(sHash);` + `
-` + `      if (!parts || !parts[0]) return null;` + `
+` + `      if (!parts) return null;` + `
+` + `` + `
+` + `      if (parts[0] === "") {` + `
+` + `        if (parts.length < 3 || !parts[1] || !parts[2]) return null;` + `
+` + `        return {` + `
+` + `          app: \`/\${parts[1]}/\${parts[2]}\`,` + `
+` + `          draft: parts.length > 3 ? parts[3] : "",` + `
+` + `        };` + `
+` + `      }` + `
+` + `      if (!parts[0]) return null;` + `
 ` + `      return { app: parts[0], draft: parts.length > 1 ? parts[1] : "" };` + `
 ` + `    }` + `
 ` + `` + `
@@ -76,34 +82,34 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function writeHash(sHash, bPush) {` + `
-` + `      if (bPush) AppState.state.hashPushCount += 1;` + `
+` + `    function writeHash(ctx, sHash, bPush) {` + `
+` + `      if (bPush) ctx.state.hashPushCount += 1;` + `
 ` + `      navTo(sHash, !bPush);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function writeLegacyUrl(sSuffix, bPush) {` + `
+` + `    function writeLegacyUrl(ctx, sSuffix, bPush) {` + `
 ` + `      const url = \`\${window.location.pathname}\${window.location.search}#\${getRawHash()}\${sSuffix}\`;` + `
 ` + `      if (bPush) {` + `
-` + `        AppState.state.hashPushCount += 1;` + `
+` + `        ctx.state.hashPushCount += 1;` + `
 ` + `        history.pushState(null, "", url);` + `
 ` + `      } else {` + `
 ` + `        history.replaceState(null, "", url);` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function navBack(sFallback) {` + `
-` + `      if (!sFallback || AppState.state.hashPushCount > 0) {` + `
+` + `    function navBack(ctx, sFallback) {` + `
+` + `      if (!sFallback || ctx.state.hashPushCount > 0) {` + `
 ` + `        window.history.back();` + `
 ` + `        return;` + `
 ` + `      }` + `
 ` + `      navTo(sFallback, true);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function onHashChanged(sNewHash) {` + `
-` + `      const state = AppState.state;` + `
+` + `    function onHashChanged(ctx, sNewHash) {` + `
+` + `      const state = ctx.state;` + `
 ` + `` + `
 ` + `      if (!state.navRouting) {` + `
-` + `        dispatchAppHashChange(sNewHash);` + `
+` + `        dispatchAppHashChange(ctx, sNewHash);` + `
 ` + `        return;` + `
 ` + `      }` + `
 ` + `` + `
@@ -119,20 +125,20 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      }` + `
 ` + `` + `
 ` + `      state.navFromHash = true;` + `
-` + `      if (_fnNavigate) _fnNavigate();` + `
+` + `      if (ctx.router.navigate) ctx.router.navigate();` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function applyHashEvent(mOptions) {` + `
+` + `    function applyHashEvent(ctx, mOptions) {` + `
 ` + `      if (!mOptions.setHashEvent) return;` + `
-` + `      const state = AppState.state;` + `
+` + `      const state = ctx.state;` + `
 ` + `      const sEvent = String(mOptions.setHashEvent).trim();` + `
 ` + `      state.hashEvent = sEvent || null;` + `
 ` + `` + `
 ` + `      state.appHash = appHashNormalized(getRawHash());` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function dispatchAppHashChange(sNewHash) {` + `
-` + `      const state = AppState.state;` + `
+` + `    function dispatchAppHashChange(ctx, sNewHash) {` + `
+` + `      const state = ctx.state;` + `
 ` + `      if (!state.hashEvent) return;` + `
 ` + `      const appHash = appHashNormalized(sNewHash);` + `
 ` + `      if (appHash === state.appHash) return;` + `
@@ -148,16 +154,16 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      controller.eB([state.hashEvent]);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function dispatchPendingAppHash() {` + `
-` + `      const state = AppState.state;` + `
+` + `    function dispatchPendingAppHash(ctx) {` + `
+` + `      const state = ctx.state;` + `
 ` + `      const pending = state.pendingAppHash;` + `
 ` + `      if (pending === null || pending === undefined) return;` + `
 ` + `      state.pendingAppHash = null;` + `
-` + `      dispatchAppHashChange(pending);` + `
+` + `      dispatchAppHashChange(ctx, pending);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function repointCallerEntry(mOptions, draftForRoute) {` + `
-` + `      const state = AppState.state;` + `
+` + `    function repointCallerEntry(ctx, mOptions, draftForRoute) {` + `
+` + `      const state = ctx.state;` + `
 ` + `      const prevApp = mOptions.navAppCallPrevApp;` + `
 ` + `      const prevDraft = mOptions.navAppCallPrevId;` + `
 ` + `      if (!draftForRoute || !prevApp || !prevDraft) return;` + `
@@ -168,16 +174,16 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      navTo(prevRoute, true);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function applyMode(mOptions) {` + `
+` + `    function applyMode(ctx, mOptions) {` + `
 ` + `      if (!mOptions.setNavRouting) return;` + `
 ` + `      const mode = String(mOptions.setNavRouting).toUpperCase();` + `
 ` + `      const on = mode === "KEEP" || mode === "FRESH";` + `
-` + `      AppState.state.navRouting = on;` + `
-` + `      AppState.state.navMode = on ? mode : null;` + `
+` + `      ctx.state.navRouting = on;` + `
+` + `      ctx.state.navMode = on ? mode : null;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function updateAppRoute(mOptions, ID, app) {` + `
-` + `      const state = AppState.state;` + `
+` + `    function updateAppRoute(ctx, mOptions, ID, app) {` + `
+` + `      const state = ctx.state;` + `
 ` + `` + `
 ` + `      const draftForRoute = state.navMode === "FRESH" ? null : ID;` + `
 ` + `` + `
@@ -192,7 +198,7 @@ class z2ui5_cl_ui5f_router_js {
 ` + `` + `
 ` + `      const route = patternFor(app, draftForRoute);` + `
 ` + `      if (mOptions.checkNavAppCall) {` + `
-` + `        repointCallerEntry(mOptions, draftForRoute);` + `
+` + `        repointCallerEntry(ctx, mOptions, draftForRoute);` + `
 ` + `        state.currentApp = app;` + `
 ` + `        state.currentDraftId = draftForRoute;` + `
 ` + `        navTo(route);` + `
@@ -201,25 +207,26 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function sync(mOptions) {` + `
+` + `    function sync(ctx, mOptions) {` + `
 ` + `      const ID = mOptions.id;` + `
 ` + `      try {` + `
-` + `        applyMode(mOptions);` + `
-` + `        applyHashEvent(mOptions);` + `
+` + `        applyMode(ctx, mOptions);` + `
+` + `        applyHashEvent(ctx, mOptions);` + `
 ` + `` + `
-` + `        const state = AppState.state;` + `
+` + `        const state = ctx.state;` + `
 ` + `` + `
 ` + `        const sAppWrite = mOptions.setPushState || mOptions.setHashReplace;` + `
 ` + `        const bPush = Boolean(mOptions.setPushState);` + `
 ` + `` + `
 ` + `        if (state.navRouting) {` + `
 ` + `          const app = state.oResponse?.APP;` + `
-` + `          if (app) updateAppRoute(mOptions, ID, app);` + `
+` + `          if (app) updateAppRoute(ctx, mOptions, ID, app);` + `
 ` + `` + `
 ` + `          if (!sAppWrite) return;` + `
 ` + `` + `
 ` + `          if (state.currentDraftId) {` + `
 ` + `            writeHash(` + `
+` + `              ctx,` + `
 ` + `              patternFor(state.currentApp, state.currentDraftId) + sAppWrite,` + `
 ` + `              bPush,` + `
 ` + `            );` + `
@@ -230,11 +237,11 @@ class z2ui5_cl_ui5f_router_js {
 ` + `        if (sAppWrite) {` + `
 ` + `          if (state.hashEvent) {` + `
 ` + `            state.appHash = appHashNormalized(sAppWrite);` + `
-` + `            writeHash(sAppWrite, bPush);` + `
+` + `            writeHash(ctx, sAppWrite, bPush);` + `
 ` + `            return;` + `
 ` + `          }` + `
 ` + `` + `
-` + `          writeLegacyUrl(sAppWrite, bPush);` + `
+` + `          writeLegacyUrl(ctx, sAppWrite, bPush);` + `
 ` + `` + `
 ` + `          return;` + `
 ` + `        }` + `
@@ -250,22 +257,24 @@ class z2ui5_cl_ui5f_router_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function init(fnNavigate) {` + `
-` + `      _fnNavigate = fnNavigate;` + `
+` + `    function init(ctx, fnNavigate) {` + `
+` + `      ctx.router.navigate = fnNavigate;` + `
 ` + `` + `
-` + `      _boundHashChanged = (oEvent) =>` + `
-` + `        onHashChanged(oEvent.getParameter("newHash"));` + `
-` + `      hashChanger().attachEvent("hashChanged", _boundHashChanged);` + `
+` + `      const listener = (oEvent) =>` + `
+` + `        onHashChanged(ctx, oEvent.getParameter("newHash"));` + `
+` + `      ctx.router.hashListener = listener;` + `
+` + `      hashChanger().attachEvent("hashChanged", listener);` + `
 ` + `` + `
 ` + `      hashChanger().init();` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function exit() {` + `
-` + `      if (_boundHashChanged) {` + `
-` + `        hashChanger().detachEvent("hashChanged", _boundHashChanged);` + `
-` + `        _boundHashChanged = null;` + `
+` + `    function exit(ctx) {` + `
+` + `      const listener = ctx.router.hashListener;` + `
+` + `      if (listener) {` + `
+` + `        hashChanger().detachEvent("hashChanged", listener);` + `
+` + `        ctx.router.hashListener = null;` + `
 ` + `      }` + `
-` + `      _fnNavigate = null;` + `
+` + `      ctx.router.navigate = null;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    return {` + `

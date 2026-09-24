@@ -15,23 +15,27 @@ class z2ui5_cl_ui5f_devtools_js {
 ` + `` + `
 ` + `    const AUTO_OPEN_PARAM = "z2ui5-devtools";` + `
 ` + `` + `
-` + `    let instance = null;` + `
-` + `    let boundKeydown = null;` + `
-` + `    let errorDetailsHook = null;` + `
+` + `    function recordOf(ctx) {` + `
+` + `      return ctx?.devtools || null;` + `
+` + `    }` + `
 ` + `` + `
-` + `    function get() {` + `
-` + `      if (!instance) {` + `
-` + `        instance = new DeveloperTools();` + `
+` + `    function get(ctx) {` + `
+` + `      const record = recordOf(ctx);` + `
+` + `      if (!record) return null;` + `
+` + `      if (!record.tools) {` + `
+` + `        const tools = new DeveloperTools();` + `
+` + `        tools.ctx = ctx;` + `
+` + `        record.tools = tools;` + `
 ` + `      }` + `
-` + `      return instance;` + `
+` + `      return record.tools;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function toggle() {` + `
-` + `      get().toggle();` + `
+` + `    function toggle(ctx) {` + `
+` + `      get(ctx)?.toggle();` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function show(tabKey) {` + `
-` + `      get().show(tabKey);` + `
+` + `    function show(ctx, tabKey) {` + `
+` + `      get(ctx)?.show(tabKey);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function searchParams() {` + `
@@ -53,53 +57,67 @@ class z2ui5_cl_ui5f_devtools_js {
 ` + `      return key === "1" || key === "X" ? "" : key;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function onErrorDetails() {` + `
-` + `      const dialog = get();` + `
+` + `    function onErrorDetails(ctx) {` + `
+` + `      const dialog = get(ctx);` + `
+` + `      if (!dialog) return;` + `
 ` + `      dialog.reopenErrorOnClose = true;` + `
 ` + `      dialog.show("ERROR");` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function install() {` + `
-` + `      if (boundKeydown) return;` + `
+` + `    function install(ctx) {` + `
+` + `      const record = recordOf(ctx);` + `
+` + `      if (!record || record.keydown) return;` + `
 ` + `` + `
-` + `      Recorder.install();` + `
+` + `      Recorder.install(ctx);` + `
 ` + `` + `
 ` + `      Console.install();` + `
+` + `      record.console = true;` + `
 ` + `` + `
-` + `      Console.setOnError(() => {` + `
-` + `        if (instance?.oDialog?.isOpen?.()) return;` + `
-` + `        show("LOG");` + `
-` + `      });` + `
-` + `` + `
-` + `      errorDetailsHook = onErrorDetails;` + `
-` + `      Lib.registerCallback("onErrorDetails", errorDetailsHook);` + `
-` + `` + `
-` + `      boundKeydown = (event) => {` + `
-` + `        if (event.ctrlKey && event.key === "F12") toggle();` + `
+` + `      record.onConsoleError = () => {` + `
+` + `        if (record.tools?.oDialog?.isOpen?.()) return;` + `
+` + `        show(ctx, "LOG");` + `
 ` + `      };` + `
-` + `      document.addEventListener("keydown", boundKeydown);` + `
+` + `      Console.addOnError(record.onConsoleError);` + `
 ` + `` + `
-` + `      if (isAutoOpenRequested()) show(autoOpenTab() || undefined);` + `
+` + `      record.errorDetailsHook = () => onErrorDetails(ctx);` + `
+` + `      Lib.registerCallback(ctx, "onErrorDetails", record.errorDetailsHook);` + `
+` + `` + `
+` + `      record.keydown = (event) => {` + `
+` + `        if (event.ctrlKey && event.key === "F12") toggle(ctx);` + `
+` + `      };` + `
+` + `      document.addEventListener("keydown", record.keydown);` + `
+` + `` + `
+` + `      if (isAutoOpenRequested()) show(ctx, autoOpenTab() || undefined);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function exit() {` + `
-` + `      if (boundKeydown) {` + `
-` + `        document.removeEventListener("keydown", boundKeydown);` + `
-` + `        boundKeydown = null;` + `
+` + `    function exit(ctx) {` + `
+` + `      const record = recordOf(ctx);` + `
+` + `      if (!record) return;` + `
+` + `      if (record.keydown) {` + `
+` + `        document.removeEventListener("keydown", record.keydown);` + `
+` + `        record.keydown = null;` + `
 ` + `      }` + `
-` + `      if (errorDetailsHook) {` + `
-` + `        Lib.unregisterCallback("onErrorDetails", errorDetailsHook);` + `
-` + `        errorDetailsHook = null;` + `
+` + `      if (record.errorDetailsHook) {` + `
+` + `        Lib.unregisterCallback(ctx, "onErrorDetails", record.errorDetailsHook);` + `
+` + `        record.errorDetailsHook = null;` + `
+` + `      }` + `
+` + `      if (record.onConsoleError) {` + `
+` + `        Console.removeOnError(record.onConsoleError);` + `
+` + `        record.onConsoleError = null;` + `
 ` + `      }` + `
 ` + `` + `
-` + `      if (instance) {` + `
-` + `        instance.destroy();` + `
-` + `        instance = null;` + `
+` + `      if (record.tools) {` + `
+` + `        record.tools.destroy();` + `
+` + `        record.tools = null;` + `
 ` + `      }` + `
-` + `      Console.uninstall();` + `
-` + `      Recorder.uninstall();` + `
 ` + `` + `
-` + `      Picker.stop();` + `
+` + `      if (record.console) {` + `
+` + `        record.console = false;` + `
+` + `        Console.uninstall();` + `
+` + `      }` + `
+` + `      Recorder.uninstall(ctx);` + `
+` + `` + `
+` + `      Picker.stop(ctx);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    return {` + `

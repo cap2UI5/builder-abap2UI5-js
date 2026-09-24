@@ -4,14 +4,14 @@ class z2ui5_cl_ui5f_tabs_js {
     let result = ``;
     result = `sap.ui.define(` + `
 ` + `  [` + `
-` + `    "z2ui5/core/AppState",` + `
 ` + `    "z2ui5/core/ViewSlots",` + `
 ` + `    "z2ui5/devtools/Format",` + `
 ` + `    "z2ui5/devtools/Inspect",` + `
 ` + `    "z2ui5/devtools/Picker",` + `
 ` + `    "z2ui5/devtools/Recorder",` + `
+` + `    "z2ui5/devtools/SlotXml",` + `
 ` + `  ],` + `
-` + `  (AppState, ViewSlots, Format, Inspect, Picker, Recorder) => {` + `
+` + `  (ViewSlots, Format, Inspect, Picker, Recorder, SlotXml) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
 ` + `    function getModelJson(view) {` + `
@@ -19,29 +19,19 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `      return model?.getData?.();` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function hasModelData(slotKey) {` + `
-` + `      const data = getModelJson(ViewSlots.getView(slotKey));` + `
+` + `    function hasModelData(ctx, slotKey) {` + `
+` + `      const data = getModelJson(ViewSlots.getView(ctx, slotKey));` + `
 ` + `      return Boolean(data) && Object.keys(data).length > 0;` + `
-` + `    }` + `
-` + `` + `
-` + `    function getViewContent(view) {` + `
-` + `      return view?.mProperties?.viewContent;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function getRenderedContent(view) {` + `
 ` + `      return view?._xContent?.outerHTML;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function getSlotXml(slotKey) {` + `
-` + `      return (` + `
-` + `        getViewContent(ViewSlots.getView(slotKey)) ||` + `
-` + `        ViewSlots.getViewXml(slotKey) ||` + `
-` + `        ""` + `
-` + `      );` + `
-` + `    }` + `
+` + `    const getSlotXml = SlotXml.slotXml;` + `
 ` + `` + `
-` + `    function slotFilled(slotKey) {` + `
-` + `      return Boolean(getSlotXml(slotKey));` + `
+` + `    function slotFilled(ctx, slotKey) {` + `
+` + `      return Boolean(getSlotXml(ctx, slotKey));` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    const GROUPS = [` + `
@@ -71,7 +61,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "OVERVIEW",` + `
 ` + `        label: "Overview",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatOverview(),` + `
+` + `        produce: (ctx) => Inspect.formatOverview(ctx),` + `
 ` + `` + `
 ` + `        searchable: false,` + `
 ` + `      },` + `
@@ -81,8 +71,8 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "PROBLEMS",` + `
 ` + `        label: "Error",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatError(),` + `
-` + `        enabled: () => Boolean(AppState.state.lastError),` + `
+` + `        produce: (ctx) => Inspect.formatError(ctx),` + `
+` + `        enabled: (ctx) => Boolean(ctx.state.lastError),` + `
 ` + `        exportOrder: 20,` + `
 ` + `      },` + `
 ` + `      {` + `
@@ -90,7 +80,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "PROBLEMS",` + `
 ` + `        label: "Log",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatLog(),` + `
+` + `        produce: (ctx) => Inspect.formatLog(ctx),` + `
 ` + `        exportOrder: 30,` + `
 ` + `      },` + `
 ` + `` + `
@@ -99,7 +89,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "ROUNDTRIPS",` + `
 ` + `        label: "History",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Recorder.formatHistory(),` + `
+` + `        produce: (ctx) => Recorder.formatHistory(ctx),` + `
 ` + `        exportOrder: 40,` + `
 ` + `      },` + `
 ` + `      {` + `
@@ -107,7 +97,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "ROUNDTRIPS",` + `
 ` + `        label: "Request",` + `
 ` + `        kind: "json",` + `
-` + `        produce: () => Format.toJson(AppState.state.oBody),` + `
+` + `        produce: (ctx) => Format.toJson(ctx.state.oBody),` + `
 ` + `        exportOrder: 80,` + `
 ` + `      },` + `
 ` + `      {` + `
@@ -115,7 +105,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "ROUNDTRIPS",` + `
 ` + `        label: "Response",` + `
 ` + `        kind: "json",` + `
-` + `        produce: () => Format.toJson(AppState.state.responseData),` + `
+` + `        produce: (ctx) => Format.toJson(ctx.state.responseData),` + `
 ` + `        exportOrder: 70,` + `
 ` + `      },` + `
 ` + `      {` + `
@@ -123,7 +113,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "ROUNDTRIPS",` + `
 ` + `        label: "Actions",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatActions(),` + `
+` + `        produce: (ctx) => Inspect.formatActions(ctx),` + `
 ` + `        exportOrder: 60,` + `
 ` + `      },` + `
 ` + `      {` + `
@@ -131,19 +121,19 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "ROUNDTRIPS",` + `
 ` + `        label: "Model Diff",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Recorder.formatModelDiff(),` + `
+` + `        produce: (ctx) => Recorder.formatModelDiff(ctx),` + `
 ` + `` + `
 ` + `        exportOrder: 50,` + `
-` + `        inExport: () => Recorder.isRecordingPayloads(),` + `
+` + `        inExport: (_ctx) => Recorder.isRecordingPayloads(),` + `
 ` + `      },` + `
 ` + `      {` + `
 ` + `        key: "VIEWDIFF",` + `
 ` + `        group: "ROUNDTRIPS",` + `
 ` + `        label: "View Diff",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Recorder.formatViewDiff(),` + `
+` + `        produce: (ctx) => Recorder.formatViewDiff(ctx),` + `
 ` + `        exportOrder: 51,` + `
-` + `        inExport: () => Recorder.isRecordingPayloads(),` + `
+` + `        inExport: (_ctx) => Recorder.isRecordingPayloads(),` + `
 ` + `      },` + `
 ` + `` + `
 ` + `      {` + `
@@ -153,10 +143,12 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "XML",` + `
 ` + `        label: "XML",` + `
 ` + `        kind: "xml",` + `
-` + `        produce: () => Format.prettifyXml(getSlotXml("MAIN")),` + `
-` + `        rendered: () =>` + `
-` + `          Format.prettifyXml(getRenderedContent(ViewSlots.getView("MAIN"))),` + `
-` + `        enabled: () => slotFilled("MAIN"),` + `
+` + `        produce: (ctx) => Format.prettifyXml(getSlotXml(ctx, "MAIN")),` + `
+` + `        rendered: (ctx) =>` + `
+` + `          Format.prettifyXml(` + `
+` + `            getRenderedContent(ViewSlots.getView(ctx, "MAIN")),` + `
+` + `          ),` + `
+` + `        enabled: (ctx) => slotFilled(ctx, "MAIN"),` + `
 ` + `        exportOrder: 90,` + `
 ` + `        exportTitle: "VIEW",` + `
 ` + `      },` + `
@@ -167,8 +159,9 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "MODEL",` + `
 ` + `        label: "Model",` + `
 ` + `        kind: "json",` + `
-` + `        produce: () => Format.toJson(getModelJson(ViewSlots.getView("MAIN"))),` + `
-` + `        enabled: () => hasModelData("MAIN"),` + `
+` + `        produce: (ctx) =>` + `
+` + `          Format.toJson(getModelJson(ViewSlots.getView(ctx, "MAIN"))),` + `
+` + `        enabled: (ctx) => hasModelData(ctx, "MAIN"),` + `
 ` + `        exportOrder: 91,` + `
 ` + `        exportTitle: "VIEW MODEL",` + `
 ` + `      },` + `
@@ -179,8 +172,8 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "BINDINGS",` + `
 ` + `        label: "Bindings",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatBindings("MAIN"),` + `
-` + `        enabled: () => hasModelData("MAIN"),` + `
+` + `        produce: (ctx) => Inspect.formatBindings(ctx, "MAIN"),` + `
+` + `        enabled: (ctx) => hasModelData(ctx, "MAIN"),` + `
 ` + `        exportOrder: 92,` + `
 ` + `        exportTitle: "VIEW BINDINGS",` + `
 ` + `      },` + `
@@ -192,8 +185,8 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "XML",` + `
 ` + `        label: "XML",` + `
 ` + `        kind: "xml",` + `
-` + `        produce: () => Format.prettifyXml(getSlotXml("POPUP")),` + `
-` + `        enabled: () => slotFilled("POPUP"),` + `
+` + `        produce: (ctx) => Format.prettifyXml(getSlotXml(ctx, "POPUP")),` + `
+` + `        enabled: (ctx) => slotFilled(ctx, "POPUP"),` + `
 ` + `        exportOrder: 100,` + `
 ` + `` + `
 ` + `        exportTitle: "POPUP",` + `
@@ -205,8 +198,9 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "MODEL",` + `
 ` + `        label: "Model",` + `
 ` + `        kind: "json",` + `
-` + `        produce: () => Format.toJson(getModelJson(ViewSlots.getView("POPUP"))),` + `
-` + `        enabled: () => hasModelData("POPUP"),` + `
+` + `        produce: (ctx) =>` + `
+` + `          Format.toJson(getModelJson(ViewSlots.getView(ctx, "POPUP"))),` + `
+` + `        enabled: (ctx) => hasModelData(ctx, "POPUP"),` + `
 ` + `        exportOrder: 101,` + `
 ` + `        exportTitle: "POPUP MODEL",` + `
 ` + `      },` + `
@@ -217,8 +211,8 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "BINDINGS",` + `
 ` + `        label: "Bindings",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatBindings("POPUP"),` + `
-` + `        enabled: () => hasModelData("POPUP"),` + `
+` + `        produce: (ctx) => Inspect.formatBindings(ctx, "POPUP"),` + `
+` + `        enabled: (ctx) => hasModelData(ctx, "POPUP"),` + `
 ` + `        exportOrder: 102,` + `
 ` + `        exportTitle: "POPUP BINDINGS",` + `
 ` + `      },` + `
@@ -230,8 +224,8 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "XML",` + `
 ` + `        label: "XML",` + `
 ` + `        kind: "xml",` + `
-` + `        produce: () => Format.prettifyXml(getSlotXml("POPOVER")),` + `
-` + `        enabled: () => slotFilled("POPOVER"),` + `
+` + `        produce: (ctx) => Format.prettifyXml(getSlotXml(ctx, "POPOVER")),` + `
+` + `        enabled: (ctx) => slotFilled(ctx, "POPOVER"),` + `
 ` + `        exportOrder: 110,` + `
 ` + `        exportTitle: "POPOVER",` + `
 ` + `      },` + `
@@ -242,9 +236,9 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "MODEL",` + `
 ` + `        label: "Model",` + `
 ` + `        kind: "json",` + `
-` + `        produce: () =>` + `
-` + `          Format.toJson(getModelJson(ViewSlots.getView("POPOVER"))),` + `
-` + `        enabled: () => hasModelData("POPOVER"),` + `
+` + `        produce: (ctx) =>` + `
+` + `          Format.toJson(getModelJson(ViewSlots.getView(ctx, "POPOVER"))),` + `
+` + `        enabled: (ctx) => hasModelData(ctx, "POPOVER"),` + `
 ` + `        exportOrder: 111,` + `
 ` + `        exportTitle: "POPOVER MODEL",` + `
 ` + `      },` + `
@@ -255,8 +249,8 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "BINDINGS",` + `
 ` + `        label: "Bindings",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatBindings("POPOVER"),` + `
-` + `        enabled: () => hasModelData("POPOVER"),` + `
+` + `        produce: (ctx) => Inspect.formatBindings(ctx, "POPOVER"),` + `
+` + `        enabled: (ctx) => hasModelData(ctx, "POPOVER"),` + `
 ` + `        exportOrder: 112,` + `
 ` + `        exportTitle: "POPOVER BINDINGS",` + `
 ` + `      },` + `
@@ -268,10 +262,12 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "XML",` + `
 ` + `        label: "XML",` + `
 ` + `        kind: "xml",` + `
-` + `        produce: () => Format.prettifyXml(getSlotXml("NEST")),` + `
-` + `        rendered: () =>` + `
-` + `          Format.prettifyXml(getRenderedContent(ViewSlots.getView("NEST"))),` + `
-` + `        enabled: () => slotFilled("NEST"),` + `
+` + `        produce: (ctx) => Format.prettifyXml(getSlotXml(ctx, "NEST")),` + `
+` + `        rendered: (ctx) =>` + `
+` + `          Format.prettifyXml(` + `
+` + `            getRenderedContent(ViewSlots.getView(ctx, "NEST")),` + `
+` + `          ),` + `
+` + `        enabled: (ctx) => slotFilled(ctx, "NEST"),` + `
 ` + `        exportOrder: 120,` + `
 ` + `        exportTitle: "NEST1",` + `
 ` + `      },` + `
@@ -282,10 +278,12 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "XML",` + `
 ` + `        label: "XML",` + `
 ` + `        kind: "xml",` + `
-` + `        produce: () => Format.prettifyXml(getSlotXml("NEST2")),` + `
-` + `        rendered: () =>` + `
-` + `          Format.prettifyXml(getRenderedContent(ViewSlots.getView("NEST2"))),` + `
-` + `        enabled: () => slotFilled("NEST2"),` + `
+` + `        produce: (ctx) => Format.prettifyXml(getSlotXml(ctx, "NEST2")),` + `
+` + `        rendered: (ctx) =>` + `
+` + `          Format.prettifyXml(` + `
+` + `            getRenderedContent(ViewSlots.getView(ctx, "NEST2")),` + `
+` + `          ),` + `
+` + `        enabled: (ctx) => slotFilled(ctx, "NEST2"),` + `
 ` + `        exportOrder: 121,` + `
 ` + `        exportTitle: "NEST2",` + `
 ` + `      },` + `
@@ -296,8 +294,8 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        aspect: "PICK",` + `
 ` + `        label: "Picked Control",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () =>` + `
-` + `          Picker.lastReport() ||` + `
+` + `        produce: (ctx) =>` + `
+` + `          Picker.lastReport(ctx) ||` + `
 ` + `          'No control picked yet - press "Pick Control", then click any' +` + `
 ` + `            " control in the app.",` + `
 ` + `        searchable: true,` + `
@@ -319,7 +317,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "SYSTEM",` + `
 ` + `        label: "Environment",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatEnvironment(),` + `
+` + `        produce: (ctx) => Inspect.formatEnvironment(ctx),` + `
 ` + `` + `
 ` + `        exportOrder: 10,` + `
 ` + `      },` + `
@@ -328,7 +326,7 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `        group: "SYSTEM",` + `
 ` + `        label: "Registry",` + `
 ` + `        kind: "text",` + `
-` + `        produce: () => Inspect.formatRegistry(),` + `
+` + `        produce: (ctx) => Inspect.formatRegistry(ctx),` + `
 ` + `        exportOrder: 61,` + `
 ` + `      },` + `
 ` + `      {` + `
@@ -353,10 +351,10 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `      return Boolean(tabKey && byKey.has(tabKey));` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function isEnabled(tab) {` + `
+` + `    function isEnabled(ctx, tab) {` + `
 ` + `      if (!tab) return false;` + `
 ` + `      try {` + `
-` + `        return tab.enabled ? Boolean(tab.enabled()) : true;` + `
+` + `        return tab.enabled ? Boolean(tab.enabled(ctx)) : true;` + `
 ` + `      } catch {` + `
 ` + `        return false;` + `
 ` + `      }` + `
@@ -366,69 +364,73 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `      return get(tabKey)?.group || DEFAULT_GROUP;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function enabledTabs(groupKey) {` + `
-` + `      return TABS.filter((tab) => tab.group === groupKey && isEnabled(tab));` + `
+` + `    function enabledTabs(ctx, groupKey) {` + `
+` + `      return TABS.filter(` + `
+` + `        (tab) => tab.group === groupKey && isEnabled(ctx, tab),` + `
+` + `      );` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function firstTabOf(groupKey) {` + `
+` + `    function firstTabOf(ctx, groupKey) {` + `
 ` + `      const first = TABS.find(` + `
-` + `        (tab) => tab.group === groupKey && isEnabled(tab),` + `
+` + `        (tab) => tab.group === groupKey && isEnabled(ctx, tab),` + `
 ` + `      );` + `
 ` + `      return first?.key || "";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function enabledSlots() {` + `
+` + `    function enabledSlots(ctx) {` + `
 ` + `      const available = new Set(` + `
-` + `        enabledTabs("VIEWDATA")` + `
+` + `        enabledTabs(ctx, "VIEWDATA")` + `
 ` + `          .filter((tab) => tab.slot)` + `
 ` + `          .map((tab) => tab.slot),` + `
 ` + `      );` + `
 ` + `      return SLOTS.filter((slot) => available.has(slot.key));` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function aspectsOfSlot(slotKey) {` + `
-` + `      return enabledTabs("VIEWDATA")` + `
+` + `    function aspectsOfSlot(ctx, slotKey) {` + `
+` + `      return enabledTabs(ctx, "VIEWDATA")` + `
 ` + `        .filter((tab) => tab.slot === slotKey)` + `
 ` + `        .sort((a, b) => ASPECTS.indexOf(a.aspect) - ASPECTS.indexOf(b.aspect));` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function tabFor(slotKey, aspect) {` + `
-` + `      const aspects = aspectsOfSlot(slotKey);` + `
+` + `    function tabFor(ctx, slotKey, aspect) {` + `
+` + `      const aspects = aspectsOfSlot(ctx, slotKey);` + `
 ` + `      const exact = aspects.find((tab) => tab.aspect === aspect);` + `
 ` + `      return (exact || aspects[0])?.key || "";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function render(tabKey) {` + `
+` + `    function render(ctx, tabKey) {` + `
 ` + `      const tab = get(tabKey);` + `
 ` + `      if (!tab) return "";` + `
 ` + `      try {` + `
 `;
-    result = result + `        return tab.produce() ?? "";` + `
+    result = result + `        return tab.produce(ctx) ?? "";` + `
 ` + `      } catch (e) {` + `
 ` + `        return \`(\${tab.label} could not be rendered: \${e?.message || e})\`;` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function renderTemplated(tabKey) {` + `
+` + `    function renderTemplated(ctx, tabKey) {` + `
 ` + `      const tab = get(tabKey);` + `
 ` + `      if (!tab?.rendered) return "";` + `
 ` + `      try {` + `
-` + `        return tab.rendered() || "";` + `
+` + `        return tab.rendered(ctx) || "";` + `
 ` + `      } catch {` + `
 ` + `        return "";` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function searchableTabs() {` + `
-` + `      return TABS.filter((tab) => tab.searchable !== false && isEnabled(tab));` + `
+` + `    function searchableTabs(ctx) {` + `
+` + `      return TABS.filter(` + `
+` + `        (tab) => tab.searchable !== false && isEnabled(ctx, tab),` + `
+` + `      );` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function exportTabs() {` + `
+` + `    function exportTabs(ctx) {` + `
 ` + `      return TABS.filter((tab) => {` + `
 ` + `        if (tab.exportOrder === undefined) return false;` + `
-` + `        if (!isEnabled(tab)) return false;` + `
+` + `        if (!isEnabled(ctx, tab)) return false;` + `
 ` + `        try {` + `
-` + `          return tab.inExport ? Boolean(tab.inExport()) : true;` + `
+` + `          return tab.inExport ? Boolean(tab.inExport(ctx)) : true;` + `
 ` + `        } catch {` + `
 ` + `          return false;` + `
 ` + `        }` + `
@@ -450,14 +452,14 @@ class z2ui5_cl_ui5f_tabs_js {
 ` + `      return parts.join(" > ");` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function search(term) {` + `
+` + `    function search(ctx, term) {` + `
 ` + `      const needle = String(term || "").toLowerCase();` + `
 ` + `      if (!needle) return "(enter a search term)";` + `
 ` + `      const sections = [];` + `
 ` + `      let totalHits = 0;` + `
 ` + `` + `
-` + `      for (const tab of searchableTabs()) {` + `
-` + `        const text = render(tab.key);` + `
+` + `      for (const tab of searchableTabs(ctx)) {` + `
+` + `        const text = render(ctx, tab.key);` + `
 ` + `        if (!text) continue;` + `
 ` + `        const lines = String(text).split("\\n");` + `
 ` + `        const hits = [];` + `

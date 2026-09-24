@@ -3,11 +3,17 @@ class z2ui5_cl_ui5f_recorder_js {
   static get() {
     let result = ``;
     result = `sap.ui.define(` + `
-` + `  ["z2ui5/core/AppState", "z2ui5/core/Lib", "z2ui5/devtools/Format"],` + `
-` + `  (AppState, Lib, Format) => {` + `
+` + `  [` + `
+` + `    "z2ui5/core/Lib",` + `
+` + `    "z2ui5/devtools/Format",` + `
+` + `    "z2ui5/devtools/Persist",` + `
+` + `    "z2ui5/devtools/Diff",` + `
+` + `  ],` + `
+` + `  (Lib, Format, Persist, Diff) => {` + `
 ` + `    "use strict";` + `
 ` + `` + `
-` + `    const { truncate, formatBytes } = Format;` + `
+` + `    const { formatBytes, renderValue } = Format;` + `
+` + `    const { collectDiff, diffLines, MAX_DIFF_ENTRIES } = Diff;` + `
 ` + `` + `
 ` + `    const MAX_RECORDS = 50;` + `
 ` + `` + `
@@ -22,27 +28,27 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `` + `
 ` + `    const MAX_MESSAGE_CHARS = 500;` + `
 ` + `` + `
-` + `    const MAX_DIFF_ENTRIES = 200;` + `
-` + `    const MAX_DIFF_DEPTH = 12;` + `
 ` + `    const MAX_DIFF_VALUE_CHARS = 120;` + `
 ` + `` + `
-` + `    let records = [];` + `
+` + `    function recorderOf(ctx) {` + `
+` + `      return ctx?.devtools?.recorder || null;` + `
+` + `    }` + `
 ` + `` + `
-` + `    let nextSeq = 1;` + `
+` + `    function createRecorder() {` + `
+` + `      return {` + `
+` + `        records: [],` + `
+` + `        nextSeq: 1,` + `
+` + `        unpaired: [],` + `
+` + `        lastEntryStart: -1,` + `
+` + `        payloadBytes: 0,` + `
+` + `        observer: null,` + `
+` + `        afterRenderingHook: null,` + `
+` + `        onPageHide: null,` + `
+` + `      };` + `
+` + `    }` + `
 ` + `` + `
-` + `    let unpaired = [];` + `
-` + `` + `
-` + `    let lastEntryStart = -1;` + `
-` + `` + `
-` + `    let payloadBytes = 0;` + `
-` + `` + `
-` + `    let observer = null;` + `
-` + `    let installed = false;` + `
-` + `    let afterRenderingHook = null;` + `
-` + `    let onPageHide = null;` + `
-` + `` + `
-` + `    function backendUrl() {` + `
-` + `      const url = AppState.state.url;` + `
+` + `    function backendUrl(ctx) {` + `
+` + `      const url = ctx?.state?.url;` + `
 ` + `      if (!url) return "";` + `
 ` + `      try {` + `
 ` + `        return new URL(url, window.location.href).href;` + `
@@ -66,10 +72,10 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `        : 0;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function acceptEntry(entry) {` + `
-` + `      if (!entry || entry.startTime <= lastEntryStart) return;` + `
-` + `      lastEntryStart = entry.startTime;` + `
-` + `      unpaired.push({` + `
+` + `    function acceptEntry(rec, entry) {` + `
+` + `      if (!entry || entry.startTime <= rec.lastEntryStart) return;` + `
+` + `      rec.lastEntryStart = entry.startTime;` + `
+` + `      rec.unpaired.push({` + `
 ` + `        start: entry.startTime,` + `
 ` + `        end: entry.responseEnd || entry.startTime,` + `
 ` + `` + `
@@ -77,11 +83,11 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      });` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function sweepEntries() {` + `
+` + `    function sweepEntries(ctx, rec) {` + `
 ` + `      if (typeof performance === "undefined" || !performance.getEntriesByName) {` + `
 ` + `        return;` + `
 ` + `      }` + `
-` + `      const url = backendUrl();` + `
+` + `      const url = backendUrl(ctx);` + `
 ` + `      if (!url) return;` + `
 ` + `      let entries;` + `
 ` + `      try {` + `
@@ -92,13 +98,14 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `` + `
 ` + `      const fresh = [];` + `
 ` + `      for (let i = entries.length - 1; i >= 0; i -= 1) {` + `
-` + `        if (entries[i].startTime <= lastEntryStart) break;` + `
+` + `        if (entries[i].startTime <= rec.lastEntryStart) break;` + `
 ` + `        fresh.push(entries[i]);` + `
 ` + `      }` + `
-` + `      for (let i = fresh.length - 1; i >= 0; i -= 1) acceptEntry(fresh[i]);` + `
+` + `      for (let i = fresh.length - 1; i >= 0; i -= 1) acceptEntry(rec, fresh[i]);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function takeNetworkFor(tRendered) {` + `
+` + `    function takeNetworkFor(rec, tRendered) {` + `
+` + `      const unpaired = rec.unpaired;` + `
 ` + `      let index = -1;` + `
 ` + `      for (let i = unpaired.length - 1; i >= 0; i--) {` + `
 ` + `        if (unpaired[i].end <= tRendered) {` + `
@@ -109,22 +116,22 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      if (index === -1) return null;` + `
 ` + `      const stale = unpaired.slice(0, index);` + `
 ` + `      const match = unpaired[index];` + `
-` + `      unpaired = unpaired.slice(index + 1);` + `
-` + `      for (const entry of stale) pushUnrendered(entry);` + `
+` + `      rec.unpaired = unpaired.slice(index + 1);` + `
+` + `      for (const entry of stale) pushUnrendered(rec, entry);` + `
 ` + `      return match;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function flushStaleUnpaired() {` + `
-` + `      if (!unpaired.length) return;` + `
+` + `    function flushStaleUnpaired(rec) {` + `
+` + `      if (!rec.unpaired.length) return;` + `
 ` + `      const cutoff = now() - UNPAIRED_FLUSH_MS;` + `
-` + `      const stale = unpaired.filter((entry) => entry.end < cutoff);` + `
+` + `      const stale = rec.unpaired.filter((entry) => entry.end < cutoff);` + `
 ` + `      if (!stale.length) return;` + `
-` + `      unpaired = unpaired.filter((entry) => entry.end >= cutoff);` + `
-` + `      for (const entry of stale) pushUnrendered(entry);` + `
+` + `      rec.unpaired = rec.unpaired.filter((entry) => entry.end >= cutoff);` + `
+` + `      for (const entry of stale) pushUnrendered(rec, entry);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function pushUnrendered(entry) {` + `
-` + `      pushRecord({` + `
+` + `    function pushUnrendered(rec, entry) {` + `
+` + `      pushRecord(rec, {` + `
 ` + `        ts: wallClockIso(entry.start),` + `
 ` + `        event: "",` + `
 ` + `        idSent: "",` + `
@@ -143,7 +150,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `        response: null,` + `
 ` + `      });` + `
 ` + `` + `
-` + `      records.sort((a, b) => (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0));` + `
+` + `      rec.records.sort((a, b) => (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0));` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function extractMessages(response) {` + `
@@ -168,58 +175,49 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return (record.reqBytes || 0) + (record.respBytes || 0);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function enforcePayloadBudget() {` + `
-` + `      for (const record of records) {` + `
-` + `        if (payloadBytes <= PAYLOAD_BUDGET_BYTES) return;` + `
+` + `    function enforcePayloadBudget(rec) {` + `
+` + `      for (const record of rec.records) {` + `
+` + `        if (rec.payloadBytes <= PAYLOAD_BUDGET_BYTES) return;` + `
 ` + `        if (!record.request && !record.response) continue;` + `
-` + `        payloadBytes -= recordBytes(record);` + `
+` + `        rec.payloadBytes -= recordBytes(record);` + `
 ` + `        record.request = null;` + `
 ` + `        record.response = null;` + `
 ` + `        record.payloadEvicted = true;` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function pushRecord(record) {` + `
-` + `      record.seq = nextSeq++;` + `
-` + `      records.push(record);` + `
-` + `      payloadBytes += recordBytes(record);` + `
-` + `      while (records.length > MAX_RECORDS) {` + `
-` + `        const dropped = records.shift();` + `
-` + `        payloadBytes -= recordBytes(dropped);` + `
+` + `    function pushRecord(rec, record) {` + `
+` + `      record.seq = rec.nextSeq++;` + `
+` + `      rec.records.push(record);` + `
+` + `      rec.payloadBytes += recordBytes(record);` + `
+` + `      while (rec.records.length > MAX_RECORDS) {` + `
+` + `        const dropped = rec.records.shift();` + `
+` + `        rec.payloadBytes -= recordBytes(dropped);` + `
 ` + `      }` + `
-` + `      enforcePayloadBudget();` + `
+` + `      enforcePayloadBudget(rec);` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function isRecordingPayloads() {` + `
-` + `      try {` + `
-` + `        return window.sessionStorage?.getItem(PAYLOAD_FLAG_KEY) === "X";` + `
-` + `      } catch {` + `
-` + `        return false;` + `
-` + `      }` + `
+` + `      return Persist.readFlag(PAYLOAD_FLAG_KEY);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function setRecordingPayloads(enabled) {` + `
-` + `      try {` + `
-` + `        if (enabled) {` + `
-` + `          window.sessionStorage?.setItem(PAYLOAD_FLAG_KEY, "X");` + `
-` + `        } else {` + `
-` + `          window.sessionStorage?.removeItem(PAYLOAD_FLAG_KEY);` + `
-` + `        }` + `
-` + `      } catch {}` + `
-` + `      if (!enabled) dropAllPayloads();` + `
+` + `    function setRecordingPayloads(ctx, enabled) {` + `
+` + `      Persist.writeFlag(PAYLOAD_FLAG_KEY, enabled);` + `
+` + `      if (!enabled) dropAllPayloads(recorderOf(ctx));` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function dropAllPayloads() {` + `
-` + `      for (const record of records) {` + `
+` + `    function dropAllPayloads(rec) {` + `
+` + `      if (!rec) return;` + `
+` + `      for (const record of rec.records) {` + `
 ` + `        record.request = null;` + `
 ` + `        record.response = null;` + `
 ` + `      }` + `
-` + `      payloadBytes = 0;` + `
+` + `      rec.payloadBytes = 0;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function measureRequest(oBody) {` + `
+` + `    function measureRequest(ctx, oBody) {` + `
 ` + `      if (!oBody) return null;` + `
-` + `      const known = AppState.state.lastRequestBytes;` + `
+` + `      const known = ctx.state.lastRequestBytes;` + `
 ` + `      if (typeof known === "number") return known;` + `
 ` + `      try {` + `
 ` + `        return JSON.stringify({ value: oBody }).length;` + `
@@ -228,18 +226,20 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function onAfterRendering() {` + `
+` + `    function onAfterRendering(ctx) {` + `
 ` + `      try {` + `
-` + `        const state = AppState.state;` + `
+` + `        const rec = recorderOf(ctx);` + `
+` + `        if (!rec) return;` + `
+` + `        const state = ctx.state;` + `
 ` + `        const tRendered = now();` + `
-` + `        sweepEntries();` + `
-` + `        const net = takeNetworkFor(tRendered);` + `
+` + `        sweepEntries(ctx, rec);` + `
+` + `        const net = takeNetworkFor(rec, tRendered);` + `
 ` + `        const response = state.responseData;` + `
 ` + `        const sFront = response?.S_FRONT;` + `
 ` + `        const keepPayloads = isRecordingPayloads();` + `
-` + `        const reqBytes = measureRequest(state.oBody);` + `
+` + `        const reqBytes = measureRequest(ctx, state.oBody);` + `
 ` + `` + `
-` + `        pushRecord({` + `
+` + `        pushRecord(rec, {` + `
 ` + `          ts: new Date().toISOString(),` + `
 ` + `          event: state.oBody?.S_FRONT?.EVENT || "",` + `
 ` + `          idSent: state.oBody?.S_FRONT?.ID || "",` + `
@@ -259,7 +259,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `          request: keepPayloads ? state.oBody : null,` + `
 ` + `          response: keepPayloads ? response : null,` + `
 ` + `        });` + `
-` + `        flushStaleUnpaired();` + `
+` + `        flushStaleUnpaired(rec);` + `
 ` + `      } catch (e) {` + `
 ` + `        Lib.logError("DevTools Recorder: onAfterRendering failed", e);` + `
 ` + `      }` + `
@@ -272,88 +272,72 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return copy;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function persist() {` + `
-` + `      try {` + `
-` + `        const slim = records.slice(-RELOAD_MAX_RECORDS).map((record) => ({` + `
-` + `          ...withoutPayloads(record),` + `
-` + `          previousLoad: true,` + `
-` + `        }));` + `
-` + `        if (!slim.length) return;` + `
-` + `        window.sessionStorage?.setItem(RELOAD_KEY, JSON.stringify(slim));` + `
-` + `      } catch {}` + `
+` + `    function persist(rec) {` + `
+` + `      const slim = rec.records.slice(-RELOAD_MAX_RECORDS).map((record) => ({` + `
+` + `        ...withoutPayloads(record),` + `
+` + `        previousLoad: true,` + `
+` + `      }));` + `
+` + `      Persist.saveList(RELOAD_KEY, slim);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function restore() {` + `
-` + `      let stored;` + `
-` + `      try {` + `
-` + `        stored = window.sessionStorage?.getItem(RELOAD_KEY);` + `
-` + `        window.sessionStorage?.removeItem(RELOAD_KEY);` + `
-` + `      } catch {` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      if (!stored) return;` + `
-` + `      try {` + `
-` + `        const parsed = JSON.parse(stored);` + `
-` + `        if (!Array.isArray(parsed)) return;` + `
-` + `        records = parsed.slice(-RELOAD_MAX_RECORDS);` + `
+` + `    function restore(rec) {` + `
+` + `      const stored = Persist.takeList(RELOAD_KEY);` + `
+` + `      if (!stored.length) return;` + `
+` + `      rec.records = stored.slice(-RELOAD_MAX_RECORDS);` + `
 ` + `` + `
-` + `        nextSeq = (records[records.length - 1]?.seq || 0) + 1;` + `
-` + `      } catch {` + `
-` + `        records = [];` + `
-` + `      }` + `
+` + `      rec.nextSeq = (rec.records[rec.records.length - 1]?.seq || 0) + 1;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function install() {` + `
-` + `      if (installed) return;` + `
-` + `      installed = true;` + `
-` + `      restore();` + `
-` + `      afterRenderingHook = onAfterRendering;` + `
-` + `      Lib.registerCallback("onAfterRendering", afterRenderingHook);` + `
+` + `    function install(ctx) {` + `
+` + `      if (!ctx?.devtools || recorderOf(ctx)) return;` + `
+` + `      const rec = createRecorder();` + `
+` + `      ctx.devtools.recorder = rec;` + `
+` + `      restore(rec);` + `
+` + `      rec.afterRenderingHook = () => onAfterRendering(ctx);` + `
+` + `      Lib.registerCallback(ctx, "onAfterRendering", rec.afterRenderingHook);` + `
 ` + `` + `
-` + `      onPageHide = persist;` + `
-` + `      window.addEventListener("pagehide", onPageHide);` + `
+` + `      rec.onPageHide = () => persist(rec);` + `
+` + `      window.addEventListener("pagehide", rec.onPageHide);` + `
 ` + `` + `
 ` + `      if (typeof PerformanceObserver === "undefined") return;` + `
 ` + `      try {` + `
-` + `        observer = new PerformanceObserver((list) => {` + `
-` + `          const url = backendUrl();` + `
+` + `        rec.observer = new PerformanceObserver((list) => {` + `
+` + `          const url = backendUrl(ctx);` + `
 ` + `          if (!url) return;` + `
 ` + `          for (const entry of list.getEntries()) {` + `
-` + `            if (entry.name === url) acceptEntry(entry);` + `
+` + `            if (entry.name === url) acceptEntry(rec, entry);` + `
 ` + `          }` + `
 ` + `        });` + `
 ` + `` + `
-` + `        observer.observe({ type: "resource", buffered: true });` + `
+` + `        rec.observer.observe({ type: "resource", buffered: true });` + `
 ` + `      } catch {` + `
-` + `        observer = null;` + `
+` + `        rec.observer = null;` + `
 ` + `      }` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function uninstall() {` + `
-` + `      if (!installed) return;` + `
-` + `      installed = false;` + `
-` + `      Lib.unregisterCallback("onAfterRendering", afterRenderingHook);` + `
-` + `      afterRenderingHook = null;` + `
-` + `      if (onPageHide) {` + `
-` + `        window.removeEventListener("pagehide", onPageHide);` + `
-` + `        onPageHide = null;` + `
+` + `    function uninstall(ctx) {` + `
+` + `      const rec = recorderOf(ctx);` + `
+` + `      if (!rec) return;` + `
+` + `      ctx.devtools.recorder = null;` + `
+` + `      Lib.unregisterCallback(ctx, "onAfterRendering", rec.afterRenderingHook);` + `
+` + `      rec.afterRenderingHook = null;` + `
+` + `      if (rec.onPageHide) {` + `
+` + `        window.removeEventListener("pagehide", rec.onPageHide);` + `
+` + `        rec.onPageHide = null;` + `
 ` + `      }` + `
-` + `      if (observer) {` + `
+` + `      if (rec.observer) {` + `
 ` + `        try {` + `
-` + `          observer.disconnect();` + `
+` + `          rec.observer.disconnect();` + `
 ` + `        } catch {}` + `
-` + `        observer = null;` + `
+` + `        rec.observer = null;` + `
 ` + `      }` + `
-` + `      records = [];` + `
-` + `      unpaired = [];` + `
-` + `      payloadBytes = 0;` + `
-` + `      nextSeq = 1;` + `
-` + `      lastEntryStart = -1;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function getRecords() {` + `
-` + `      flushStaleUnpaired();` + `
-` + `      return records;` + `
+` + `    function getRecords(ctx) {` + `
+` + `      const rec = recorderOf(ctx);` + `
+` + `      if (!rec) return [];` + `
+` + `      flushStaleUnpaired(rec);` + `
+` + `      return rec.records;` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function pad(value, width, right) {` + `
@@ -402,8 +386,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `` + `
 ` + `    function summaryLines(list) {` + `
 ` + `      const timed = list.filter((r) => r.backendMs !== null);` + `
-`;
-    result = result + `      if (!timed.length) return [];` + `
+` + `      if (!timed.length) return [];` + `
 ` + `      const out = ["Summary"];` + `
 ` + `      const backend = timed.map((r) => r.backendMs);` + `
 ` + `      const avg = Math.round(` + `
@@ -419,7 +402,8 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      );` + `
 ` + `      const sized = list.filter((r) => r.respBytes !== null);` + `
 ` + `      if (sized.length) {` + `
-` + `        const biggest = sized.reduce((a, b) =>` + `
+`;
+    result = result + `        const biggest = sized.reduce((a, b) =>` + `
 ` + `          b.respBytes > a.respBytes ? b : a,` + `
 ` + `        );` + `
 ` + `        const total = sized.reduce((sum, r) => sum + r.respBytes, 0);` + `
@@ -436,8 +420,8 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return out;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatHistory() {` + `
-` + `      const list = getRecords();` + `
+` + `    function formatHistory(ctx) {` + `
+` + `      const list = getRecords(ctx);` + `
 ` + `      const lines = [];` + `
 ` + `      lines.push(` + `
 ` + `        \`Roundtrip history - \${list.length} of max \${MAX_RECORDS} records\`,` + `
@@ -445,7 +429,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      const recording = isRecordingPayloads();` + `
 ` + `      lines.push(` + `
 ` + `        \`Payload recording: \${recording ? "ON" : "OFF"}\` +` + `
-` + `          \` (retained \${formatBytes(payloadBytes)} of \` +` + `
+` + `          \` (retained \${formatBytes(recorderOf(ctx)?.payloadBytes || 0)} of \` +` + `
 ` + `          \`\${formatBytes(PAYLOAD_BUDGET_BYTES)} budget)\`,` + `
 ` + `      );` + `
 ` + `      if (!recording) {` + `
@@ -527,76 +511,6 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return lines.join("\\n");` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function isPlainObject(value) {` + `
-` + `      return (` + `
-` + `        value !== null && typeof value === "object" && !Array.isArray(value)` + `
-` + `      );` + `
-` + `    }` + `
-` + `` + `
-` + `    function renderValue(value) {` + `
-` + `      let text;` + `
-` + `      if (value === undefined) return "(absent)";` + `
-` + `      if (value === null) return "null";` + `
-` + `      if (typeof value === "object") {` + `
-` + `        try {` + `
-` + `          text = JSON.stringify(value);` + `
-` + `        } catch {` + `
-` + `          text = String(value);` + `
-` + `        }` + `
-` + `      } else {` + `
-` + `        text = String(value);` + `
-` + `      }` + `
-` + `      return truncate(text, MAX_DIFF_VALUE_CHARS);` + `
-` + `    }` + `
-` + `` + `
-` + `    function collectDiff(before, after, path, out, depth) {` + `
-` + `      if (out.length >= MAX_DIFF_ENTRIES) return;` + `
-` + `      if (before === after) return;` + `
-` + `      if (depth > MAX_DIFF_DEPTH) {` + `
-` + `        out.push({ path, type: "changed", before: "(too deep)", after: "" });` + `
-` + `        return;` + `
-` + `      }` + `
-` + `` + `
-` + `      const bothObjects = isPlainObject(before) && isPlainObject(after);` + `
-` + `      const bothArrays = Array.isArray(before) && Array.isArray(after);` + `
-` + `` + `
-` + `      if (bothObjects) {` + `
-` + `        const keys = new Set([...Object.keys(before), ...Object.keys(after)]);` + `
-` + `        for (const key of keys) {` + `
-` + `          collectDiff(` + `
-` + `            before[key],` + `
-` + `            after[key],` + `
-` + `            \`\${path}/\${key}\`,` + `
-` + `            out,` + `
-` + `            depth + 1,` + `
-` + `          );` + `
-` + `        }` + `
-` + `        return;` + `
-` + `      }` + `
-` + `` + `
-` + `      if (bothArrays) {` + `
-` + `        const length = Math.max(before.length, after.length);` + `
-` + `        for (let i = 0; i < length; i++) {` + `
-` + `          collectDiff(before[i], after[i], \`\${path}/\${i}\`, out, depth + 1);` + `
-` + `        }` + `
-` + `        return;` + `
-` + `      }` + `
-` + `` + `
-` + `      if (before === undefined) {` + `
-` + `        out.push({ path, type: "added", before: undefined, after });` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      if (after === undefined) {` + `
-` + `        out.push({ path, type: "removed", before, after: undefined });` + `
-` + `        return;` + `
-` + `      }` + `
-` + `      out.push({ path, type: "changed", before, after });` + `
-` + `    }` + `
-` + `` + `
-` + `    const MAX_DIFF_LINES = 4000;` + `
-` + `` + `
-` + `    const DIFF_LOOKAHEAD = 25;` + `
-` + `` + `
 ` + `    function displayedXml(response, slotKey) {` + `
 ` + `      const system = response?.S_FRONT?.S_ACTION?.T_SYSTEM;` + `
 ` + `      if (!Array.isArray(system)) return "";` + `
@@ -609,64 +523,8 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return "";` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function diffLines(beforeText, afterText) {` + `
-` + `      const a = beforeText.split("\\n").slice(0, MAX_DIFF_LINES);` + `
-` + `      const b = afterText.split("\\n").slice(0, MAX_DIFF_LINES);` + `
-` + `      const out = [];` + `
-` + `      let i = 0;` + `
-` + `      let j = 0;` + `
-` + `      while ((i < a.length || j < b.length) && out.length < MAX_DIFF_ENTRIES) {` + `
-` + `        if (i < a.length && j < b.length && a[i] === b[j]) {` + `
-` + `          i += 1;` + `
-` + `          j += 1;` + `
-` + `          continue;` + `
-` + `        }` + `
-` + `        let addedRun = -1;` + `
-` + `        let removedRun = -1;` + `
-` + `        for (let k = 1; k <= DIFF_LOOKAHEAD; k += 1) {` + `
-` + `          if (` + `
-` + `            addedRun < 0 &&` + `
-` + `            i < a.length &&` + `
-` + `            j + k < b.length &&` + `
-` + `            a[i] === b[j + k]` + `
-` + `          ) {` + `
-` + `            addedRun = k;` + `
-` + `          }` + `
-` + `          if (` + `
-` + `            removedRun < 0 &&` + `
-` + `            j < b.length &&` + `
-` + `            i + k < a.length &&` + `
-` + `            b[j] === a[i + k]` + `
-` + `          ) {` + `
-` + `            removedRun = k;` + `
-` + `          }` + `
-` + `          if (addedRun >= 0 || removedRun >= 0) break;` + `
-` + `        }` + `
-` + `        if (addedRun >= 0 && (removedRun < 0 || addedRun <= removedRun)) {` + `
-` + `          for (let k = 0; k < addedRun; k += 1) {` + `
-` + `            out.push({ type: "+", line: b[j + k], number: j + k + 1 });` + `
-` + `          }` + `
-` + `          j += addedRun;` + `
-` + `        } else if (removedRun >= 0) {` + `
-` + `          for (let k = 0; k < removedRun; k += 1) {` + `
-` + `            out.push({ type: "-", line: a[i + k], number: i + k + 1 });` + `
-` + `          }` + `
-` + `          i += removedRun;` + `
-` + `        } else {` + `
-` + `          if (i < a.length) {` + `
-` + `            out.push({ type: "-", line: a[i], number: i + 1 });` + `
-` + `            i += 1;` + `
-` + `          }` + `
-` + `          if (j < b.length) {` + `
-` + `            out.push({ type: "+", line: b[j], number: j + 1 });` + `
-` + `            j += 1;` + `
-` + `          }` + `
-` + `        }` + `
-` + `      }` + `
-` + `      return out;` + `
-` + `    }` + `
-` + `` + `
-` + `    function lastTwoViews(slotKey) {` + `
+` + `    function lastTwoViews(ctx, slotKey) {` + `
+` + `      const records = getRecords(ctx);` + `
 ` + `      const withView = [];` + `
 ` + `      for (let i = records.length - 1; i >= 0 && withView.length < 2; i--) {` + `
 ` + `        const xml = displayedXml(records[i].response, slotKey);` + `
@@ -675,7 +533,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return withView.length < 2 ? null : withView;` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatViewDiff() {` + `
+` + `    function formatViewDiff(ctx) {` + `
 ` + `      if (!isRecordingPayloads()) {` + `
 ` + `        return (` + `
 ` + `          "View diff needs payload recording.\\n\\n" +` + `
@@ -685,7 +543,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `        );` + `
 ` + `      }` + `
 ` + `` + `
-` + `      const pair = lastTwoViews("MAIN");` + `
+` + `      const pair = lastTwoViews(ctx, "MAIN");` + `
 ` + `      if (!pair) {` + `
 ` + `        return (` + `
 ` + `          "Not enough recorded view rebuilds yet - the diff needs two.\\n\\n" +` + `
@@ -729,13 +587,13 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return xml.replace(/></g, ">\\n<");` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function lastTwoResponses() {` + `
-` + `      const withPayload = records.filter((record) => record.response);` + `
+` + `    function lastTwoResponses(ctx) {` + `
+` + `      const withPayload = getRecords(ctx).filter((record) => record.response);` + `
 ` + `      if (withPayload.length < 2) return null;` + `
 ` + `      return withPayload.slice(-2);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function formatModelDiff() {` + `
+` + `    function formatModelDiff(ctx) {` + `
 ` + `      if (!isRecordingPayloads()) {` + `
 ` + `        return (` + `
 ` + `          "Model diff needs payload recording.\\n\\n" +` + `
@@ -744,7 +602,7 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `          "the two most recently recorded responses."` + `
 ` + `        );` + `
 ` + `      }` + `
-` + `      const pair = lastTwoResponses();` + `
+` + `      const pair = lastTwoResponses(ctx);` + `
 ` + `      if (!pair) {` + `
 ` + `        return (` + `
 ` + `          "Not enough recorded responses yet - the diff needs two.\\n\\n" +` + `
@@ -752,13 +610,9 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `        );` + `
 ` + `      }` + `
 ` + `      const [previous, current] = pair;` + `
-` + `      const out = [];` + `
-` + `      collectDiff(` + `
+` + `      const out = collectDiff(` + `
 ` + `        previous.response?.MODEL,` + `
 ` + `        current.response?.MODEL,` + `
-` + `        "",` + `
-` + `        out,` + `
-` + `        0,` + `
 ` + `      );` + `
 ` + `` + `
 ` + `      const header = [` + `
@@ -779,14 +633,18 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `        const path = entry.path || "/";` + `
 ` + `        if (entry.type === "added") {` + `
 ` + `          header.push(\`+ \${path}\`);` + `
-` + `          header.push(\`    \${renderValue(entry.after)}\`);` + `
+` + `          header.push(\`    \${renderValue(entry.after, MAX_DIFF_VALUE_CHARS)}\`);` + `
 ` + `        } else if (entry.type === "removed") {` + `
 ` + `          header.push(\`- \${path}\`);` + `
-` + `          header.push(\`    \${renderValue(entry.before)}\`);` + `
+` + `          header.push(\`    \${renderValue(entry.before, MAX_DIFF_VALUE_CHARS)}\`);` + `
 ` + `        } else {` + `
 ` + `          header.push(\`~ \${path}\`);` + `
-` + `          header.push(\`    before: \${renderValue(entry.before)}\`);` + `
-` + `          header.push(\`    after:  \${renderValue(entry.after)}\`);` + `
+` + `          header.push(` + `
+` + `            \`    before: \${renderValue(entry.before, MAX_DIFF_VALUE_CHARS)}\`,` + `
+` + `          );` + `
+` + `          header.push(` + `
+` + `            \`    after:  \${renderValue(entry.after, MAX_DIFF_VALUE_CHARS)}\`,` + `
+` + `          );` + `
 ` + `        }` + `
 ` + `      }` + `
 ` + `      if (out.length >= MAX_DIFF_ENTRIES) {` + `
@@ -796,15 +654,15 @@ class z2ui5_cl_ui5f_recorder_js {
 ` + `      return header.join("\\n");` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function exportJson() {` + `
+` + `    function exportJson(ctx) {` + `
+` + `      const records = getRecords(ctx);` + `
 ` + `      const payload = {` + `
 ` + `        exportedAt: new Date().toISOString(),` + `
 ` + `        payloadsRecorded: isRecordingPayloads(),` + `
-` + `        records: getRecords(),` + `
+` + `        records,` + `
 ` + `      };` + `
 ` + `      try {` + `
-`;
-    result = result + `        return JSON.stringify(payload, null, 2);` + `
+` + `        return JSON.stringify(payload, null, 2);` + `
 ` + `      } catch {` + `
 ` + `        const metaOnly = records.map(withoutPayloads);` + `
 ` + `        return JSON.stringify({ ...payload, records: metaOnly }, null, 2);` + `
