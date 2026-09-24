@@ -56,6 +56,12 @@ CLASS z2ui5_cl_ui5_action DEFINITION PUBLIC FINAL.
 
   PRIVATE SECTION.
 
+    " the app instance for a first start - the client-named class, checked
+    " to be an app before it is created (the reasoning is on the method)
+    METHODS app_create
+      RETURNING
+        VALUE(result) TYPE REF TO z2ui5_if_app.
+
     " set by prepare_app_stack on the action it builds: whether the target
     " came out of a persisted draft. Read by factory_stack_leave right
     " after, which used to ask the database a third time for the same fact
@@ -80,6 +86,11 @@ CLASS z2ui5_cl_ui5_action IMPLEMENTATION.
       result->mo_app = mo_handler->mo_action->mo_app.
     ELSE.
       result->mo_app = z2ui5_cl_ui5_app_cont=>db_load( mo_handler->ms_request-s_front-id ).
+      " the draft's sticky flag holds only in the stateful session it was
+      " saved in - see mv_session_sticky on the handler
+      IF mo_handler->mv_session_sticky = abap_false.
+        CLEAR result->mo_app->mv_check_sticky.
+      ENDIF.
     ENDIF.
 
     result->mo_app->ms_draft-id      = z2ui5_cl_ui5_util_context=>uuid_get_c32( ).
@@ -109,66 +120,96 @@ CLASS z2ui5_cl_ui5_action IMPLEMENTATION.
 
   METHOD factory_first_start.
 
+    result = NEW #( mo_handler ).
+
+    IF mo_handler->ms_request-s_control-app_start_draft IS NOT INITIAL.
+      TRY.
+
+          result->mo_app = z2ui5_cl_ui5_app_cont=>db_load( mo_handler->ms_request-s_control-app_start_draft ).
+          " the draft's sticky flag holds only in the stateful session
+          " it was saved in - see mv_session_sticky on the handler
+          IF mo_handler->mv_session_sticky = abap_false.
+            CLEAR result->mo_app->mv_check_sticky.
+          ENDIF.
+          result->mv_check_sticky_start = result->mo_app->mv_check_sticky.
+          result->ms_actual-check_on_navigated = abap_true.
+          " only an app-state bookmark (#/z2ui5-xapp-state=<id>) turns
+          " the app-state hash on; a ROUTE restore (#/app/<CLASS>/<id>,
+          " the router's own Back/Forward and reload) carries a draft as
+          " well but is not that opt-in - flagged as one, every later
+          " response re-asserted setAppStateActive, and an app that
+          " switched routing off got an app-state hash it never asked for
+          IF mo_handler->ms_request-s_control-check_app_state = abap_true.
+            result->ms_next-s_nav-set_app_state_active = abap_true.
+            " on the app as well, not only on this request: ms_next is
+            " cleared per roundtrip, so a flag set only here survived one
+            " response and the next event wiped the app-state hash the
+            " bookmark was made of (see mv_app_state_active)
+            result->mo_app->mv_app_state_active = abap_true.
+          ENDIF.
+          result->mo_app->ms_draft-id_prev_app_stack = ``.
+          " normalize the chain like factory_by_frontend: id_prev must
+          " point at the draft this restore was loaded from, not at
+          " whatever id was serialized in a previous session
+          result->mo_app->ms_draft-id_prev = mo_handler->ms_request-s_control-app_start_draft.
+          result->mo_app->ms_draft-id = z2ui5_cl_ui5_util_context=>uuid_get_c32( ).
+          RETURN.
+        CATCH cx_root.
+          " expired or invalid bookmark draft - fall through to a fresh
+          " app start, but tell the user why the saved state is gone.
+          " There is no client object yet at this point in the factory,
+          " so the toast is queued directly through the action builder
+          " message_toast_display( ) delegates to.
+          NEW z2ui5_cl_ui5_frontend( result )->msg_toast(
+              `Bookmarked app state expired or could not be restored - starting with a fresh app` ).
+      ENDTRY.
+    ENDIF.
+
+    result->mo_app->ms_draft-id = z2ui5_cl_ui5_util_context=>uuid_get_c32( ).
+
+    DATA(li_app) = app_create( ).
+    result->mo_app->mo_app = li_app.
+    li_app->id_draft = result->mo_app->ms_draft-id.
+
+    result->ms_actual-check_on_navigated = abap_true.
+
+  ENDMETHOD.
+
+  METHOD app_create.
+
+    DATA(lv_app_start) = mo_handler->ms_request-s_control-app_start.
+
+    " asked BEFORE the CREATE OBJECT, not answered by it. The name is
+    " client-controlled (URL parameter, hash route, launchpad startup
+    " parameter) and the only thing CREATE OBJECT ... TYPE (name) checks is
+    " that the class fits the typed reference - it checks that on the loaded
+    " class, so whether the class pool of an arbitrary class on the system
+    " is loaded and its class constructor run before the refusal is kernel
+    " behaviour the framework should not have to lean on. The descriptor
+    " lookup loads and instantiates nothing. It is also the honest message:
+    " a class that exists but is no app used to be reported as "does not
+    " exist in the system". Either way the raise goes as it is to the single
+    " top-level catch in z2ui5_cl_ui5_http_handler=>_main( ), which turns it
+    " into a 500 whose body carries the text for the frontend to display
+    IF z2ui5_cl_ui5_util_context=>rtti_check_class_impl_intf( class = lv_app_start
+                                                              intf  = `Z2UI5_IF_APP` ) = abap_false.
+      RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
+        EXPORTING
+          val = |The app '{ app_start_safe( lv_app_start ) }' | &&
+                |does not exist in the system or does not implement z2ui5_if_app.|.
+    ENDIF.
+
     TRY.
-        result = NEW #( mo_handler ).
+        CREATE OBJECT result TYPE (lv_app_start).
 
-        IF mo_handler->ms_request-s_control-app_start_draft IS NOT INITIAL.
-          TRY.
-
-              result->mo_app = z2ui5_cl_ui5_app_cont=>db_load( mo_handler->ms_request-s_control-app_start_draft ).
-              result->mv_check_sticky_start = result->mo_app->mv_check_sticky.
-              result->ms_actual-check_on_navigated = abap_true.
-              result->ms_next-s_nav-set_app_state_active = abap_true.
-              " on the app as well, not only on this request: ms_next is
-              " cleared per roundtrip, so a flag set only here survived one
-              " response and the next event wiped the app-state hash the
-              " bookmark was made of (see mv_app_state_active)
-              result->mo_app->mv_app_state_active = abap_true.
-              result->mo_app->ms_draft-id_prev_app_stack = ``.
-              " normalize the chain like factory_by_frontend: id_prev must
-              " point at the draft this restore was loaded from, not at
-              " whatever id was serialized in a previous session
-              result->mo_app->ms_draft-id_prev = mo_handler->ms_request-s_control-app_start_draft.
-              result->mo_app->ms_draft-id = z2ui5_cl_ui5_util_context=>uuid_get_c32( ).
-              RETURN.
-            CATCH cx_root.
-              " expired or invalid bookmark draft - fall through to a fresh
-              " app start, but tell the user why the saved state is gone.
-              " There is no client object yet at this point in the factory,
-              " so the toast is queued directly through the action builder
-              " message_toast_display( ) delegates to.
-              NEW z2ui5_cl_ui5_frontend( result )->msg_toast(
-                  `Bookmarked app state expired or could not be restored - starting with a fresh app` ).
-          ENDTRY.
-        ENDIF.
-
-        result->mo_app->ms_draft-id = z2ui5_cl_ui5_util_context=>uuid_get_c32( ).
-
-        DATA li_app TYPE REF TO z2ui5_if_app.
-        CREATE OBJECT li_app TYPE (mo_handler->ms_request-s_control-app_start).
-        result->mo_app->mo_app = li_app.
-        li_app->id_draft = result->mo_app->ms_draft-id.
-
-        result->ms_actual-check_on_navigated = abap_true.
-
-      CATCH cx_sy_create_object_error INTO DATA(x_create).
-        " a wrong/mistyped app name in the URL lands here (CREATE OBJECT of a
-        " non-existent class). Just raise with a readable text - the single
-        " top-level catch in z2ui5_cl_ui5_http_handler=>_main( ) turns it into a
-        " 500 whose body carries this message for the frontend to display.
-        RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
-          EXPORTING
-            val      = |The app '{ app_start_safe( mo_handler->ms_request-s_control-app_start ) }' | &&
-                       |does not exist in the system.|
-            previous = x_create.
       CATCH cx_root INTO DATA(x).
-        " anything else that failed on the way - the class exists. It used
-        " to be reported as "does not exist" too, which sent whoever read the
-        " 500 to check a class name that was right all along
+        " the class exists and is an app, and still could not be created -
+        " abstract, CREATE PRIVATE, a constructor that raised. It used to be
+        " reported as "does not exist" too, which sent whoever read the 500
+        " to check a class name that was right all along
         RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
           EXPORTING
-            val      = |APP_START_ERROR - the app | &&
-                       |'{ app_start_safe( mo_handler->ms_request-s_control-app_start ) }' could not be started.|
+            val      = |APP_START_ERROR - the app '{ app_start_safe( lv_app_start ) }' could not be started.|
             previous = x.
     ENDTRY.
 
@@ -231,20 +272,15 @@ CLASS z2ui5_cl_ui5_action IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    " a known app is returned to: pop one level off the stack. In a
-    " long-lived session the ancestor may have been purged by cleanup( )
-    " while the leave target still exists, and read_info then raises
-    " NO_DRAFT_ENTRY - caught here, the stack keeps what prepare_app_stack
-    " restored. One read: read( ) fails closed for exactly the cases a
-    " check_exists( ) in front of it answered false for (no row, a foreign
-    " owner), so the guard was a second SELECT on the same key per hop
-    IF mo_app->ms_draft-id_prev_app_stack IS NOT INITIAL.
-      TRY.
-          DATA(ls_draft) = z2ui5_cl_ui5_srv_draft=>get_instance( )->read_info( mo_app->ms_draft-id_prev_app_stack ).
-          result->mo_app->ms_draft-id_prev_app_stack = ls_draft-id_prev_app_stack.
-        CATCH cx_root ##NO_HANDLER.
-      ENDTRY.
-    ENDIF.
+    " a known app is returned to: prepare_app_stack restored it from its
+    " hop-time draft, and that draft carries the target's OWN stack position
+    " (ms_draft is serialized with the container). A pop used to stand here
+    " that read the CURRENT app's ancestor row and wrote ITS stack over the
+    " target's - the same value for a leave to the direct caller, and the
+    " wrong one for a leave two levels up (nav_app_leave( client->get_app(
+    " id ) ) from a wizard back to the list): the list then showed a back
+    " button that led to its own older draft. Nothing is left to do, and the
+    " purged-ancestor case the pop had to guard against went with it
 
   ENDMETHOD.
 
@@ -348,24 +384,7 @@ CLASS z2ui5_cl_ui5_action IMPLEMENTATION.
     result->ms_next-s_stateful = ms_next-s_stateful.
     result->mv_check_sticky_start = mv_check_sticky_start.
 
-    IF ms_next-next_event IS NOT INITIAL.
-      result->ms_actual-event = ms_next-next_event.
-    ELSE.
-      " backward compatibility: derive the next event from a legacy
-      " follow_up_action( _event( ) ) snippet ( deprecated mechanism ). Only
-      " a raw-JS entry can carry one, and it is not necessarily the FIRST
-      " queued action - a toast or box queued before it sits in the same
-      " table - so take the first entry that looks like the snippet.
-      LOOP AT ms_next-s_action-t_custom REFERENCE INTO DATA(lr_action).
-        IF lr_action->js NS `.eB(['`.
-          CONTINUE.
-        ENDIF.
-        SPLIT lr_action->js AT `.eB(['` INTO DATA(lv_dummy)
-              result->ms_actual-event.
-        SPLIT result->ms_actual-event AT `']` INTO result->ms_actual-event lv_dummy.
-        EXIT.
-      ENDLOOP.
-    ENDIF.
+    result->ms_actual-event  = ms_next-next_event.
     result->ms_actual-r_data = ms_next-r_data.
 
     " The leaving app's DESTROYS carry over: a view_destroy( ) before a

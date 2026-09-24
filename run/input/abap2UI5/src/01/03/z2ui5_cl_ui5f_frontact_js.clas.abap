@@ -28,31 +28,30 @@ CLASS z2ui5_cl_ui5f_frontact_js IMPLEMENTATION.
     result = `sap.ui.define(` && |\n| &&
              `  [` && |\n| &&
              `    "z2ui5/core/actions/ControlCall",` && |\n| &&
+             `    "z2ui5/core/actions/BindingCall",` && |\n| &&
              `    "z2ui5/core/actions/Browser",` && |\n| &&
              `    "z2ui5/core/actions/Launchpad",` && |\n| &&
              `    "z2ui5/core/actions/Variants",` && |\n| &&
              `    "z2ui5/core/actions/Shortcuts",` && |\n| &&
              `    "z2ui5/core/actions/ViewOps",` && |\n| &&
-             `    "z2ui5/core/actions/LegacyCustomJs",` && |\n| &&
              `    "z2ui5/core/Lib",` && |\n| &&
-             `    "z2ui5/core/AppState",` && |\n| &&
              `  ],` && |\n| &&
              `  (` && |\n| &&
              `    ControlCall,` && |\n| &&
+             `    BindingCall,` && |\n| &&
              `    Browser,` && |\n| &&
              `    Launchpad,` && |\n| &&
              `    Variants,` && |\n| &&
              `    Shortcuts,` && |\n| &&
              `    ViewOps,` && |\n| &&
-             `    LegacyCustomJs,` && |\n| &&
              `    Lib,` && |\n| &&
-             `    AppState,` && |\n| &&
              `  ) => {` && |\n| &&
              `    "use strict";` && |\n| &&
              `` && |\n| &&
              `    const handlers = Object.assign(` && |\n| &&
              `      Object.create(null),` && |\n| &&
              `      ControlCall.handlers,` && |\n| &&
+             `      BindingCall.handlers,` && |\n| &&
              `      Browser.handlers,` && |\n| &&
              `      Launchpad.handlers,` && |\n| &&
              `      Variants.handlers,` && |\n| &&
@@ -61,7 +60,7 @@ CLASS z2ui5_cl_ui5f_frontact_js IMPLEMENTATION.
              `    );` && |\n| &&
              `` && |\n| &&
              `    function execute(oController, args) {` && |\n| &&
-             `      Lib.runCallbacks(AppState.state.onBeforeEventFrontend, args);` && |\n| &&
+             `      Lib.runCallbacks(oController?.ctx?.state.onBeforeEventFrontend, args);` && |\n| &&
              `` && |\n| &&
              `      try {` && |\n| &&
              `        const handler = handlers[args[0]];` && |\n| &&
@@ -77,7 +76,7 @@ CLASS z2ui5_cl_ui5f_frontact_js IMPLEMENTATION.
              `    }` && |\n| &&
              `` && |\n| &&
              `    function executeSystem(oController, args, ctx) {` && |\n| &&
-             `      Lib.runCallbacks(AppState.state.onBeforeEventFrontend, args);` && |\n| &&
+             `      Lib.runCallbacks(oController?.ctx?.state.onBeforeEventFrontend, args);` && |\n| &&
              `      const handler = handlers[args[0]];` && |\n| &&
              `      if (!handler) {` && |\n| &&
              `        Lib.logError(``FrontendAction: unknown system action '${args[0]}'``);` && |\n| &&
@@ -104,19 +103,17 @@ CLASS z2ui5_cl_ui5f_frontact_js IMPLEMENTATION.
              `` && |\n| &&
              `    function runCustom(item, oController) {` && |\n| &&
              `      try {` && |\n| &&
-             `        if (Array.isArray(item)) {` && |\n| &&
-             `          return oController.eF(...item);` && |\n| &&
-             `        }` && |\n| &&
-             `        const snippet = item.trim();` && |\n| &&
-             `        if (snippet.startsWith("[")) {` && |\n| &&
+             `        let args = item;` && |\n| &&
+             `        if (typeof item === "string") {` && |\n| &&
              `          try {` && |\n| &&
-             `            const args = JSON.parse(snippet);` && |\n| &&
-             `            if (Array.isArray(args)) {` && |\n| &&
-             `              return oController.eF(...args);` && |\n| &&
-             `            }` && |\n| &&
-             `          } catch {}` && |\n| &&
+             `            args = JSON.parse(item);` && |\n| &&
+             `          } catch {` && |\n| &&
+             `            args = null;` && |\n| &&
+             `          }` && |\n| &&
              `        }` && |\n| &&
-             `        LegacyCustomJs.run(item, oController);` && |\n| &&
+             `        if (Array.isArray(args)) {` && |\n| &&
+             `          return oController.eF(...args);` && |\n| &&
+             `        }` && |\n| &&
              `      } catch (e) {` && |\n| &&
              `        Lib.logError("customJs: execution failed", e);` && |\n| &&
              `      }` && |\n| &&

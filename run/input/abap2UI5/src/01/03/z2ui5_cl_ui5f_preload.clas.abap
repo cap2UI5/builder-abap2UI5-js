@@ -14,12 +14,11 @@ CLASS z2ui5_cl_ui5f_preload DEFINITION
 
     " digest of every embedded frontend source, fixed at generation time -
     " part of the GET shell's ETag (z2ui5_cl_ui5_http_handler=>_get_etag)
-    CONSTANTS build_hash TYPE string VALUE 'e9f479d24839087a'.
+    CONSTANTS build_hash TYPE string VALUE 'c32fee8a897cba15'.
 
     CLASS-METHODS get
       IMPORTING
         styles_css    TYPE string
-        custom_js     TYPE string
       RETURNING
         VALUE(result) TYPE string.
 
@@ -39,7 +38,7 @@ CLASS z2ui5_cl_ui5f_preload IMPLEMENTATION.
 
   METHOD get.
 
-    result = |      "z2ui5/Component.js": function()\{{ z2ui5_cl_ui5f_comp_js=>get( ) }{ custom_js }\},| && |\n| &&
+    result = |      "z2ui5/Component.js": function()\{{ z2ui5_cl_ui5f_comp_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/cc/CameraPicture.js": function()\{{ z2ui5_cl_ui5f_campic_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/cc/CameraSelector.js": function()\{{ z2ui5_cl_ui5f_camsel_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/cc/Dirty.js": function()\{{ z2ui5_cl_ui5f_dirty_js=>get( ) }\},| && |\n| &&
@@ -65,6 +64,8 @@ CLASS z2ui5_cl_ui5f_preload IMPLEMENTATION.
              |      "z2ui5/controller/App.controller.js": function()\{{ z2ui5_cl_ui5f_app_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/controller/View1.controller.js": function()\{{ z2ui5_cl_ui5f_view1_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/AppState.js": function()\{{ z2ui5_cl_ui5f_appstate_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/core/Context.js": function()\{{ z2ui5_cl_ui5f_context_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/core/Env.js": function()\{{ z2ui5_cl_ui5f_env_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/ErrorView.js": function()\{{ z2ui5_cl_ui5f_errview_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/FrontendAction.js": function()\{{ z2ui5_cl_ui5f_frontact_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/Lib.js": function()\{{ z2ui5_cl_ui5f_lib_js=>get( ) }\},| && |\n| &&
@@ -73,26 +74,32 @@ CLASS z2ui5_cl_ui5f_preload IMPLEMENTATION.
              |      "z2ui5/core/Server.js": function()\{{ z2ui5_cl_ui5f_server_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/Session.js": function()\{{ z2ui5_cl_ui5f_session_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/ViewSlots.js": function()\{{ z2ui5_cl_ui5f_viewslot_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/core/actions/BindingCall.js": function()\{{ z2ui5_cl_ui5f_bindcall_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/actions/Browser.js": function()\{{ z2ui5_cl_ui5f_browser_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/actions/ControlCall.js": function()\{{ z2ui5_cl_ui5f_ctrlcall_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/actions/Launchpad.js": function()\{{ z2ui5_cl_ui5f_launchpd_js=>get( ) }\},| && |\n| &&
-             |      "z2ui5/core/actions/LegacyCustomJs.js": function()\{{ z2ui5_cl_ui5f_legacy_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/actions/Shortcuts.js": function()\{{ z2ui5_cl_ui5f_shortcut_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/actions/Slots.js": function()\{{ z2ui5_cl_ui5f_slots_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/actions/Variants.js": function()\{{ z2ui5_cl_ui5f_variants_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/core/actions/ViewOps.js": function()\{{ z2ui5_cl_ui5f_viewops_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/css/style.css": '{ escape_js_literal( styles_css ) }',| && |\n| &&
              |      "z2ui5/devtools/AbapSource.js": function()\{{ z2ui5_cl_ui5f_abapsrc_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/devtools/Bindings.js": function()\{{ z2ui5_cl_ui5f_bindings_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/Console.js": function()\{{ z2ui5_cl_ui5f_console_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/DevTools.js": function()\{{ z2ui5_cl_ui5f_devtools_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/DeveloperTools.fragment.xml": '{ escape_js_literal( z2ui5_cl_ui5f_dtools_xml=>get( ) ) }',| && |\n| &&
              |      "z2ui5/devtools/DeveloperTools.js": function()\{{ z2ui5_cl_ui5f_dtools_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/devtools/Diff.js": function()\{{ z2ui5_cl_ui5f_diff_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/Format.js": function()\{{ z2ui5_cl_ui5f_dtformat_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/devtools/Help.js": function()\{{ z2ui5_cl_ui5f_help_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/Inspect.js": function()\{{ z2ui5_cl_ui5f_inspect_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/LiveEdit.js": function()\{{ z2ui5_cl_ui5f_liveedit_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/devtools/Log.js": function()\{{ z2ui5_cl_ui5f_log_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/devtools/Persist.js": function()\{{ z2ui5_cl_ui5f_persist_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/Picker.js": function()\{{ z2ui5_cl_ui5f_picker_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/Recorder.js": function()\{{ z2ui5_cl_ui5f_recorder_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/Report.js": function()\{{ z2ui5_cl_ui5f_report_js=>get( ) }\},| && |\n| &&
+             |      "z2ui5/devtools/SlotXml.js": function()\{{ z2ui5_cl_ui5f_slotxml_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/devtools/Tabs.js": function()\{{ z2ui5_cl_ui5f_tabs_js=>get( ) }\},| && |\n| &&
              |      "z2ui5/manifest.json": '{ escape_js_literal( z2ui5_cl_ui5f_manifest=>get( ) ) }',| && |\n| &&
              |      "z2ui5/model/formatter.js": function()\{{ z2ui5_cl_ui5f_format_js=>get( ) }\},| && |\n| &&
@@ -133,6 +140,17 @@ CLASS z2ui5_cl_ui5f_preload IMPLEMENTATION.
     result = replace( val  = result
                       sub  = z2ui5_cl_ui5_util_context=>cv_char_util_newline
                       with = `\n`
+                      occ  = 0 ).
+    " the HTML tokenizer runs BEFORE the JavaScript parser and ends the
+    " script element at the first </script it meets - inside a string
+    " literal or not. Only styles_css from the exit can carry one (the
+    " generated resources are XML and CSS the build has seen), so this is
+    " defence in depth for an admin-supplied value: every < becomes the JS
+    " escape \x3c, which the literal reads back as the same character, and
+    " neither </script nor <!-- can reach the tokenizer any more
+    result = replace( val  = result
+                      sub  = `<`
+                      with = `\x3c`
                       occ  = 0 ).
 
   ENDMETHOD.

@@ -30,11 +30,9 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `    "sap/m/MessageBox",` && |\n| &&
              `    "sap/ui/core/BusyIndicator",` && |\n| &&
              `    "sap/ui/core/Popup",` && |\n| &&
-             `    "sap/ui/model/Filter",` && |\n| &&
-             `    "sap/ui/model/FilterOperator",` && |\n| &&
-             `    "sap/ui/model/Sorter",` && |\n| &&
              `    "z2ui5/core/Router",` && |\n| &&
              `    "z2ui5/core/Lib",` && |\n| &&
+             `    "z2ui5/core/Env",` && |\n| &&
              `    "z2ui5/core/ViewSlots",` && |\n| &&
              `    "z2ui5/core/actions/Slots",` && |\n| &&
              `  ],` && |\n| &&
@@ -42,11 +40,9 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `    MessageBox,` && |\n| &&
              `    BusyIndicator,` && |\n| &&
              `    CorePopup,` && |\n| &&
-             `    Filter,` && |\n| &&
-             `    FilterOperator,` && |\n| &&
-             `    Sorter,` && |\n| &&
              `    Router,` && |\n| &&
              `    Lib,` && |\n| &&
+             `    Env,` && |\n| &&
              `    ViewSlots,` && |\n| &&
              `    Slots,` && |\n| &&
              `  ) => {` && |\n| &&
@@ -90,7 +86,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `    let iBoxNo = 0;` && |\n| &&
              `` && |\n| &&
              `    function expandBoxDetails(sDialogId) {` && |\n| &&
-             `      const oDialog = Lib.getElementById(sDialogId);` && |\n| &&
+             `      const oDialog = Env.getElementById(sDialogId);` && |\n| &&
              `      const oLayout = oDialog?.getContent?.()[0];` && |\n| &&
              `      if (!oLayout?.getItems) return;` && |\n| &&
              `      for (const oItem of oLayout.getItems()) {` && |\n| &&
@@ -116,7 +112,10 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        if (!o.id) o.id = ``z2ui5MessageBox${++iBoxNo}``;` && |\n| &&
              `      }` && |\n| &&
              `      if (o.dependentOn) {` && |\n| &&
-             `        const oDependentOn = ViewSlots.resolveById(o.dependentOn);` && |\n| &&
+             `        const oDependentOn = ViewSlots.resolveById(` && |\n| &&
+             `          oController?.ctx,` && |\n| &&
+             `          o.dependentOn,` && |\n| &&
+             `        );` && |\n| &&
              `        if (oDependentOn) o.dependentOn = oDependentOn;` && |\n| &&
              `        else delete o.dependentOn;` && |\n| &&
              `      }` && |\n| &&
@@ -289,7 +288,14 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `          updateModel: [],` && |\n| &&
              `        },` && |\n| &&
              `        display: (oController, method, aArgs, mOptions, ctx) =>` && |\n| &&
-             `          Slots.action(method, aArgs[0], aArgs[1], mOptions, ctx?.seq),` && |\n| &&
+             `          Slots.action(` && |\n| &&
+             `            oController?.ctx,` && |\n| &&
+             `            method,` && |\n| &&
+             `            aArgs[0],` && |\n| &&
+             `            aArgs[1],` && |\n| &&
+             `            mOptions,` && |\n| &&
+             `            ctx?.seq,` && |\n| &&
+             `          ),` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
              `      ROUTER: {` && |\n| &&
@@ -297,7 +303,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        methods: { sync: [] },` && |\n| &&
              `        display: (oController, method, aArgs, mOptions, ctx) => {` && |\n| &&
              `          if (ctx?.response) ctx.response._routerOptions = mOptions;` && |\n| &&
-             `          else Router.sync(mOptions);` && |\n| &&
+             `          else Router.sync(oController?.ctx, mOptions);` && |\n| &&
              `        },` && |\n| &&
              `      },` && |\n| &&
              `      BUSY_INDICATOR: {` && |\n| &&
@@ -314,7 +320,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      },` && |\n| &&
              `` && |\n| &&
              `      THEMING: {` && |\n| &&
-             `        get: () => Lib.getThemingModule(),` && |\n| &&
+             `        get: () => Env.getThemingModule(),` && |\n| &&
              `        methods: { setTheme: ["string"] },` && |\n| &&
              `      },` && |\n| &&
              `` && |\n| &&
@@ -344,10 +350,10 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `` && |\n| &&
              `    const AGG_ITEM = /^([^/]+)\/([A-Za-z_][\w]*)\/(\d+)$/;` && |\n| &&
              `` && |\n| &&
-             `    function resolveControl(raw, view) {` && |\n| &&
+             `    function resolveControl(raw, view, ctx) {` && |\n| &&
              `      const byId = (id) =>` && |\n| &&
-             `        (view && ViewSlots.byId(view.toUpperCase(), id)) ||` && |\n| &&
-             `        ViewSlots.resolveById(id);` && |\n| &&
+             `        (view && ViewSlots.byId(ctx, view.toUpperCase(), id)) ||` && |\n| &&
+             `        ViewSlots.resolveById(ctx, id);` && |\n| &&
              `` && |\n| &&
              `      const m = AGG_ITEM.exec(String(raw ?? ""));` && |\n| &&
              `      if (!m) return byId(raw);` && |\n| &&
@@ -374,21 +380,21 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      return item;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function resolveControlOrNull(raw, view) {` && |\n| &&
+             `    function resolveControlOrNull(raw, view, ctx) {` && |\n| &&
              `      if (raw === "" || raw === undefined || raw === null) return null;` && |\n| &&
-             `      return resolveControl(raw, view) || null;` && |\n| &&
+             `      return resolveControl(raw, view, ctx) || null;` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    function castArg(kind, raw, view) {` && |\n| &&
+             `    function castArg(kind, raw, view, ctx) {` && |\n| &&
              `      switch (kind) {` && |\n| &&
              `        case "int":` && |\n| &&
              `          return Number(raw);` && |\n| &&
              `        case "bool":` && |\n| &&
              `          return raw === "true" || raw === "X" || raw === true;` && |\n| &&
              `        case "controlId":` && |\n| &&
-             `          return resolveControl(raw, view);` && |\n| &&
+             `          return resolveControl(raw, view, ctx);` && |\n| &&
              `        case "pageId": {` && |\n| &&
-             `          const page = resolveControl(raw, view);` && |\n| &&
+             `          const page = resolveControl(raw, view, ctx);` && |\n| &&
              `          if (page && typeof page.getId === "function") return page.getId();` && |\n| &&
              `` && |\n| &&
              `          Lib.logError(` && |\n| &&
@@ -397,11 +403,11 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `          return raw;` && |\n| &&
              `        }` && |\n| &&
              `        case "controlIdOrNull":` && |\n| &&
-             `          return resolveControlOrNull(raw, view);` && |\n| &&
+             `          return resolveControlOrNull(raw, view, ctx);` && |\n| &&
              `        case "anchor":` && |\n| &&
-             `          return resolveControl(raw, view);` && |\n| &&
+             `          return resolveControl(raw, view, ctx);` && |\n| &&
              `        case "within":` && |\n| &&
-             `          return resolveControlOrNull(raw, view);` && |\n| &&
+             `          return resolveControlOrNull(raw, view, ctx);` && |\n| &&
              `        case "object":` && |\n| &&
              `          if (raw && typeof raw === "object") return raw;` && |\n| &&
              `          try {` && |\n| &&
@@ -418,14 +424,14 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `    function castArgAuto(raw) {` && |\n| &&
              `      if (raw === "X" || raw === "true") return true;` && |\n| &&
              `      if (raw === "" || raw === " " || raw === "false") return false;` && |\n| &&
-             `      return raw;` && |\n| &&
+             `      return raw;` && |\n|.
+    result = result &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    function setsStringProperty(control, method) {` && |\n| &&
              `      if (!control || typeof method !== "string" || !/^set[A-Z]/.test(method))` && |\n| &&
              `        return false;` && |\n| &&
-             `      const prop = control.getMetadata?.()?.getAllProperties?.()[` && |\n|.
-    result = result &&
+             `      const prop = control.getMetadata?.()?.getAllProperties?.()[` && |\n| &&
              `        method.charAt(3).toLowerCase() + method.slice(4)` && |\n| &&
              `      ];` && |\n| &&
              `      if (!prop) return false;` && |\n| &&
@@ -435,7 +441,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `` && |\n| &&
              `    const NULLABLE_KINDS = ["controlIdOrNull"];` && |\n| &&
              `` && |\n| &&
-             `    function castArgs(kinds, rawArgs, view, target) {` && |\n| &&
+             `    function castArgs(kinds, rawArgs, view, target, ctx) {` && |\n| &&
              `      if (kinds === null) {` && |\n| &&
              `        const keepString = setsStringProperty(target?.control, target?.method);` && |\n| &&
              `        return rawArgs.map((raw, i) =>` && |\n| &&
@@ -448,7 +454,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        count++;` && |\n| &&
              `      return kinds` && |\n| &&
              `        .slice(0, count)` && |\n| &&
-             `        .map((kind, i) => castArg(kind, rawArgs[i], view));` && |\n| &&
+             `        .map((kind, i) => castArg(kind, rawArgs[i], view, ctx));` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    const registeredIconFonts = new Set();` && |\n| &&
@@ -504,7 +510,13 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        );` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&
-             `      const anchor = castArgs(kinds, args.slice(4), view)[0];` && |\n| &&
+             `      const anchor = castArgs(` && |\n| &&
+             `        kinds,` && |\n| &&
+             `        args.slice(4),` && |\n| &&
+             `        view,` && |\n| &&
+             `        undefined,` && |\n| &&
+             `        oController?.ctx,` && |\n| &&
+             `      )[0];` && |\n| &&
              `` && |\n| &&
              `      whenAnchorRendered(anchor, oController, () => {` && |\n| &&
              `        if (control.isOpen?.()) control.close();` && |\n| &&
@@ -521,7 +533,13 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        Lib.logError(``CONTROL_BY_ID: 'openBy' not callable on control '${id}'``);` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&
-             `      const anchor = castArgs(kinds, args.slice(4), view)[0];` && |\n| &&
+             `      const anchor = castArgs(` && |\n| &&
+             `        kinds,` && |\n| &&
+             `        args.slice(4),` && |\n| &&
+             `        view,` && |\n| &&
+             `        undefined,` && |\n| &&
+             `        oController?.ctx,` && |\n| &&
+             `      )[0];` && |\n| &&
              `` && |\n| &&
              `      whenAnchorRendered(anchor, oController, () => {` && |\n| &&
              `        if (typeof control.openBy === "function") control.openBy(anchor);` && |\n| &&
@@ -619,7 +637,8 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        kinds = null;` && |\n| &&
              `      }` && |\n| &&
              `` && |\n| &&
-             `      const control = resolveControl(id, view);` && |\n| &&
+             `      const ctx = oController?.ctx;` && |\n| &&
+             `      const control = resolveControl(id, view, ctx);` && |\n| &&
              `      const pseudo = PSEUDO_METHODS[method];` && |\n| &&
              `      if (pseudo) {` && |\n| &&
              `        pseudo({ control, id, view, method, kinds, args, oController });` && |\n| &&
@@ -635,7 +654,7 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        return;` && |\n| &&
              `      }` && |\n| &&
              `      control[method](` && |\n| &&
-             `        ...castArgs(kinds, args.slice(4), view, { control, method }),` && |\n| &&
+             `        ...castArgs(kinds, args.slice(4), view, { control, method }, ctx),` && |\n| &&
              `      );` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
@@ -685,7 +704,9 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        Lib.logError(``CONTROL_GLOBAL: '${name}.${method}' not available``);` && |\n| &&
              `        return;` && |\n| &&
              `      }` && |\n| &&
-             `      obj[method](...castArgs(kinds, raw));` && |\n| &&
+             `      obj[method](` && |\n| &&
+             `        ...castArgs(kinds, raw, undefined, undefined, oController?.ctx),` && |\n| &&
+             `      );` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
              `    function formatTemplate(tpl, values) {` && |\n| &&
@@ -702,121 +723,9 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `      );` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    const FILTER_OPERATORS = new Set([` && |\n| &&
-             `      "BT",` && |\n| &&
-             `      "Contains",` && |\n| &&
-             `      "EndsWith",` && |\n| &&
-             `      "EQ",` && |\n| &&
-             `      "GE",` && |\n| &&
-             `      "GT",` && |\n| &&
-             `      "LE",` && |\n| &&
-             `      "LT",` && |\n| &&
-             `      "NB",` && |\n| &&
-             `      "NE",` && |\n| &&
-             `      "NotContains",` && |\n| &&
-             `      "NotEndsWith",` && |\n| &&
-             `      "NotStartsWith",` && |\n| &&
-             `      "StartsWith",` && |\n| &&
-             `    ]);` && |\n| &&
-             `` && |\n| &&
-             `    const isEmpty = (v) => v == null || v === "";` && |\n| &&
-             `` && |\n| &&
-             `    function buildFilterGroups(binding, json) {` && |\n| &&
-             `      let groups = json;` && |\n| &&
-             `      if (typeof json === "string") {` && |\n| &&
-             `        try {` && |\n| &&
-             `          groups = JSON.parse(json);` && |\n| &&
-             `        } catch {` && |\n| &&
-             `          Lib.logError("BINDING_CALL: malformed filter groups JSON");` && |\n| &&
-             `          return;` && |\n| &&
-             `        }` && |\n| &&
-             `      }` && |\n| &&
-             `      if (!Array.isArray(groups)) {` && |\n| &&
-             `        Lib.logError("BINDING_CALL: filter groups must be an array");` && |\n| &&
-             `        return;` && |\n| &&
-             `      }` && |\n| &&
-             `      groups = groups.filter((g) => Array.isArray(g) && g.length);` && |\n| &&
-             `      if (!groups.length) {` && |\n| &&
-             `        binding.filter([]);` && |\n| &&
-             `        return;` && |\n| &&
-             `      }` && |\n| &&
-             `      const outer = [];` && |\n| &&
-             `      for (const group of groups) {` && |\n| &&
-             `        const inner = [];` && |\n| &&
-             `        for (const row of group) {` && |\n| &&
-             `          const [path, operator, value1, value2] = Array.isArray(row)` && |\n| &&
-             `            ? row` && |\n| &&
-             `            : [];` && |\n| &&
-             `          if (typeof path !== "string" || !FILTER_OPERATORS.has(operator)) {` && |\n| &&
-             `            Lib.logError(` && |\n| &&
-             `              ``BINDING_CALL: bad filter row (path '${path}' / operator '${operator}')``,` && |\n| &&
-             `            );` && |\n| &&
-             `            return;` && |\n| &&
-             `          }` && |\n| &&
-             `          inner.push(` && |\n| &&
-             `            new Filter(path, FilterOperator[operator], value1, value2),` && |\n| &&
-             `          );` && |\n| &&
-             `        }` && |\n| &&
-             `        outer.push(new Filter(inner, false));` && |\n| &&
-             `      }` && |\n| &&
-             `      binding.filter([new Filter(outer, true)]);` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
-             `    const BINDING_METHODS = {` && |\n| &&
-             `      filter(binding, params) {` && |\n| &&
-             `        const [path, operator, value1, value2] = params;` && |\n| &&
-             `` && |\n| &&
-             `        if (` && |\n| &&
-             `          params.length === 1 &&` && |\n| &&
-             `          (Array.isArray(path) ||` && |\n| &&
-             `            (typeof path === "string" && path.trimStart().startsWith("[")))` && |\n| &&
-             `        ) {` && |\n| &&
-             `          buildFilterGroups(binding, path);` && |\n| &&
-             `          return;` && |\n| &&
-             `        }` && |\n| &&
-             `` && |\n| &&
-             `        if (isEmpty(value1) && isEmpty(value2)) {` && |\n| &&
-             `          binding.filter([]);` && |\n| &&
-             `          return;` && |\n| &&
-             `        }` && |\n| &&
-             `        if (!FILTER_OPERATORS.has(operator)) {` && |\n| &&
-             `          Lib.logError(``BINDING_CALL: operator '${operator}' not allowed``);` && |\n| &&
-             `          return;` && |\n| &&
-             `        }` && |\n| &&
-             `        binding.filter([` && |\n| &&
-             `          new Filter(path, FilterOperator[operator], value1, value2),` && |\n| &&
-             `        ]);` && |\n| &&
-             `      },` && |\n| &&
-             `      sort(binding, [path, descending, group]) {` && |\n| &&
-             `        binding.sort([` && |\n| &&
-             `          new Sorter(path, castArg("bool", descending), castArg("bool", group)),` && |\n| &&
-             `        ]);` && |\n| &&
-             `      },` && |\n| &&
-             `    };` && |\n| &&
-             `` && |\n| &&
-             `    Object.setPrototypeOf(BINDING_METHODS, null);` && |\n| &&
-             `` && |\n| &&
-             `    function evBindingCall(oController, args) {` && |\n| &&
-             `      const [, id, aggregation, method] = args;` && |\n| &&
-             `      const build = BINDING_METHODS[method];` && |\n| &&
-             `      if (!build) {` && |\n| &&
-             `        Lib.logError(``BINDING_CALL: method '${method}' not allowed``);` && |\n| &&
-             `        return;` && |\n| &&
-             `      }` && |\n| &&
-             `      const binding = ViewSlots.resolveById(id)?.getBinding?.(aggregation);` && |\n| &&
-             `      if (!binding || typeof binding[method] !== "function") {` && |\n| &&
-             `        Lib.logError(` && |\n| &&
-             `          ``BINDING_CALL: no '${aggregation}' binding with '${method}' on control '${id}'``,` && |\n| &&
-             `        );` && |\n| &&
-             `        return;` && |\n| &&
-             `      }` && |\n| &&
-             `      build(binding, args.slice(4));` && |\n| &&
-             `    }` && |\n| &&
-             `` && |\n| &&
              `    const handlers = {` && |\n| &&
              `      CONTROL_BY_ID: evControlCallById,` && |\n| &&
              `      CONTROL_GLOBAL: evControlCall,` && |\n| &&
-             `      BINDING_CALL: evBindingCall,` && |\n| &&
              `    };` && |\n| &&
              `` && |\n| &&
              `    for (const name of Object.keys(GLOBAL_TARGETS)) {` && |\n| &&
@@ -824,9 +733,8 @@ CLASS z2ui5_cl_ui5f_ctrlcall_js IMPLEMENTATION.
              `        evControlCall(oController, ["CONTROL_GLOBAL", ...args], ctx);` && |\n| &&
              `    }` && |\n| &&
              `` && |\n| &&
-             `    return { handlers };` && |\n| &&
-             `  },` && |\n|.
-    result = result &&
+             `    return { handlers, castArg };` && |\n| &&
+             `  },` && |\n| &&
              `);` && |\n| &&
              `` && |\n| &&
               ``.

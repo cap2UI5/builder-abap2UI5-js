@@ -460,6 +460,22 @@ CLASS z2ui5_cl_ui5_util_context DEFINITION
       RETURNING
         VALUE(result) TYPE abap_bool.
 
+    " abap_true when the class exists AND implements the interface. The
+    " question to ask before a CREATE OBJECT ... TYPE (name) whose name came
+    " from outside (a URL parameter, a hash route, a typed-in class name):
+    " answered from the class descriptor, which loads and instantiates
+    " nothing, so a class that is no app is refused before its class pool
+    " is ever touched. The descriptor's list carries the interfaces a
+    " superclass implements as well, so an app that inherits its
+    " z2ui5_if_app passes. abap_false for a name that is not a class at all
+    " (an interface, a data type, nothing)
+    CLASS-METHODS rtti_check_class_impl_intf
+      IMPORTING
+        class         TYPE clike
+        intf          TYPE clike
+      RETURNING
+        VALUE(result) TYPE abap_bool.
+
     CLASS-METHODS rtti_get_type_kind
       IMPORTING
         val           TYPE any
@@ -626,6 +642,17 @@ CLASS z2ui5_cl_ui5_util_context DEFINITION
     CLASS-METHODS rtti_check_printable
       IMPORTING
         val           TYPE any
+      RETURNING
+        VALUE(result) TYPE abap_bool.
+
+    " abap_true when one component of a row holds the search text - the
+    " per-field half of itab_filter_by_val. A component that is not printable
+    " (a table of children, a reference) holds no text and answers false
+    CLASS-METHODS itab_filter_check_field
+      IMPORTING
+        field         TYPE any
+        search        TYPE string
+        ignore_case   TYPE abap_bool
       RETURNING
         VALUE(result) TYPE abap_bool.
 
@@ -1105,7 +1132,14 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
     DATA lv_metadata TYPE string ##NEEDED.
     DATA lv_base64   TYPE string.
 
-    SPLIT val AT `,` INTO lv_metadata lv_base64.
+    IF val CS `,`.
+      SPLIT val AT `,` INTO lv_metadata lv_base64.
+    ELSE.
+      " a bare base64 payload, without the `data:...;base64,` prefix - the
+      " SPLIT put the whole value into the metadata half and the payload
+      " decoded to an empty xstring without a word
+      lv_base64 = val.
+    ENDIF.
     result = conv_decode_x_base64( lv_base64 ).
 
   ENDMETHOD.
@@ -1169,7 +1203,17 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
 
     LOOP AT lt_tab REFERENCE INTO DATA(lr_row).
 
-      DATA(lv_value) = lt_mapping[ n = lr_row->option ]-v. "#EC CI_SORTSEQ
+      " an option the mapping does not know - initial (a row appended with
+      " sign and low only) or lower-case - used to raise a raw
+      " CX_SY_ITAB_LINE_NOT_FOUND out of the whole call; it renders as the
+      " equality token, which is what a range row without an option means
+      DATA lv_option TYPE string.
+      DATA lv_value  TYPE string.
+      lv_option = to_upper( lr_row->option ).
+      lv_value = VALUE #( lt_mapping[ n = lv_option ]-v OPTIONAL ). "#EC CI_SORTSEQ
+      IF lv_value IS INITIAL.
+        lv_value = lt_mapping[ n = `EQ` ]-v. "#EC CI_SORTSEQ
+      ENDIF.
       REPLACE `{LOW}`  IN lv_value WITH lr_row->low.
       REPLACE `{HIGH}` IN lv_value WITH lr_row->high.
 
@@ -1229,15 +1273,9 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
           ENDIF.
         ENDIF.
 
-        DATA(lv_value) = |{ <field> }|.
-        IF ignore_case = abap_true.
-          lv_value = to_upper( lv_value ).
-          IF lv_value CS lv_search.
-            lv_check_found = abap_true.
-            EXIT.
-          ENDIF.
-        ELSEIF find( val = lv_value
-                     sub = lv_search ) >= 0.
+        IF itab_filter_check_field( field       = <field>
+                                    search      = lv_search
+                                    ignore_case = ignore_case ) = abap_true.
           lv_check_found = abap_true.
           EXIT.
         ENDIF.
@@ -1277,6 +1315,39 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
 
     INSERT VALUE #( name   = lv_name
                     exists = result ) INTO TABLE gt_class_exists.
+
+  ENDMETHOD.
+
+  METHOD rtti_check_class_impl_intf.
+
+    DATA lo_typedescr  TYPE REF TO cl_abap_typedescr.
+    DATA lo_classdescr TYPE REF TO cl_abap_classdescr.
+    DATA lv_intf       TYPE string.
+
+    " the existence check first: it is cached, and it is the one that
+    " answers "no such class" without a class-based exception (the
+    " functional describe_by_name form has none to catch)
+    IF rtti_check_class_exists( class ) = abap_false.
+      RETURN.
+    ENDIF.
+
+    lv_intf = to_upper( intf ).
+
+    TRY.
+        cl_abap_classdescr=>describe_by_name( EXPORTING p_name          = class
+                                              RECEIVING p_descr_ref     = lo_typedescr
+                                              EXCEPTIONS type_not_found = 1 ).
+        IF sy-subrc <> 0.
+          RETURN.
+        ENDIF.
+        " an interface or a data type carries the name too - the cast is
+        " what says "class", and a failed one is a plain abap_false
+        lo_classdescr ?= lo_typedescr.
+        " a handful of rows per class - the read is not the cost here
+        result = xsdbool( line_exists( lo_classdescr->interfaces[ name = lv_intf ] ) ). "#EC CI_SORTSEQ
+
+      CATCH cx_root ##NO_HANDLER.
+    ENDTRY.
 
   ENDMETHOD.
 
@@ -1510,6 +1581,14 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
     DATA(lv_startup) = substring_after( val = |&{ lv_search }|
                                         sub = `&sap-startup-params=` ).
     IF lv_startup IS NOT INITIAL.
+      " what stands BEFORE the wrapper is as much a parameter as what follows
+      " it: `?app_start=x&sap-startup-params=...` used to lose app_start, and
+      " a `sap-client` in front of the wrapper was gone from every link
+      " app_get_url rebuilt from this table. lv_before keeps the prepended
+      " `&`, so the empty first segment it produces below is skipped like a
+      " trailing one
+      DATA(lv_before) = substring_before( val = |&{ lv_search }|
+                                          sub = `&sap-startup-params=` ).
       SPLIT lv_startup AT `&` INTO DATA(lv_packed) DATA(lv_rest).
       lv_packed = replace( val  = lv_packed
                            sub  = `%3D`
@@ -1528,6 +1607,9 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
       lv_search = lv_packed.
       IF lv_rest IS NOT INITIAL.
         lv_search = |{ lv_packed }&{ lv_rest }|.
+      ENDIF.
+      IF lv_before IS NOT INITIAL.
+        lv_search = |{ lv_before }&{ lv_search }|.
       ENDIF.
     ENDIF.
 
@@ -1739,6 +1821,29 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD itab_filter_check_field.
+
+    " a table, a deep structure or a reference cannot go into a string
+    " template - with no field list every component is visited, and a
+    " master-detail row (a table of children inside the row) dumped the
+    " whole filter. Such a component holds no text to match
+    IF rtti_check_printable( field ) = abap_false.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_value) = |{ field }|.
+    IF ignore_case = abap_true.
+      lv_value = to_upper( lv_value ).
+      IF lv_value CS search.
+        result = abap_true.
+      ENDIF.
+    ELSEIF find( val = lv_value
+                 sub = search ) >= 0.
+      result = abap_true.
+    ENDIF.
+
+  ENDMETHOD.
+
   METHOD rtti_check_printable.
 
     IF rtti_check_clike( val ) = abap_true.
@@ -1921,18 +2026,44 @@ CLASS z2ui5_cl_ui5_util_context IMPLEMENTATION.
     DATA lt_comp TYPE cl_abap_structdescr=>component_table.
 
     FIELD-SYMBOLS <tab> TYPE ANY TABLE.
+
+    " an unbound reference left <tab> unassigned and describe_by_data dumped
+    " with GETWA_NOT_ASSIGNED; a reference to a scalar failed the cast below.
+    " Both are the caller's mistake and answer as the framework's exception
+    IF ir_tab IS NOT BOUND.
+      RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
+        EXPORTING
+          val = `RTTI_CREATE_SEL_TAB_TYPE: no table reference supplied`.
+    ENDIF.
     ASSIGN ir_tab->* TO <tab>.
 
-    DATA(lo_table) = CAST cl_abap_tabledescr( cl_abap_typedescr=>describe_by_data( <tab> ) ).
+    DATA lo_table TYPE REF TO cl_abap_tabledescr.
     TRY.
-        DATA(lo_struct) = CAST cl_abap_structdescr( lo_table->get_table_line_type( ) ).
+        lo_table = CAST cl_abap_tabledescr( cl_abap_typedescr=>describe_by_data( <tab> ) ).
+      CATCH cx_root INTO DATA(lx_cast).
+        RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
+          EXPORTING
+            val = lx_cast.
+    ENDTRY.
+
+    " decide the line kind by RTTI instead of by a failing cast: the CATCH
+    " branch cast to cl_abap_elemdescr sat outside any TRY, so a table whose
+    " line is itself a table or a reference raised CX_SY_MOVE_CAST_ERROR
+    DATA(lo_line) = lo_table->get_table_line_type( ).
+    CASE lo_line->kind.
+      WHEN cv_typedescr_kind_struct.
+        DATA(lo_struct) = CAST cl_abap_structdescr( lo_line ).
         lt_comp = lo_struct->get_components( ).
-      CATCH cx_root.
+      WHEN cv_typedescr_kind_elem.
         result-check_table_line = abap_true.
-        DATA(lo_elem) = CAST cl_abap_elemdescr( lo_table->get_table_line_type( ) ).
+        DATA(lo_elem) = CAST cl_abap_elemdescr( lo_line ).
         INSERT VALUE #( name = `TAB_LINE`
                         type = lo_elem ) INTO TABLE lt_comp.
-    ENDTRY.
+      WHEN OTHERS.
+        RAISE EXCEPTION TYPE z2ui5_cx_ui5_util_error
+          EXPORTING
+            val = `RTTI_CREATE_SEL_TAB_TYPE: a table of tables or references has no selectable line`.
+    ENDCASE.
 
     IF add_sel_field = abap_true
         AND NOT line_exists( lt_comp[ name = sel_field_name ] ). "#EC CI_SORTSEQ
