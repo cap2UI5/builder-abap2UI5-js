@@ -3,11 +3,9 @@ sap.ui.define(
     "sap/m/MessageBox",
     "sap/ui/core/BusyIndicator",
     "sap/ui/core/Popup",
-    "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter",
     "z2ui5/core/Router",
     "z2ui5/core/Lib",
+    "z2ui5/core/Env",
     "z2ui5/core/ViewSlots",
     "z2ui5/core/actions/Slots",
   ],
@@ -15,11 +13,9 @@ sap.ui.define(
     MessageBox,
     BusyIndicator,
     CorePopup,
-    Filter,
-    FilterOperator,
-    Sorter,
     Router,
     Lib,
+    Env,
     ViewSlots,
     Slots,
   ) => {
@@ -42,9 +38,9 @@ sap.ui.define(
     // ------------------------------------------------------------------
     // The generic, whitelisted call surface of the action protocol:
     // CONTROL_GLOBAL / CONTROL_BY_ID call a method on a global object or a
-    // control resolved by id, BINDING_CALL applies a declarative
-    // filter/sorter to an aggregation binding - each detailed at its own
-    // section below.
+    // control resolved by id - each detailed at its own section below. Its
+    // third member, BINDING_CALL (a declarative filter/sorter on an
+    // aggregation binding), lives in core/actions/BindingCall.js.
     // ------------------------------------------------------------------
 
     // ------------------------------------------------------------------
@@ -123,7 +119,7 @@ sap.ui.define(
     // step is guarded: a release that lays the box out differently leaves the
     // details collapsed - the behaviour before this - rather than throwing.
     function expandBoxDetails(sDialogId) {
-      const oDialog = Lib.getElementById(sDialogId);
+      const oDialog = Env.getElementById(sDialogId);
       const oLayout = oDialog?.getContent?.()[0];
       if (!oLayout?.getItems) return;
       for (const oItem of oLayout.getItems()) {
@@ -162,7 +158,10 @@ sap.ui.define(
         // lifecycle - the backend sends the control id, resolved here. A
         // missing/unresolvable id drops the option instead of passing a
         // string UI5 would choke on.
-        const oDependentOn = ViewSlots.resolveById(o.dependentOn);
+        const oDependentOn = ViewSlots.resolveById(
+          oController?.ctx,
+          o.dependentOn,
+        );
         if (oDependentOn) o.dependentOn = oDependentOn;
         else delete o.dependentOn;
       }
@@ -477,7 +476,14 @@ sap.ui.define(
           updateModel: [],
         },
         display: (oController, method, aArgs, mOptions, ctx) =>
-          Slots.action(method, aArgs[0], aArgs[1], mOptions, ctx?.seq),
+          Slots.action(
+            oController?.ctx,
+            method,
+            aArgs[0],
+            aArgs[1],
+            mOptions,
+            ctx?.seq,
+          ),
       },
       // The browser history / URL. Router computes ONE outcome from the whole
       // options object - adopt the hash, push a route entry, replace it, or
@@ -491,7 +497,7 @@ sap.ui.define(
         methods: { sync: [] },
         display: (oController, method, aArgs, mOptions, ctx) => {
           if (ctx?.response) ctx.response._routerOptions = mOptions;
-          else Router.sync(mOptions);
+          else Router.sync(oController?.ctx, mOptions);
         },
       },
       BUSY_INDICATOR: {
@@ -519,11 +525,11 @@ sap.ui.define(
       },
       // sap/ui/core/Theming only exists since UI5 1.118, so it must NOT be a
       // hard dependency (it 404s on 1.71 and kills the whole component load).
-      // Lib.getThemingModule is the shared lazy probe: on modern UI5 the
+      // Env.getThemingModule is the shared lazy probe: on modern UI5 the
       // core has the module loaded, on 1.71 it answers null and the
       // dispatch reports "not available".
       THEMING: {
-        get: () => Lib.getThemingModule(),
+        get: () => Env.getThemingModule(),
         methods: { setTheme: ["string"] },
       },
       // sap/ui/core/Popup is a HARD dependency of this module on purpose:
@@ -589,7 +595,10 @@ sap.ui.define(
     // `view` (optional) is the slot the owning control was resolved in, so a
     // controlId argument resolves against the same view first - this keeps
     // slot-local ids unambiguous (e.g. a NavContainer navigating to one of
-    // its own pages) before falling back to the global lookup.
+    // its own pages) before falling back to the global lookup. `ctx` is the
+    // calling controller's context (core/Context.js), whose slots the ids
+    // resolve in; it rides LAST so the kinds that need no control (the
+    // boolean cast BindingCall borrows) are called without one.
     // A control CLONED from an aggregation template has no id the backend can
     // spell. UI5 mints it as `<templateId>-<parentId>-<index>` - deterministic,
     // but the parent id carries the VIEW PREFIX the framework assigns at
@@ -604,10 +613,10 @@ sap.ui.define(
     // call can express. A plain id (no slashes) resolves exactly as before.
     const AGG_ITEM = /^([^/]+)\/([A-Za-z_][\w]*)\/(\d+)$/;
 
-    function resolveControl(raw, view) {
+    function resolveControl(raw, view, ctx) {
       const byId = (id) =>
-        (view && ViewSlots.byId(view.toUpperCase(), id)) ||
-        ViewSlots.resolveById(id);
+        (view && ViewSlots.byId(ctx, view.toUpperCase(), id)) ||
+        ViewSlots.resolveById(ctx, id);
 
       const m = AGG_ITEM.exec(String(raw ?? ""));
       if (!m) return byId(raw);
@@ -641,19 +650,19 @@ sap.ui.define(
     // the within-area, so it has to arrive as an explicit null - and a
     // non-empty id that resolves to nothing is null too, never `undefined`,
     // which some UI5 setters read as "no argument given" instead of "clear".
-    function resolveControlOrNull(raw, view) {
+    function resolveControlOrNull(raw, view, ctx) {
       if (raw === "" || raw === undefined || raw === null) return null;
-      return resolveControl(raw, view) || null;
+      return resolveControl(raw, view, ctx) || null;
     }
 
-    function castArg(kind, raw, view) {
+    function castArg(kind, raw, view, ctx) {
       switch (kind) {
         case "int":
           return Number(raw);
         case "bool":
           return raw === "true" || raw === "X" || raw === true;
         case "controlId":
-          return resolveControl(raw, view);
+          return resolveControl(raw, view, ctx);
         case "pageId": {
           // Like `controlId`, but hands the container the resolved control's
           // ID rather than the control. Only for methods whose UI5 signature
@@ -662,7 +671,7 @@ sap.ui.define(
           // resolution step is what makes this safe: the rendered id carries
           // the view prefix the backend never sees, so passing the raw ABAP
           // literal instead would break every existing navigation.
-          const page = resolveControl(raw, view);
+          const page = resolveControl(raw, view, ctx);
           if (page && typeof page.getId === "function") return page.getId();
           // No control under that id. Today the container absorbs this
           // silently (it just navigates its last column and logs a UI5
@@ -681,7 +690,7 @@ sap.ui.define(
           // not as the `false` castArgAuto would infer. Same "empty means
           // null" contract as the `within` kind below, so both go through the
           // one helper.
-          return resolveControlOrNull(raw, view);
+          return resolveControlOrNull(raw, view, ctx);
         case "anchor":
           // anchor argument for openBy-style methods: resolve the control id
           // and hand over the CONTROL itself, not its DOM element. Every
@@ -690,7 +699,7 @@ sap.ui.define(
           // element throws ("getParent is not a function") and the popup never
           // opens. DatePicker/TimePicker/Menu accept a control just as well,
           // so a control is the universally-correct anchor.
-          return resolveControl(raw, view);
+          return resolveControl(raw, view, ctx);
         case "within":
           // sap.ui.core.Popup.setWithinArea: a control id confines every popup
           // to that control, an EMPTY argument releases the restriction (the
@@ -698,11 +707,12 @@ sap.ui.define(
           // accepts a sap.ui.core.Element and dereferences its DOM node when a
           // popup opens, so handing over the CONTROL - not its DOM element -
           // is what survives a re-render of the area in between.
-          return resolveControlOrNull(raw, view);
+          return resolveControlOrNull(raw, view, ctx);
         case "object":
           // the backend embeds an argument that starts with { or [ as real
           // JSON (get_event_client_ajson), so on that path the value arrives
-          // already parsed; only the legacy eF( ) string form needs parsing.
+          // already parsed; only the eF( ) string form of a view wire needs
+          // parsing.
           if (raw && typeof raw === "object") return raw;
           try {
             return JSON.parse(raw);
@@ -772,7 +782,7 @@ sap.ui.define(
     // `target` (optional) is the { control, method } the call will land on -
     // only the CONTROL_BY_ID path can supply it, and it is only consulted on
     // the inferred branch.
-    function castArgs(kinds, rawArgs, view, target) {
+    function castArgs(kinds, rawArgs, view, target, ctx) {
       // kinds === null: unlisted-but-allowed method, infer each arg's type
       if (kinds === null) {
         // a setXxx takes its value first, and that is the only position a
@@ -791,7 +801,7 @@ sap.ui.define(
         count++;
       return kinds
         .slice(0, count)
-        .map((kind, i) => castArg(kind, rawArgs[i], view));
+        .map((kind, i) => castArg(kind, rawArgs[i], view, ctx));
     }
 
     // Collections already registered in this session. UI5 tolerates a repeat
@@ -905,7 +915,13 @@ sap.ui.define(
         );
         return;
       }
-      const anchor = castArgs(kinds, args.slice(4), view)[0];
+      const anchor = castArgs(
+        kinds,
+        args.slice(4),
+        view,
+        undefined,
+        oController?.ctx,
+      )[0];
       // Defer the open until the anchor is rendered: a Save-style roundtrip
       // can make the anchor (e.g. a button hidden until there are messages)
       // visible in the same response, so it may not be in the DOM yet.
@@ -928,7 +944,13 @@ sap.ui.define(
         Lib.logError(`CONTROL_BY_ID: 'openBy' not callable on control '${id}'`);
         return;
       }
-      const anchor = castArgs(kinds, args.slice(4), view)[0];
+      const anchor = castArgs(
+        kinds,
+        args.slice(4),
+        view,
+        undefined,
+        oController?.ctx,
+      )[0];
       // Same reason as toggleBy: wait for the anchor to render.
       whenAnchorRendered(anchor, oController, () => {
         if (typeof control.openBy === "function") control.openBy(anchor);
@@ -1066,7 +1088,8 @@ sap.ui.define(
       // a fully-qualified id (the form UI5 messages return from
       // getControlIds()) resolved fine as an argument and reported "not
       // callable" as the target of the very same call.
-      const control = resolveControl(id, view);
+      const ctx = oController?.ctx;
+      const control = resolveControl(id, view, ctx);
       const pseudo = PSEUDO_METHODS[method];
       if (pseudo) {
         pseudo({ control, id, view, method, kinds, args, oController });
@@ -1087,7 +1110,7 @@ sap.ui.define(
         return;
       }
       control[method](
-        ...castArgs(kinds, args.slice(4), view, { control, method }),
+        ...castArgs(kinds, args.slice(4), view, { control, method }, ctx),
       );
     }
 
@@ -1157,7 +1180,9 @@ sap.ui.define(
         Lib.logError(`CONTROL_GLOBAL: '${name}.${method}' not available`);
         return;
       }
-      obj[method](...castArgs(kinds, raw));
+      obj[method](
+        ...castArgs(kinds, raw, undefined, undefined, oController?.ctx),
+      );
     }
 
     // replace placeholders in a template with the positional values (as
@@ -1183,164 +1208,11 @@ sap.ui.define(
       );
     }
 
-    // ------------------------------------------------------------------
-    // BINDING_CALL: apply a declarative filter/sorter to an aggregation
-    // binding of a control resolved by id - the client-side equivalent of
-    // the classic demo kit controller pattern
-    // oList.getBinding("items").filter([new Filter(...)]). Same safety
-    // boundary as CONTROL_BY_ID: only whitelisted binding methods,
-    // only whitelisted filter operators, everything built from data
-    // (path/operator/values), never from code strings.
-    // ------------------------------------------------------------------
-
-    const FILTER_OPERATORS = new Set([
-      "BT",
-      "Contains",
-      "EndsWith",
-      "EQ",
-      "GE",
-      "GT",
-      "LE",
-      "LT",
-      "NB",
-      "NE",
-      "NotContains",
-      "NotEndsWith",
-      "NotStartsWith",
-      "StartsWith",
-    ]);
-
-    const isEmpty = (v) => v == null || v === "";
-
-    // binding method -> builder that turns the trailing params into the
-    // aggregation-update call. A strict whitelist (unlike CONTROL_METHODS,
-    // which now allows any non-denied public control method): an unlisted
-    // binding method fails closed at the lookup.
-    //   filter: params = [path, operator, value1, value2?]
-    //   sort:   params = [path, descending?, group?] (ABAP bools "X"/"")
-    // The backend arg serializer keeps empty args between filled ones as ''
-    // placeholders but trims trailing empties, so all optionals sit at the
-    // end and may arrive as undefined.
-    // Compound form of the filter payload: ONE param carrying a JSON array
-    // of groups, each group an array of [path, operator, value1, value2?]
-    // rows - OR inside a group, AND across groups (the FacetFilter /
-    // ViewSettingsDialog multi-facet shape). Data only: paths, whitelisted
-    // operators and values - never code. An empty groups array clears.
-    function buildFilterGroups(binding, json) {
-      // the backend embeds a '['-starting argument as real JSON, so on that
-      // path the groups arrive already parsed; only the XML-bound eF( )
-      // string form still needs the parse
-      let groups = json;
-      if (typeof json === "string") {
-        try {
-          groups = JSON.parse(json);
-        } catch {
-          Lib.logError("BINDING_CALL: malformed filter groups JSON");
-          return;
-        }
-      }
-      if (!Array.isArray(groups)) {
-        Lib.logError("BINDING_CALL: filter groups must be an array");
-        return;
-      }
-      groups = groups.filter((g) => Array.isArray(g) && g.length);
-      if (!groups.length) {
-        binding.filter([]);
-        return;
-      }
-      const outer = [];
-      for (const group of groups) {
-        const inner = [];
-        for (const row of group) {
-          const [path, operator, value1, value2] = Array.isArray(row)
-            ? row
-            : [];
-          if (typeof path !== "string" || !FILTER_OPERATORS.has(operator)) {
-            Lib.logError(
-              `BINDING_CALL: bad filter row (path '${path}' / operator '${operator}')`,
-            );
-            return;
-          }
-          inner.push(
-            new Filter(path, FilterOperator[operator], value1, value2),
-          );
-        }
-        outer.push(new Filter(inner, false)); // OR inside the group
-      }
-      binding.filter([new Filter(outer, true)]); // AND across the groups
-    }
-
-    const BINDING_METHODS = {
-      filter(binding, params) {
-        const [path, operator, value1, value2] = params;
-        // A single param that starts with '[' is the compound groups JSON -
-        // a model path can never start with '[', so the sniff is
-        // unambiguous and the positional single-filter form stays as-is. It
-        // arrives as a real array when the backend embedded it as JSON, as a
-        // string from the XML-bound eF( ) form.
-        if (
-          params.length === 1 &&
-          (Array.isArray(path) ||
-            (typeof path === "string" && path.trimStart().startsWith("[")))
-        ) {
-          buildFilterGroups(binding, path);
-          return;
-        }
-        // No filter values at all -> clear the filter (the demo kit search
-        // pattern: an emptied search field). A one-sided range (empty
-        // value1 but a set value2, e.g. BT with only an upper bound) is a
-        // real filter, so only clear when BOTH values are empty.
-        if (isEmpty(value1) && isEmpty(value2)) {
-          binding.filter([]);
-          return;
-        }
-        if (!FILTER_OPERATORS.has(operator)) {
-          Lib.logError(`BINDING_CALL: operator '${operator}' not allowed`);
-          return;
-        }
-        binding.filter([
-          new Filter(path, FilterOperator[operator], value1, value2),
-        ]);
-      },
-      sort(binding, [path, descending, group]) {
-        binding.sort([
-          new Sorter(path, castArg("bool", descending), castArg("bool", group)),
-        ]);
-      },
-    };
-    // Prototype-less, but written as a plain literal on purpose: the
-    // abap2UI5 linter mirrors this set and finds it by the exact source text
-    // `const BINDING_METHODS = {` in the embedded carrier (its
-    // scripts/check-upstream.mjs). Wrapping the literal in a call made that
-    // lookup miss, and the mirror check degraded to "SKIPPED, not verified" -
-    // a cross-repository check that stops checking without failing. Same
-    // effect, marker intact.
-    Object.setPrototypeOf(BINDING_METHODS, null);
-
-    // args: [_, id, aggregation, method, ...params]
-    function evBindingCall(oController, args) {
-      const [, id, aggregation, method] = args;
-      const build = BINDING_METHODS[method];
-      if (!build) {
-        Lib.logError(`BINDING_CALL: method '${method}' not allowed`);
-        return;
-      }
-      const binding = ViewSlots.resolveById(id)?.getBinding?.(aggregation);
-      if (!binding || typeof binding[method] !== "function") {
-        Lib.logError(
-          `BINDING_CALL: no '${aggregation}' binding with '${method}' on control '${id}'`,
-        );
-        return;
-      }
-      build(binding, args.slice(4));
-    }
-
     // The events this module owns in the eF dispatch (see
     // core/FrontendAction.js, which merges the domain modules' handler maps).
     const handlers = {
       CONTROL_BY_ID: evControlCallById,
       CONTROL_GLOBAL: evControlCall,
-      BINDING_CALL: evBindingCall,
     };
 
     // Every whitelisted global target is dispatchable by its own name too:
@@ -1354,6 +1226,8 @@ sap.ui.define(
         evControlCall(oController, ["CONTROL_GLOBAL", ...args], ctx);
     }
 
-    return { handlers };
+    // castArg is exported for core/actions/BindingCall.js, so both halves
+    // of the call surface read an ABAP boolean the same way.
+    return { handlers, castArg };
   },
 );

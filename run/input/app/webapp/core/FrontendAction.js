@@ -1,25 +1,23 @@
 sap.ui.define(
   [
     "z2ui5/core/actions/ControlCall",
+    "z2ui5/core/actions/BindingCall",
     "z2ui5/core/actions/Browser",
     "z2ui5/core/actions/Launchpad",
     "z2ui5/core/actions/Variants",
     "z2ui5/core/actions/Shortcuts",
     "z2ui5/core/actions/ViewOps",
-    "z2ui5/core/actions/LegacyCustomJs",
     "z2ui5/core/Lib",
-    "z2ui5/core/AppState",
   ],
   (
     ControlCall,
+    BindingCall,
     Browser,
     Launchpad,
     Variants,
     Shortcuts,
     ViewOps,
-    LegacyCustomJs,
     Lib,
-    AppState,
   ) => {
     "use strict";
 
@@ -32,7 +30,8 @@ sap.ui.define(
     // per domain, merged here into the one dispatch table. Handlers share
     // the uniform signature (oController, args); ones that need to reach
     // controller state (eB, ...) receive the calling controller as first
-    // argument.
+    // argument - and through it the component's context (oController.ctx,
+    // core/Context.js), which is where every handler reads the state.
     // ------------------------------------------------------------------
     // Object.create(null) rather than {}: args[0] is an action name off the
     // wire, and on a plain object handlers["valueOf"] resolves to a function
@@ -41,6 +40,7 @@ sap.ui.define(
     const handlers = Object.assign(
       Object.create(null),
       ControlCall.handlers,
+      BindingCall.handlers,
       Browser.handlers,
       Launchpad.handlers,
       Variants.handlers,
@@ -55,7 +55,7 @@ sap.ui.define(
     function execute(oController, args) {
       // runCallbacks isolates each hook in its own try/catch, so a throwing
       // before-event hook cannot escape here.
-      Lib.runCallbacks(AppState.state.onBeforeEventFrontend, args);
+      Lib.runCallbacks(oController?.ctx?.state.onBeforeEventFrontend, args);
 
       try {
         const handler = handlers[args[0]];
@@ -88,7 +88,7 @@ sap.ui.define(
     // threaded through the dispatch as an argument - never parked on shared
     // state, where a parallel response's phase would overwrite it.
     function executeSystem(oController, args, ctx) {
-      Lib.runCallbacks(AppState.state.onBeforeEventFrontend, args);
+      Lib.runCallbacks(oController?.ctx?.state.onBeforeEventFrontend, args);
       const handler = handlers[args[0]];
       if (!handler) {
         Lib.logError(`FrontendAction: unknown system action '${args[0]}'`);
@@ -120,36 +120,25 @@ sap.ui.define(
       return executeSystem(oController, args, ctx);
     }
 
-    // Run one APP follow-up action / custom-JS snippet from the response's
-    // T_CUSTOM list.
-    // Format A:  a real JSON array ["EVENT", ...args] - the structured form
-    //            every framework follow-up action travels in (embedded into
-    //            the response by the backend - handler actions_serialize). Pure
-    //            data, dispatched via oController.eF( ) - no code is parsed
-    //            or evaluated on this path. The stringified form stays
-    //            accepted so a skewed backend keeps working.
-    // Formats B/C: legacy app-authored snippets (raw strings the backend
-    //            passes through untouched) - see actions/LegacyCustomJs.
+    // Run one APP follow-up action from the response's T_CUSTOM list: a
+    // JSON array ["EVENT", ...args], embedded into the response by the
+    // backend (handler actions_serialize). Pure data, dispatched via
+    // oController.eF( ) - no code is parsed or evaluated here. The
+    // stringified form stays accepted so a skewed backend keeps working.
+    // Anything else is not run.
     function runCustom(item, oController) {
       try {
-        if (Array.isArray(item)) {
-          return oController.eF(...item);
-        }
-        const snippet = item.trim();
-        if (snippet.startsWith("[")) {
-          // JSON array -> structured follow-up action. A raw-JS expression
-          // that merely starts with "[" is no JSON array, so it fails the
-          // parse and falls through to the legacy formats.
+        let args = item;
+        if (typeof item === "string") {
           try {
-            const args = JSON.parse(snippet);
-            if (Array.isArray(args)) {
-              return oController.eF(...args);
-            }
+            args = JSON.parse(item);
           } catch {
-            // not JSON - keep going with the legacy formats
+            args = null;
           }
         }
-        LegacyCustomJs.run(item, oController);
+        if (Array.isArray(args)) {
+          return oController.eF(...args);
+        }
       } catch (e) {
         Lib.logError("customJs: execution failed", e);
       }
