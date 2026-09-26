@@ -28,12 +28,15 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `  }` + `
 ` + `` + `
 ` + `  function normalizeShortcut(combo) {` + `
-` + `    const parts = String(combo ?? "")` + `
-` + `      .split("+")` + `
-` + `      .map(shortcutToken)` + `
-` + `      .filter((p) => p !== "");` + `
+` + `    const tokens = String(combo ?? "").split("+");` + `
+` + `    const plusKey =` + `
+` + `      tokens.length >= 2 &&` + `
+` + `      tokens[tokens.length - 1].trim() === "" &&` + `
+` + `      tokens[tokens.length - 2].trim() === "";` + `
+` + `    const parts = tokens.map(shortcutToken).filter((p) => p !== "");` + `
 ` + `    const mods = SHORTCUT_MODIFIERS.filter((m) => parts.includes(m));` + `
 ` + `    const keys = parts.filter((p) => !SHORTCUT_MODIFIERS.includes(p));` + `
+` + `    if (plusKey) keys.push("+");` + `
 ` + `    if (keys.length === 0) return "";` + `
 ` + `    return [...mods, keys[keys.length - 1]].join("+");` + `
 ` + `  }` + `
@@ -144,7 +147,7 @@ class z2ui5_cl_ui5f_shortcut_js {
 ` + `    KEYBOARD_SHORTCUT: evKeyboardShortcut,` + `
 ` + `  };` + `
 ` + `` + `
-` + `  return { handlers, reset };` + `
+` + `  return { handlers, reset, normalizeShortcut, shortcutFromEvent };` + `
 ` + `});` + `
 ` + `` + `
 ` + ``;

@@ -21,6 +21,12 @@ class z2ui5_cl_ui5_util_json_fl {
     return result;
   }
 
+  static check_number_initial({ val } = {}) {
+    let result = false;
+    result = ([...String(val)].every(($c) => String(`0.-+Ee`).includes($c)));
+    return result;
+  }
+
   keep_node({ is_node, iv_visit = z2ui5_if_ajson_filter.visit_type.value } = {}) {
     let rv_keep = false;
     rv_keep = true;
@@ -31,7 +37,7 @@ class z2ui5_cl_ui5_util_json_fl {
             rv_keep = (is_node.value !== `false`);
             break;
           case z2ui5_if_ajson_types.node_type.number:
-            rv_keep = (![...String(is_node.value)].every(($c) => String(`0.-+Ee`).includes($c)));
+            rv_keep = (!(z2ui5_cl_ui5_util_json_fl.check_number_initial({ val: is_node.value }) === true || z2ui5_cl_ui5_util_json_fl.check_number_initial({ val: is_node.value }) === `X`));
             break;
           case z2ui5_if_ajson_types.node_type.string:
             rv_keep = (is_node.value !== ``);

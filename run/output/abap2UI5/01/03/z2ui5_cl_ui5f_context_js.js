@@ -30,6 +30,8 @@ class z2ui5_cl_ui5f_context_js {
 ` + `` + `
 ` + `      shortcuts: { listener: null },` + `
 ` + `` + `
+` + `      variants: { activeInits: new Set() },` + `
+` + `` + `
 ` + `      scroll: { target: undefined, ui5El: undefined, slotKey: undefined },` + `
 ` + `` + `
 ` + `      errorView: { title: "", details: "", options: {}, dialog: null },` + `

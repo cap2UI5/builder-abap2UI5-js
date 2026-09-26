@@ -141,6 +141,7 @@ class z2ui5_cl_ui5f_viewops_js {
 ` + `      oElement,` + `
 ` + `      oController,` + `
 ` + `      () => {` + `
+` + `        if (!Lib.isControllerAlive(oController)) return;` + `
 ` + `        applyFocus();` + `
 ` + `        const dom = oElement.getDomRef();` + `
 ` + `        if (dom && dom.contains(document.activeElement)) return;` + `

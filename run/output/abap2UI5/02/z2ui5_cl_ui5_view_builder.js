@@ -2,6 +2,7 @@
 class z2ui5_cl_ui5_view_builder {
   static gv_escape_specials = ``;
   static gv_escape_controls = ``;
+  static gv_name_specials = ``;
 
   name = ``;
   prefix = ``;
@@ -19,6 +20,10 @@ class z2ui5_cl_ui5_view_builder {
 
   ele({ n, ns = `` } = {}) {
     let result = null;
+    this.name_check({ val: n, what: `element name` });
+    if (!z2ui5_cl_util.abap_is_initial(ns)) {
+      this.name_check({ val: ns, what: `namespace prefix` });
+    }
     result = new z2ui5_cl_ui5_view_builder();
     result.root = this.root;
     result.parent = z2ui5_cl_util.abap_tab_assign(result.parent, z2ui5_cl_util.abap_copy(this));
@@ -40,6 +45,7 @@ class z2ui5_cl_ui5_view_builder {
     if (z2ui5_cl_util.abap_is_initial(this.name) && z2ui5_cl_util.abap_is_initial(this.t_child)) {
       this.raise({ val: `a( n = '${n}' ) on the empty builder root - open an element with ele( ) first` });
     }
+    this.name_check({ val: n, what: `attribute name` });
     const val = this.attr_value({ n, v, b, t, check_v: (v !== undefined), check_b: (b !== undefined), check_t: (t !== undefined) });
     let target = z2ui5_cl_util.abap_copy(this);
     if (!z2ui5_cl_util.abap_is_initial(this.t_child)) {
@@ -64,6 +70,16 @@ class z2ui5_cl_ui5_view_builder {
 
   raise({ val } = {}) {
     throw new z2ui5_cx_ui5_util_error({ val: `VIEW_BUILDER_ERROR - ${val}` });
+  }
+
+  name_check({ val, what } = {}) {
+    if (z2ui5_cl_util.abap_is_initial(z2ui5_cl_ui5_view_builder.gv_name_specials)) {
+      z2ui5_cl_ui5_view_builder.gv_name_specials = ` <>"'&/=` + z2ui5_cl_ui5_util_context.cv_char_util_newline + String(z2ui5_cl_ui5_util_context.cv_char_util_cr_lf)
+        .substr(0, 1) + z2ui5_cl_ui5_util_context.cv_char_util_horizontal_tab;
+    }
+    if (z2ui5_cl_util.abap_is_initial(val) || [...String(val)].some(($c) => String(z2ui5_cl_ui5_view_builder.gv_name_specials).includes($c))) {
+      this.raise({ val: `${what} '${val}' is not a valid XML name` });
+    }
   }
 
   render_into(_args = {}) {
@@ -205,6 +221,7 @@ require("abap2UI5/z2ui5_preferred_param")(z2ui5_cl_ui5_view_builder, {
   a: { preferred: `n`, params: [`n`, `v`, `b`, `t`] },
   escape_literal: { preferred: `val`, params: [`val`] },
   xml_escape: { preferred: `val`, params: [`val`] },
+  name_check: { preferred: `val`, params: [`val`, `what`] },
   raise: { preferred: `val`, params: [`val`] },
   attr_value: { preferred: `n`, params: [`n`, `v`, `b`, `t`, `check_v`, `check_b`, `check_t`] },
 });

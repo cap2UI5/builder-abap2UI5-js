@@ -1,10 +1,14 @@
 
 class z2ui5_cl_ui5f_preload {
-  static build_hash = `ad1285a0d2c1496a`;
+  static build_hash = `8921b3f7cd8bb526`;
+  static script_hash = `sha256-iSGz982LtSYoPjAkVZhbeF97I4FszSokR+xBIpYBdO0=`;
 
-  static get({ styles_css } = {}) {
+  static get() {
     let result = ``;
-    result = `      "z2ui5/Component.js": function(){${z2ui5_cl_ui5f_comp_js.get()}},` + `
+    result = `
+` + `  function onInitComponent(){
+` + `    sap.ui.require.preload({
+` + `      "z2ui5/Component.js": function(){${z2ui5_cl_ui5f_comp_js.get()}},` + `
 ` + `      "z2ui5/cc/CameraPicture.js": function(){${z2ui5_cl_ui5f_campic_js.get()}},` + `
 ` + `      "z2ui5/cc/CameraSelector.js": function(){${z2ui5_cl_ui5f_camsel_js.get()}},` + `
 ` + `      "z2ui5/cc/Dirty.js": function(){${z2ui5_cl_ui5f_dirty_js.get()}},` + `
@@ -48,7 +52,7 @@ class z2ui5_cl_ui5f_preload {
 ` + `      "z2ui5/core/actions/Slots.js": function(){${z2ui5_cl_ui5f_slots_js.get()}},` + `
 ` + `      "z2ui5/core/actions/Variants.js": function(){${z2ui5_cl_ui5f_variants_js.get()}},` + `
 ` + `      "z2ui5/core/actions/ViewOps.js": function(){${z2ui5_cl_ui5f_viewops_js.get()}},` + `
-` + `      "z2ui5/css/style.css": '${z2ui5_cl_ui5f_preload.escape_js_literal({ val: styles_css })}',` + `
+` + `      "z2ui5/css/style.css": '${z2ui5_cl_ui5f_preload.escape_js_literal({ val: z2ui5_cl_ui5f_style_css.get() })}',` + `
 ` + `      "z2ui5/devtools/AbapSource.js": function(){${z2ui5_cl_ui5f_abapsrc_js.get()}},` + `
 ` + `      "z2ui5/devtools/Bindings.js": function(){${z2ui5_cl_ui5f_bindings_js.get()}},` + `
 ` + `      "z2ui5/devtools/Console.js": function(){${z2ui5_cl_ui5f_console_js.get()}},` + `
@@ -71,6 +75,11 @@ class z2ui5_cl_ui5f_preload {
 ` + `      "z2ui5/model/formatter.js": function(){${z2ui5_cl_ui5f_format_js.get()}},` + `
 ` + `      "z2ui5/model/models.js": function(){${z2ui5_cl_ui5f_models_js.get()}},` + `
 ` + `      "z2ui5/view/App.view.xml": '${z2ui5_cl_ui5f_preload.escape_js_literal({ val: z2ui5_cl_ui5f_app_xml.get() })}',` + `
+` + `    });
+` + `    sap.ui.require(["sap/ui/core/ComponentSupport"], function(ComponentSupport){
+` + `     ComponentSupport.run();
+` + `    });
+` + `  }
 `;
     return result;
   }
@@ -143,6 +152,7 @@ const z2ui5_cl_ui5f_slots_js = require("abap2UI5/z2ui5_cl_ui5f_slots_js");
 const z2ui5_cl_ui5f_slotxml_js = require("abap2UI5/z2ui5_cl_ui5f_slotxml_js");
 const z2ui5_cl_ui5f_smartinp_js = require("abap2UI5/z2ui5_cl_ui5f_smartinp_js");
 const z2ui5_cl_ui5f_storage_js = require("abap2UI5/z2ui5_cl_ui5f_storage_js");
+const z2ui5_cl_ui5f_style_css = require("abap2UI5/z2ui5_cl_ui5f_style_css");
 const z2ui5_cl_ui5f_tabs_js = require("abap2UI5/z2ui5_cl_ui5f_tabs_js");
 const z2ui5_cl_ui5f_timer_js = require("abap2UI5/z2ui5_cl_ui5f_timer_js");
 const z2ui5_cl_ui5f_title_js = require("abap2UI5/z2ui5_cl_ui5f_title_js");

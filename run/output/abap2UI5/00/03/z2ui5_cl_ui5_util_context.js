@@ -19,6 +19,7 @@ class z2ui5_cl_ui5_util_context {
   static mt_bool_cache = [];
   static mt_attri_cache = [];
   static gt_class_exists = [];
+  static gt_class_impl_intf = [];
   static gv_check_cloud = false;
   static gv_check_cloud_cached = false;
   static cv_data_max_rows = 100;
@@ -326,20 +327,30 @@ class z2ui5_cl_ui5_util_context {
     let sy_subrc = 0;
     let lo_typedescr = null;
     let lo_classdescr = null;
+    let lv_class = ``;
     let lv_intf = ``;
-    if (!(z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: class_ }) === true || z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: class_ }) === `X`)) {
+    lv_class = class_.toUpperCase();
+    lv_intf = intf.toUpperCase();
+    let lr_hit = {};
+    {
+      const _t = z2ui5_cl_ui5_util_context.gt_class_impl_intf;
+      const _i = _t.findIndex((_r) => _r.name === lv_class && _r.intf === lv_intf);
+      sy_subrc = _i >= 0 && _i < _t.length ? 0 : 4;
+      if (sy_subrc === 0) lr_hit = _t[_i];
+    }
+    if (sy_subrc === 0) {
+      result = z2ui5_cl_util.abap_tab_assign(result, z2ui5_cl_util.abap_copy(lr_hit.result));
       return result;
     }
-    lv_intf = intf.toUpperCase();
     try {
-      // TODO(abap2js): cl_abap_classdescr=>describe_by_name( EXPORTING p_name = class RECEIVING p_descr_ref = lo_typedescr EXCEPTIONS type_not_found = 1 ).
-      if (sy_subrc !== 0) {
-        return result;
+      // TODO(abap2js): cl_abap_classdescr=>describe_by_name( EXPORTING p_name = lv_class RECEIVING p_descr_ref = lo_typedescr EXCEPTIONS type_not_found = 1 ).
+      if (sy_subrc === 0) {
+        lo_classdescr = z2ui5_cl_util.abap_cast(lo_typedescr);
+        result = (lo_classdescr.interfaces.some((row) => row.name === lv_intf));
       }
-      lo_classdescr = z2ui5_cl_util.abap_cast(lo_typedescr);
-      result = (lo_classdescr.interfaces.some((row) => row.name === lv_intf));
     } catch (error) {
     }
+    z2ui5_cl_ui5_util_context.gt_class_impl_intf.push(z2ui5_cl_util.abap_copy({ name: lv_class, intf: lv_intf, result: result }));
     return result;
   }
 
@@ -618,27 +629,6 @@ class z2ui5_cl_ui5_util_context {
   static xml_srtti_parse({ rtti_data } = {}) {
     let result = null;
     result = z2ui5_cl_ui5_util_context.xml_srtti_parse_pair({ iv_type: rtti_data, iv_data: rtti_data });
-    return result;
-  }
-
-  static xml_srtti_stringify({ data } = {}) {
-    let result = ``;
-    let lv_classname;
-    let lx_srtti;
-    if ((z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: `ZCL_SRTTI_TYPEDESCR` }) === true || z2ui5_cl_ui5_util_context.rtti_check_class_exists({ val: `ZCL_SRTTI_TYPEDESCR` }) === `X`)) {
-      let srtti = null;
-      lv_classname = `ZCL_SRTTI_TYPEDESCR`;
-      // TODO(abap2js): CALL METHOD (lv_classname)=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = srtti.
-      // TODO(abap2js): CALL TRANSFORMATION id SOURCE srtti = srtti dobj = data RESULT XML result.
-    } else {
-      try {
-        // TODO(abap2js): CALL METHOD z2ui5_cl_srt_typedescr=>(`CREATE_BY_DATA_OBJECT`) EXPORTING data_object = data RECEIVING srtti = srtti.
-        // TODO(abap2js): CALL TRANSFORMATION id SOURCE srtti = srtti dobj = data RESULT XML result.
-      } catch (_caught1) {
-        lx_srtti = _caught1;
-        throw new z2ui5_cx_ui5_util_error({ val: `UNSUPPORTED_FEATURE`, previous: lx_srtti });
-      }
-    }
     return result;
   }
 

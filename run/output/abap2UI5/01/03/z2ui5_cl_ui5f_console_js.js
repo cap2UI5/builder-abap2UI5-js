@@ -193,7 +193,10 @@ class z2ui5_cl_ui5f_console_js {
 ` + `      const level = UI5_LEVELS[logEntry?.level] || "info";` + `
 ` + `      const component = logEntry?.component ? \`[\${logEntry.component}] \` : "";` + `
 ` + `      const details = logEntry?.details ? \` - \${logEntry.details}\` : "";` + `
-` + `      push(level, "ui5", \`\${component}\${logEntry?.message || ""}\${details}\`);` + `
+` + `` + `
+` + `      if (logEntry?.component !== "z2ui5") {` + `
+` + `        push(level, "ui5", \`\${component}\${logEntry?.message || ""}\${details}\`);` + `
+` + `      }` + `
 ` + `` + `
 ` + `      pendingUi5Echo =` + `
 ` + `        \`\${logEntry?.date || ""} \${logEntry?.time || ""} \` +` + `

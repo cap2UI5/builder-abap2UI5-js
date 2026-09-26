@@ -12,6 +12,12 @@ class z2ui5_cl_ui5_serializer {
     return result;
   }
 
+  xml_of({ container } = {}) {
+    let result = ``;
+    result = z2ui5_cl_ui5_util_context.xml_stringify({ any: container });
+    return result;
+  }
+
   parse({ val } = {}) {
     let result = null;
     let lo_cont = null;
@@ -29,7 +35,7 @@ class z2ui5_cl_ui5_serializer {
     let lx_first = null;
     try {
       lo_model.main_attri_db_save_srtti();
-      result = z2ui5_cl_ui5_util_context.xml_stringify({ any: lo_cont });
+      result = this.xml_of({ container: lo_cont });
       lo_model.main_attri_reattach();
       return result;
     } catch (_caught1) {
@@ -39,7 +45,7 @@ class z2ui5_cl_ui5_serializer {
     try {
       lo_model.main_attri_refresh();
       lo_model.main_attri_db_save_srtti();
-      result = z2ui5_cl_ui5_util_context.xml_stringify({ any: lo_cont });
+      result = this.xml_of({ container: lo_cont });
       lo_model.main_attri_reattach();
       return result;
     } catch (error) {

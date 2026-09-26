@@ -233,35 +233,43 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `      ctx.state.oApp.insertPage(oView);` + `
 ` + `    }` + `
 ` + `` + `
-` + `    function displayMain(ctx, xml, mOptions, seq) {` + `
+` + `    function chainBuild(ctx, seq, build) {` + `
 ` + `      ctx.server.viewBuild = Promise.resolve(ctx.server.viewBuild)` + `
 ` + `        .catch(() => {})` + `
 ` + `        .then(() => {` + `
 ` + `          if (isSuperseded(ctx, seq)) {` + `
 ` + `            return undefined;` + `
 ` + `          }` + `
-` + `` + `
-` + `          ViewSlots.destroy(ctx, "MAIN");` + `
-` + `` + `
-` + `          for (const oClient of ctx.state.odataClients) {` + `
-` + `            try {` + `
-` + `              oClient.destroy();` + `
-` + `            } catch (e) {` + `
-` + `              Lib.logError("displayMain: destroying an OData client failed", e);` + `
-` + `            }` + `
-` + `          }` + `
-` + `          ctx.state.odataClients.clear();` + `
-` + `` + `
-` + `          ViewSlots.destroy(ctx, "POPUP");` + `
-` + `          ViewSlots.destroy(ctx, "POPOVER");` + `
-` + `          return displayView(` + `
-` + `            ctx,` + `
-` + `            xml,` + `
-` + `            ctx.state.oResponse?.OVIEWMODEL,` + `
-` + `            mOptions,` + `
-` + `          );` + `
+` + `          return build();` + `
 ` + `        });` + `
 ` + `      return ctx.server.viewBuild;` + `
+` + `    }` + `
+` + `` + `
+` + `    function displayMain(ctx, xml, mOptions, seq) {` + `
+` + `      return chainBuild(ctx, seq, () => {` + `
+` + `        ViewSlots.destroy(ctx, "MAIN");` + `
+` + `` + `
+` + `        for (const oClient of ctx.state.odataClients) {` + `
+` + `          try {` + `
+` + `            oClient.destroy();` + `
+` + `          } catch (e) {` + `
+` + `            Lib.logError("displayMain: destroying an OData client failed", e);` + `
+` + `          }` + `
+` + `        }` + `
+` + `        ctx.state.odataClients.clear();` + `
+` + `` + `
+` + `        ViewSlots.destroy(ctx, "POPUP");` + `
+` + `        ViewSlots.destroy(ctx, "POPOVER");` + `
+` + `        return displayView(ctx, xml, ctx.state.oResponse?.OVIEWMODEL, mOptions);` + `
+` + `      });` + `
+` + `    }` + `
+` + `` + `
+` + `    function displayStandalone(ctx, slotKey, xml, mOptions, seq) {` + `
+` + `      return chainBuild(ctx, seq, () => {` + `
+` + `        ViewSlots.destroy(ctx, slotKey);` + `
+` + `        if (slotKey === "POPUP") return displayFragment(ctx, xml, seq);` + `
+` + `        return displayPopover(ctx, xml, mOptions.openById, seq);` + `
+` + `      });` + `
 ` + `    }` + `
 ` + `` + `
 ` + `    function updateModelIfRequired(ctx, slotKey) {` + `
@@ -323,11 +331,10 @@ class z2ui5_cl_ui5f_slots_js {
 ` + `        ctx.state.lastMainDisplayOptions = options;` + `
 ` + `        return displayMain(ctx, xml, options, seq);` + `
 ` + `      }` + `
-` + `      ViewSlots.destroy(ctx, slotKey);` + `
-` + `      if (slotKey === "POPUP") return displayFragment(ctx, xml, seq);` + `
-` + `      if (slotKey === "POPOVER") {` + `
-` + `        return displayPopover(ctx, xml, options.openById, seq);` + `
+` + `      if (slotKey === "POPUP" || slotKey === "POPOVER") {` + `
+` + `        return displayStandalone(ctx, slotKey, xml, options, seq);` + `
 ` + `      }` + `
+` + `      ViewSlots.destroy(ctx, slotKey);` + `
 ` + `      return displayNestedView(ctx, xml, slotKey, options, seq);` + `
 ` + `    }` + `
 ` + `` + `
